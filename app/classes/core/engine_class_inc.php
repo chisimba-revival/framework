@@ -780,7 +780,8 @@ class engine {
             //return the local copy
             return $this->_objDb;
         }
-
+        // Return the existing cached database object on subsequent calls.
+        return $this->_objDb;
     }
 
     /**
