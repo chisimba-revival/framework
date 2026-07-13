@@ -103,7 +103,7 @@ class XML_DTD_XmlParser extends XML_Parser
      */
     function factory($xml)
     {
-        $p =& new XML_DTD_XmlParser();
+        $p = new XML_DTD_XmlParser();
 
         $result = $p->setInputFile($xml);
         if (PEAR::isError($result)) {
@@ -140,7 +140,7 @@ class XML_DTD_XmlParser extends XML_Parser
      */
     function startHandler($xp, $name, $attr)
     {
-        $e         =& new XML_DTD_XmlElement();
+        $e         = new XML_DTD_XmlElement();
         $e->name   = $name;
         $e->attr   = $attr;
         $e->lineno = @xml_get_current_line_number($xp);

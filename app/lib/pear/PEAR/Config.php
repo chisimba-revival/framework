@@ -2086,8 +2086,7 @@ class PEAR_Config extends PEAR
                 if ($layer == 'ftp' || !isset($this->_registry[$layer])) {
                     continue;
                 }
-                $this->_registry[$layer] =
-                    &new PEAR_Registry($this->get('php_dir', $layer, 'pear.php.net'));
+                $this->_registry[$layer] = new PEAR_Registry($this->get('php_dir', $layer, 'pear.php.net'));
                 $this->_registry[$layer]->setConfig($this);
                 $this->_regInitialized[$layer] = false;
             }

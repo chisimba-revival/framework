@@ -800,8 +800,7 @@ class XML_Unserializer extends PEAR
             ) {
                 $value['value'] = new $classname;
             } else {
-                $value['value'] =
-                    &new $this->options[XML_UNSERIALIZER_OPTION_DEFAULT_CLASS];
+                $value['value'] = new $this->options[XML_UNSERIALIZER_OPTION_DEFAULT_CLASS];
             }
             if (trim($data) !== '') {
                 if ($value['guessType'] === true) {

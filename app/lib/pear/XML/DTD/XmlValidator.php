@@ -108,7 +108,7 @@ class XML_DTD_XmlValidator
             return false;
         }
 
-        $dtd_parser =& new XML_DTD_Parser();
+        $dtd_parser = new XML_DTD_Parser();
         $dtd_parser->folding = true;
         $this->dtd  = @$dtd_parser->parse($dtd_file);
 

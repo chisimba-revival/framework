@@ -819,7 +819,7 @@ class MDB2
             $parsed['dbsyntax'] = $str;
         }
 
-        if (!count($dsn)) {
+        if ($dsn === null || $dsn === "") {
             return $parsed;
         }
 
