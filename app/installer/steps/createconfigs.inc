@@ -93,7 +93,7 @@ class CreateConfigsAction extends FiveStepAction
 
      */
 
-    protected $init_output = '';
+    protected $init_output = array();
 
     /**
 
@@ -448,8 +448,9 @@ class CreateConfigsAction extends FiveStepAction
             touch ( $path . 'config.xml' );
             chmod ( $path . 'config.xml', 0666 );
         }
-        $write = $this->_root->writeConfig ( "{$path}config.xml", 'XML', $options );
-        $GLOBALS ['SQ_INSTALL'] = false;
+        $write = $this->_root->writeConfig("{$path}config.xml", 'XML', $options);
+
+	$GLOBALS['SQ_INSTALL'] = false;
 
         $result = ob_get_contents ();
 

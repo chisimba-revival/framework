@@ -436,43 +436,60 @@ class PHPCheckAction extends StepAction
         }
         
         // check mysqlclient
+        // Check for a supported MySQL client extension.
+        //
+        // PHP 7 and later removed the original mysql extension. Prefer mysqli
+        // when it is available, while retaining the legacy mysql check for
+        // historical PHP environments.
 
         $_SESSION['allowed_db'] = Array(
-                                    'MDB2_Driver_mysql' => FALSE,
-                                    'MDB2_Driver_pgsql' => FALSE,
-                                    'MDB2_Driver_mysqli' => FALSE);
+            'MDB2_Driver_mysql' => FALSE,
+            'MDB2_Driver_pgsql' => FALSE,
+            'MDB2_Driver_mysqli' => FALSE
+        );
 
-        if (!function_exists('mysql_get_client_info')) {
+        if (function_exists('mysqli_get_client_info')) {
 
-            $this->required_settings['mysqlclient']['available'] = false;
+            $client_ver = mysqli_get_client_info();
 
-            $this->required_settings['mysqlclient']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
+            $_SESSION['allowed_db']['MDB2_Driver_mysqli'] = TRUE;
 
-            $this->errors[] = '<span class="errors">mysqlclient not found.You can proceed with the install, however some functionality will not be available to you</span>';
+            $this->required_settings['mysqlclient']['available'] = true;
+            $this->required_settings['mysqlclient']['version'] = $client_ver;
+            $this->required_settings['mysqlclient']['message'] =
+                '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
 
-			 $_SESSION['allowed_db']['MDB2_Driver_mysql'] = FALSE;
-			 $_SESSION['allowed_db']['MDB2_Driver_mysqli'] = FALSE;
-
-        } else {
+        } elseif (function_exists('mysql_get_client_info')) {
 
             $client_ver = mysql_get_client_info();
 
-            if(!$client_ver >='4.1.12'){
+            if (version_compare($client_ver, '4.1.12', '>=')) {
+
+                $_SESSION['allowed_db']['MDB2_Driver_mysql'] = TRUE;
+
+                $this->required_settings['mysqlclient']['available'] = true;
+                $this->required_settings['mysqlclient']['version'] = $client_ver;
+                $this->required_settings['mysqlclient']['message'] =
+                    '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
+
+            } else {
 
                 $this->required_settings['mysqlclient']['available'] = false;
+                $this->required_settings['mysqlclient']['message'] =
+                    '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
 
-                $this->required_settings['mysqlclient']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-                $this->errors[] = '<span class="errors">mysqlclient is not meeting System requirements. You need to upgrade this extension</span>';
-                $_SESSION['allowed_db']['MDB2_Driver_mysql'] = FALSE;
-                $_SESSION['allowed_db']['MDB2_Driver_mysqli'] = FALSE;
-
+                $this->errors[] =
+                    '<span class="errors">mysqlclient is not meeting System requirements. You need to upgrade this extension</span>';
             }
-            $_SESSION['allowed_db']['MDB2_Driver_mysql'] = TRUE;
-            // $_SESSION['allowed_db']['MDB2_Driver_mysqli'] = TRUE;
-                                    	
-            $this->required_settings['mysqlclient']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
 
+        } else {
+
+            $this->required_settings['mysqlclient']['available'] = false;
+            $this->required_settings['mysqlclient']['message'] =
+                '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
+
+            $this->errors[] =
+                '<span class="errors">No supported MySQL client extension was found. Install mysqli or the legacy mysql extension.</span>';
         }
 
         // check pgsql

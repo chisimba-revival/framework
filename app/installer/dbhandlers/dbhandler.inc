@@ -107,7 +107,7 @@ class DbHandler extends dbHandlermanager
           
             //MDB2 has a factory method, so lets use it now...
             // echo $_SESSION['dsn'];
-            $this->_globalObjDb = &MDB2::connect($_SESSION['dsn']);
+            $this->_globalObjDb = MDB2::connect($_SESSION['dsn']);
             
             //var_dump($this->_globalObjDb);
 
@@ -138,14 +138,13 @@ class DbHandler extends dbHandlermanager
 
 			}
 		    //MDB2 has a factory method, so lets use it now...
-             $this->_globalObjDbManager = &MDB2_Schema::connect($this->_globalObjDb);
-             
-             //$this->_globalObjDbManager->setCharset('utf8');
-             if (PEAR::isError($this->_globalObjDbManager)) {
-             	echo $this->_globalObjDbManager->getMessage();
-             	die();
+             $this->_globalObjDbManager = new MDB2_Schema();
+             $result = $this->_globalObjDbManager->connect($this->_globalObjDb);
+             if (PEAR::isError($result)) {
+                 echo $result->getMessage();
+                 die();
              }
-			//$this->_globalObjDbManager->setOption('quote_identifiers', true);
+	     //$this->_globalObjDbManager->setOption('quote_identifiers', true);
              $_SESSION['pearDbManager'] = $this->_globalObjDbManager;
              $this->dbmanager = new dbHandlermanager();
              parent::__construct();

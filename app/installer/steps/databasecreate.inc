@@ -86,7 +86,7 @@ class DbCreateAction extends StepAction
 
 	*/
 
-	var $init_output = '';
+	var $init_output = array();
 
 	/**
 	 * The output of register file outputs
