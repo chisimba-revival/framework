@@ -6,7 +6,7 @@
 * @copyright 2004, 2006 AVOIR
 * @license GNU GPL
 */
-class imageupload extends object
+class imageupload extends ChisimbaObject
 {
     public $objConfig;
     private $objUser;

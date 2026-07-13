@@ -65,7 +65,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats derek@localhost.local
 *
 */
-class detectmobile extends object
+class detectmobile extends ChisimbaObject
 {
     /**
      *

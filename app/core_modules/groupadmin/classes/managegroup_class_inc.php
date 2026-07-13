@@ -46,7 +46,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @filesource
 */
 
-class manageGroup extends object
+class manageGroup extends ChisimbaObject
 {
     /**
     * @var string The unique id for the group being managed.

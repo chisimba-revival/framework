@@ -78,7 +78,7 @@ require_once("ifhtml_class_inc.php");
  *  $cssLayout->setRightColumnContent('Content in Right Column');
  *  echo $cssLayout->show();
  */
-class csslayout extends object implements ifhtml
+class csslayout extends ChisimbaObject implements ifhtml
 {
 
     /**

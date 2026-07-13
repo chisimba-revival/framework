@@ -45,7 +45,7 @@
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class dir extends object 
+class dir extends ChisimbaObject 
 {
     /**
     * 

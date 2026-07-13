@@ -24,7 +24,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class debughelper extends object 
+class debughelper extends ChisimbaObject 
 {
     /**
      * Standard init method

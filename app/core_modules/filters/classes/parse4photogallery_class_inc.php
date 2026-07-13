@@ -52,7 +52,7 @@ if (!
  * where descriptions exist.
  *
  */
-class parse4photogallery extends object
+class parse4photogallery extends ChisimbaObject
 {
 
     /**

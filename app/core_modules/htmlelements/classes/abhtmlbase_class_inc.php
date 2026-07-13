@@ -46,7 +46,7 @@
  * @link      http://avoir.uwc.ac.za
  */
 
-abstract class abhtmlbase extends object
+abstract class abhtmlbase extends ChisimbaObject
 {
 
     /**

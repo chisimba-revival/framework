@@ -25,7 +25,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class inputfilters extends object
+class inputfilters extends ChisimbaObject
 {
     /**
      * Class to handle inputs and filter user input

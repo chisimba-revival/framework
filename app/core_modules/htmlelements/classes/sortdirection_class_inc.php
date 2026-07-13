@@ -39,7 +39,7 @@ $GLOBALS['kewl_entry_point_run'])
     die("You cannot view this page directly");
 }
 
-class sortdirection extends object
+class sortdirection extends ChisimbaObject
 {
     
     /**

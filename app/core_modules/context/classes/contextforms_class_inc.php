@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class contextforms extends object {
+class contextforms extends ChisimbaObject {
     /**
      * @var string $formAction : Action URL to point forms to
      */

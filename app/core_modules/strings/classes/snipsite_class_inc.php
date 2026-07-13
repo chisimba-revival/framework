@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package snipsite
 *
 */
-class snipsite extends object
+class snipsite extends ChisimbaObject
 {
     
     public $pageContent;

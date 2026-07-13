@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class viewTable extends object
+class viewTable extends ChisimbaObject
 {
     /**
      * Object reference to the decision table object.

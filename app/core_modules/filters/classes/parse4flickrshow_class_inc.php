@@ -39,7 +39,7 @@ $GLOBALS['kewl_entry_point_run']) {
     die("You cannot view this page directly");
 }
 
-class parse4flickrshow extends object {
+class parse4flickrshow extends ChisimbaObject {
     
     private $flickrshow;
 

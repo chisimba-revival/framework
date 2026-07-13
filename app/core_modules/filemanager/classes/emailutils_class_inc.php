@@ -24,7 +24,7 @@
  *
  * @author davidwaf
  */
-class emailutils extends object {
+class emailutils extends ChisimbaObject {
 
     function init() {
         $this->objUser = $this->getObject('user', 'security');

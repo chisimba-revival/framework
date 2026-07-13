@@ -3,7 +3,7 @@
 * Class to provide SysConfig an input for the SYSTEM_TYPE parameter
 * @author Tohir Solomons
 */
-class sysconfig_system_type extends object
+class sysconfig_system_type extends ChisimbaObject
 {
     /**
     * @var string $defaultValue Current Value of the Parameter

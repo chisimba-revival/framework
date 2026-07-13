@@ -31,7 +31,7 @@ Public License
  */
 
 
-class countries extends object
+class countries extends ChisimbaObject
 {
 
     /**

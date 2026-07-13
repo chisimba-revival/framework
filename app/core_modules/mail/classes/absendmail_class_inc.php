@@ -24,7 +24,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @licence   GNU/GPL
 *
 */
-abstract class absendmail extends object
+abstract class absendmail extends ChisimbaObject
 {
 
     /**

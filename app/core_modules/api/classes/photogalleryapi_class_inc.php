@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class photogalleryapi extends object
+class photogalleryapi extends ChisimbaObject
 {
     
     public $objDbPhotos;

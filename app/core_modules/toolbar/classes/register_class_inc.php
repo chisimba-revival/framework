@@ -25,7 +25,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 1
 */
 
-class register extends object
+class register extends ChisimbaObject
 {
     /**
     * Function to construct the class

@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package canvas
 *
 */
-class nonce extends object
+class nonce extends ChisimbaObject
 {
 
     /**

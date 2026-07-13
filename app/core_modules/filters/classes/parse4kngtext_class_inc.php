@@ -63,7 +63,7 @@ $GLOBALS['kewl_entry_point_run'])
 *             This class is deprecated and will be removed
 *             
 */
-class parse4kngtext extends object 
+class parse4kngtext extends ChisimbaObject 
 {
     /**
     * 

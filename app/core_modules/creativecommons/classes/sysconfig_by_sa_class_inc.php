@@ -22,7 +22,7 @@
 * Class to provide SysConfig an input for enabling/disabling the BY/SA license
 * @author Tohir Solomons
 */
-class sysconfig_by_sa extends object
+class sysconfig_by_sa extends ChisimbaObject
 {
     /**
     * @var string $defaultValue Current Value of the Parameter

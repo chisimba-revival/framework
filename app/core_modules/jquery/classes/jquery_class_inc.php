@@ -20,7 +20,7 @@
 * @version   $Id: jquery_class_inc.php 16059 2009-12-26 17:44:38Z dkeats $
 * @link      http://avoir.uwc.ac.za
 */
-class jquery extends object
+class jquery extends ChisimbaObject
 {
 
     /**

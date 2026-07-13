@@ -26,7 +26,7 @@ Public License
 */
 
 require_once($this->getResourceUri('safehtml/safehtml.php', 'utilities'));
-class htmlcleaner  extends object
+class htmlcleaner  extends ChisimbaObject
 {
    /**
      * @var object $_objSafeHtml The safehtml object

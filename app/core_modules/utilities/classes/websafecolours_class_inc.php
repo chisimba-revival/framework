@@ -1,6 +1,6 @@
 <?php
 
-class websafecolours extends object
+class websafecolours extends ChisimbaObject
 {
 
     public $colours = array(

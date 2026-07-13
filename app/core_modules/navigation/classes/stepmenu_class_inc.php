@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @verson 0.1
 */
 
-class stepmenu extends object
+class stepmenu extends ChisimbaObject
 {
     /**
     *

@@ -15,7 +15,7 @@ if ( !$GLOBALS['kewl_entry_point_run'] ) {
  * @package context
  */
 
-class utils extends object
+class utils extends ChisimbaObject
 {
 
     /**

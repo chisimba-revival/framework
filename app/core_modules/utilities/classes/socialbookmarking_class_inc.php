@@ -17,7 +17,7 @@ Public License
 * @version   $Id$
 * @link      http://avoir.uwc.ac.za
 */
-class socialbookmarking extends object {
+class socialbookmarking extends ChisimbaObject {
 
 
     /**

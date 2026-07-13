@@ -41,7 +41,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       http://people.xiph.org/~giles/2006/meta.php
  */
-class oggreader extends object
+class oggreader extends ChisimbaObject
 {
 
     /**

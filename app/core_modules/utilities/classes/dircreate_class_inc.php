@@ -25,7 +25,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class dircreate extends object
+class dircreate extends ChisimbaObject
 {
     /**
     * @var object $objConfig

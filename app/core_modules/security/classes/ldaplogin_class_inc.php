@@ -38,7 +38,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 /* Class of LDAP-related functions
 * @author James Scoble
 */
-class ldaplogin extends object
+class ldaplogin extends ChisimbaObject
 {
 
     //var $ldapserver="services-ds.uwc.ac.za"; // hard-coded for now - will be changed later

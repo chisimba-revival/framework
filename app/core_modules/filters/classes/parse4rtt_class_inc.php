@@ -47,7 +47,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * where descriptions exist.
  *
  */
-class parse4rtt extends object {
+class parse4rtt extends ChisimbaObject {
 
     /**
      *

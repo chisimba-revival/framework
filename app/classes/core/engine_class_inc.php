@@ -1289,11 +1289,11 @@ class engine {
         }
         if (file_exists ( $filename )) {
             require_once ($filename);
-            if (is_subclass_of ( $objname, 'object' )) {
-                // Class inherits from class 'object', so pass it the expected parameters
+            if (is_subclass_of ( $objname, 'ChisimbaObject' )) {
+                // Class inherits from class 'ChisimbaObject', so pass it the expected parameters
                 $objNew = new $objname ( $this, $objname );
             } else {
-                // Class does not inherit from class 'object', so don't pass it any parameters
+                // Class does not inherit from class 'ChisimbaObject', so don't pass it any parameters
                 $objNew = new $objname ( );
             }
             if (is_null ( $objNew )) {
@@ -1409,7 +1409,7 @@ class engine {
 
                 return $objNew;
             } else {
-                if (is_subclass_of ( $name, 'object' )) {
+                if (is_subclass_of ( $name, 'ChisimbaObject' )) {
                     $objNew = new $name ( $this, $moduleName );
                     return $objNew;
                 } else {
@@ -1421,7 +1421,7 @@ class engine {
         } elseif ($this->objAPC == TRUE) {
             $objNew = apc_fetch ( $name );
             if ($objNew == FALSE) {
-                if (is_subclass_of ( $name, 'object' )) {
+                if (is_subclass_of ( $name, 'ChisimbaObject' )) {
                     $objNew = new $name ( $this, $moduleName );
                     return $objNew;
                 } else {
@@ -1430,13 +1430,13 @@ class engine {
                 }
             }
         } else {
-            // Fix to allow developers to load htmlelements which do not inherit from class 'object'
-            if (is_subclass_of ( $name, 'object' )) {
-                // Class inherits from class 'object', so pass it the expected parameters
+            // Fix to allow developers to load htmlelements which do not inherit from class 'ChisimbaObject'
+            if (is_subclass_of ( $name, 'ChisimbaObject' )) {
+                // Class inherits from class 'ChisimbaObject', so pass it the expected parameters
                 $objNew = new $name ( $this, $moduleName );
 
             } else {
-                // Class does not inherit from class 'object', so don't pass it any parameters
+                // Class does not inherit from class 'ChisimbaObject', so don't pass it any parameters
                 $objNew = new $name ( );
             }
             if (is_null ( $objNew )) {
@@ -1468,7 +1468,7 @@ class engine {
             $instance = $this->_cachedObjects [$moduleName] [$name];
         } else {
             $this->loadClass ( $name, $moduleName );
-            if (is_subclass_of ( $name, 'object' )) {
+            if (is_subclass_of ( $name, 'ChisimbaObject' )) {
                 $instance = new $name ( $this, $moduleName );
             } else {
                 $instance = new $name ( );

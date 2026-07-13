@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 1
 */
 
-class page extends object
+class page extends ChisimbaObject
 {
     /**
     * Method to construct the class

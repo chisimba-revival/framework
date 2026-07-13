@@ -59,7 +59,7 @@ require_once ('Config.php');
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class ini extends object {
+class ini extends ChisimbaObject {
     /**
      * Constructor method to define the table
      */

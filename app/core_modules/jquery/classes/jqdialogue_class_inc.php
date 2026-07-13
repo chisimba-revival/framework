@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @license   GNU GPL
 * @author    Joke van Niekerk and Charl van Niekerk
 */
-class jqdialogue extends object
+class jqdialogue extends ChisimbaObject
 {
     /**
      * The instance of the skin class in the skin module.

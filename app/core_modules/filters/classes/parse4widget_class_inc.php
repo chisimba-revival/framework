@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Derek Keats
 *
 */
-class parse4widget extends object
+class parse4widget extends ChisimbaObject
 {
     /**
     *

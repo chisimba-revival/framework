@@ -38,7 +38,7 @@ Public License
  * ?>
  */
 
-class background extends object
+class background extends ChisimbaObject
 {
     /**
      * @var $connStatus Property to hold user connection status

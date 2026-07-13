@@ -17,7 +17,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @package   logger
  * @version   0.1
  */
-class logdisplay extends object
+class logdisplay extends ChisimbaObject
 {
     /**
      * Constructor method

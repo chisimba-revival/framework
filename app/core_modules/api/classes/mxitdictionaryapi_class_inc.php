@@ -14,7 +14,7 @@ $GLOBALS['kewl_entry_point_run']) {
 // end security check
 
 
-class mxitdictionaryapi extends object
+class mxitdictionaryapi extends ChisimbaObject
 {
 
     /**

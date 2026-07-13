@@ -27,7 +27,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
- class depzip extends object{
+ class depzip extends ChisimbaObject{
  
      /**
      *@var object objConfig

@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @author  Jeremy O'Connor
 * @package htmlelements
 */
-class tooltip extends object
+class tooltip extends ChisimbaObject
 {
      /**
      * @var $caption string The caption

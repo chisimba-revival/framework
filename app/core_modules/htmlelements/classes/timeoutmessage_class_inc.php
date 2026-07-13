@@ -49,7 +49,7 @@ if (!
  * @author    Jonathan Abrahams
  *            
  */
-class timeoutMessage extends object {
+class timeoutMessage extends ChisimbaObject {
 
         /**
          * @var string : The confirmation message.

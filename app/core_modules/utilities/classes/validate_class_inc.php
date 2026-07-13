@@ -16,7 +16,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class validate extends object
+class validate extends ChisimbaObject
 {
     /**
 	 * Constructor

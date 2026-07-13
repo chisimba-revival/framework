@@ -50,7 +50,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class swfupload extends object
+class swfupload extends ChisimbaObject
 {
     
     public $uploadModule='filemanager';

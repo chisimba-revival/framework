@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class flexigrid extends object
+class flexigrid extends ChisimbaObject
 {
     /**
      * 

@@ -44,7 +44,7 @@
  * @link      http://avoir.uwc.ac.za
  * @link      http://www.dynamicdrive.com/dynamicindex7/jasoncalendar.htm
  */
-class datepicker extends object
+class datepicker extends ChisimbaObject
 {
 
     /**

@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats <derek.keats@wits.ac.za>
 *
 */
-class sitesearchbox extends object
+class sitesearchbox extends ChisimbaObject
 {
     /**
     *

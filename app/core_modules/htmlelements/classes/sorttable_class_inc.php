@@ -57,7 +57,7 @@ Public License
 * </code>
 */
 
-class sortTable extends object
+class sortTable extends ChisimbaObject
 {
     /**
     * @var string $name: The javascript table name

@@ -3,7 +3,7 @@
 /**
 * A set of button objects to create interface buttons
 */
-class navbuttons extends object
+class navbuttons extends ChisimbaObject
 {
 
      var $objLanguage;

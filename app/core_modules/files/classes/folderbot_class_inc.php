@@ -54,7 +54,7 @@
  * Basically, what this class could do for you is shield you from the process 
  * of writing code to list files in a folder.
  */
-class folderbot extends object {
+class folderbot extends ChisimbaObject {
 
     /**
      *

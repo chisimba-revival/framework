@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class cssmenu extends object.
+ * Class cssmenu extends ChisimbaObject.
  * @package toolbar
  * @filesource
  */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package toolbar
  * @version 1
  */
-class cssmenu extends object {
+class cssmenu extends ChisimbaObject {
 
         public $menu = array();
 

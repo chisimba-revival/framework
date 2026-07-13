@@ -63,7 +63,7 @@ require_once "lib/logging.php";
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class dbTableManager extends object {
+class dbTableManager extends ChisimbaObject {
 
     /**
      * The current table name that we are working with

@@ -63,7 +63,7 @@ include($this->getResourcePath('imagecreatefrompsd.php', 'files'));
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class imageresize extends object
+class imageresize extends ChisimbaObject
 {
     
     /**

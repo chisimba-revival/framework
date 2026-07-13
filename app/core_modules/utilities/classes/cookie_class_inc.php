@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package utilties
  *
  */
-class cookie extends object {
+class cookie extends ChisimbaObject {
     /**
      * Reserved session keys
      * @access private

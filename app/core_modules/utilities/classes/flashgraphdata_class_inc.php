@@ -71,7 +71,7 @@ Public License
 // Load Required Resource
 require_once($this->getResourcePath('openflashchart/1.9.6/open-flash-chart.php', 'utilities'));
 
-class flashgraphdata extends object
+class flashgraphdata extends ChisimbaObject
 {
     
     /**

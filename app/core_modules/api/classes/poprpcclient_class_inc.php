@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package packages
  * @version 0.1
  */
-class poprpcclient extends object
+class poprpcclient extends ChisimbaObject
 {
     /**
      * Language Object

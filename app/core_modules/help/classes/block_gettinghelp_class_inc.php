@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class block_gettinghelp extends object. The class creates a block about how to use the help.
+ * Class block_gettinghelp extends ChisimbaObject. The class creates a block about how to use the help.
  * 
  * PHP version 3
  * 
@@ -35,7 +35,7 @@ $GLOBALS['kewl_entry_point_run'])
 *         
 * $Id$
 */
-class block_gettinghelp extends object
+class block_gettinghelp extends ChisimbaObject
 {
 
     /**

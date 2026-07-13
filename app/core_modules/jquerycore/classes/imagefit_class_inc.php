@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class imagefit extends object
+class imagefit extends ChisimbaObject
 {
     /**
      * 

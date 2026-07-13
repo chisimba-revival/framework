@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * where descriptions exist.
  *
  */
-class parse4realtime extends object {
+class parse4realtime extends ChisimbaObject {
 
     /**
      *

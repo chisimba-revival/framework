@@ -22,7 +22,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 require_once('Config.php');
 
-class dbuserparamsadmin extends object {
+class dbuserparamsadmin extends ChisimbaObject {
 
     /**
      * Constructor method to define the table

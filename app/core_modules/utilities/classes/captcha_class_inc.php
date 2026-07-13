@@ -37,7 +37,7 @@ Public License
  *
  */
 
-class captcha extends object {
+class captcha extends ChisimbaObject {
 
     /**
      * @var string Name of the Captcha Hidden Input;

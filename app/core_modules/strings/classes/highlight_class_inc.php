@@ -12,7 +12,7 @@
  * 
  */
 
-class highlight extends object
+class highlight extends ChisimbaObject
 {
     var $keyword;
     var $replacement;

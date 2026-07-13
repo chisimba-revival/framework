@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class documentconversionapi extends object
+class documentconversionapi extends ChisimbaObject
 {
 
     /**

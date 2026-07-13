@@ -60,7 +60,7 @@ die("You cannot view this page directly");
 * @link      http://avoir.uwc.ac.za
 * @see       core
 */
-class block_newestprivate extends object
+class block_newestprivate extends ChisimbaObject
 {
 
     /**

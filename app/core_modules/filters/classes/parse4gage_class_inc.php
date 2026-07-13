@@ -39,7 +39,7 @@
 *         
 */
 
-class parse4gage extends object
+class parse4gage extends ChisimbaObject
 {
     
     /**

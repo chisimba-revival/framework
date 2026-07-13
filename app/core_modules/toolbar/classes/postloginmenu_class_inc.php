@@ -1,6 +1,6 @@
 <?php
 /**
-* Class postloginmenu extends object.
+* Class postloginmenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -23,7 +23,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @package toolbar
 * @version 1.1
 */
-class postloginmenu extends object
+class postloginmenu extends ChisimbaObject
 {
     /**
     * Method to construct the class.

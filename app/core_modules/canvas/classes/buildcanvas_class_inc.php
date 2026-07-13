@@ -62,7 +62,7 @@ if (!
  * @package myprofile
  *
  */
-class buildcanvas extends object {
+class buildcanvas extends ChisimbaObject {
 
     /**
      *

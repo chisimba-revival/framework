@@ -68,7 +68,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Jeremy O'Connor
  * @author Tohir Solomons
  */
-class parse4mathml extends object
+class parse4mathml extends ChisimbaObject
 {
 
     /**

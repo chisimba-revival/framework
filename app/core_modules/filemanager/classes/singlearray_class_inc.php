@@ -61,7 +61,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       
  */
-class singlearray extends object
+class singlearray extends ChisimbaObject
 {
     /**
     * @var array $finalArray Variable to Hold the Final Array

@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  */
 
-class json extends object
+class json extends ChisimbaObject
 {
     /**
      * @var object $objZend The Chisimba Zend object

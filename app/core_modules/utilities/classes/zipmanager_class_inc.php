@@ -20,7 +20,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class zipmanager extends object {
+class zipmanager extends ChisimbaObject {
 
     /**
      * Constructor

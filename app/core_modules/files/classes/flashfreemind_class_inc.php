@@ -49,7 +49,7 @@
 *
 * @author Tohir Solomons
 */
-class flashfreemind extends object 
+class flashfreemind extends ChisimbaObject 
 {
     /**
     * @var string $mindMap Path and Name of the Mind Map file

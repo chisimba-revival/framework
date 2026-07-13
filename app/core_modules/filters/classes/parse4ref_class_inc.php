@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  * @author Tohir Solomons
  */
-class parse4ref extends object
+class parse4ref extends ChisimbaObject
 {
     /**
     * Constructor

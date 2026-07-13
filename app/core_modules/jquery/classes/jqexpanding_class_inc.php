@@ -49,7 +49,7 @@
  * @link      http://www.reindel.com/truncate/
  * @link      http://avoir.uwc.ac.za
  */
-class jqexpanding extends object
+class jqexpanding extends ChisimbaObject
 {
 
     /**

@@ -42,7 +42,7 @@ $GLOBALS['kewl_entry_point_run']){
 }
 
 
-class extjs extends object {
+class extjs extends ChisimbaObject {
 
     /**
      * init function for compatability

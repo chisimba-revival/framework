@@ -19,7 +19,7 @@ Public License
  */
 
 require_once('pclzip.lib.php');
-class wzip extends object{
+class wzip extends ChisimbaObject{
 
     /**
     * @var stores an error

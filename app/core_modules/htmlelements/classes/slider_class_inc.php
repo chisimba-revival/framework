@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @version   $Id: slider_class_inc.php 3162 2007-12-14 10:25:30Z tohir $;
 * @author    Tohir Solomons
 */
-class slider extends object
+class slider extends ChisimbaObject
 {
 
     /**

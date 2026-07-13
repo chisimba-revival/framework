@@ -37,7 +37,7 @@
 *         
 */
 
-class parse4openzoom extends object
+class parse4openzoom extends ChisimbaObject
 {
     
     /**

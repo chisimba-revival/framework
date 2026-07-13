@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class sysconfig_sidemenu extends object
+class sysconfig_sidemenu extends ChisimbaObject
 {
 
     /**

@@ -59,7 +59,7 @@ require_once "lib/logging.php";
  *       
  */
 
-class soapcontroller extends object
+class soapcontroller extends ChisimbaObject
 {
 
 }

@@ -4,7 +4,7 @@
 * linked letters of the alphabet
 */
 
-class alphabet extends object
+class alphabet extends ChisimbaObject
 {
 
      var $objLanguage;

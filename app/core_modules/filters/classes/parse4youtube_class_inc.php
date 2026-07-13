@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4youtube extends object
+class parse4youtube extends ChisimbaObject
 {
     /**
      *

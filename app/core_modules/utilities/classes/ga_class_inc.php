@@ -1,5 +1,5 @@
 <?php
-class ga // extends object
+class ga // extends ChisimbaObject
 {
     /**
      * Objects array

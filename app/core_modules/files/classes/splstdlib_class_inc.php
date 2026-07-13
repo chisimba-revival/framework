@@ -1,5 +1,5 @@
 <?php
-class splstdlib extends object
+class splstdlib extends ChisimbaObject
 {
     public function init()
     {

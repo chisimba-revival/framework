@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class altconfig extends object {
+class altconfig extends ChisimbaObject {
     /**
      * The pear config object
      *

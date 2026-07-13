@@ -44,7 +44,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class sysconfig_enable_apc extends object {
+class sysconfig_enable_apc extends ChisimbaObject {
 
     /**
      * Standard Constructor

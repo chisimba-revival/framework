@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4librarysearch extends object
+class parse4librarysearch extends ChisimbaObject
 {
     
     /**

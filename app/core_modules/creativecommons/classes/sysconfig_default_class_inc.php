@@ -34,7 +34,7 @@
  * The sysconfig interface for selecting a default license.
  * @author Charl van Niekerk
  */
-class sysconfig_default extends object
+class sysconfig_default extends ChisimbaObject
 {
     /**
      * Instance of the dbcreativecommons class in the creativecommons module.

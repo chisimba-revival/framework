@@ -19,7 +19,7 @@ Public License
  * @version   $Id$
  * @link      http://www.chisimba.com
  */
-class urlutils extends object 
+class urlutils extends ChisimbaObject 
 {
 
     /**

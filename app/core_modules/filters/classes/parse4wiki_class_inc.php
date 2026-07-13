@@ -51,7 +51,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4wiki extends object
+class parse4wiki extends ChisimbaObject
 {
     /**
     *

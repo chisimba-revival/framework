@@ -48,7 +48,7 @@
  * @link      http://www.reindel.com/truncate/
  * @link      http://avoir.uwc.ac.za
  */
-class jqtruncate extends object
+class jqtruncate extends ChisimbaObject
 {
 
     /**

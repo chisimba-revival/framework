@@ -39,7 +39,7 @@
 *         Adapted from: 
 *         http://pccepa3.if.usp.br/trac/demi/browser/trunk/elgg/lib/filelib.php
 */
-class mimetypes extends object 
+class mimetypes extends ChisimbaObject 
 {
 
     /**

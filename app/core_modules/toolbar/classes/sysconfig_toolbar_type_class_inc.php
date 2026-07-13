@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class sysconfig_toolbar_type extends object
+class sysconfig_toolbar_type extends ChisimbaObject
 {
 
     /**

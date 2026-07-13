@@ -44,7 +44,7 @@ Public License
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za
 */
-class readingease extends object {
+class readingease extends ChisimbaObject {
   
   
     /**

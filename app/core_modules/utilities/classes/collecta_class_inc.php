@@ -66,7 +66,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Paul Scott <pscott@uwc.ac.za>
 */
  
-class collecta extends object
+class collecta extends ChisimbaObject
 {
     /**
      * Additional curl headers

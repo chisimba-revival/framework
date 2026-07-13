@@ -24,7 +24,7 @@
 * @author Derek Keats
 * @author Megan Watson - updated 13/09/2006 porting to 5ive 
 */
-class helplink extends object  {
+class helplink extends ChisimbaObject  {
 
     /**
      * Variable containing the calling module - the module for which the help file is generated.

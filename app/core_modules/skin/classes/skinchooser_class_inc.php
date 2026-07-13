@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats <derek.keats@wits.ac.za>
 *
 */
-class skinchooser extends object
+class skinchooser extends ChisimbaObject
 {
     /**
     *

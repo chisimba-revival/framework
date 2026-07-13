@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4simplemap extends object
+class parse4simplemap extends ChisimbaObject
 {
     
     /**

@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class object
+class ChisimbaObject
 {
     /**
      * The reference to the Engine object

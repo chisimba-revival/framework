@@ -65,7 +65,7 @@ Public License
 * @version   $Id$
 * @link      http://avoir.uwc.ac.za
 */
-class colorbox extends object
+class colorbox extends ChisimbaObject
 {
 
 

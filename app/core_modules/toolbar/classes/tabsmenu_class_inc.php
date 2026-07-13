@@ -25,7 +25,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  *      $menu->modules = array('wiki', 'blog', 'faq');
  *      echo $menu->show();
  */
-class tabsmenu extends object
+class tabsmenu extends ChisimbaObject
 {
     
     /**

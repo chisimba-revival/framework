@@ -51,7 +51,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package toolbar
  *
  */
-class share extends object {
+class share extends ChisimbaObject {
 
     /**
      * example usage:

@@ -79,7 +79,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class viewGrid extends object
+class viewGrid extends ChisimbaObject
 {
     /**
     * List of condtions for this module.

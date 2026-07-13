@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class tooltip extends object
+class tooltip extends ChisimbaObject
 {
     /**
      * 

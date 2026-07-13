@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4gvid extends object
+class parse4gvid extends ChisimbaObject
 {
     /**
     *

@@ -29,7 +29,7 @@
  * @link      http://avoir.uwc.ac.za
  */
 
-/* -------------------- marquee class extends object ----------------*/
+/* -------------------- marquee class extends ChisimbaObject ----------------*/
 // security check - must be included in all scripts
 if (!
 /**
@@ -61,7 +61,7 @@ require_once("ifhtml_class_inc.php");
 * @link      http://avoir.uwc.ac.za
 */
 
-class marquee extends object implements ifhtml
+class marquee extends ChisimbaObject implements ifhtml
 {
      /**
      * @var string $behaviour: hold the behaviour

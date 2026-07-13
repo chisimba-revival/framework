@@ -41,7 +41,7 @@ if (! $GLOBALS ['kewl_entry_point_run']) {
  *
  * @author Paul Scott <pscott@uwc.ac.za>
  */
-class epiwrapper extends object
+class epiwrapper extends ChisimbaObject
 {
 
     /**

@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Tohir Solomons
 * @author Charl Mert
 */
-class skin extends object
+class skin extends ChisimbaObject
 {
     /**
     *

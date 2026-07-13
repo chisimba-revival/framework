@@ -1,6 +1,6 @@
 <?php
 /**
-* Class flatmenu extends object.
+* Class flatmenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class flatmenu extends object
+class flatmenu extends ChisimbaObject
 {
     public $menu = array();
 

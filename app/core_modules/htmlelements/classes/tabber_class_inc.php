@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @author Kevin Cyster
 * @example
 */
-class tabber extends object 
+class tabber extends ChisimbaObject 
 {
     
     /**

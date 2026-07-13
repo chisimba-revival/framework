@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       utilities
  */
-class del extends object 
+class del extends ChisimbaObject 
 {
 
     /**

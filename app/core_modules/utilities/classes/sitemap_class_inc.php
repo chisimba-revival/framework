@@ -18,7 +18,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class sitemap extends object
+class sitemap extends ChisimbaObject
 {
 
     public $objConfig;

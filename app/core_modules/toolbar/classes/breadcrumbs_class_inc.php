@@ -1,6 +1,6 @@
 <?php
 /**
-* Class menu extends object.
+* Class menu extends ChisimbaObject.
 *
 * @package toolbar
 * @filesource
@@ -24,7 +24,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class breadcrumbs extends object
+class breadcrumbs extends ChisimbaObject
 {
     /**
     * Method to construct the class

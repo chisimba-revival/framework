@@ -21,7 +21,7 @@ Public License
  */
 require("mail_class_inc.php");
 
-class kngemail extends object 
+class kngemail extends ChisimbaObject 
 {
     /**
         * @var $mailer

@@ -21,7 +21,7 @@ Public License
  */
 require("mail_class_inc.php");
 
-class kngmail extends object 
+class kngmail extends ChisimbaObject 
 {
     /**
         *@var object $objMailer

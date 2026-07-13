@@ -35,7 +35,7 @@ Public License
 
 require_once($this->getResourcePath('geshi/geshi.php', 'utilities'));
 
-class geshiwrapper extends object
+class geshiwrapper extends ChisimbaObject
 {
     /**
     * @var string $source Source to Parse. Note, this is not the path to the file

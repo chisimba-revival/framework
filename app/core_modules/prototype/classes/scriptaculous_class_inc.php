@@ -16,7 +16,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class scriptaculous extends object
+class scriptaculous extends ChisimbaObject
 {
         /**
     * Constructor

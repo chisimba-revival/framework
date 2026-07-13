@@ -73,7 +73,7 @@ Public License
 
 
 
-class selectbox extends object implements ifhtml
+class selectbox extends ChisimbaObject implements ifhtml
 {
 
     /**

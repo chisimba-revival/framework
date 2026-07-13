@@ -48,7 +48,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       
  */
-class checkoverwrite extends object
+class checkoverwrite extends ChisimbaObject
 {
     /**
     * Constructor

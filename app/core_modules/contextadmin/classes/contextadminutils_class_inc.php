@@ -16,7 +16,7 @@ if (! $GLOBALS ['kewl_entry_point_run']) {
 
  */
 
-class contextadminutils extends object {
+class contextadminutils extends ChisimbaObject {
 
     /**
      * @var  object $objLanguage

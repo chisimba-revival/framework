@@ -11,7 +11,7 @@
 * @return string $str The parsed string
 * 
 */
-class parse4display extends object {
+class parse4display extends ChisimbaObject {
 
     /**
     * @var string $objParse4smileys The object for the smiley parser

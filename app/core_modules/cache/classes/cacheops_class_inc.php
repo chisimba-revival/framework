@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @see       http://memcached.org/
  * @see       http://php.net/apc
  */
-class cacheops extends object
+class cacheops extends ChisimbaObject
 {
     /**
      * Is APC enabled?

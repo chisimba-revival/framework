@@ -16,7 +16,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 * @example :
 */
 
- class organisortree extends object{
+ class organisortree extends ChisimbaObject{
      
      /**
      * @var array $arrTree;

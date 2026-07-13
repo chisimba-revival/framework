@@ -25,7 +25,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class roundcorners extends object
+class roundcorners extends ChisimbaObject
 {
 
     /**

@@ -34,7 +34,7 @@
  * @license    http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @link       http://http://www.ohloh.net/api/getting_started
  */
-class ohlohapi extends object
+class ohlohapi extends ChisimbaObject
 {
     /**
      * API REST URL

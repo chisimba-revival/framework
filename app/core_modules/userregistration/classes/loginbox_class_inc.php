@@ -65,7 +65,7 @@ Public License
 * @version   $Id: colorbox_class_inc.php 11972 2008-12-29 22:03:01Z charlvn $
 * @link      http://avoir.uwc.ac.za
 */
-class loginbox extends object
+class loginbox extends ChisimbaObject
 {
 
 

@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package myprofile
 *
 */
-class dyncanvasajax extends object
+class dyncanvasajax extends ChisimbaObject
 {
 
     /**

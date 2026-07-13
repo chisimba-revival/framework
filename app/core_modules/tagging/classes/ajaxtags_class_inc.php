@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @access public
  */
 
-class ajaxtags extends object
+class ajaxtags extends ChisimbaObject
 {
 
     /**

@@ -23,7 +23,7 @@ Public License
 */
 
 
- class iptocountry extends object{
+ class iptocountry extends ChisimbaObject{
  
      /**
      *@var object objConfig

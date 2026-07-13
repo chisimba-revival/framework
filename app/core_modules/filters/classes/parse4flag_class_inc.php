@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Derek Keats
  *
  */
-class parse4flag extends object
+class parse4flag extends ChisimbaObject
 {
 
     /**

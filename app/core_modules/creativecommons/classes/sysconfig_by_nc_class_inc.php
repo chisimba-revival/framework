@@ -33,7 +33,7 @@
 * Class to provide SysConfig an input for enabling/disabling the BY/NC license
 * @author Tohir Solomons
 */
-class sysconfig_by_nc extends object
+class sysconfig_by_nc extends ChisimbaObject
 {
     /**
     * @var string $defaultValue Current Value of the Parameter

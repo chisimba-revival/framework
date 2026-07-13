@@ -18,7 +18,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class script extends object
+class script extends ChisimbaObject
 {
     /**
     * Method to remove script from a string

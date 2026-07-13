@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4screenshot extends object
+class parse4screenshot extends ChisimbaObject
 {
     /**
      * The Config object (altconfig)

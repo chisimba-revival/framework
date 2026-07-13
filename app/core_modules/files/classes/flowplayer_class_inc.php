@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @link      http://avoir.uwc.ac.za
  * @see       object
  */
-class flowplayer extends object
+class flowplayer extends ChisimbaObject
 {
     /**
     *

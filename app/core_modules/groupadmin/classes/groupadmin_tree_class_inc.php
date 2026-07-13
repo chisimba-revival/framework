@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @package groupadmin
 * @author  Jonathan Abrahams
 */
-class groupadmin_tree extends object {
+class groupadmin_tree extends ChisimbaObject {
     /**
     * @var groupAdminModel an object reference.
     */

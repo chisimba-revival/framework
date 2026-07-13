@@ -17,7 +17,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class media extends object 
+class media extends ChisimbaObject 
 {
     public $ffmpeg;
     

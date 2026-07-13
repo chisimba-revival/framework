@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package Utilities
 *
 */
-class bestguess extends object
+class bestguess extends ChisimbaObject
 {
 
     /**

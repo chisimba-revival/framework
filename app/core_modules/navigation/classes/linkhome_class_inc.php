@@ -6,7 +6,7 @@
 */
 
 
-class linkhome extends object
+class linkhome extends ChisimbaObject
  {
      var $objLanguage;
 

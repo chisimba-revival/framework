@@ -45,7 +45,7 @@ if (!
  * Class to Generate a Radio Button List of available licenses
  * @author Tohir Solomons
  */
-class licensechooser extends object {
+class licensechooser extends ChisimbaObject {
 
     /**
      * Name of the Form Input

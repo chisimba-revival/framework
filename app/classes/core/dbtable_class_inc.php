@@ -61,7 +61,7 @@ require_once "lib/logging.php";
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class dbTable extends object {
+class dbTable extends ChisimbaObject {
 
     /**
      * Whether or not to use prepared statements

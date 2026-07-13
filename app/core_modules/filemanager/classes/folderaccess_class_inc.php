@@ -24,7 +24,7 @@
  *
  * @author davidwaf
  */
-class folderaccess extends object {
+class folderaccess extends ChisimbaObject {
 
     //secure folder 
     private $secureFolder;

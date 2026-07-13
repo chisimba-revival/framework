@@ -11,7 +11,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package packages
  * @version 0.1
  */
-class tracrpcclient extends object
+class tracrpcclient extends ChisimbaObject
 {
     /**
      * Language Object

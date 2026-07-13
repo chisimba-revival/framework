@@ -57,7 +57,7 @@ Public License
 * @todo      Implement --> Shulam..you should add the method you ddeveloped to this class,
 *            but it needs to use some of the capabilities of this class.
 */
-class htmlTable extends object implements ifhtml
+class htmlTable extends ChisimbaObject implements ifhtml
 {
     /**
     *

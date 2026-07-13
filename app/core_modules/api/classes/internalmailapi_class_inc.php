@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class internalmailapi extends object
+class internalmailapi extends ChisimbaObject
 {
 
     /**

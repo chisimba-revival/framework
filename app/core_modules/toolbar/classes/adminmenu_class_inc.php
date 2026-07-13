@@ -1,6 +1,6 @@
 <?php
 /**
-* Class adminmenu extends object.
+* Class adminmenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -20,7 +20,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @package toolbar
 * @version 1
 */
-class adminmenu extends object
+class adminmenu extends ChisimbaObject
 {
     /**
     * Constructor method to instantiate objects and get variables

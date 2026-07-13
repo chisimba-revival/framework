@@ -55,7 +55,7 @@
  *  $objColorPicker->setName('color');
  *  echo $objColorPicker->show();
  */
-class colorpicker extends object
+class colorpicker extends ChisimbaObject
 {
     /**
      * Name of the Text Input

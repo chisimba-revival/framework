@@ -41,7 +41,7 @@ $GLOBALS ['kewl_entry_point_run']) {
 }
 // end security check
 
-class utility extends object {
+class utility extends ChisimbaObject {
 
 
     public $objUserAdmin;

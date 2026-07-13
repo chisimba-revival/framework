@@ -45,7 +45,7 @@ $GLOBALS['kewl_entry_point_run'])
         die("You cannot view this page directly");
     }
 
-class switchmenu extends object
+class switchmenu extends ChisimbaObject
 {
     /**
     * @var array $switchMenuArray List of Items in the Switch Menu

@@ -75,7 +75,7 @@ require_once 'I18Nv2/DecoratedList/HtmlEntities.php';
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class languagecode extends object
+class languagecode extends ChisimbaObject
 {
     /**
      * Config object

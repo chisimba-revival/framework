@@ -18,7 +18,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class bbcodeparser extends object
+class bbcodeparser extends ChisimbaObject
 {
     /**
     * Constructor

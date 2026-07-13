@@ -49,7 +49,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       
  */
-class cleanurl extends object
+class cleanurl extends ChisimbaObject
 {
     
     /**

@@ -45,7 +45,7 @@ if (!
  * Class to Generate a Drop down List of available licenses
  * @author Tohir Solomons
  */
-class licensechooserdropdown extends object {
+class licensechooserdropdown extends ChisimbaObject {
 
     /**
      * Name of the Form Input

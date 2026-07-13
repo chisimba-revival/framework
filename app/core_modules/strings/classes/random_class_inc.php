@@ -4,7 +4,7 @@
 * random strings such as GUIDS and passwords
 */
 
-class random extends object {
+class random extends ChisimbaObject {
     /**
     * Standard constructor for KEWL.NextGen, instantiates
     * the user object

@@ -8,7 +8,7 @@
 * @author Derek Keats
 *
 */
-class storyinterface extends object {
+class storyinterface extends ChisimbaObject {
 
     var $objUser;
     var $objLanguage;

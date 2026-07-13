@@ -40,7 +40,7 @@
 * @author Tohir Solomons
 */
 
-class getid3analyzer extends object
+class getid3analyzer extends ChisimbaObject
 {
     
     /**

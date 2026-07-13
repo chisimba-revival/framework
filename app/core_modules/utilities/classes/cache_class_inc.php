@@ -51,7 +51,7 @@
 
 
 
-class cache extends Object
+class cache extends ChisimbaObject
 {
     /**
      * @var string $sFile Name of the file containing the contents contents

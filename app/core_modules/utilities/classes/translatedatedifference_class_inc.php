@@ -19,7 +19,7 @@ Public License
 * @version   $Id$
 * @link      http://avoir.uwc.ac.za
 */
-class translatedatedifference extends object 
+class translatedatedifference extends ChisimbaObject 
 {
 
     /**

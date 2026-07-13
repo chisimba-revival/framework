@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @version   $Id$;
 * @author    Tohir Solomons
 */
-class timepicker extends object
+class timepicker extends ChisimbaObject
 {
 
     /**

@@ -8,7 +8,7 @@
 * @license GNU GPL
 */
 
-class register extends object
+class register extends ChisimbaObject
 {
 
     /**

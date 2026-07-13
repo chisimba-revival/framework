@@ -55,7 +55,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class fscontext extends object {
+class fscontext extends ChisimbaObject {
 
     /**
      * @var object $objConfig

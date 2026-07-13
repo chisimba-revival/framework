@@ -38,7 +38,7 @@ if (!
     die("You cannot view this page directly");
 }
 
-class block_updates extends object {
+class block_updates extends ChisimbaObject {
 
     /**
      *

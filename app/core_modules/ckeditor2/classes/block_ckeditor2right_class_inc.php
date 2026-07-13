@@ -51,7 +51,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @copyright 2010 AVOIR
  *
  */
-class block_ckeditor2right extends object
+class block_ckeditor2right extends ChisimbaObject
 {
     /**
      * The title of the block

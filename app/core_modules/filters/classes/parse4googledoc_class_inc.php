@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run'])
 *
 */
 
-class parse4googledoc extends object
+class parse4googledoc extends ChisimbaObject
 {
 
     /**

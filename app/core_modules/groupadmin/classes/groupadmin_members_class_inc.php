@@ -48,7 +48,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @filesource
  */
 
-class groupadmin_members extends object {
+class groupadmin_members extends ChisimbaObject {
     /**
      * object reference to the groupadmin
      *

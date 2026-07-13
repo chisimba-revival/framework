@@ -41,7 +41,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class filesearch extends object
+class filesearch extends ChisimbaObject
 {
 
 

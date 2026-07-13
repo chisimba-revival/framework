@@ -10,7 +10,7 @@
  *
  * @author monwabisi
  */
-class ckeditor2 extends object {
+class ckeditor2 extends ChisimbaObject {
 
         var $domDoc;
 

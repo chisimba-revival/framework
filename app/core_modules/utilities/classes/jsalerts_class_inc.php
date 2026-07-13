@@ -22,7 +22,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class jsalerts extends object
+class jsalerts extends ChisimbaObject
 {
     /**
      * Class to handle JavaScript alerts

@@ -7,7 +7,7 @@
 * 
 */
 
-class camelcase extends object {
+class camelcase extends ChisimbaObject {
     /**
     * Standard constructor for KEWL.NextGen, instantiates
     * the user object

@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class manageGroups extends object
+class manageGroups extends ChisimbaObject
 {
     /**
     * @var dbContext Reference to context module.

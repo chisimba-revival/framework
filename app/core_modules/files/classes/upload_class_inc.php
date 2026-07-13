@@ -44,7 +44,7 @@
 * @copyright 2003 GNU GPL
 *            */
 
-class upload extends object
+class upload extends ChisimbaObject
 {
 
     /**

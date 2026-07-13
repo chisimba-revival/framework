@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * @author Tohir Solomons
 *
 */
-class block_skinchooser extends object
+class block_skinchooser extends ChisimbaObject
 {
     /**
     * string $title Title of the Block

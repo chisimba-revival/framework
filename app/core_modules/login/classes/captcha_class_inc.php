@@ -59,7 +59,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package login
 *
 */
-class captcha extends object
+class captcha extends ChisimbaObject
 {
 
     /**

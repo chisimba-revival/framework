@@ -37,7 +37,7 @@
 * @author Derek Keats
 */
 
-class mkdir extends object 
+class mkdir extends ChisimbaObject 
 {
 
     /**

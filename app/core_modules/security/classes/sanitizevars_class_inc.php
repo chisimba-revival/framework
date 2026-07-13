@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package canvas
 *
 */
-class sanitizevars extends object
+class sanitizevars extends ChisimbaObject
 {
     /**
     *

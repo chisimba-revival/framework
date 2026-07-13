@@ -29,7 +29,7 @@ if (! $GLOBALS ['kewl_entry_point_run']) {
  * @package toolbar
  * @version 0.9
  */
-class tools extends object
+class tools extends ChisimbaObject
 {
     /**
      * @var $params Holds additional parameters for the header / body onload of the page template

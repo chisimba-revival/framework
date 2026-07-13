@@ -45,7 +45,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @version   $Id: parse4format_class_inc.php,v 1.0 2007/03/01
  * @copyright 2003 GPL
  */
-class parse4format extends object {
+class parse4format extends ChisimbaObject {
     /**
      * Method to take a string and return it with font formating
      * @param  string $str The string to be parsed

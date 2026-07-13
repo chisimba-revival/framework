@@ -72,7 +72,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package dynamiccanvas
 *
 */
-class blockfilter extends object
+class blockfilter extends ChisimbaObject
 {
     /**
     *

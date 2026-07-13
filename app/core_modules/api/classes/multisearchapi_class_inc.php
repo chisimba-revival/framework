@@ -1,6 +1,6 @@
 <?php
 
-class multisearchapi extends object
+class multisearchapi extends ChisimbaObject
 {
     protected $objOps;
     protected $dataCapable;

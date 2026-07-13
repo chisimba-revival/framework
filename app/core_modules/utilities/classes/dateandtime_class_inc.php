@@ -29,7 +29,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class dateandtime extends object
+class dateandtime extends ChisimbaObject
 {
  /**
  * Date and time class

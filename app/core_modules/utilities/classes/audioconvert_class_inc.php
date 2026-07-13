@@ -24,7 +24,7 @@ Public License
  * @link http://avoir.uwc.ac.za
  */
 
-class audioconvert extends object
+class audioconvert extends ChisimbaObject
 {
     /**
      * Constructor method, checks to see if necessary binaries exist

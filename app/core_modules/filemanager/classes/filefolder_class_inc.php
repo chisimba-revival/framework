@@ -49,7 +49,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       
  */
-class filefolder extends object
+class filefolder extends ChisimbaObject
 {
 
     /**

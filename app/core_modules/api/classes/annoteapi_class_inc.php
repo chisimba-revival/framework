@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class annoteapi extends object
+class annoteapi extends ChisimbaObject
 {
     /**
      * Standard Chisimba init method

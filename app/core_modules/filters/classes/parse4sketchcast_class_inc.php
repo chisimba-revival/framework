@@ -37,7 +37,7 @@
 *         
 */
 
-class parse4sketchcast extends object
+class parse4sketchcast extends ChisimbaObject
 {
     /**
     *

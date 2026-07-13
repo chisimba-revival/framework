@@ -55,7 +55,7 @@ if (!
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class access extends object {
+class access extends ChisimbaObject {
 
     public $objContext;
     public $objUser;

@@ -48,7 +48,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @author Charl Mert
 * @example
 */
-class jqboxy extends object 
+class jqboxy extends ChisimbaObject 
 {
 
     /**

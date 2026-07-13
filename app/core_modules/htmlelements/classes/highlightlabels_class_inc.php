@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 require_once("ifhtml_class_inc.php");
 
-class highlightlabels extends object implements ifhtml
+class highlightlabels extends ChisimbaObject implements ifhtml
 {
     /**
     * @var string $css CSS Declaration for the .checked style

@@ -57,7 +57,7 @@ die("You cannot view this page directly");
 * @link      http://avoir.uwc.ac.za
 * @see       core
 */
-class block_contextstats extends object
+class block_contextstats extends ChisimbaObject
 {
     /**
     * @var object $objContext : The Context Object

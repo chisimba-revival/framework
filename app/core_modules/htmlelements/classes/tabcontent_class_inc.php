@@ -44,7 +44,7 @@
  *         b) It is easier to style using CSS
  *         
  */
-class tabcontent extends object
+class tabcontent extends ChisimbaObject
 {
     
     /**

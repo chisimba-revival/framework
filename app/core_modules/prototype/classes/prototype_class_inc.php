@@ -15,7 +15,7 @@ Public License
 * @version   $Id: scriptaculous_class_inc.php 15165 2009-10-15 12:09:30Z pwando $
 */
 
-class prototype extends object
+class prototype extends ChisimbaObject
 {
         /**
     * Constructor

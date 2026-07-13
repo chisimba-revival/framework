@@ -53,7 +53,7 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @package utilities
  *
  */
-class jsonutils extends object
+class jsonutils extends ChisimbaObject
 {
 
     /**

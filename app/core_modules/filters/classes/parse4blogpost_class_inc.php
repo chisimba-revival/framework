@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @version   $Id: parse4adsense_class_inc.php 11998 2008-12-29 22:35:37Z charlvn $
  * @link      http://avoir.uwc.ac.za
  */
-class parse4blogpost extends object
+class parse4blogpost extends ChisimbaObject
 {
     /**
      * Language Object

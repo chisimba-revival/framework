@@ -47,7 +47,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class overwriteincrement extends object
+class overwriteincrement extends ChisimbaObject
 {
 
 

@@ -25,7 +25,7 @@ if (!
  * @todo      -c HTML Editor that will extend this object
  */
 //require_once("htmlbase_class_inc.php");
-class htmlarea extends object {
+class htmlarea extends ChisimbaObject {
 
     /**
      *

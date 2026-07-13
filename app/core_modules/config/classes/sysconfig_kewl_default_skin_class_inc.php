@@ -44,7 +44,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class sysconfig_kewl_default_skin extends object {
+class sysconfig_kewl_default_skin extends ChisimbaObject {
 
     /**
      * Standard Constructor

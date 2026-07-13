@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 *
 * @author Jonathan Abrahams
 */
-class strvalidate extends object
+class strvalidate extends ChisimbaObject
 {
     /**
     * Method to initialise the object.

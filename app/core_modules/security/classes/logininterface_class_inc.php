@@ -41,7 +41,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version $Id$
  * @copyright 2003
  * */
-class loginInterface extends object {
+class loginInterface extends ChisimbaObject {
 
     /**
      * @var object $objLanguage String to hold the language object

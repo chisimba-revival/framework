@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package filters
 *
 */
-class filterinfo extends object
+class filterinfo extends ChisimbaObject
 {
 
     /**

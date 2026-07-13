@@ -61,7 +61,7 @@ require_once("ifhtml_class_inc.php");
  * @link      http://avoir.uwc.ac.za
  * @link      http://www.sitepoint.com/print/exploring-limits-css-layout
  */
-class cssfixlength extends object
+class cssfixlength extends ChisimbaObject
 {
 
     /**

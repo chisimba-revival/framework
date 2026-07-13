@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 0.1
 */
 
-class sidebar extends object
+class sidebar extends ChisimbaObject
 {
 
     /**

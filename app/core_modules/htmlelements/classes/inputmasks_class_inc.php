@@ -78,7 +78,7 @@ require_once("ifhtml_class_inc.php");
 *         $textinput = new textinput('myinput');
 *         $textinput->setCss('text input_mask mask_date_us');
 */
-class inputmasks extends object implements ifhtml
+class inputmasks extends ChisimbaObject implements ifhtml
 {
     
     /**

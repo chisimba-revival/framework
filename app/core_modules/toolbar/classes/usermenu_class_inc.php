@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Class usermenu extends object.
+* Class usermenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -24,7 +24,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @package toolbar
 * @version 1
 */
-class usermenu extends object
+class usermenu extends ChisimbaObject
 {
     /**
     * Constructor method to instantiate objects and get variables

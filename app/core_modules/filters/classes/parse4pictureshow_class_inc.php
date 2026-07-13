@@ -46,7 +46,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Paul Scott <pscott@uwc.ac.za>
  */
 
-class parse4pictureshow extends object
+class parse4pictureshow extends ChisimbaObject
 {
     /**
      *

@@ -1,7 +1,7 @@
 <?php
 
 
-class block_userfiles extends object
+class block_userfiles extends ChisimbaObject
 {
 
     /**

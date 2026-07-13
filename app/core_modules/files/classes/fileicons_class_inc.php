@@ -55,7 +55,7 @@ die("You cannot view this page directly");
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  */
-class fileicons extends object
+class fileicons extends ChisimbaObject
 {
     /**
     * @var string $size Size of the icon, either small or large

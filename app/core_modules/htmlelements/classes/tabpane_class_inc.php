@@ -66,7 +66,7 @@ $GLOBALS['kewl_entry_point_run']) {
 *            $objElement->addTab(array('name'=>'First','url'=>'http://localhost','content' => $form,'nested' => true),'luna-tab-style-sheet');
 *            
 */
-class tabpane extends object 
+class tabpane extends ChisimbaObject 
 {
     
     /**

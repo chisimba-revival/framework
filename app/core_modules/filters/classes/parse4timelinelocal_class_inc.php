@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4timelinelocal extends object
+class parse4timelinelocal extends ChisimbaObject
 {
     
     /**

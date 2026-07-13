@@ -20,7 +20,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class logparser extends object
+class logparser extends ChisimbaObject
 {
     /**
      * The file object from filemanager

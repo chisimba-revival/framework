@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class accordion extends object
+class accordion extends ChisimbaObject
 {
     /**
      * 

@@ -14,7 +14,7 @@
  * @version $Id$
  * @copyright 2003 GPL
  */
-class url extends object {
+class url extends ChisimbaObject {
     /**
      * Method to take a string and return it with URLS with http:// or ftp://
      * and email addresses as active links

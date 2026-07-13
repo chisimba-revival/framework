@@ -1,7 +1,7 @@
 <?php
 
 /**
- * sidemenu extends object
+ * sidemenu extends ChisimbaObject
  * @package toolbar
  * @filesource
  */
@@ -33,7 +33,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package toolbar
  * @version 1.1
  */
-class sidemenu extends object {
+class sidemenu extends ChisimbaObject {
 
     /**
      * Method to construct the class.

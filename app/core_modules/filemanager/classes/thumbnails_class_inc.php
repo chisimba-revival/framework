@@ -47,7 +47,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class thumbnails extends object
+class thumbnails extends ChisimbaObject
 {
 
     /**

@@ -55,7 +55,7 @@ if (!/**
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class blocks extends object {
+class blocks extends ChisimbaObject {
 
     /**
      * Propoerty to hold the objUser object

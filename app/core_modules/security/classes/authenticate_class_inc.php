@@ -32,7 +32,7 @@
 * @copyright AVOIR
 * @licence GNU/GPL
 */
-class authenticate extends object
+class authenticate extends ChisimbaObject
 {
     private $username;
     private $password;

@@ -19,7 +19,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class markimage extends object 
+class markimage extends ChisimbaObject 
 {
     
     /**

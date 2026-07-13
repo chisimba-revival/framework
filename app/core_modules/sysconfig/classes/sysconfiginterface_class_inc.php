@@ -9,7 +9,7 @@
  *
  *
  */
-class sysconfiginterface extends object
+class sysconfiginterface extends ChisimbaObject
 {
 
     /**

@@ -55,7 +55,7 @@ if (!/**
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class displaycontext extends object {
+class displaycontext extends ChisimbaObject {
 
     /**
      * The user Object

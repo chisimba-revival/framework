@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @author  Tohir Solomons
  * @package htmlelements
  */
-class copytoclipboard extends object
+class copytoclipboard extends ChisimbaObject
 {
     
     /**

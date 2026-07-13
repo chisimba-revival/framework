@@ -15,7 +15,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class firebug extends object
+class firebug extends ChisimbaObject
 {
 
     /**

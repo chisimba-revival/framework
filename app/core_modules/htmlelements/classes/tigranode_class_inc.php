@@ -17,7 +17,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * These nodes can be combined to relate in a parent/child hierarcy to produce you menu structure.
 *
 */
-class tigraNode extends object
+class tigraNode extends ChisimbaObject
 {
 
     /**

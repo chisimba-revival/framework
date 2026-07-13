@@ -23,7 +23,7 @@ Public License
  * @see       Any relevant section
  */
 
-class asciiart extends object
+class asciiart extends ChisimbaObject
 {
     /**
      * Headers to send out to browser etc

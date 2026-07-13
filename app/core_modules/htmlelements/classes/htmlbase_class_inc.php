@@ -27,7 +27,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class htmlbase extends object
+class htmlbase extends ChisimbaObject
 {
 
     /**

@@ -34,7 +34,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class fieldsetex extends object implements ifhtml
+class fieldsetex extends ChisimbaObject implements ifhtml
 {
     /**
     *@var $legend The heading of the frameset

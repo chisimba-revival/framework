@@ -69,7 +69,7 @@ require_once("ifhtml_class_inc.php");
 
 
 */
-class submodalwindow extends object implements ifhtml
+class submodalwindow extends ChisimbaObject implements ifhtml
 {
     
     /**

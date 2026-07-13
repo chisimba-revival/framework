@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @package packages
  * @version 0.1
  */
-class rpcserver extends object
+class rpcserver extends ChisimbaObject
 {
     /**
      * Config object

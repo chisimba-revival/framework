@@ -20,7 +20,7 @@ Public License
  * It's setup to create colors on the lighter side of the spectrum so you
  * can use them with darker colors for the text.  
  */ 
-class randomcolorgenerator extends object
+class randomcolorgenerator extends ChisimbaObject
 {
 
     /**

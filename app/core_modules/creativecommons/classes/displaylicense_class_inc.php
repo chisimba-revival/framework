@@ -45,7 +45,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * Class to Show the Icons, Link to Website and RDF tags for a Creative Commons license
  * @author Tohir Solomons
  */
-class displaylicense extends object
+class displaylicense extends ChisimbaObject
 {
 
     

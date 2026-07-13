@@ -14,7 +14,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
  * @copyright Paul Scott
  * @package browser
  */
-class browser extends object
+class browser extends ChisimbaObject
 {
     /**
      * @private string $version

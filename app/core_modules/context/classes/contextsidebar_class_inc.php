@@ -57,7 +57,7 @@ die("You cannot view this page directly");
 * @link      http://avoir.uwc.ac.za
 * @see       core
 */
-class contextsidebar extends object
+class contextsidebar extends ChisimbaObject
 {
 
 

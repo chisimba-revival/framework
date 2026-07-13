@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Derek Keats <derek.keats@wits.ac.za>
 *
 */
-class skinjavascript extends object
+class skinjavascript extends ChisimbaObject
 {
     /**
      * Instance of the mischtml class in htmlelements.

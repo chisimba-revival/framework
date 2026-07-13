@@ -1,6 +1,6 @@
 <?php
 /**
-* Class toolbar extends object.
+* Class toolbar extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -23,7 +23,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @package toolbar
 * @version 0.9
 */
-class toolbar extends object
+class toolbar extends ChisimbaObject
 {
     /**
     * Method to construct the class

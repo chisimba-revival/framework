@@ -55,7 +55,7 @@ Public License
 * @version   $Id$
 * @link      http://avoir.uwc.ac.za
 */
-class washout extends object
+class washout extends ChisimbaObject
 {
     /**
     *

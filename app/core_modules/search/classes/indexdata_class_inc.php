@@ -13,14 +13,14 @@ $GLOBALS['kewl_entry_point_run']) {
 // end security check
 
 /**
- * Indexer class extends object
+ * Indexer class extends ChisimbaObject
  * The indexer to allow developers to add documents to the search index
  *
  * @author    Tohir Solomons
  * @package   search
  * @copyright AVOIR UWC
  */
-class indexdata extends object
+class indexdata extends ChisimbaObject
 {
 
     /**

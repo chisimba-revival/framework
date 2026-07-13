@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class sysconfig_ui_theme extends object
+class sysconfig_ui_theme extends ChisimbaObject
 {
     /**
      * 

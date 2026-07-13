@@ -17,7 +17,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @verson 0.1
 */
 
-class featurebox extends object
+class featurebox extends ChisimbaObject
 {
     /**
     *

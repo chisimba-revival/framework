@@ -49,7 +49,7 @@
 * @author Derek Keats
 *
 */
-class extractparams extends object
+class extractparams extends ChisimbaObject
 {
 
     public function init()

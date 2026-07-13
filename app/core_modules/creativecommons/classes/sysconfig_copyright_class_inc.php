@@ -33,7 +33,7 @@
 * Class to provide SysConfig an input for enabling/disabling the copyright license
 * @author Tohir Solomons
 */
-class sysconfig_copyright extends object
+class sysconfig_copyright extends ChisimbaObject
 {
     /**
     * @var string $defaultValue Current Value of the Parameter

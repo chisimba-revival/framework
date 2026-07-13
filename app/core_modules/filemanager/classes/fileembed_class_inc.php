@@ -56,7 +56,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class fileembed extends object {
+class fileembed extends ChisimbaObject {
     /**
     *
     * @var object $objLanguage The language object

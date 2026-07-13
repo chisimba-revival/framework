@@ -4,7 +4,7 @@
 * strings to generate onscreen layout
 */
 
-class strlayout extends object 
+class strlayout extends ChisimbaObject 
 {
     /**
     * Constructor class for the trimstr class

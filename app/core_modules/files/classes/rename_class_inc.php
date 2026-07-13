@@ -30,7 +30,7 @@
  * @see       References to other sections (if any)...
  */
 
-class rename extends object
+class rename extends ChisimbaObject
 {
 
     /**

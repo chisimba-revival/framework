@@ -1,6 +1,6 @@
 <?php
 /**
-* Class cssmenu extends object.
+* Class cssmenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @author Tohir Solomons <tsolomons@uwc.ac.za>
 */
 
-class toolbar_elearn extends object
+class toolbar_elearn extends ChisimbaObject
 {
 
 

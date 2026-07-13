@@ -28,7 +28,7 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-class checkobject extends object
+class checkobject extends ChisimbaObject
 {
     
     /**

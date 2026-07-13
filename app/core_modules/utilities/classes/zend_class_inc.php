@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  */
 
-class zend extends object
+class zend extends ChisimbaObject
 {
     /**
      * Constructor

@@ -48,7 +48,7 @@ require_once("ifhtml_class_inc.php");
 /**
  * HTML control class to create layers (<DIV>) tags
 */
-class layer extends object implements ifhtml
+class layer extends ChisimbaObject implements ifhtml
 {
     /**
     *

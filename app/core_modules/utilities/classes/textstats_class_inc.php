@@ -19,7 +19,7 @@ Public License
 * @version   $Id$
 * @link      http://avoir.uwc.ac.za
 */
-class textstats extends object {
+class textstats extends ChisimbaObject {
 
     /**
     * @var $evaluation_string

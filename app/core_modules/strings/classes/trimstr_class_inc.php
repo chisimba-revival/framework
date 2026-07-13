@@ -4,7 +4,7 @@
  * linked letters of the alphabet
  */
 
-class trimstr extends object {
+class trimstr extends ChisimbaObject {
 
     /**
      * Constructor class for the trimstr class

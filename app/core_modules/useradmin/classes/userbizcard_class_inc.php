@@ -6,7 +6,7 @@
 * This class displays user details as a business class
 * @author Tohir Solomons
 */
-class userbizcard extends object
+class userbizcard extends ChisimbaObject
 {
 
     /**

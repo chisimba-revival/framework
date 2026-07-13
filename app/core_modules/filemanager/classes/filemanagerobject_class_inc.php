@@ -44,7 +44,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class filemanagerobject extends dbTable // which extends object
+class filemanagerobject extends dbTable // which extends ChisimbaObject
 {
 
     /**

@@ -26,7 +26,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class confirm extends object{
+class confirm extends ChisimbaObject{
 
     /**
     *@var $message

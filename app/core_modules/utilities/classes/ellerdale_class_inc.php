@@ -54,7 +54,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author Paul Scott <pscott@uwc.ac.za>
 */
  
-class ellerdale extends object
+class ellerdale extends ChisimbaObject
 {
     /**
      * Additional curl headers

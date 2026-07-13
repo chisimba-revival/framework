@@ -101,7 +101,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @filesource
  */
 
-class filter extends object
+class filter extends ChisimbaObject
 {
     /**
      * Options for isHostname() that specify which types of hostnames

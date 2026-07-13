@@ -33,7 +33,7 @@
 * Class to provide SysConfig an input for enabling/disabling the GNU/FDL license
 * @author Tohir Solomons
 */
-class sysconfig_by_sa_gnu_fdl extends object
+class sysconfig_by_sa_gnu_fdl extends ChisimbaObject
 {
     /**
     * @var string $defaultValue Current Value of the Parameter

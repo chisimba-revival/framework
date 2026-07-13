@@ -48,7 +48,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class analyzemediafile extends object
+class analyzemediafile extends ChisimbaObject
 {
     
     /**

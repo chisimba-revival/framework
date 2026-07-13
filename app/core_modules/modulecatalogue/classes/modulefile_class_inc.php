@@ -66,7 +66,7 @@ $GLOBALS['kewl_entry_point_run']){
  * @link      http://avoir.uwc.ac.za
  */
 
-class modulefile extends object {
+class modulefile extends ChisimbaObject {
 
     /**
      * Configuration object

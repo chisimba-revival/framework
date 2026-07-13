@@ -22,7 +22,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @verson 0.1
 */
 
-class pagination extends object
+class pagination extends ChisimbaObject
 {
     /**
     *

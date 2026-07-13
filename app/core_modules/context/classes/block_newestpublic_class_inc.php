@@ -60,7 +60,7 @@ die("You cannot view this page directly");
 * @link      http://avoir.uwc.ac.za
 * @see       core
 */
-class block_newestpublic extends object
+class block_newestpublic extends ChisimbaObject
 {
     /**
     * @var object $objLanguage : The Language Object

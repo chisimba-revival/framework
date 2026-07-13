@@ -15,7 +15,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class sysconfig_extjs_theme extends object {
+class sysconfig_extjs_theme extends ChisimbaObject {
 
     /**
      * Standard Constructor

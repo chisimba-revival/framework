@@ -33,7 +33,7 @@ $GLOBALS['kewl_entry_point_run']) {
 *
 * @author Tohir Solomons
 */
-class help extends object  {
+class help extends ChisimbaObject  {
 
     /**
      * Variable containing the calling module - the module for which the help file is generated.

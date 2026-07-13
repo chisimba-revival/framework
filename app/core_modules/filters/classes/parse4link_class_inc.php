@@ -36,7 +36,7 @@
 * @author Derek Keats
 *
 */
-class parse4link extends object
+class parse4link extends ChisimbaObject
 {
     /**
     *

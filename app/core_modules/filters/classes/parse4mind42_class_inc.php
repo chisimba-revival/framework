@@ -51,7 +51,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Derek Keats
  *
  */
-class parse4mind42 extends object
+class parse4mind42 extends ChisimbaObject
 {
     /**
      * used to extract parameters from a string

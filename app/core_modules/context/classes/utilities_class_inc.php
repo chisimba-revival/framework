@@ -54,7 +54,7 @@ if (!/**
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class utilities extends object {
+class utilities extends ChisimbaObject {
 
     /**
      * @var object $objDBContext

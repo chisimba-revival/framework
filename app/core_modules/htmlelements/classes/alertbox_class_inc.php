@@ -49,7 +49,7 @@
 * @link      http://famspam.com/facebox/
 * @link      http://avoir.uwc.ac.za
 */
-class alertbox extends object
+class alertbox extends ChisimbaObject
 {
 
     /**

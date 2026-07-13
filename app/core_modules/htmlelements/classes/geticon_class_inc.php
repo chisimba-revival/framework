@@ -34,7 +34,7 @@ Public License
 * @version   $Id$;
 * @link      http://avoir.uwc.ac.za
 */
-class getIcon extends object implements ifhtml
+class getIcon extends ChisimbaObject implements ifhtml
 {
 
     /**

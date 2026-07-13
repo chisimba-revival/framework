@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @version    $Id: parse4kngtext_class_inc.php 2808 2007-08-03 09:05:13Z paulscott $
 * @copyright  2003 GPL
 */
-class parse4code extends object 
+class parse4code extends ChisimbaObject 
 {
     /**
      * Constructor

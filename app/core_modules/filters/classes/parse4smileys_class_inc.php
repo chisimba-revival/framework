@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  *
  */
-class parse4smileys extends object {
+class parse4smileys extends ChisimbaObject {
     /**
      *
      * The array is taken from the Moodle smiley parser. The

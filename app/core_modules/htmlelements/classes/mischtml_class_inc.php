@@ -56,7 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za/
  * @see       http://www.w3.org/
  */
-class mischtml extends object
+class mischtml extends ChisimbaObject
 {
     /**
      * Initialises object properties.

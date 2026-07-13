@@ -34,7 +34,7 @@ Note :
 */############################################
 
 
-class resize extends object
+class resize extends ChisimbaObject
 {
     var $img;
     var $outputType = 'JPG';

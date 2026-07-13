@@ -21,7 +21,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class tagcloud extends object
+class tagcloud extends ChisimbaObject
 {
     /**
      * Tag Cloud class

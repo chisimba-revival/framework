@@ -18,7 +18,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class microformats extends object
+class microformats extends ChisimbaObject
 {
     /**
     * Constructor

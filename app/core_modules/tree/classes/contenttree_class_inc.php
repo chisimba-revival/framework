@@ -12,7 +12,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @license GNU GPL
  * @package tree
  **/
-class contenttree extends object{
+class contenttree extends ChisimbaObject{
 
     /**
     * @var object $objDBContext

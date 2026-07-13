@@ -37,7 +37,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 /**
 * Class to handle the display of the splashscreen before login
 */
-class splashscreen extends object
+class splashscreen extends ChisimbaObject
 {
 
     var $objModule;

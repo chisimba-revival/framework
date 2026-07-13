@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run'])
 * $Id: block_storiescat_class_inc.php 18284 2010-07-03 13:45:02Z dkeats $
 *
 */
-class block_storiescat extends object
+class block_storiescat extends ChisimbaObject
 {
     /**
     * @var object $objLanguage String to hold the language object

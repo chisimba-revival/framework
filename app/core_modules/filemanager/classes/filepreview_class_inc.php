@@ -40,7 +40,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class filepreview extends object {
+class filepreview extends ChisimbaObject {
 
     //secure folder 
     private $secureFolder;

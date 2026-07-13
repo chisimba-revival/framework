@@ -40,7 +40,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class selectimage extends object {
+class selectimage extends ChisimbaObject {
 
     /**
      * @var string $name Name of the Image Selector Input

@@ -1,6 +1,6 @@
 <?php
 /**
-* Class expandmenu extends object.
+* Class expandmenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 * @version 1
 */
 
-class expandmenu extends object
+class expandmenu extends ChisimbaObject
 {
     var $headings=array();
 

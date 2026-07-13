@@ -20,7 +20,7 @@
  * @version     1.2.1
  * @link        http://aidanlister.com/repos/v/Duration.php
  */
-class duration extends object
+class duration extends ChisimbaObject
 {
 
     public function init()

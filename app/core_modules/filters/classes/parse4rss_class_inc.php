@@ -37,7 +37,7 @@
 *         
 */
 
-class parse4rss extends object
+class parse4rss extends ChisimbaObject
 {
     
     /**

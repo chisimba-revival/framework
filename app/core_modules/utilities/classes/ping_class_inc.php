@@ -18,7 +18,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  */
 
-class ping extends object
+class ping extends ChisimbaObject
 {
 	/**
 	 * @var boolean $isLocal member to store the bool to indicate weather the server

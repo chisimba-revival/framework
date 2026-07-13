@@ -34,7 +34,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       References to other sections (if any)...
  */
-class fileparts extends object
+class fileparts extends ChisimbaObject
 {
 
     /**

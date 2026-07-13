@@ -60,7 +60,7 @@ $GLOBALS['kewl_entry_point_run']){
  * @link      http://avoir.uwc.ac.za
  */
 
-class catalogue extends object {
+class catalogue extends ChisimbaObject {
 
     /**
      * Nodes of navigation list

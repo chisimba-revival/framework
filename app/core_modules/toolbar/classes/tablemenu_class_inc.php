@@ -1,6 +1,6 @@
 <?php
 /**
-* Class tablemenu extends object.
+* Class tablemenu extends ChisimbaObject.
 * @package toolbar
 * @filesource
 */
@@ -19,7 +19,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @version
  * @author Wesley Nitsckie 
  */
-class tablemenu extends object{
+class tablemenu extends ChisimbaObject{
     /**
     *@var array $headings
     */

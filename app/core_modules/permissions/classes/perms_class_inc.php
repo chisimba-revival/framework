@@ -46,7 +46,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class perms extends object
+class perms extends ChisimbaObject
 {
 
     public $objLanguage;

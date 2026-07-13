@@ -41,7 +41,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see
  */
-class indexfileprocessor extends object
+class indexfileprocessor extends ChisimbaObject
 {
 
     public $recurseFolder = TRUE;

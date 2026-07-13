@@ -22,7 +22,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @package   search
  * @copyright AVOIR UWC
  */
-class searchresults extends object
+class searchresults extends ChisimbaObject
 {
     
     /**

@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class sahrisapi extends object
+class sahrisapi extends ChisimbaObject
 {
     public $objMedia;
     public $objFiles;

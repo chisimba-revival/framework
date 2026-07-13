@@ -49,7 +49,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Paul Scott <pscott@uwc.ac.za>
  */
 
-class parse4weatherbadge extends object
+class parse4weatherbadge extends ChisimbaObject
 {
     /**
      *

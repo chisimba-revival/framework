@@ -41,7 +41,7 @@
  * @see       
  */
 
-class postloginmenu_elearn extends object
+class postloginmenu_elearn extends ChisimbaObject
 {
     /**
     * Method to construct the class

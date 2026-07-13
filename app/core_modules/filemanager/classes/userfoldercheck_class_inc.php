@@ -49,7 +49,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       
  */
-class userfoldercheck extends object
+class userfoldercheck extends ChisimbaObject
 {
     /**
     * @var array $subFolders List of Possible Subfolders for storing files

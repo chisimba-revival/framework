@@ -19,7 +19,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class yaml extends object 
+class yaml extends ChisimbaObject 
 {
     /**
     *

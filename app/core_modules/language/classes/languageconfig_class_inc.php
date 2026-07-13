@@ -58,7 +58,7 @@ define('TABLE_PREFIX', 'tbl_');
  * @author    Prince Mbekwa <pmbekwa@uwc.ac.za>
  *
  */
-class languageConfig extends object {
+class languageConfig extends ChisimbaObject {
 
     /**
      * Public variable to hold the new language config object

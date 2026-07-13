@@ -4,7 +4,7 @@
 * Class to manage import of users from other systems
 * @author James Scoble
 */
-class importuserdata extends object
+class importuserdata extends ChisimbaObject
 {
 
     private $userfields;

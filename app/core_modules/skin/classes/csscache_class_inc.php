@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @author Derek Keats
  * 
 */
-class csscache extends object
+class csscache extends ChisimbaObject
 {
 
     /**

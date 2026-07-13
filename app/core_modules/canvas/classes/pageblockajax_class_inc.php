@@ -65,7 +65,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package canvas
 *
 */
-class pageblockajax extends object
+class pageblockajax extends ChisimbaObject
 {
 
     /**

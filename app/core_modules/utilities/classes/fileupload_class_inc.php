@@ -25,7 +25,7 @@ Public License
 */
 
 
-class fileupload extends object
+class fileupload extends ChisimbaObject
 {
     /**
     * @var object $objLanguage

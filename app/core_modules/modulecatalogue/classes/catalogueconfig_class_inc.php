@@ -58,7 +58,7 @@ $GLOBALS['kewl_entry_point_run']){
 // include class
 require_once 'Config.php';
 
-class catalogueconfig extends object {
+class catalogueconfig extends ChisimbaObject {
 
     /**
      * The pear config object

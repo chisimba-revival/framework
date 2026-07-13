@@ -21,7 +21,7 @@ $GLOBALS['kewl_entry_point_run']) {
  * @access    public
  * @author    Jonathan Abrahams
  */
-class classParser extends object
+class classParser extends ChisimbaObject
 {
     /**
      * Property used for storing the delimiter used when evaluating the

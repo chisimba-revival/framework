@@ -53,7 +53,7 @@ $GLOBALS['kewl_entry_point_run'])
  * @version   $Id: parse4mmedia_class_inc.php 11998 2008-12-29 22:35:37Z charlvn $
  * @copyright 2003 GPL
  */
-class parse4embed extends object {
+class parse4embed extends ChisimbaObject {
     /**
      * Method to take a string and return it with anchor linkd to 
      * quicktime movies changed to embeded media

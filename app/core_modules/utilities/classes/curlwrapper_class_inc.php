@@ -36,7 +36,7 @@ $GLOBALS['kewl_entry_point_run']){
 *    echo $objCurl->exec('http://ws.geonames.org/search?name_equals=Walvisbaai&style=full');
 */
 
-class curlwrapper extends object
+class curlwrapper extends ChisimbaObject
 {
     /**
     * @var array $proxyInfo Array Containing Proxy Details

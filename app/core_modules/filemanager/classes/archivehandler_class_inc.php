@@ -45,7 +45,7 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
-class archivehandler extends object
+class archivehandler extends ChisimbaObject
 
 {
 

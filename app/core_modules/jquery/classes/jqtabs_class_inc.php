@@ -50,7 +50,7 @@ $GLOBALS['kewl_entry_point_run']) {
 * @author Charl Mert
 * @example
 */
-class jqtabs extends object 
+class jqtabs extends ChisimbaObject 
 {
     
     /**

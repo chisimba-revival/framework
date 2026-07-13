@@ -45,7 +45,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * $Id: block_login_class_inc.php 2881 2007-08-14 16:32:04Z jsc $
 *
 */
-class block_elearnlogin extends object
+class block_elearnlogin extends ChisimbaObject
 {
     /**
     * @var string $title The title of the block

@@ -19,7 +19,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class proxy extends object
+class proxy extends ChisimbaObject
 {
     /**
     * @var Proxy server name.

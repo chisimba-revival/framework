@@ -32,7 +32,7 @@ Public License
 *    echo $objCurl->exec('http://ws.geonames.org/search?name_equals=Walvisbaai&style=full');
 */
 
-class curl extends object
+class curl extends ChisimbaObject
 {
     /**
     * @var array $proxyInfo Array Containing Proxy Details

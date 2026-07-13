@@ -1,5 +1,5 @@
 <?php
-class s3 extends object
+class s3 extends ChisimbaObject
 {
     public $mime_types = array(
     "323" => "text/h323",

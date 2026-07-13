@@ -55,7 +55,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package utilties
 *
 */
-class regexes extends object
+class regexes extends ChisimbaObject
 {
     public function init()
     {

@@ -8,7 +8,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  /**
  * Class for reading and writing arrays in XML
  * The Serialize and Unserialize classes extend PEAR
- * This is a wrapper class for them, that extends object
+ * This is a wrapper class for them, that extends ChisimbaObject
  *
  
  * @category  Chisimba
@@ -23,7 +23,7 @@ Public License
 
 require_once('XML/Unserializer.php');
 
-class xmlserial extends object
+class xmlserial extends ChisimbaObject
 {
     /**
     * Basic Object init function

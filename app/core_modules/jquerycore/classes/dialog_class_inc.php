@@ -57,7 +57,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @author    Kevin Cyster kcyster@gmail.com
 *
 */
-class dialog extends object
+class dialog extends ChisimbaObject
 {
     /**
      * 

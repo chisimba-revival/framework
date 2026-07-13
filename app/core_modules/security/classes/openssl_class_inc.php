@@ -48,7 +48,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
  * @author Paul Scott
  * @package security
  */
-class openssl extends object
+class openssl extends ChisimbaObject
 {
     /**
      * Distinguished name (fully qualified)

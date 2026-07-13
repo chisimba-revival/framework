@@ -52,7 +52,7 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
-class parse4slideshare extends object
+class parse4slideshare extends ChisimbaObject
 {
     /**
     *

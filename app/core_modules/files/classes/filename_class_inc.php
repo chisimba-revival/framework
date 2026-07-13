@@ -31,7 +31,7 @@
  * @see       References to other sections (if any)...
  */
 
-class filename extends object
+class filename extends ChisimbaObject
 {
     /**
     * Init method.

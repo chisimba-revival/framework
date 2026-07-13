@@ -15,7 +15,7 @@ if (!$GLOBALS['kewl_entry_point_run'])
 * $Id$
 *
 */
-class block_stories extends object
+class block_stories extends ChisimbaObject
 {
     /**
     * @var object $objLanguage String to hold the language object

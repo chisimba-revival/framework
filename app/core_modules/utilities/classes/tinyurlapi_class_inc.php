@@ -62,7 +62,7 @@ $GLOBALS['kewl_entry_point_run'])
 * @package utilities
 *
 */
-class tinyurlapi extends object
+class tinyurlapi extends ChisimbaObject
 {
     public $objLanguage;
     private $tinyUrlError;

@@ -20,7 +20,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-class proxyparser extends object
+class proxyparser extends ChisimbaObject
 {
     /**
      * Class to parse the proxy information from the config object into

@@ -1,7 +1,7 @@
 <?php
 
 
-class block_contextfiles extends object
+class block_contextfiles extends ChisimbaObject
 {
     /**
     *Initialize by send the table name to be accessed

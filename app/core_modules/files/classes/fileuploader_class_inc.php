@@ -66,7 +66,7 @@
  *         )
  *         
  */
-class fileuploader extends object 
+class fileuploader extends ChisimbaObject 
 {
     /**
     * @var array @bannedExtensions List of Banned Extensions. Files with these extensions are not allowed to be uploaded
