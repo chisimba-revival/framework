@@ -92,7 +92,7 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         //$this->options['forceNEnum'] = array('value', 'column');
         $this->variables = $variables;
         $this->structure = $structure;
-        $this->val =& new MDB2_Schema_Validate($fail_on_invalid_names, $valid_types, $force_defaults);
+        $this->val = new MDB2_Schema_Validate($fail_on_invalid_names, $valid_types, $force_defaults);
         parent::XML_Unserializer($this->options);
     }
 

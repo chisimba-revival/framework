@@ -280,11 +280,11 @@ class RDF_Statement extends RDF_Object
     {
         if (is_a($model_or_bNodeID, 'RDF_Model_Memory')) {
             // parameter is model
-            $statementModel =& new RDF_Model_Memory($model_or_bNodeID->getBaseURI());
+            $statementModel = new RDF_Model_Memory($model_or_bNodeID->getBaseURI());
             $thisStatement =& RDF_BlankNode::factory($model_or_bNodeID);
         } else {
             // parameter is bNodeID
-            $statementModel =& new RDF_Model_Memory();
+            $statementModel = new RDF_Model_Memory();
             $thisStatement =& RDF_BlankNode::factory($model_or_bNodeID);
         }
 

@@ -125,7 +125,7 @@ class DB
         if(PEAR::isError($db)) {
             return($db);
         }
-        $obj =& new MDB_PEAR_PROXY($db);
+        $obj = new MDB_PEAR_PROXY($db);
         return($obj);
     }
 
@@ -138,7 +138,7 @@ class DB
         if(PEAR::isError($db)) {
             return($db);
         }
-        $obj =& new MDB_PEAR_PROXY($db);
+        $obj = new MDB_PEAR_PROXY($db);
         return($obj);
     }
 

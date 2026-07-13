@@ -287,7 +287,7 @@ class I18Nv2_AreaCode extends I18Nv2_CommonList
      */
     function &mergeCountry(&$country)
     {
-        $list = &new I18Nv2_CommonList(
+        $list = new I18Nv2_CommonList(
             $country->getLanguage(), 
             $encoding = $country->getEncoding()
         );

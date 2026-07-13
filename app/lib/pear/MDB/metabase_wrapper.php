@@ -1374,7 +1374,7 @@ class metabase_manager_class
 
     function metabase_manager_class()
     {
-        $this->MDB_manager_object =& new MDB_Manager;
+        $this->MDB_manager_object = new MDB_Manager;
         $this->MDB_manager_object->fail_on_invalid_names =& $this->fail_on_invalid_names;
         $this->MDB_manager_object->error =& $this->error;
         $this->MDB_manager_object->warnings =& $this->warnings;

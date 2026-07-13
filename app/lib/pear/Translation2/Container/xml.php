@@ -160,7 +160,7 @@ class Translation2_Container_xml extends Translation2_Container
             return new PEAR_Error ("Can\'t read from the XML source: {$this->_filename}");
         }
         @flock($fp, LOCK_SH);
-        $unserializer = &new XML_Unserializer (array('keyAttribute' => $keyAttr));
+        $unserializer = new XML_Unserializer (array('keyAttribute' => $keyAttr));
         if (PEAR::isError($status = $unserializer->unserialize($this->_filename, true))) {
             fclose($fp);
             return $status;

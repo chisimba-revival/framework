@@ -348,7 +348,7 @@ class I18Nv2_Negotiator
     {
         if (!isset($this->I18NLang)) {
             include_once 'I18Nv2/Language.php';
-            $this->I18NLang = &new I18Nv2_Language(
+            $this->I18NLang = new I18Nv2_Language(
                 $this->_defaultLanguage, 
                 $this->_defaultEncoding
             );
@@ -366,7 +366,7 @@ class I18Nv2_Negotiator
     {
         if (!isset($this->I18NCountry)) {
             include_once 'I18Nv2/Country.php';
-            $this->I18NCountry = &new I18Nv2_Country(
+            $this->I18NCountry = new I18Nv2_Country(
                 $this->_defaultLanguage,
                 $this->_defaultEncoding
             );

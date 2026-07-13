@@ -252,7 +252,7 @@ class MDB
 
         @include_once("MDB/${type}.php");
 
-        @$db =& new $class_name;
+        @$db = new $class_name;
 
         return($db);
     }
@@ -315,7 +315,7 @@ class MDB
             return($error);
         }
 
-        @$db =& new $class_name();
+        @$db = new $class_name();
 
         $db->setDSN($dsninfo);
 

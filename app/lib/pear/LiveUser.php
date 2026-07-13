@@ -467,7 +467,7 @@ class LiveUser
             $debug =& $conf['debug'];
         }
 
-        $obj = &new LiveUser($debug);
+        $obj = new LiveUser($debug);
 
         if (is_array($conf)) {
             $obj->readConfig($conf);
@@ -574,7 +574,7 @@ class LiveUser
         $auth = false;
         $classname = $classprefix.'Auth_' . $conf['type'];
         if (LiveUser::loadClass($classname)) {
-            $auth = &new $classname();
+            $auth = new $classname();
             if ($auth->init($conf, $containerName) === false) {
                 $auth = false;
             }
@@ -597,7 +597,7 @@ class LiveUser
         $perm = false;
         $classname = $classprefix.'Perm_' . $conf['type'];
         if (LiveUser::loadClass($classname)) {
-            $perm = &new $classname();
+            $perm = new $classname();
             if ($perm->init($conf) === false) {
                 $perm = false;
             }
@@ -646,7 +646,7 @@ class LiveUser
                 $newConfArray[$keyNew] =& $confArray[$keyNew];
             }
         }
-        $storage = &new $storageName();
+        $storage = new $storageName();
         if ($storage->init($storageConf, $newConfArray) === false) {
             $storage = false;
         }
@@ -915,7 +915,7 @@ class LiveUser
     {
         $rc4 = false;
         if (LiveUser::loadClass('Crypt_Rc4')) {
-            $rc4 =& new Crypt_Rc4($secret);
+            $rc4 = new Crypt_Rc4($secret);
         }
         return $rc4;
     }

@@ -863,7 +863,7 @@ class RDF_Model_MDB extends RDF_Model
      */
     function _convertRecordSetToMemModel($result)
     {
-        $res =& new RDF_Model_Memory($this->getBaseURI());
+        $res = new RDF_Model_Memory($this->getBaseURI());
         while (is_array($row = $this->dbConn->fetchInto($result))) {
             // subject
             if ($row[5] == 'r') {

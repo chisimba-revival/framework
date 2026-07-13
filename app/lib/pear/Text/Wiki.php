@@ -478,7 +478,7 @@ class Text_Wiki {
             }
         }
 
-        $obj =& new $class($rules);
+        $obj = new $class($rules);
         return $obj;
     }
 
@@ -1340,7 +1340,7 @@ public function mb_ucwords($str) {
             }
         }
 
-        $this->parseObj[$rule] =& new $class($this);
+        $this->parseObj[$rule] = new $class($this);
 
     }
 
@@ -1376,7 +1376,7 @@ public function mb_ucwords($str) {
             }
         }
 
-        $this->renderObj[$rule] =& new $class($this);
+        $this->renderObj[$rule] = new $class($this);
     }
 
 
@@ -1409,7 +1409,7 @@ public function mb_ucwords($str) {
             }
         }
 
-        $this->formatObj[$format] =& new $class($this);
+        $this->formatObj[$format] = new $class($this);
     }
 
 

@@ -218,7 +218,7 @@ class LiveUser_Admin
             $debug =& $conf['debug'];
         }
 
-        $obj = &new LiveUser_Admin($debug);
+        $obj = new LiveUser_Admin($debug);
 
         if (is_array($conf)) {
             $obj->_conf =& $conf;

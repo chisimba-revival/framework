@@ -73,7 +73,7 @@ echo ('
         MDB::loadFile('Manager');
         $dsn = $_REQUEST['type'].'://'.$_REQUEST['user'].':'.$_REQUEST['pass'].'@'.$_REQUEST['host'].'/'.$_REQUEST['name'];
 
-        $manager =& new MDB_Manager;
+        $manager = new MDB_Manager;
         $err = $manager->connect($dsn);
         if(MDB::isError($err)) {
             $error = $err->getMessage();

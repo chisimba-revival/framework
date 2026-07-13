@@ -92,7 +92,7 @@ class Net_DNS_RR
     /* Net_DNS_RR::new_from_data($name, $ttl, $rrtype, $rrclass, $rdlength, $data, $offset) {{{ */
     function &new_from_data($name, $rrtype, $rrclass, $ttl, $rdlength, $data, $offset)
     {
-        $rr = &new Net_DNS_RR('getRR');
+        $rr = new Net_DNS_RR('getRR');
         $rr->name = $name;
         $rr->type = $rrtype;
         $rr->class = $rrclass;
@@ -110,7 +110,7 @@ class Net_DNS_RR
     /* Net_DNS_RR::new_from_string($rrstring, $update_type = '') {{{ */
     function &new_from_string($rrstring, $update_type = '')
     {
-        $rr = &new Net_DNS_RR('getRR');
+        $rr = new Net_DNS_RR('getRR');
         $ttl = 0;
         $parts = preg_split('/[\s]+/', $rrstring);
         while (count($parts) > 0) {
@@ -203,7 +203,7 @@ class Net_DNS_RR
     /* Net_DNS_RR::new_from_array($rrarray) {{{ */
     function &new_from_array($rrarray)
     {
-        $rr = &new Net_DNS_RR('getRR');
+        $rr = new Net_DNS_RR('getRR');
         foreach ($rrarray as $k => $v) {
             $rr->{strtolower($k)} = $v;
         }

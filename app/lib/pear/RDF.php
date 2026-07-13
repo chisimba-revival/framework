@@ -184,7 +184,7 @@ class RDF
        $file = 'RDF/'.str_replace('_', '/', $class).'.php';
        include_once $file;
        $classname = 'RDF_'.$class;
-       $obj =& new $classname();
+       $obj = new $classname();
        if (method_exists($obj, 'init')) {
            call_user_func_array(array(&$obj, 'init'), $param);
        }

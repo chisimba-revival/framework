@@ -4461,7 +4461,7 @@ class MDB_Common extends PEAR
             }
         }
         $lob = count($GLOBALS['_MDB_lobs']) + 1;
-        $GLOBALS['_MDB_lobs'][$lob] = &new $class_name;
+        $GLOBALS['_MDB_lobs'][$lob] = new $class_name;
         if (isset($arguments['Database'])) {
             $GLOBALS['_MDB_lobs'][$lob]->database = $arguments['Database'];
         } else {

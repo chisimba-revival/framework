@@ -48,7 +48,7 @@ class RDF_Store_MDB extends RDF_Object
     function createTables()
     {
         MDB::loadFile('Manager');
-        $manager =& new MDB_Manager;
+        $manager = new MDB_Manager;
         $err = $manager->connect($this->dbConn);
         if(MDB::isError($err)) {
             return $err;

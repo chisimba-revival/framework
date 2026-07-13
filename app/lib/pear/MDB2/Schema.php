@@ -226,7 +226,7 @@ class MDB2_Schema extends PEAR
      */
     function &factory(&$db, $options = array())
     {
-        $obj =& new MDB2_Schema();
+        $obj = new MDB2_Schema();
         $result = $obj->connect($db, $options);
         if (PEAR::isError($result)) {
             return $result;
@@ -361,7 +361,7 @@ class MDB2_Schema extends PEAR
         $dtd_file = $this->options['dtd_file'];
         if ($dtd_file) {
             require_once 'XML/DTD/XmlValidator.php';
-            $dtd =& new XML_DTD_XmlValidator;
+            $dtd = new XML_DTD_XmlValidator;
             if (!$dtd->isValid($dtd_file, $input_file)) {
                 return $this->raiseError(MDB2_SCHEMA_ERROR_PARSE, null, null, $dtd->getMessage());
             }
@@ -373,7 +373,7 @@ class MDB2_Schema extends PEAR
             return $result;
         }
 
-        $parser =& new $class_name($variables, $fail_on_invalid_names, $structure, $this->options['valid_types'], $this->options['force_defaults']);
+        $parser = new $class_name($variables, $fail_on_invalid_names, $structure, $this->options['valid_types'], $this->options['force_defaults']);
         $result = $parser->setInputFile($input_file);
         if (PEAR::isError($result)) {
             return $result;
@@ -415,7 +415,7 @@ class MDB2_Schema extends PEAR
             return $result;
         }
 
-        $val =& new $class_name($this->options['fail_on_invalid_names'], $this->options['valid_types'], $this->options['force_defaults']);
+        $val = new $class_name($this->options['fail_on_invalid_names'], $this->options['valid_types'], $this->options['force_defaults']);
 
         $database_definition = array(
             'name' => $database,
@@ -2332,7 +2332,7 @@ class MDB2_Schema extends PEAR
             }
         }
 
-        $writer =& new $class_name($this->options['valid_types']);
+        $writer = new $class_name($this->options['valid_types']);
         return $writer->dumpDatabase($database_definition, $arguments, $dump);
     }
 

@@ -199,7 +199,7 @@ class RDF_Model_Memory extends RDF_Model
      */
     function writeAsHtml()
     {
-        $ser =& new RDF_Serializer();
+        $ser = new RDF_Serializer();
         $rdf = &$ser->serialize($this);
         $rdf = htmlspecialchars($rdf, ENT_QUOTES);
         $rdf = str_replace(' ', '&nbsp;', $rdf);
@@ -225,7 +225,7 @@ class RDF_Model_Memory extends RDF_Model
      */
     function writeRDFToString()
     {
-        $ser =& new RDF_Serializer();
+        $ser = new RDF_Serializer();
         $rdf = &$ser->serialize($this);
         return $rdf;
     }
@@ -247,11 +247,11 @@ class RDF_Model_Memory extends RDF_Model
     {
         // get suffix and create a corresponding serializer
         if ($type=='rdf') { 
-            $ser=& new RDF_Serializer();
+            $ser= new RDF_Serializer();
         } elseif ($type=='nt') { 
-            $ser=& new RDF_NTriple_Serializer();
+            $ser= new RDF_NTriple_Serializer();
         } elseif ($type=='n3') { 
-            $ser=& new RDF_N3_Serializer();
+            $ser= new RDF_N3_Serializer();
         } else {
             print ('Serializer type not properly defined. Use a string of "rdf","n3" or "nt".');
             return false;
@@ -418,7 +418,7 @@ class RDF_Model_Memory extends RDF_Model
             return RDF::raiseError(RDF_ERROR_UNEXPECTED, null, null, $errmsg);
         }
 
-        $res =& new RDF_Model_Memory($this->getBaseURI());
+        $res = new RDF_Model_Memory($this->getBaseURI());
 
         if ($this->size() == 0) {
             return $res;
@@ -465,7 +465,7 @@ class RDF_Model_Memory extends RDF_Model
      */
     function findRegex($subject_regex, $predicate_regex, $object_regex)
     {
-        $res =& new RDF_Model_Memory($this->getBaseURI());
+        $res = new RDF_Model_Memory($this->getBaseURI());
 
         if ($this->size() == 0) {
             return $res;
@@ -506,7 +506,7 @@ class RDF_Model_Memory extends RDF_Model
             return $this;
         }
 
-        $res =& new RDF_Model_Memory($this->getBaseURI());
+        $res = new RDF_Model_Memory($this->getBaseURI());
 
         foreach($this->triples as $value) {
             if (RDF_Util::getNamespace($value->getPredicate()) == $vocabulary) {
@@ -784,7 +784,7 @@ class RDF_Model_Memory extends RDF_Model
             return RDF::raiseError(RDF_ERROR_UNEXPECTED, null, null, $errmsg);
         }
 
-        $res =& new RDF_Model_Memory($this->getBaseURI());
+        $res = new RDF_Model_Memory($this->getBaseURI());
 
         if (is_a($model, 'RDF_Model_Memory')) {
             foreach($model->triples as $value) {
@@ -845,7 +845,7 @@ class RDF_Model_Memory extends RDF_Model
      */
     function &reify()
     {
-        $res =& new RDF_Model_Memory($this->getBaseURI());
+        $res = new RDF_Model_Memory($this->getBaseURI());
 
         foreach($this->triples as $statement) {
             $pointer = &$statement->reify($res);

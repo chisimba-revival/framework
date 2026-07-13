@@ -29,9 +29,9 @@ class Text_Diff3 extends Text_Diff {
     function Text_Diff3($orig, $final1, $final2)
     {
         if (extension_loaded('xdiff')) {
-            $engine = &new Text_Diff_Engine_xdiff();
+            $engine = new Text_Diff_Engine_xdiff();
         } else {
-            $engine = &new Text_Diff_Engine_native();
+            $engine = new Text_Diff_Engine_native();
         }
 
         $this->_edits = $this->_diff3($engine->diff($orig, $final1),
@@ -65,7 +65,7 @@ class Text_Diff3 extends Text_Diff {
     function _diff3($edits1, $edits2)
     {
         $edits = array();
-        $bb = &new Text_Diff3_BlockBuilder();
+        $bb = new Text_Diff3_BlockBuilder();
 
         $e1 = current($edits1);
         $e2 = current($edits2);
@@ -80,7 +80,7 @@ class Text_Diff3 extends Text_Diff {
 
                 $ncopy = min($e1->norig(), $e2->norig());
                 assert($ncopy > 0);
-                $edits[] = &new Text_Diff3_Op_copy(array_slice($e1->orig, 0, $ncopy));
+                $edits[] = new Text_Diff3_Op_copy(array_slice($e1->orig, 0, $ncopy));
 
                 if ($e1->norig() > $ncopy) {
                     array_splice($e1->orig, 0, $ncopy);
@@ -243,7 +243,7 @@ class Text_Diff3_BlockBuilder {
         if ($this->isEmpty()) {
             return false;
         } else {
-            $edit = &new Text_Diff3_Op($this->orig, $this->final1, $this->final2);
+            $edit = new Text_Diff3_Op($this->orig, $this->final1, $this->final2);
             $this->_init();
             return $edit;
         }

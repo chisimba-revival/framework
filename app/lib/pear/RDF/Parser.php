@@ -1921,7 +1921,7 @@ class RDF_Parser extends RDF_Object
         // Check if $base is a URI or filename or a string containing RDF code.
         if (substr(ltrim($base), 0 , 1) != '<') {
             // $base is URL or filename
-            $this->model =& new RDF_Model_Memory($base);
+            $this->model = new RDF_Model_Memory($base);
 
             $input = @fopen($base, 'r');
             if (!$input) {
@@ -1946,7 +1946,7 @@ class RDF_Parser extends RDF_Object
             fclose($input);
         } else {
             // $base is RDF string
-            $this->model =& new RDF_Model_Memory();
+            $this->model = new RDF_Model_Memory();
 
             $this->rdf_parser_create(null);
             if ($rdfBaseURI!==false) {

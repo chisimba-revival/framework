@@ -50,9 +50,9 @@ class RDF_Model extends RDF_Object
     function load($filename, $type = null)
     {
         if ((isset($type)) && ($type =='n3') || ($type =='nt')) {
-            $parser =& new RDF_N3_Parser();
+            $parser = new RDF_N3_Parser();
         } elseif ((isset($type)) && ($type =='rdf')) {
-            $parser =& new RDF_Parser();
+            $parser = new RDF_Parser();
         } else {
             // create a parser according to the suffix of the filename
             // if there is no suffix assume the file to be XML/RDF
@@ -61,9 +61,9 @@ class RDF_Model extends RDF_Object
             if (isset($suffix[1])
                 && (strtolower($suffix[1]) == 'n3') || (strtolower($suffix[1]) == 'nt')
             ) {
-                $parser =& new RDF_N3_Parser();
+                $parser = new RDF_N3_Parser();
             } else {
-                $parser =& new RDF_Parser();
+                $parser = new RDF_Parser();
             }
         }
         $temp =& $parser->generateModel($filename);

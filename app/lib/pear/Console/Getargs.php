@@ -212,7 +212,7 @@ class Console_Getargs
     function &factory($config = array(), $arguments = NULL)
     {
         // Create the options object.
-        $obj =& new Console_Getargs_Options();
+        $obj = new Console_Getargs_Options();
         
         // Try to set up the arguments.
         $err = $obj->init($config, $arguments);

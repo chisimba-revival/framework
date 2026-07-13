@@ -44,7 +44,7 @@ class Text_Diff {
 
         require_once 'Text/Diff/Engine/' . $engine . '.php';
         $class = 'Text_Diff_Engine_' . $engine;
-        $diff_engine = &new $class();
+        $diff_engine = new $class();
 
         $this->_edits = call_user_func_array(array($diff_engine, 'diff'), $params);
     }
@@ -62,7 +62,7 @@ class Text_Diff {
      *
      * Example:
      * <code>
-     * $diff = &new Text_Diff($lines1, $lines2);
+     * $diff = new Text_Diff($lines1, $lines2);
      * $rev = $diff->reverse();
      * </code>
      *
@@ -298,7 +298,7 @@ class Text_Diff_Op_copy extends Text_Diff_Op {
 
     function &reverse()
     {
-        $reverse = &new Text_Diff_Op_copy($this->final, $this->orig);
+        $reverse = new Text_Diff_Op_copy($this->final, $this->orig);
         return $reverse;
     }
 
@@ -320,7 +320,7 @@ class Text_Diff_Op_delete extends Text_Diff_Op {
 
     function &reverse()
     {
-        $reverse = &new Text_Diff_Op_add($this->orig);
+        $reverse = new Text_Diff_Op_add($this->orig);
         return $reverse;
     }
 
@@ -342,7 +342,7 @@ class Text_Diff_Op_add extends Text_Diff_Op {
 
     function &reverse()
     {
-        $reverse = &new Text_Diff_Op_delete($this->final);
+        $reverse = new Text_Diff_Op_delete($this->final);
         return $reverse;
     }
 
@@ -364,7 +364,7 @@ class Text_Diff_Op_change extends Text_Diff_Op {
 
     function &reverse()
     {
-        $reverse = &new Text_Diff_Op_change($this->final, $this->orig);
+        $reverse = new Text_Diff_Op_change($this->final, $this->orig);
         return $reverse;
     }
 
