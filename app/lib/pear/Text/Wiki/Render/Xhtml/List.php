@@ -103,7 +103,7 @@ class Text_Wiki_Render_Xhtml_List extends Text_Wiki_Render {
             }
             // build the base HTML
             $css = $this->formatConf(' class="%s"', 'css_ol');
-            $html = "<ol{$format}{$css}>";
+            $html = "<ol{$format}[$css]>";
 
             /*
             // if this is the opening block for the list,

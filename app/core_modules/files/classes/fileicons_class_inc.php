@@ -227,7 +227,7 @@ class fileicons extends ChisimbaObject
             } else {
                 $iconfolder = 'icons/filetypes/';
             }
-            if(ereg('gif', $ext)){
+            if(preg_match('~gif~', $ext)){
                 $ext = '.gif';
             }  else {
                 $ext = '.png';

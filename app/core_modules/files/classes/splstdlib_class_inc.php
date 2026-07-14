@@ -36,7 +36,7 @@ class splstdlib extends ChisimbaObject
             if($path->isDir())
             {
                 $str = $path->getFilename();
-                if($str{0} !== '_')
+                if($str[0] !== '_')
                 {
                     $dirs[] = $path->getPath()."/".$path->getFilename();
                 }

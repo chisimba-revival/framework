@@ -474,9 +474,9 @@ class PEAR_Sniffs_Commenting_FileCommentSniff implements PHP_CodeSniffer_Sniff
                 if (PHP_CodeSniffer::isUnderscoreName($content) !== true) {
                     $nameBits = explode('_', $content);
                     $firstBit = array_shift($nameBits);
-                    $newName  = strtoupper($firstBit{0}).substr($firstBit, 1).'_';
+                    $newName  = strtoupper($firstBit[0]).substr($firstBit, 1).'_';
                     foreach ($nameBits as $bit) {
-                        $newName .= strtoupper($bit{0}).substr($bit, 1).'_';
+                        $newName .= strtoupper($bit[0]).substr($bit, 1).'_';
                     }
 
                     $validName = trim($newName, '_');

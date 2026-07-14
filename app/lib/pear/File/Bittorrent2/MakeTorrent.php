@@ -401,7 +401,7 @@ class File_Bittorrent2_MakeTorrent
             $current_dir = array_pop($stack);
             if ($dh = opendir($current_dir)) {
                 while ( ($file = readdir($dh)) !== false ) {
-                    if ($file{0} =='.') continue;
+                    if ($file[0] =='.') continue;
                     $current_file = $current_dir . '/' . $file;
                     if (is_file($current_file)) {
                         $file_list[] = $current_dir . '/' . $file;

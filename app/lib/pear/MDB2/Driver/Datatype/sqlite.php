@@ -3,7 +3,7 @@
 // +----------------------------------------------------------------------+
 // | PHP versions 4 and 5                                                 |
 // +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2006 Manuel Lemos, Tomas V.V.Cox,                 |
+// | Copyright (c) 1998-2007 Manuel Lemos, Tomas V.V.Cox,                 |
 // | Stig. S. Bakken, Lukas Smith                                         |
 // | All rights reserved.                                                 |
 // +----------------------------------------------------------------------+
@@ -57,6 +57,22 @@ require_once 'MDB2/Driver/Datatype/Common.php';
  */
 class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
 {
+    // {{{ _getCollationFieldDeclaration()
+
+    /**
+     * Obtain DBMS specific SQL code portion needed to set the COLLATION
+     * of a field declaration to be used in statements like CREATE TABLE.
+     *
+     * @param string $collation name of the collation
+     *
+     * @return string DBMS specific SQL code portion needed to set the COLLATION
+     *                of a field declaration.
+     */
+    function _getCollationFieldDeclaration($collation)
+    {
+        return 'COLLATE '.$collation;
+    }
+
     // }}}
     // {{{ getTypeDeclaration()
 
@@ -86,7 +102,7 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
     function getTypeDeclaration($field)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -184,7 +200,7 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
     function _getIntegerDeclaration($name, $field)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -196,12 +212,13 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
                 $field['default'] = empty($field['notnull']) ? null : 0;
             }
             $default = ' DEFAULT '.$this->quote($field['default'], 'integer');
-        } elseif (empty($field['notnull'])) {
-            $default = ' DEFAULT NULL';
         }
 
         $notnull = empty($field['notnull']) ? '' : ' NOT NULL';
         $unsigned = empty($field['unsigned']) ? '' : ' UNSIGNED';
+        if (empty($default) && empty($notnull)) {
+            $default = ' DEFAULT NULL';
+        }
         $name = $db->quoteIdentifier($name, true);
         return $name.' '.$this->getTypeDeclaration($field).$unsigned.$default.$notnull.$autoinc;
     }
@@ -211,11 +228,6 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
 
     /**
      * build a pattern matching string
-     *
-     * EXPERIMENTAL
-     *
-     * WARNING: this function is experimental and may change signature at
-     * any time until labelled as non-experimental
      *
      * @access public
      *
@@ -229,22 +241,28 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
     function matchPattern($pattern, $operator = null, $field = null)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $match = '';
-        if (!is_null($operator)) {
-            $field = is_null($field) ? '' : $field.' ';
+        if (null !== $operator) {
+            $field = (null === $field) ? '' : $field.' ';
             $operator = strtoupper($operator);
             switch ($operator) {
             // case insensitive
             case 'ILIKE':
                 $match = $field.'LIKE ';
                 break;
+            case 'NOT ILIKE':
+                $match = $field.'NOT LIKE ';
+                break;
             // case sensitive
             case 'LIKE':
                 $match = $field.'LIKE ';
+                break;
+            case 'NOT LIKE':
+                $match = $field.'NOT LIKE ';
                 break;
             default:
                 return $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
@@ -318,6 +336,9 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
             $length = 8;
             break;
         case 'clob':
+            $type[] = 'clob';
+            $fixed  = false;
+            break;
         case 'tinytext':
         case 'mediumtext':
         case 'longtext':
@@ -334,6 +355,7 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
                 }
             } elseif (strstr($db_type, 'text')) {
                 $type[] = 'clob';
+                $type = array_reverse($type);
             }
             if ($fixed !== false) {
                 $fixed = true;
@@ -360,6 +382,7 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
         case 'decimal':
         case 'numeric':
             $type[] = 'decimal';
+            $length = $length.','.$field['decimal'];
             break;
         case 'tinyblob':
         case 'mediumblob':
@@ -375,16 +398,21 @@ class MDB2_Driver_Datatype_sqlite extends MDB2_Driver_Datatype_Common
             break;
         default:
             $db = $this->getDBInstance();
-            if (PEAR::isError($db)) {
+            if (MDB2::isError($db)) {
                 return $db;
             }
-
             return $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
                 'unknown database attribute type: '.$db_type, __FUNCTION__);
         }
 
+        if ((int)$length <= 0) {
+            $length = null;
+        }
+
         return array($type, $length, $unsigned, $fixed);
     }
+
+    // }}}
 }
 
 ?>

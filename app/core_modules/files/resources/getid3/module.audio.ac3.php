@@ -50,7 +50,7 @@ class getid3_ac3
 
 		if ($thisfile_ac3_raw['synchinfo']['synchword'] != "\x0B\x77") {
 
-			$ThisFileInfo['error'][] = 'Expecting "\x0B\x77" at offset '.$ThisFileInfo['avdataoffset'].', found \x'.strtoupper(dechex($AC3header['syncinfo']{0})).'\x'.strtoupper(dechex($AC3header['syncinfo']{1})).' instead';
+			$ThisFileInfo['error'][] = 'Expecting "\x0B\x77" at offset '.$ThisFileInfo['avdataoffset'].', found \x'.strtoupper(dechex($AC3header['syncinfo'][0])).'\x'.strtoupper(dechex($AC3header['syncinfo'][1])).' instead';
 			unset($thisfile_ac3);
 			return false;
 
@@ -398,7 +398,7 @@ class getid3_ac3
 		// -8    –42.14 dB
 
 		$fourbit = str_pad(decbin(($compre & 0xF0) >> 4), 4, '0', STR_PAD_LEFT);
-		if ($fourbit{0} == '1') {
+		if ($fourbit[0] == '1') {
 			$log_gain = -8 + bindec(substr($fourbit, 1));
 		} else {
 			$log_gain = bindec(substr($fourbit, 1));

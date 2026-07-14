@@ -177,7 +177,7 @@ class treemenu
             case 'heyes_array':
                 // Need to create a HTML_TreeMenu object ?
                 if (!isset($params['treeMenu'])) {
-                    $treeMenu = &new treemenu();
+                    $treeMenu = new treemenu();
                     $parentID = 0;
                 } else {
                     $treeMenu = &$params['treeMenu'];
@@ -209,7 +209,7 @@ class treemenu
             default:
                 // Need to create a HTML_TreeMenu object ?
                 if (!isset($params['treeMenu'])) {
-                    $treeMenu = &new treemenu();
+                    $treeMenu = new treemenu();
                 } else {
                     $treeMenu = &$params['treeMenu'];
                 }
@@ -266,7 +266,7 @@ class treemenu
         // Supplied $xml is a string
         if (is_string($xml)) {
             require_once('XML/Tree.php');
-            $xmlTree = &new XML_Tree();
+            $xmlTree = new XML_Tree();
             $xmlTree->getTreeFromString($xml);
 
         // Supplied $xml is an XML_Tree object

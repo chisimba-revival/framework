@@ -1,49 +1,51 @@
-<?php
-// +----------------------------------------------------------------------+
-// | PHP versions 4 and 5                                                 |
-// +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2008 Manuel Lemos, Tomas V.V.Cox,                 |
-// | Stig. S. Bakken, Lukas Smith, Igor Feghali                           |
-// | All rights reserved.                                                 |
-// +----------------------------------------------------------------------+
-// | MDB2_Schema enables users to maintain RDBMS independant schema files |
-// | in XML that can be used to manipulate both data and database schemas |
-// | This LICENSE is in the BSD license style.                            |
-// |                                                                      |
-// | Redistribution and use in source and binary forms, with or without   |
-// | modification, are permitted provided that the following conditions   |
-// | are met:                                                             |
-// |                                                                      |
-// | Redistributions of source code must retain the above copyright       |
-// | notice, this list of conditions and the following disclaimer.        |
-// |                                                                      |
-// | Redistributions in binary form must reproduce the above copyright    |
-// | notice, this list of conditions and the following disclaimer in the  |
-// | documentation and/or other materials provided with the distribution. |
-// |                                                                      |
-// | Neither the name of Manuel Lemos, Tomas V.V.Cox, Stig. S. Bakken,    |
-// | Lukas Smith, Igor Feghali nor the names of his contributors may be   |
-// | used to endorse or promote products derived from this software       |
-// | without specific prior written permission.                           |
-// |                                                                      |
-// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS  |
-// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT    |
-// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS    |
-// | FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE      |
-// | REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,          |
-// | INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, |
-// | BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS|
-// |  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED  |
-// | AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT          |
-// | LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY|
-// | WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE          |
-// | POSSIBILITY OF SUCH DAMAGE.                                          |
-// +----------------------------------------------------------------------+
-// | Author: Igor Feghali <ifeghali@php.net>                              |
-// +----------------------------------------------------------------------+
-//
-// $Id$
-//
+<?php /* vim: se et ts=4 sw=4 sts=4 fdm=marker tw=80: */
+/**
+ * Copyright (c) 1998-2010 Manuel Lemos, Tomas V.V.Cox,
+ * Stig. S. Bakken, Lukas Smith, Igor Feghali
+ * All rights reserved.
+ *
+ * MDB2_Schema enables users to maintain RDBMS independant schema files
+ * in XML that can be used to manipulate both data and database schemas
+ * This LICENSE is in the BSD license style.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of Manuel Lemos, Tomas V.V.Cox, Stig. S. Bakken,
+ * Lukas Smith, Igor Feghali nor the names of his contributors may be
+ * used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+ * REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ *  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * PHP version 5
+ *
+ * @category Database
+ * @package  MDB2_Schema
+ * @author   Igor Feghali <ifeghali@php.net>
+ * @license  BSD http://www.opensource.org/licenses/bsd-license.php
+ * @version  SVN: $Id$
+ * @link     http://pear.php.net/packages/MDB2_Schema
+ */
 
 require_once 'XML/Unserializer.php';
 require_once 'MDB2/Schema/Validate.php';
@@ -51,40 +53,84 @@ require_once 'MDB2/Schema/Validate.php';
 /**
  * Parses an XML schema file
  *
- * @package MDB2_Schema
  * @category Database
- * @access protected
- * @author Igor Feghali <ifeghali@php.net>
+ * @package  MDB2_Schema
+ * @author   Lukas Smith <smith@pooteeweet.org>
+ * @author   Igor Feghali <ifeghali@php.net>
+ * @license  BSD http://www.opensource.org/licenses/bsd-license.php
+ * @link     http://pear.php.net/packages/MDB2_Schema
  */
 class MDB2_Schema_Parser2 extends XML_Unserializer
 {
     var $database_definition = array();
+
     var $database_loaded = array();
+
     var $variables = array();
+
     var $error;
+
     var $structure = false;
+
     var $val;
+
     var $options = array();
+
     var $table = array();
+
     var $table_name = '';
+
     var $field = array();
+
     var $field_name = '';
+
     var $index = array();
+
     var $index_name = '';
+
     var $constraint = array();
+
     var $constraint_name = '';
+
     var $sequence = array();
+
     var $sequence_name = '';
+
     var $init = array();
 
-    function __construct($variables, $fail_on_invalid_names = true, $structure = false, $valid_types = array(), $force_defaults = true)
-    {
+    /**
+     * PHP 5 constructor
+     *
+     * @param array $variables              mixed array with user defined schema
+     *                                      variables
+     * @param bool  $fail_on_invalid_names  array with reserved words per RDBMS
+     * @param array $structure              multi dimensional array with 
+     *                                      database schema and data
+     * @param array $valid_types            information of all valid fields 
+     *                                      types
+     * @param bool  $force_defaults         if true sets a default value to
+     *                                      field when not explicit
+     * @param int   $max_identifiers_length maximum allowed size for entities 
+     *                                      name
+     *
+     * @return void
+     *
+     * @access public
+     * @static
+     */
+    function __construct($variables, $fail_on_invalid_names = true,
+        $structure = false, $valid_types = array(), $force_defaults = true,
+        $max_identifiers_length = null
+    ) {
         // force ISO-8859-1 due to different defaults for PHP4 and PHP5
         // todo: this probably needs to be investigated some more and cleaned up
         $this->options['encoding'] = 'ISO-8859-1';
-        $this->options['XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE'] = true;
+
+        $this->options['XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE']    = true;
         $this->options['XML_UNSERIALIZER_OPTION_ATTRIBUTES_ARRAYKEY'] = false;
+
         $this->options['forceEnum'] = array('table', 'field', 'index', 'foreign', 'insert', 'update', 'delete', 'sequence');
+
         /*
          * todo: find a way to force the following items not to be parsed as arrays
          * as it cause problems in functions with multiple arguments
@@ -92,15 +138,45 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         //$this->options['forceNEnum'] = array('value', 'column');
         $this->variables = $variables;
         $this->structure = $structure;
+
         $this->val = new MDB2_Schema_Validate($fail_on_invalid_names, $valid_types, $force_defaults);
         parent::XML_Unserializer($this->options);
     }
 
-    function MDB2_Schema_Parser2($variables, $fail_on_invalid_names = true, $structure = false, $valid_types = array(), $force_defaults = true)
-    {
+    /**
+     * PHP 4 compatible constructor
+     *
+     * @param array $variables              mixed array with user defined schema
+     *                                      variables
+     * @param bool  $fail_on_invalid_names  array with reserved words per RDBMS
+     * @param array $structure              multi dimensional array with 
+     *                                      database schema and data
+     * @param array $valid_types            information of all valid fields 
+     *                                      types
+     * @param bool  $force_defaults         if true sets a default value to
+     *                                      field when not explicit
+     * @param int   $max_identifiers_length maximum allowed size for entities 
+     *                                      name
+     *
+     * @return void
+     *
+     * @access public
+     * @static
+     */
+    function MDB2_Schema_Parser2($variables, $fail_on_invalid_names = true,
+        $structure = false, $valid_types = array(), $force_defaults = true,
+        $max_identifiers_length = null
+    ) {
         $this->__construct($variables, $fail_on_invalid_names, $structure, $valid_types, $force_defaults);
     }
 
+    /**
+     * Main method. Parses XML Schema File.
+     *
+     * @return bool|error object
+     *
+     * @access public
+     */
     function parse()
     {
         $result = $this->unserialize($this->filename, true);
@@ -113,18 +189,33 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         }
     }
 
+    /**
+     * Do the necessary stuff to set the input XML schema file
+     *
+     * @param string $filename full path to schema file
+     *
+     * @return boolean MDB2_OK on success
+     *
+     * @access public
+     */
     function setInputFile($filename)
     {
         $this->filename = $filename;
         return MDB2_OK;
     }
 
-    function renameKey(&$arr, $oKey, $nKey)
-    {
-        $arr[$nKey] = &$arr[$oKey];
-        unset($arr[$oKey]);
-    }
-
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at database level.
+     *
+     * @param array $database multi dimensional array with database definition 
+     *                        and data.
+     *
+     * @return bool|error     MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixDatabaseKeys($database)
     {
         $this->database_definition = array(
@@ -177,6 +268,18 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         return MDB2_OK;
     }
 
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at table level.
+     *
+     * @param array $table multi dimensional array with table definition 
+     *                     and data.
+     *
+     * @return bool|error  MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixTableKeys($table)
     {
         $this->table = array(
@@ -252,6 +355,17 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         return MDB2_OK;
     }
 
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at table field level.
+     *
+     * @param array $field array with table field definition
+     *
+     * @return bool|error  MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixTableFieldKeys($field)
     {
         $this->field = array();
@@ -301,6 +415,17 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         return MDB2_OK;
     }
 
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at table index level.
+     *
+     * @param array $index array with table index definition
+     *
+     * @return bool|error  MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixTableIndexKeys($index)
     {
         $this->index = array(
@@ -325,7 +450,7 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
             $this->index['primary'] = $index['primary'];
         }
         if (!empty($index['field'])) {
-            foreach($index['field'] as $field) {
+            foreach ($index['field'] as $field) {
                 if (!empty($field['name'])) {
                     $this->field_name = $field['name'];
                 } else {
@@ -362,7 +487,19 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         return MDB2_OK;
     }
 
-    function fixTableConstraintKeys($constraint) {
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at table constraint level.
+     *
+     * @param array $constraint array with table index definition
+     *
+     * @return bool|error MDB2_OK on success or error object
+     *
+     * @access private
+     */
+    function fixTableConstraintKeys($constraint) 
+    {
         $this->constraint = array(
             'was' => '',
             'match' => '',
@@ -399,7 +536,7 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
             $this->constraint['initiallydeferred'] = $constraint['initiallydeferred'];
         }
         if (!empty($constraint['field']) && is_array($constraint['field'])) {
-            foreach($constraint['field'] as $field) {
+            foreach ($constraint['field'] as $field) {
                 $result = $this->val->validateConstraintField($this->constraint['fields'], $field);
                 if (PEAR::isError($result)) {
                     return $this->raiseError($result->getUserinfo());
@@ -419,7 +556,7 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
             }
 
             if (!empty($constraint['references']['field']) && is_array($constraint['references']['field'])) {
-                foreach($constraint['references']['field'] as $field) {
+                foreach ($constraint['references']['field'] as $field) {
                     $result = $this->val->validateConstraintReferencedField($this->constraint['references']['fields'], $field);
                     if (PEAR::isError($result)) {
                         return $this->raiseError($result->getUserinfo());
@@ -440,6 +577,18 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         return MDB2_OK;
     }
 
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at table data level.
+     *
+     * @param array  $element multi dimensional array with query definition
+     * @param string $type    whether its a insert|update|delete query
+     *
+     * @return bool|error  MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixTableInitializationKeys($element, $type = '')
     {
         if (!empty($element['select']) && is_array($element['select'])) {
@@ -452,6 +601,43 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         $this->table['initialization'][] = array( 'type' => $type, 'data' => $this->init );
     }
 
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works deeper at the table initialization level (data). At this 
+     * point we are look at one of the below:
+     *  
+     * <insert>
+     *       {field}+
+     * </insert>
+     *
+     * <select> (this is a select extracted off a insert-select query)
+     *       <table/>
+     *       {field}+
+     *       <where>
+     *             {expression}
+     *       </where>?
+     * </select>
+     * 
+     * <update>
+     *       {field}+
+     *       <where>
+     *             {expression}
+     *       </where>?
+     * </update>
+     *
+     * <delete>
+     *       <where>
+     *             {expression}
+     *       </where>
+     * </delete>
+     *
+     * @param array $element multi dimensional array with query definition
+     *
+     * @return bool|error  MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixTableInitializationDataKeys($element)
     {
         $this->init = array();
@@ -477,54 +663,96 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         }
     }
 
+    /**
+     * Recursively diggs into an "expression" element. According to our 
+     * documentation an "expression" element is of the kind:
+     *
+     * <expression>
+     *       <null/> or <value/> or <column/> or {function} or {expression}
+     *       <operator/>
+     *       <null/> or <value/> or <column/> or {function} or {expression}
+     * </expression>
+     *
+     * @param array &$arr reference to current element definition
+     *
+     * @return void
+     *
+     * @access private
+     */
     function setExpression(&$arr)
     {
         $element = each($arr);
+
         $arr = array( 'type' => $element['key'] );
+
         $element = $element['value'];
 
         switch ($arr['type']) {
-            case 'null':
+        case 'null':
             break;
-            case 'value':
-            case 'column':
-                $arr['data'] = $element;
+        case 'value':
+        case 'column':
+            $arr['data'] = $element;
             break;
-            case 'function':
-                if (!empty($element)
-                    && is_array($element)
-                ) {
-                    $arr['data'] = array( 'name' => $element['name'] );
-                    unset($element['name']);
+        case 'function':
+            if (!empty($element)
+                && is_array($element)
+            ) {
+                $arr['data'] = array( 'name' => $element['name'] );
+                unset($element['name']);
 
-                    foreach ($element as $type => $value) {
-                        if (!empty($value)) {
-                            if (is_array($value)) {
-                                foreach ($value as $argument) {
-                                    $argument = array( $type => $argument );
-                                    $this->setExpression($argument);
-                                    $arr['data']['arguments'][] = $argument;
-                                }
-                            } else {
-                                $arr['data']['arguments'][] = array( 'type' => $type, 'data' => $value );
+                foreach ($element as $type => $value) {
+                    if (!empty($value)) {
+                        if (is_array($value)) {
+                            foreach ($value as $argument) {
+                                $argument = array( $type => $argument );
+                                $this->setExpression($argument);
+                                $arr['data']['arguments'][] = $argument;
                             }
+                        } else {
+                            $arr['data']['arguments'][] = array( 'type' => $type, 'data' => $value );
                         }
                     }
                 }
+            }
             break;
-            case 'expression':
-                $arr['data'] = array( 'operants' => array(), 'operator' => $element['operator'] );
-                unset($element['operator']);
+        case 'expression':
+            $arr['data'] = array( 'operants' => array(), 'operator' => $element['operator'] );
+            unset($element['operator']);
 
-                foreach ($element as $k => $v) {
-                    $argument = array( $k => $v );
-                    $this->setExpression($argument);
-                    $arr['data']['operants'][] = $argument;
-                }
+            foreach ($element as $k => $v) {
+                $argument = array( $k => $v );
+                $this->setExpression($argument);
+                $arr['data']['operants'][] = $argument;
+            }
             break;
         }
     }
 
+    /**
+     * Enforce the default values for mandatory keys and ensure everything goes 
+     * always in the same order (simulates the behaviour of the original 
+     * parser). Works at database sequences level. A "sequence" element looks
+     * like:
+     *
+     * <sequence>
+     *       <name/>
+     *       <was/>?
+     *       <start/>?
+     *       <description/>?
+     *       <comments/>?
+     *       <on>
+     *             <table/>
+     *             <field/>
+     *       </on>?
+     * </sequence>
+     *
+     * @param array $sequence multi dimensional array with sequence definition
+     *
+     * @return bool|error  MDB2_OK on success or error object
+     *
+     * @access private
+     */
     function fixSequenceKeys($sequence)
     {
         $this->sequence = array(
@@ -532,7 +760,6 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
             'start' => '',
             'description' => '',
             'comments' => '',
-            'on' => array('table' => '', 'field' => '')
         );
 
         if (!empty($sequence['name'])) {
@@ -580,14 +807,23 @@ class MDB2_Schema_Parser2 extends XML_Unserializer
         return MDB2_OK;
     }
 
+    /**
+     * Pushes a MDB2_Schema_Error into stack and returns it
+     *
+     * @param string $msg   textual message
+     * @param int    $ecode MDB2_Schema's error code
+     *
+     * @return object
+     * @access private
+     * @static
+     */
     function &raiseError($msg = null, $ecode = MDB2_SCHEMA_ERROR_PARSE)
     {
         if (is_null($this->error)) {
             $error = 'Parser error: '.$msg."\n";
+
             $this->error =& MDB2_Schema::raiseError($ecode, null, null, $error);
         }
         return $this->error;
     }
 }
-
-?>

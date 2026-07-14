@@ -34,7 +34,7 @@ class EpiTwitter extends EpiOAuth
     if(empty($this->consumerKey))
     {
       $query = isset($args) ? http_build_query($args) : '';
-      $url = "{$this->searchUrl}{$path}?{$query}";
+      $url = "{$this->searchUrl}[$path]?{$query}";
       $ch = curl_init($url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
@@ -56,7 +56,7 @@ class EpiTwitter extends EpiOAuth
       }
     }
 
-    $url = $this->getUrl("{$this->apiUrl}{$path}");
+    $url = $this->getUrl("{$this->apiUrl}[$path]");
     return new EpiTwitterJson(call_user_func(array($this, 'httpRequest'), $method, $url, $args, $isMultipart));
   }
 

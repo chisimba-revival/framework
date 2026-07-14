@@ -86,11 +86,11 @@ class browser extends ChisimbaObject
      */
     private function _determinePlatform()
     {
-        $win = eregi("win", $this->useragent);
-        $linux = eregi("linux", $this->useragent);
-        $mac = eregi("mac", $this->useragent);
-        $os2 = eregi("OS/2", $this->useragent);
-        $beos = eregi("BeOS", $this->useragent);
+        $win = preg_match('~' . "win" . '~i', $this->useragent);
+        $linux = preg_match('~' . "linux" . '~i', $this->useragent);
+        $mac = preg_match('~' . "mac" . '~i', $this->useragent);
+        $os2 = preg_match('~' . "OS/2" . '~i', $this->useragent);
+        $beos = preg_match('~' . "BeOS" . '~i', $this->useragent);
         
         //now do the check as to which matches and return it
         if($win)
@@ -125,10 +125,10 @@ class browser extends ChisimbaObject
     public function isOpera()
     {
         // test for Opera        
-        if (eregi("opera",$this->useragent))
+        if (preg_match('~' . "opera" . '~i',$this->useragent))
         {
             $val = stristr($this->useragent, "opera");
-            if (eregi("/", $val)){
+            if (preg_match('~' . "/" . '~i', $val)){
                 $val = explode("/",$val);
                 $this->browsertype = $val[0];
                 $val = explode(" ",$val[1]);
@@ -152,7 +152,7 @@ class browser extends ChisimbaObject
      */ 
     public function isFirefox()
     {
-        if(eregi("Firefox", $this->useragent))
+        if(preg_match('~' . "Firefox" . '~i', $this->useragent))
         {
             $this->browsertype = "Firefox"; 
             $val = stristr($this->useragent, "Firefox");
@@ -174,7 +174,7 @@ class browser extends ChisimbaObject
      */
     public function isKonqueror()
     {
-        if(eregi("Konqueror",$this->useragent))
+        if(preg_match('~' . "Konqueror" . '~i',$this->useragent))
         {
             $val = explode(" ",stristr($this->useragent,"Konqueror"));
             $val = explode("/",$val[0]);
@@ -197,12 +197,12 @@ class browser extends ChisimbaObject
      */
     public function isIEv1()
     {
-        if(eregi("microsoft internet explorer", $this->useragent))
+        if(preg_match('~' . "microsoft internet explorer" . '~i', $this->useragent))
         {
             $this->browsertype = "MSIE"; 
             $this->version = "1.0";
             $public = stristr($this->useragent, "/");
-            if (ereg("308|425|426|474|0b1", $public))
+            if (preg_match('~' . "308|425|426|474|0b1" . '~', $public))
             {
                 $this->version = "1.5";
             }
@@ -222,7 +222,7 @@ class browser extends ChisimbaObject
      */
     public function isMSIE()
     {
-        if(eregi("msie", $this->useragent) && !eregi("opera",$this->useragent))
+        if(preg_match('~' . "msie" . '~i', $this->useragent) && !preg_match('~' . "opera" . '~i',$this->useragent))
         {
             $this->browsertype = "MSIE"; 
             $val = explode(" ",stristr($this->useragent,"msie"));
@@ -243,7 +243,7 @@ class browser extends ChisimbaObject
      */
     public function isGaleon()
     {
-        if(eregi("galeon",$this->useragent))
+        if(preg_match('~' . "galeon" . '~i',$this->useragent))
         {
             $val = explode(" ",stristr($this->useragent,"galeon"));
             $val = explode("/",$val[0]);
@@ -270,7 +270,7 @@ class browser extends ChisimbaObject
      */
     public function isWebTV()
     {
-        if(eregi("webtv",$this->useragent))
+        if(preg_match('~' . "webtv" . '~i',$this->useragent))
         {
             $val = explode("/",stristr($this->useragent,"webtv"));
             $this->browsertype = $val[0];
@@ -291,7 +291,7 @@ class browser extends ChisimbaObject
      */
     public function isNetPositive()
     {
-        if(eregi("NetPositive", $this->useragent))
+        if(preg_match('~' . "NetPositive" . '~i', $this->useragent))
         {
             $val = explode("/",stristr($this->useragent,"NetPositive"));
             $this->platform = "BeOS"; 
@@ -311,12 +311,12 @@ class browser extends ChisimbaObject
      */
     public function isMSPIE()
     {
-        if(eregi("mspie",$this->useragent) || eregi("pocket", $this->useragent))
+        if(preg_match('~' . "mspie" . '~i',$this->useragent) || preg_match('~' . "pocket" . '~i', $this->useragent))
         {
             $val = explode(" ",stristr($this->useragent,"mspie"));
             $this->browsertype = "MSPIE"; 
             $this->platform = "WindowsCE"; 
-            if (eregi("mspie", $this->useragent))
+            if (preg_match('~' . "mspie" . '~i', $this->useragent))
                 $this->version = $val[1];
             else {
                 $val = explode("/",$this->useragent);
@@ -336,7 +336,7 @@ class browser extends ChisimbaObject
      */
     public function isIcab()
     {
-        if(eregi("icab",$this->useragent))
+        if(preg_match('~' . "icab" . '~i',$this->useragent))
         {
             $val = explode(" ",stristr($this->useragent,"icab"));
             $this->browsertype = $val[0];
@@ -355,7 +355,7 @@ class browser extends ChisimbaObject
      */
     public function isOmniWeb()
     {
-        if(eregi("omniweb",$this->useragent))
+        if(preg_match('~' . "omniweb" . '~i',$this->useragent))
         {
             $val = explode("/",stristr($this->useragent,"omniweb"));
             $this->browsertype = $val[0];
@@ -374,7 +374,7 @@ class browser extends ChisimbaObject
      */
     public function isPhoenix()
     {
-        if(eregi("Phoenix", $this->useragent))
+        if(preg_match('~' . "Phoenix" . '~i', $this->useragent))
         {
             $this->browsertype = "Phoenix"; 
             $val = explode("/", stristr($this->useragent,"Phoenix/"));
@@ -393,7 +393,7 @@ class browser extends ChisimbaObject
      */
     public function isFirebird()
     {
-        if(eregi("firebird", $this->useragent))
+        if(preg_match('~' . "firebird" . '~i', $this->useragent))
         {
             $this->browsertype = "Firebird"; 
             $val = stristr($this->useragent, "Firebird");
@@ -413,14 +413,14 @@ class browser extends ChisimbaObject
      */
     public function isMozAlphaBeta()
     {
-        if(eregi("mozilla",$this->useragent) && 
-           eregi("rv:[0-9].[0-9][a-b]",$this->useragent) && 
-           !eregi("netscape",$this->useragent))
+        if(preg_match('~' . "mozilla" . '~i',$this->useragent) && 
+           preg_match('~' . "rv:[0-9].[0-9][a-b]" . '~i',$this->useragent) && 
+           !preg_match('~' . "netscape" . '~i',$this->useragent))
         
         {
             $this->browsertype = "Mozilla"; 
             $val = explode(" ",stristr($this->useragent,"rv:"));
-            eregi("rv:[0-9].[0-9][a-b]",$this->useragent,$val);
+            preg_match('~' . "rv:[0-9].[0-9][a-b]" . '~i',$this->useragent,$val);
             $this->version = str_replace("rv:","",$val[0]);
             return TRUE;
         }
@@ -436,13 +436,13 @@ class browser extends ChisimbaObject
      */
     public function isMozStable()
     {
-        if(eregi("mozilla",$this->useragent) &&
-           eregi("rv:[0-9]\.[0-9]",$this->useragent) && 
-           !eregi("netscape",$this->useragent))
+        if(preg_match('~' . "mozilla" . '~i',$this->useragent) &&
+           preg_match('~' . "rv:[0-9]\.[0-9]" . '~i',$this->useragent) && 
+           !preg_match('~' . "netscape" . '~i',$this->useragent))
         {
             $this->browsertype = "Mozilla"; 
             $val = explode(" ",stristr($this->useragent,"rv:"));
-            eregi("rv:[0-9]\.[0-9]\.[0-9]",$this->useragent,$val);
+            preg_match('~' . "rv:[0-9]\.[0-9]\.[0-9]" . '~i',$this->useragent,$val);
             $this->version = str_replace("rv:","",$val[0]);
             return TRUE;
         }
@@ -458,9 +458,9 @@ class browser extends ChisimbaObject
      */
     public function isLynx()
     {
-        if(eregi("libwww", $this->useragent))
+        if(preg_match('~' . "libwww" . '~i', $this->useragent))
         {
-            if (eregi("amaya", $this->useragent))
+            if (preg_match('~' . "amaya" . '~i', $this->useragent))
             {
                 $val = explode("/",stristr($this->useragent,"amaya"));
                 $this->browsertype = "Amaya"; 
@@ -485,7 +485,7 @@ class browser extends ChisimbaObject
      */
     public function isSafari()
     {
-        if(eregi("safari", $this->useragent))
+        if(preg_match('~' . "safari" . '~i', $this->useragent))
         {
             $this->browsertype = "Safari"; 
             $this->version = "";
@@ -503,7 +503,7 @@ class browser extends ChisimbaObject
      */
     public function isNetscape()
     {
-        if(eregi("netscape",$this->useragent))
+        if(preg_match('~' . "netscape" . '~i',$this->useragent))
         {
             $val = explode(" ",stristr($this->useragent,"netscape"));
             $val = explode("/",$val[0]);
@@ -511,8 +511,8 @@ class browser extends ChisimbaObject
             $this->version = $val[1];
             return TRUE;
         }
-        elseif(eregi("mozilla",$this->useragent) && 
-                !eregi("rv:[0-9]\.[0-9]\.[0-9]",$this->useragent))
+        elseif(preg_match('~' . "mozilla" . '~i',$this->useragent) && 
+                !preg_match('~' . "rv:[0-9]\.[0-9]\.[0-9]" . '~i',$this->useragent))
         {
             $val = explode(" ",stristr($this->useragent,"mozilla"));
             $val = explode("/",$val[0]);
@@ -532,10 +532,10 @@ class browser extends ChisimbaObject
      */
     public function isAOL()
     {
-        if (eregi("AOL", $this->useragent)){
+        if (preg_match('~' . "AOL" . '~i', $this->useragent)){
             $public = stristr($this->useragent, "AOL");
             $public = explode(" ", $public);
-            $this->aol = ereg_replace("[^0-9,.,a-z,A-Z]", "", $public[1]);
+            $this->aol = preg_replace("~[^0-9,.,a-z,A-Z]~", "", $public[1]);
             return TRUE;
         }
         else { 

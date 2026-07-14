@@ -216,7 +216,7 @@ class fileupload extends ChisimbaObject
 
         if(!empty($check_type))
         {
-            if(!eregi("\.($check_type)$",$filename))
+            if(!preg_match("~\.($check_type)$~i",$filename))
             {
 
                 $this->error();

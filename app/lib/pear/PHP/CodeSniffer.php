@@ -877,7 +877,7 @@ class PHP_CodeSniffer
             $lastCharWasCaps = ($classFormat === false) ? false : true;
 
             for ($i = 1; $i < $length; $i++) {
-                $isCaps = (strtoupper($string{$i}) === $string{$i}) ? true : false;
+                $isCaps = (strtoupper($string[$i]) === $string[$i]) ? true : false;
                 if ($isCaps === true && $lastCharWasCaps === true) {
                     return false;
                 }
@@ -908,7 +908,7 @@ class PHP_CodeSniffer
             $validName = false;
         } else {
             foreach ($nameBits as $bit) {
-                if ($bit{0} !== strtoupper($bit{0})) {
+                if ($bit[0] !== strtoupper($bit[0])) {
                     $validName = false;
                     break;
                 }

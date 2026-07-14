@@ -1054,7 +1054,7 @@ class modulecatalogue extends controller {
                     }
                     $regResult = $this->objModuleAdmin->installModule ( $registerdata );
                     if ($regResult) {
-                        $this->output [] = str_replace ( '[MODULE]', $modname, $this->objLanguage->languageText ( 'mod_modulecatalogue_regconfirm', 'modulecatalogue' ) );
+                        $this->output .= str_replace ( '[MODULE]', $modname, $this->objLanguage->languageText ( 'mod_modulecatalogue_regconfirm', 'modulecatalogue' ) ) . "\n";
                     }
                     return $regResult;
                 }
@@ -1372,7 +1372,7 @@ EOT;
     public function processTags() {
         foreach ( $this->tagCloud as $arrs ) {
             if (! empty ( $arrs ['tags'] )) {
-                $tagarr [] = explode ( ',', ereg_replace ( ' +', '', $arrs ['tags'] ) );
+                $tagarr [] = explode ( ',', preg_replace('~ +~', '', $arrs ['tags'] ) );
             }
         }
         $tags = NULL;

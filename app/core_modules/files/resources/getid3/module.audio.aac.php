@@ -321,7 +321,7 @@ class getid3_aac
 
 			// Loop thru substring chars
 			for ($i = 0; $i < 10; $i++) {
-				$AACheaderBitstream .= $decbin[$substring{$i}];
+				$AACheaderBitstream .= $decbin[$substring[$i]];
 			}
 
 			$bitoffset = 0;

@@ -381,7 +381,7 @@ class PHP_DocBlockGenerator_GetoptPlus
         foreach($options as $option) {
             $option = $this->tidyArray($option, false);
             // extracts the first letter of the option short name, ignores the others letters silently
-            $shortName = $this->tidyString(current($option)) and $shortName = $shortName{0};
+            $shortName = $this->tidyString(current($option)) and $shortName = $shortName[0];
             // extracts the option long name
             $longName = $this->tidyString(next($option));
 

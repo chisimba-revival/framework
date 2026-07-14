@@ -174,7 +174,7 @@ class PHP_CompatInfo
         $options = array_merge($default_options, $options);
 
         if (is_dir($dir) && is_readable($dir)) {
-            if ($dir{strlen($dir)-1} == '/' || $dir{strlen($dir)-1} == '\\') {
+            if ($dir[strlen($dir)-1] == '/' || $dir[strlen($dir)-1] == '\\') {
                 $dir = substr($dir, 0, -1);
             }
             $options['file_ext'] = array_map('strtolower', $options['file_ext']);
@@ -498,7 +498,7 @@ class PHP_CompatInfo
                 ($GLOBALS['_PHP_COMPATINFO_FUNCS'][$name]['ext'] != 'ext_standard') &&
                 ($GLOBALS['_PHP_COMPATINFO_FUNCS'][$name]['ext'] != 'zend')) {
                 $extension = substr($GLOBALS['_PHP_COMPATINFO_FUNCS'][$name]['ext'], 4);
-                if ($extension{0} == '_') {
+                if ($extension[0] == '_') {
                     $extension = substr($extension, 1);
                 }
             } else {
@@ -639,7 +639,7 @@ class PHP_CompatInfo
             $ret = array();
             $d = @dir($directory);
             while ($d && $entry = $d->read()) {
-                if ($entry{0} != '.') {
+                if ($entry[0] != '.') {
                     if (is_file($directory . DIRECTORY_SEPARATOR . $entry)) {
                         $ret[] = $directory . DIRECTORY_SEPARATOR . $entry;
                     }

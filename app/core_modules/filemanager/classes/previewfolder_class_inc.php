@@ -394,7 +394,7 @@ class previewfolder extends filemanagerobject {
                     // get image thumbnails
                     //The DOM image
                     $domElements['image'] = $this->domDoc->createElement('img');
-                    if (ereg("image", $file['mimetype']) || ereg("video", $file['mimetype'])) {
+                    if (preg_match("~image~", $file['mimetype']) || preg_match("~video~", $file['mimetype'])) {
                         $domElements['image']->setAttribute('src', str_replace('amp;', '', $objThumbnail->getThumbnail($file['id'], $file['filename'], $this->objCleanUrl->cleanUpUrl(($this->objAltConfig->getcontentPath() . $file['path'])), 'large')));
                         $domElements['image']->setAttribute('class', 'imgThumbnail');
                         $domElements['imgDiv']->appendChild($domElements['image']);
@@ -403,7 +403,7 @@ class previewfolder extends filemanagerobject {
 
                     //create audio/video player object
                     $objPlayer = "";
-                    if (ereg("audio", $file['mimetype'])) {
+                    if (preg_match("~audio~", $file['mimetype'])) {
                         $objPlayer = $objFilePreview->previewFile($file['id']);
                         $domElements['viewDiv']->appendChild($domElements['fileLink']);
                         $domElements['imgParagraph']->removeAttribute('class');
@@ -411,7 +411,7 @@ class previewfolder extends filemanagerobject {
                     }
 
                     //other formats
-                    if (!ereg("audio", $file['mimetype']) && !ereg("image", $file['mimetype']) && !ereg("video", $file['mimetype'])) {
+                    if (!preg_match("~audio~", $file['mimetype']) && !preg_match("~image~", $file['mimetype']) && !preg_match("~video~", $file['mimetype'])) {
                         $domElements['image']->setAttribute('src', $this->objFileIcons->getIconSrc($file['datatype']));
                         $domElements['image']->setAttribute('class', 'iconThumbnail');
                         $domElements['image']->normalize();

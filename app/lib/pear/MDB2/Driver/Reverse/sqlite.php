@@ -2,8 +2,8 @@
 // +----------------------------------------------------------------------+
 // | PHP versions 4 and 5                                                 |
 // +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2006 Manuel Lemos, Tomas V.V.Cox,                 |
-// | Stig. S. Bakken, Lukas Smith                                         |
+// | Copyright (c) 1998-2007 Manuel Lemos, Tomas V.V.Cox,                 |
+// | Stig. S. Bakken, Lukas Smith, Lorenzo Alberton                       |
 // | All rights reserved.                                                 |
 // +----------------------------------------------------------------------+
 // | MDB2 is a merge of PEAR DB and Metabases that provides a unified DB  |
@@ -39,7 +39,8 @@
 // | WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE          |
 // | POSSIBILITY OF SUCH DAMAGE.                                          |
 // +----------------------------------------------------------------------+
-// | Author: Lukas Smith <smith@pooteeweet.org>                           |
+// | Authors: Lukas Smith <smith@pooteeweet.org>                          |
+// |          Lorenzo Alberton <l.alberton@quipo.it>                      |
 // +----------------------------------------------------------------------+
 //
 // $Id$
@@ -56,26 +57,46 @@ require_once 'MDB2/Driver/Reverse/Common.php';
  */
 class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
 {
+    /**
+     * Remove SQL comments from the field definition
+     *
+     * @access private
+     */
+    function _removeComments($sql) {
+        $lines = explode("\n", $sql);
+        foreach ($lines as $k => $line) {
+            $pieces = explode('--', $line);
+            if (count($pieces) > 1 && (substr_count($pieces[0], '\'') % 2) == 0) {
+                $lines[$k] = substr($line, 0, strpos($line, '--'));
+            }
+        }
+        return implode("\n", $lines);
+    }
+
+    /**
+     *
+     */
     function _getTableColumns($sql)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
-        $start_pos = strpos($sql, '(');
-        $end_pos = strrpos($sql, ')');
+        $start_pos  = strpos($sql, '(');
+        $end_pos    = strrpos($sql, ')');
         $column_def = substr($sql, $start_pos+1, $end_pos-$start_pos-1);
         // replace the decimal length-places-separator with a colon
         $column_def = preg_replace('/(\d),(\d)/', '\1:\2', $column_def);
-        $column_sql = split(',', $column_def);
-        $columns = array();
-        $count = count($column_sql);
+        $column_def = $this->_removeComments($column_def);
+        $column_sql = explode(',', $column_def);
+        $columns    = array();
+        $count      = count($column_sql);
         if ($count == 0) {
             return $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
                 'unexpected empty table column definition list', __FUNCTION__);
         }
-        $regexp = '/^([^ ]+) (CHAR|VARCHAR|VARCHAR2|TEXT|BOOLEAN|SMALLINT|INT|INTEGER|DECIMAL|BIGINT|DOUBLE|FLOAT|DATETIME|DATE|TIME|LONGTEXT|LONGBLOB)( ?\(([1-9][0-9]*)(:([1-9][0-9]*))?\))?( UNSIGNED)?( PRIMARY KEY)?( DEFAULT (\'[^\']*\'|[^ ]+))?( NULL| NOT NULL)?( PRIMARY KEY)?$/i';
-        $regexp2 = '/^([^ ]+) (PRIMARY|UNIQUE|CHECK)$/i';
+        $regexp = '/^\s*([^\s]+) +(CHAR|VARCHAR|VARCHAR2|TEXT|BOOLEAN|SMALLINT|INT|INTEGER|DECIMAL|TINYINT|BIGINT|DOUBLE|FLOAT|DATETIME|DATE|TIME|LONGTEXT|LONGBLOB)( ?\(([1-9][0-9]*)(:([1-9][0-9]*))?\))?( NULL| NOT NULL)?( UNSIGNED)?( NULL| NOT NULL)?( PRIMARY KEY)?( DEFAULT (\'[^\']*\'|[^ ]+))?( NULL| NOT NULL)?( PRIMARY KEY)?(\s*\-\-.*)?$/i';
+        $regexp2 = '/^\s*([^ ]+) +(PRIMARY|UNIQUE|CHECK)$/i';
         for ($i=0, $j=0; $i<$count; ++$i) {
             if (!preg_match($regexp, trim($column_sql[$i]), $matches)) {
                 if (!preg_match($regexp2, trim($column_sql[$i]))) {
@@ -92,14 +113,14 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             if (isset($matches[6]) && strlen($matches[6])) {
                 $columns[$j]['decimal'] = $matches[6];
             }
-            if (isset($matches[7]) && strlen($matches[7])) {
+            if (isset($matches[8]) && strlen($matches[8])) {
                 $columns[$j]['unsigned'] = true;
             }
-            if (isset($matches[8]) && strlen($matches[8])) {
+            if (isset($matches[9]) && strlen($matches[9])) {
                 $columns[$j]['autoincrement'] = true;
             }
-            if (isset($matches[10]) && strlen($matches[10])) {
-                $default = $matches[10];
+            if (isset($matches[12]) && strlen($matches[12])) {
+                $default = $matches[12];
                 if (strlen($default) && $default[0]=="'") {
                     $default = str_replace("''", "'", substr($default, 1, strlen($default)-2));
                 }
@@ -107,9 +128,15 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
                     $default = null;
                 }
                 $columns[$j]['default'] = $default;
+            } else {
+                $columns[$j]['default'] = null;
             }
-            if (isset($matches[11]) && strlen($matches[11])) {
-                $columns[$j]['notnull'] = ($matches[11] === ' NOT NULL');
+            if (isset($matches[7]) && strlen($matches[7])) {
+                $columns[$j]['notnull'] = ($matches[7] === ' NOT NULL');
+            } else if (isset($matches[9]) && strlen($matches[9])) {
+                $columns[$j]['notnull'] = ($matches[9] === ' NOT NULL');
+            } else if (isset($matches[13]) && strlen($matches[13])) {
+                $columns[$j]['notnull'] = ($matches[13] === ' NOT NULL');
             }
             ++$j;
         }
@@ -121,23 +148,25 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
     /**
      * Get the stucture of a field into an array
      *
-     * @param string    $table       name of table that should be used in method
-     * @param string    $field_name  name of field that should be used in method
+     * @param string $table_name name of table that should be used in method
+     * @param string $field_name name of field that should be used in method
      * @return mixed data array on success, a MDB2 error on failure.
      *          The returned array contains an array for each field definition,
      *          with (some of) these indices:
      *          [notnull] [nativetype] [length] [fixed] [default] [type] [mdb2type]
      * @access public
      */
-    function getTableFieldDefinition($table, $field_name)
+    function getTableFieldDefinition($table_name, $field_name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
+        list($schema, $table) = $this->splitTableSchema($table_name);
+
         $result = $db->loadModule('Datatype', null, true);
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $result;
         }
         $query = "SELECT sql FROM sqlite_master WHERE type='table' AND ";
@@ -147,7 +176,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             $query.= 'name='.$db->quote($table, 'text');
         }
         $sql = $db->queryOne($query);
-        if (PEAR::isError($sql)) {
+        if (MDB2::isError($sql)) {
             return $sql;
         }
         $columns = $this->_getTableColumns($sql);
@@ -163,7 +192,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             }
             if ($field_name == $column['name']) {
                 $mapped_datatype = $db->datatype->mapNativeDatatype($column);
-                if (PEAR::IsError($mapped_datatype)) {
+                if (MDB2::isError($mapped_datatype)) {
                     return $mapped_datatype;
                 }
                 list($types, $length, $unsigned, $fixed) = $mapped_datatype;
@@ -174,7 +203,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
                 $default = false;
                 if (array_key_exists('default', $column)) {
                     $default = $column['default'];
-                    if (is_null($default) && $notnull) {
+                    if ((null === $default) && $notnull) {
                         $default = '';
                     }
                 }
@@ -187,13 +216,13 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
                     'notnull' => $notnull,
                     'nativetype' => preg_replace('/^([a-z]+)[^a-z].*/i', '\\1', $column['type'])
                 );
-                if (!is_null($length)) {
+                if (null !== $length) {
                     $definition[0]['length'] = $length;
                 }
-                if (!is_null($unsigned)) {
+                if (null !== $unsigned) {
                     $definition[0]['unsigned'] = $unsigned;
                 }
-                if (!is_null($fixed)) {
+                if (null !== $fixed) {
                     $definition[0]['fixed'] = $fixed;
                 }
                 if ($default !== false) {
@@ -224,17 +253,19 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
     /**
      * Get the stucture of an index into an array
      *
-     * @param string    $table      name of table that should be used in method
-     * @param string    $index_name name of index that should be used in method
+     * @param string $table_name name of table that should be used in method
+     * @param string $index_name name of index that should be used in method
      * @return mixed data array on success, a MDB2 error on failure
      * @access public
      */
-    function getTableIndexDefinition($table, $index_name)
+    function getTableIndexDefinition($table_name, $index_name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
+
+        list($schema, $table) = $this->splitTableSchema($table_name);
 
         $query = "SELECT sql FROM sqlite_master WHERE type='index' AND ";
         if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
@@ -250,7 +281,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             $qry = sprintf($query, $db->quote($index_name_mdb2, 'text'));
         }
         $sql = $db->queryOne($qry, 'text');
-        if (PEAR::isError($sql) || empty($sql)) {
+        if (MDB2::isError($sql) || empty($sql)) {
             // fallback to the given $index_name, without transformation
             if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
                 $qry = sprintf($query, $db->quote(strtolower($index_name), 'text'));
@@ -259,7 +290,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             }
             $sql = $db->queryOne($qry, 'text');
         }
-        if (PEAR::isError($sql)) {
+        if (MDB2::isError($sql)) {
             return $sql;
         }
         if (!$sql) {
@@ -271,7 +302,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
         $start_pos = strpos($sql, '(');
         $end_pos = strrpos($sql, ')');
         $column_names = substr($sql, $start_pos+1, $end_pos-$start_pos-1);
-        $column_names = split(',', $column_names);
+        $column_names = explode(',', $column_names);
 
         if (preg_match("/^create unique/", $sql)) {
             return $db->raiseError(MDB2_ERROR_NOT_FOUND, null, null,
@@ -281,9 +312,11 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
         $definition = array();
         $count = count($column_names);
         for ($i=0; $i<$count; ++$i) {
-            $column_name = strtok($column_names[$i]," ");
-            $collation = strtok(" ");
-            $definition['fields'][$column_name] = array();
+            $column_name = strtok($column_names[$i], ' ');
+            $collation = strtok(' ');
+            $definition['fields'][$column_name] = array(
+                'position' => $i+1
+            );
             if (!empty($collation)) {
                 $definition['fields'][$column_name]['sorting'] =
                     ($collation=='ASC' ? 'ascending' : 'descending');
@@ -303,17 +336,19 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
     /**
      * Get the stucture of a constraint into an array
      *
-     * @param string    $table      name of table that should be used in method
-     * @param string    $index_name name of index that should be used in method
+     * @param string $table_name      name of table that should be used in method
+     * @param string $constraint_name name of constraint that should be used in method
      * @return mixed data array on success, a MDB2 error on failure
      * @access public
      */
-    function getTableConstraintDefinition($table, $index_name)
+    function getTableConstraintDefinition($table_name, $constraint_name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
+
+        list($schema, $table) = $this->splitTableSchema($table_name);
 
         $query = "SELECT sql FROM sqlite_master WHERE type='index' AND ";
         if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
@@ -322,27 +357,43 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             $query.= 'name=%s AND tbl_name=' . $db->quote($table, 'text');
         }
         $query.= ' AND sql NOT NULL ORDER BY name';
-        $index_name_mdb2 = $db->getIndexName($index_name);
+        $constraint_name_mdb2 = $db->getIndexName($constraint_name);
         if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
-            $qry = sprintf($query, $db->quote(strtolower($index_name_mdb2), 'text'));
+            $qry = sprintf($query, $db->quote(strtolower($constraint_name_mdb2), 'text'));
         } else {
-            $qry = sprintf($query, $db->quote($index_name_mdb2, 'text'));
+            $qry = sprintf($query, $db->quote($constraint_name_mdb2, 'text'));
         }
         $sql = $db->queryOne($qry, 'text');
-        if (PEAR::isError($sql) || empty($sql)) {
+        if (MDB2::isError($sql) || empty($sql)) {
             // fallback to the given $index_name, without transformation
             if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
-                $qry = sprintf($query, $db->quote(strtolower($index_name), 'text'));
+                $qry = sprintf($query, $db->quote(strtolower($constraint_name), 'text'));
             } else {
-                $qry = sprintf($query, $db->quote($index_name, 'text'));
+                $qry = sprintf($query, $db->quote($constraint_name, 'text'));
             }
             $sql = $db->queryOne($qry, 'text');
         }
-        if (PEAR::isError($sql)) {
+        if (MDB2::isError($sql)) {
             return $sql;
         }
-        if (!$sql && $index_name == 'primary') {
-            // search in table definition for PRIMARY KEYs
+        //default values, eventually overridden
+        $definition = array(
+            'primary' => false,
+            'unique'  => false,
+            'foreign' => false,
+            'check'   => false,
+            'fields'  => array(),
+            'references' => array(
+                'table'  => '',
+                'fields' => array(),
+            ),
+            'onupdate'  => '',
+            'ondelete'  => '',
+            'match'     => '',
+            'deferrable'        => false,
+            'initiallydeferred' => false,
+        );
+        if (!$sql) {
             $query = "SELECT sql FROM sqlite_master WHERE type='table' AND ";
             if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
                 $query.= 'LOWER(name)='.$db->quote(strtolower($table), 'text');
@@ -351,44 +402,108 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             }
             $query.= " AND sql NOT NULL ORDER BY name";
             $sql = $db->queryOne($query, 'text');
-            if (PEAR::isError($sql)) {
+            if (MDB2::isError($sql)) {
                 return $sql;
             }
-            if (preg_match("/\bPRIMARY\s+KEY\b\s*\(([^)]+)/i", $sql, $tmp)) {
-                $definition = array();
-                $definition['primary'] = true;
-                $definition['fields'] = array();
-                $column_names = split(',', $tmp[1]);
-                foreach ($column_names as $column_name) {
-                    $definition['fields'][$column_name] = array();
+            if ($constraint_name == 'primary') {
+                // search in table definition for PRIMARY KEYs
+                if (preg_match("/\bPRIMARY\s+KEY\b\s*\(([^)]+)/i", $sql, $tmp)) {
+                    $definition['primary'] = true;
+                    $definition['fields'] = array();
+                    $column_names = explode(',', $tmp[1]);
+                    $colpos = 1;
+                    foreach ($column_names as $column_name) {
+                        $definition['fields'][trim($column_name)] = array(
+                            'position' => $colpos++
+                        );
+                    }
+                    return $definition;
                 }
-                return $definition;
+                if (preg_match("/\"([^\"]+)\"[^\,\"]+\bPRIMARY\s+KEY\b[^\,\)]*/i", $sql, $tmp)) {
+                    $definition['primary'] = true;
+                    $definition['fields'] = array();
+                    $column_names = explode(',', $tmp[1]);
+                    $colpos = 1;
+                    foreach ($column_names as $column_name) {
+                        $definition['fields'][trim($column_name)] = array(
+                            'position' => $colpos++
+                        );
+                    }
+                    return $definition;
+                }
+            } else {
+                // search in table definition for FOREIGN KEYs
+                $pattern = "/\bCONSTRAINT\b\s+%s\s+
+                    \bFOREIGN\s+KEY\b\s*\(([^\)]+)\)\s*
+                    \bREFERENCES\b\s+([^\s]+)\s*\(([^\)]+)\)\s*
+                    (?:\bMATCH\s*([^\s]+))?\s*
+                    (?:\bON\s+UPDATE\s+([^\s,\)]+))?\s*
+                    (?:\bON\s+DELETE\s+([^\s,\)]+))?\s*
+                    /imsx";
+                $found_fk = false;
+                if (preg_match(sprintf($pattern, $constraint_name_mdb2), $sql, $tmp)) {
+                    $found_fk = true;
+                } elseif (preg_match(sprintf($pattern, $constraint_name), $sql, $tmp)) {
+                    $found_fk = true;
+                }
+                if ($found_fk) {
+                    $definition['foreign'] = true;
+                    $definition['match'] = 'SIMPLE';
+                    $definition['onupdate'] = 'NO ACTION';
+                    $definition['ondelete'] = 'NO ACTION';
+                    $definition['references']['table'] = $tmp[2];
+                    $column_names = explode(',', $tmp[1]);
+                    $colpos = 1;
+                    foreach ($column_names as $column_name) {
+                        $definition['fields'][trim($column_name)] = array(
+                            'position' => $colpos++
+                        );
+                    }
+                    $referenced_cols = explode(',', $tmp[3]);
+                    $colpos = 1;
+                    foreach ($referenced_cols as $column_name) {
+                        $definition['references']['fields'][trim($column_name)] = array(
+                            'position' => $colpos++
+                        );
+                    }
+                    if (isset($tmp[4])) {
+                        $definition['match']    = $tmp[4];
+                    }
+                    if (isset($tmp[5])) {
+                        $definition['onupdate'] = $tmp[5];
+                    }
+                    if (isset($tmp[6])) {
+                        $definition['ondelete'] = $tmp[6];
+                    }
+                    return $definition;
+                }
             }
             $sql = false;
         }
         if (!$sql) {
             return $db->raiseError(MDB2_ERROR_NOT_FOUND, null, null,
-                'it was not specified an existing table constraint', __FUNCTION__);
+                $constraint_name . ' is not an existing table constraint', __FUNCTION__);
         }
 
         $sql = strtolower($sql);
         $start_pos = strpos($sql, '(');
-        $end_pos = strrpos($sql, ')');
+        $end_pos   = strrpos($sql, ')');
         $column_names = substr($sql, $start_pos+1, $end_pos-$start_pos-1);
-        $column_names = split(',', $column_names);
+        $column_names = explode(',', $column_names);
 
         if (!preg_match("/^create unique/", $sql)) {
             return $db->raiseError(MDB2_ERROR_NOT_FOUND, null, null,
-                'it was not specified an existing table constraint', __FUNCTION__);
+                $constraint_name . ' is not an existing table constraint', __FUNCTION__);
         }
 
-        $definition = array();
         $definition['unique'] = true;
         $count = count($column_names);
         for ($i=0; $i<$count; ++$i) {
             $column_name = strtok($column_names[$i]," ");
             $collation = strtok(" ");
-            $definition['fields'][$column_name] = array();
+            $definition['fields'][$column_name] = array(
+                'position' => $i+1
+            );
             if (!empty($collation)) {
                 $definition['fields'][$column_name]['sorting'] =
                     ($collation=='ASC' ? 'ascending' : 'descending');
@@ -397,7 +512,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
 
         if (empty($definition['fields'])) {
             return $db->raiseError(MDB2_ERROR_NOT_FOUND, null, null,
-                'it was not specified an existing table constraint', __FUNCTION__);
+                $constraint_name . ' is not an existing table constraint', __FUNCTION__);
         }
         return $definition;
     }
@@ -420,7 +535,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
     function getTriggerDefinition($trigger)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -448,7 +563,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
             'trigger_enabled' => 'boolean',
         );
         $def = $db->queryRow($query, $types, MDB2_FETCHMODE_ASSOC);
-        if (PEAR::isError($def)) {
+        if (MDB2::isError($def)) {
             return $def;
         }
         if (empty($def)) {
@@ -484,7 +599,7 @@ class MDB2_Driver_Reverse_sqlite extends MDB2_Driver_Reverse_Common
         }
 
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 

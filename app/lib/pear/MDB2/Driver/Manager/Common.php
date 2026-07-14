@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------+
 // | PHP versions 4 and 5                                                 |
 // +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2006 Manuel Lemos, Tomas V.V.Cox,                 |
+// | Copyright (c) 1998-2008 Manuel Lemos, Tomas V.V.Cox,                 |
 // | Stig. S. Bakken, Lukas Smith                                         |
 // | All rights reserved.                                                 |
 // +----------------------------------------------------------------------+
@@ -39,7 +39,8 @@
 // | WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE          |
 // | POSSIBILITY OF SUCH DAMAGE.                                          |
 // +----------------------------------------------------------------------+
-// | Author: Lukas Smith <smith@pooteeweet.org>                           |
+// | Authors: Lukas Smith <smith@pooteeweet.org>                          |
+// |          Lorenzo Alberton <l.alberton@quipo.it>                      |
 // +----------------------------------------------------------------------+
 //
 // $Id$
@@ -49,10 +50,14 @@
  * @package  MDB2
  * @category Database
  * @author   Lukas Smith <smith@pooteeweet.org>
+ * @author   Lorenzo Alberton <l.alberton@quipo.it>
  */
 
 /**
  * Base class for the management modules that is extended by each MDB2 driver
+ *
+ * To load this module in the MDB2 object:
+ * $mdb->loadModule('Manager');
  *
  * @package MDB2
  * @category Database
@@ -60,6 +65,26 @@
  */
 class MDB2_Driver_Manager_Common extends MDB2_Module_Common
 {
+    // {{{ splitTableSchema()
+
+    /**
+     * Split the "[owner|schema].table" notation into an array
+     *
+     * @param string $table [schema and] table name
+     *
+     * @return array array(schema, table)
+     * @access private
+     */
+    function splitTableSchema($table)
+    {
+        $ret = array();
+        if (strpos($table, '.') !== false) {
+            return explode('.', $table);
+        }
+        return array(null, $table);
+    }
+
+    // }}}
     // {{{ getFieldDeclarationList()
 
     /**
@@ -84,7 +109,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function getFieldDeclarationList($fields)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -94,7 +119,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
         }
         foreach ($fields as $field_name => $field) {
             $query = $db->getDeclaration($field['type'], $field_name, $field);
-            if (PEAR::isError($query)) {
+            if (MDB2::isError($query)) {
                 return $query;
             }
             $query_fields[] = $query;
@@ -116,7 +141,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function _fixSequenceName($sqn, $check = false)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -138,13 +163,13 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
      * Removes any formatting in an index name using the 'idxname_format' option
      *
      * @param string $idx string that containts name of anl index
-     * @return string name of the index with possible formatting removed
+     * @return string name of the index with eventual formatting removed
      * @access protected
      */
     function _fixIndexName($idx)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -162,14 +187,39 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     /**
      * create a new database
      *
-     * @param string $name name of the database that should be created
+     * @param string $name    name of the database that should be created
+     * @param array  $options array with charset, collation info
+     *
      * @return mixed MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    function createDatabase($database)
+    function createDatabase($database, $options = array())
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        return $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
+            'method not implemented', __FUNCTION__);
+    }
+
+    // }}}
+    // {{{ alterDatabase()
+
+    /**
+     * alter an existing database
+     *
+     * @param string $name    name of the database that should be created
+     * @param array  $options array with charset, collation info
+     *
+     * @return mixed MDB2_OK on success, a MDB2 error on failure
+     * @access public
+     */
+    function alterDatabase($database, $options = array())
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -190,7 +240,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function dropDatabase($database)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -203,16 +253,18 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
 
     /**
      * Create a basic SQL query for a new table creation
-     * @param string $name   Name of the database that should be created
-     * @param array $fields  Associative array that contains the definition of each field of the new table
-     * @param array $options  An associative array of table options
+     *
+     * @param string $name    Name of the database that should be created
+     * @param array  $fields  Associative array that contains the definition of each field of the new table
+     * @param array  $options An associative array of table options
+     *
      * @return mixed string (the SQL query) on success, a MDB2 error on failure
      * @see createTable()
      */
     function _getCreateTableQuery($name, $fields, $options = array())
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -225,7 +277,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
                 'no fields specified for table "'.$name.'"', __FUNCTION__);
         }
         $query_fields = $this->getFieldDeclarationList($fields);
-        if (PEAR::isError($query_fields)) {
+        if (MDB2::isError($query_fields)) {
             return $query_fields;
         }
         if (!empty($options['primary'])) {
@@ -301,14 +353,18 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function createTable($name, $fields, $options = array())
     {
         $query = $this->_getCreateTableQuery($name, $fields, $options);
-        if (PEAR::isError($query)) {
+        if (MDB2::isError($query)) {
             return $query;
         }
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
-        return $db->exec($query);
+        $result = $db->exec($query);
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -324,12 +380,70 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function dropTable($name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $name = $db->quoteIdentifier($name, true);
-        return $db->exec("DROP TABLE $name");
+        $result = $db->exec("DROP TABLE $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
+    }
+
+    // }}}
+    // {{{ truncateTable()
+
+    /**
+     * Truncate an existing table (if the TRUNCATE TABLE syntax is not supported,
+     * it falls back to a DELETE FROM TABLE query)
+     *
+     * @param string $name name of the table that should be truncated
+     * @return mixed MDB2_OK on success, a MDB2 error on failure
+     * @access public
+     */
+    function truncateTable($name)
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        $name = $db->quoteIdentifier($name, true);
+        $result = $db->exec("DELETE FROM $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
+    }
+
+    // }}}
+    // {{{ vacuum()
+
+    /**
+     * Optimize (vacuum) all the tables in the db (or only the specified table)
+     * and optionally run ANALYZE.
+     *
+     * @param string $table table name (all the tables if empty)
+     * @param array  $options an array with driver-specific options:
+     *               - timeout [int] (in seconds) [mssql-only]
+     *               - analyze [boolean] [pgsql and mysql]
+     *               - full [boolean] [pgsql-only]
+     *               - freeze [boolean] [pgsql-only]
+     *
+     * @return mixed MDB2_OK success, a MDB2 error on failure
+     * @access public
+     */
+    function vacuum($table = null, $options = array())
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        return $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
+            'method not implemented', __FUNCTION__);
     }
 
     // }}}
@@ -428,7 +542,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function alterTable($name, $changes, $check)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -448,7 +562,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listDatabases()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -468,7 +582,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listUsers()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -491,7 +605,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listViews($database = null)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -512,7 +626,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listTableViews($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -533,7 +647,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listTableTriggers($table = null)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -553,7 +667,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listFunctions()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -576,7 +690,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listTables($database = null)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -597,7 +711,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listTableFields($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -643,7 +757,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function createIndex($table, $name, $definition)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -655,7 +769,11 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
             $fields[] = $db->quoteIdentifier($field, true);
         }
         $query .= ' ('. implode(', ', $fields) . ')';
-        return $db->exec($query);
+        $result = $db->exec($query);
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -672,12 +790,16 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function dropIndex($table, $name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $name = $db->quoteIdentifier($db->getIndexName($name), true);
-        return $db->exec("DROP INDEX $name");
+        $result = $db->exec("DROP INDEX $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -693,7 +815,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listTableIndexes($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -702,34 +824,67 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     }
 
     // }}}
+    // {{{ _getAdvancedFKOptions()
+
+    /**
+     * Return the FOREIGN KEY query section dealing with non-standard options
+     * as MATCH, INITIALLY DEFERRED, ON UPDATE, ...
+     *
+     * @param array $definition
+     * @return string
+     * @access protected
+     */
+    function _getAdvancedFKOptions($definition)
+    {
+        return '';
+    }
+
+    // }}}
     // {{{ createConstraint()
 
     /**
      * create a constraint on a table
      *
-     * @param string    $table         name of the table on which the constraint is to be created
-     * @param string    $name         name of the constraint to be created
-     * @param array     $definition        associative array that defines properties of the constraint to be created.
-     *                                 Currently, only one property named FIELDS is supported. This property
-     *                                 is also an associative with the names of the constraint fields as array
-     *                                 constraints. Each entry of this array is set to another type of associative
-     *                                 array that specifies properties of the constraint that are specific to
-     *                                 each field.
-     *
-     *                                 Example
-     *                                    array(
-     *                                        'fields' => array(
-     *                                            'user_name' => array(),
-     *                                            'last_login' => array()
-     *                                        )
-     *                                    )
+     * @param string    $table       name of the table on which the constraint is to be created
+     * @param string    $name        name of the constraint to be created
+     * @param array     $definition  associative array that defines properties of the constraint to be created.
+     *                               The full structure of the array looks like this:
+     *          <pre>
+     *          array (
+     *              [primary] => 0
+     *              [unique]  => 0
+     *              [foreign] => 1
+     *              [check]   => 0
+     *              [fields] => array (
+     *                  [field1name] => array() // one entry per each field covered
+     *                  [field2name] => array() // by the index
+     *                  [field3name] => array(
+     *                      [sorting]  => ascending
+     *                      [position] => 3
+     *                  )
+     *              )
+     *              [references] => array(
+     *                  [table] => name
+     *                  [fields] => array(
+     *                      [field1name] => array(  //one entry per each referenced field
+     *                           [position] => 1
+     *                      )
+     *                  )
+     *              )
+     *              [deferrable] => 0
+     *              [initiallydeferred] => 0
+     *              [onupdate] => CASCADE|RESTRICT|SET NULL|SET DEFAULT|NO ACTION
+     *              [ondelete] => CASCADE|RESTRICT|SET NULL|SET DEFAULT|NO ACTION
+     *              [match] => SIMPLE|PARTIAL|FULL
+     *          );
+     *          </pre>
      * @return mixed MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
     function createConstraint($table, $name, $definition)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
         $table = $db->quoteIdentifier($table, true);
@@ -739,13 +894,28 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
             $query.= ' PRIMARY KEY';
         } elseif (!empty($definition['unique'])) {
             $query.= ' UNIQUE';
+        } elseif (!empty($definition['foreign'])) {
+            $query.= ' FOREIGN KEY';
         }
         $fields = array();
         foreach (array_keys($definition['fields']) as $field) {
             $fields[] = $db->quoteIdentifier($field, true);
         }
         $query .= ' ('. implode(', ', $fields) . ')';
-        return $db->exec($query);
+        if (!empty($definition['foreign'])) {
+            $query.= ' REFERENCES ' . $db->quoteIdentifier($definition['references']['table'], true);
+            $referenced_fields = array();
+            foreach (array_keys($definition['references']['fields']) as $field) {
+                $referenced_fields[] = $db->quoteIdentifier($field, true);
+            }
+            $query .= ' ('. implode(', ', $referenced_fields) . ')';
+            $query .= $this->_getAdvancedFKOptions($definition);
+        }
+        $result = $db->exec($query);
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -763,13 +933,17 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function dropConstraint($table, $name, $primary = false)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $table = $db->quoteIdentifier($table, true);
         $name = $db->quoteIdentifier($db->getIndexName($name), true);
-        return $db->exec("ALTER TABLE $table DROP CONSTRAINT $name");
+        $result = $db->exec("ALTER TABLE $table DROP CONSTRAINT $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -785,7 +959,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listTableConstraints($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -807,7 +981,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function createSequence($seq_name, $start = 1)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -828,7 +1002,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function dropSequence($name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -851,7 +1025,7 @@ class MDB2_Driver_Manager_Common extends MDB2_Module_Common
     function listSequences($database = null)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 

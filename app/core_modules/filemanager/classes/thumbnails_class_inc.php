@@ -132,7 +132,7 @@ class thumbnails extends ChisimbaObject
             return TRUE;
         }
         
-        if(ereg('image', $this->objFiles->getFileMimetype($fileId))){
+        if(preg_match('~image~', $this->objFiles->getFileMimetype($fileId))){
         if($index == 0){
             // Resize to 250x250 Maintaining Aspect Ratio
             $this->objImageResize->resize(250, 250, TRUE);
@@ -145,7 +145,7 @@ class thumbnails extends ChisimbaObject
             // Resize to 100x100 Maintaining Aspect Ratio
             $this->objImageResize->resize(100, 100, TRUE);
         }
-        }elseif (ereg('video', $this->objFiles->getFileMimetype($fileId))) {
+        }elseif (preg_match('~video~', $this->objFiles->getFileMimetype($fileId))) {
             if($index == 0){
                 $imgSize = '250x250';
             }elseif ($index == 1) {

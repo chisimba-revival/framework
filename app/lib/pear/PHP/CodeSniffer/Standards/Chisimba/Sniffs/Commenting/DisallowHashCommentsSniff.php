@@ -60,7 +60,7 @@ class Chisimba_Sniffs_Commenting_DisallowHashCommentsSniff implements PHP_CodeSn
     public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
-        if ($tokens[$stackPtr]['content']{0} === '#') {
+        if ($tokens[$stackPtr]['content'][0] === '#') {
             $error = 'Hash comments are prohibited';
             $phpcsFile->addError($error, $stackPtr);
         }

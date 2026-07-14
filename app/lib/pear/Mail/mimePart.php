@@ -409,7 +409,7 @@ class Mail_mimePart {
             $value = "$charset'$language'$encValue";
             $secondAsterisk = '*';
         }
-        $header = " {$name}{$secondAsterisk}=\"{$value}\"; ";
+        $header = " {$name}[$secondAsterisk]=\"{$value}\"; ";
         if (strlen($header) <= $maxLength){
             return $header;
         }
@@ -425,10 +425,10 @@ class Mail_mimePart {
             $matches = array();
             $found = preg_match($maxLengthReg, $value, $matches);
             if ($found){
-                $headers[] = " {$name}*{$headCount}{$secondAsterisk}=\"{$matches[0]}\"";
+                $headers[] = " {$name}*{$headCount}[$secondAsterisk]=\"{$matches[0]}\"";
                 $value = substr($value, strlen($matches[0]));
             }else{
-                $headers[] = " {$name}*{$headCount}{$secondAsterisk}=\"{$value}\"";
+                $headers[] = " {$name}*{$headCount}[$secondAsterisk]=\"{$value}\"";
                 $value = "";
             }
             $headCount++;

@@ -72,7 +72,7 @@ class mimetypes extends ChisimbaObject
     */
     public function mimeinfo($filename, $element='type') {
         
-        if (eregi('\.([a-z0-9]+)$', $filename, $match)) {
+        if (preg_match('~\.([a-z0-9]+)$~i', $filename, $match)) {
             if (isset($this->mimeinfo[strtolower($match[1])][$element])) {
                 return $this->mimeinfo[strtolower($match[1])][$element];
             } else {

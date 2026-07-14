@@ -329,11 +329,11 @@ class Net_DNS_Resolver
     	} else {
 	        while (! feof($f)) {
 	            $line = chop(fgets($f, 10240));
-	            $line = ereg_replace('(.*)[;#].*', '\\1', $line);
-	            if (ereg("^[ \t]*$", $line, $regs)) {
+	            $line = preg_replace('~(.*)[;#].*~', '\\1', $line);
+	            if (preg_match("~^[ \t]*$~", $line, $regs)) {
 	                continue;
 	            }
-	            ereg("^[ \t]*([^ \t]+)[ \t]+([^ \t]+)", $line, $regs);
+	            preg_match("~^[ \t]*([^ \t]+)[ \t]+([^ \t]+)~", $line, $regs);
 	            $option = $regs[1];
 	            $value = $regs[2];
 

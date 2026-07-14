@@ -192,7 +192,7 @@ abstract class absendmail extends ChisimbaObject
     */
     public static function isValid($email)
     {
-        return eregi("^([-!#\$%&'*+./0-9=?A-Z^_`a-z{|}~])+@([-!#\$%&'*+/0-9=?A-Z^_`a-z{|}~]+\\.)+[a-zA-Z]{2,6}\$", $email) != 0;
+        return preg_match("~^([-!#\$%&'*+./0-9=?A-Z^_`a-z{|}\~])+@([-!#\$%&'*+/0-9=?A-Z^_`a-z{|}\~]+\\.)+[a-zA-Z]{2,6}\$~i", $email) != 0;
     }
 }
 ?>

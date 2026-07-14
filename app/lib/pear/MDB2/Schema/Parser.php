@@ -1,50 +1,52 @@
-<?php
-// +----------------------------------------------------------------------+
-// | PHP versions 4 and 5                                                 |
-// +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2008 Manuel Lemos, Tomas V.V.Cox,                 |
-// | Stig. S. Bakken, Lukas Smith, Igor Feghali                           |
-// | All rights reserved.                                                 |
-// +----------------------------------------------------------------------+
-// | MDB2_Schema enables users to maintain RDBMS independant schema files |
-// | in XML that can be used to manipulate both data and database schemas |
-// | This LICENSE is in the BSD license style.                            |
-// |                                                                      |
-// | Redistribution and use in source and binary forms, with or without   |
-// | modification, are permitted provided that the following conditions   |
-// | are met:                                                             |
-// |                                                                      |
-// | Redistributions of source code must retain the above copyright       |
-// | notice, this list of conditions and the following disclaimer.        |
-// |                                                                      |
-// | Redistributions in binary form must reproduce the above copyright    |
-// | notice, this list of conditions and the following disclaimer in the  |
-// | documentation and/or other materials provided with the distribution. |
-// |                                                                      |
-// | Neither the name of Manuel Lemos, Tomas V.V.Cox, Stig. S. Bakken,    |
-// | Lukas Smith, Igor Feghali nor the names of his contributors may be   |
-// | used to endorse or promote products derived from this software       |
-// | without specific prior written permission.                           |
-// |                                                                      |
-// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS  |
-// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT    |
-// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS    |
-// | FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE      |
-// | REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,          |
-// | INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, |
-// | BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS|
-// |  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED  |
-// | AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT          |
-// | LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY|
-// | WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE          |
-// | POSSIBILITY OF SUCH DAMAGE.                                          |
-// +----------------------------------------------------------------------+
-// | Author: Christian Dickmann <dickmann@php.net>                        |
-// | Author: Igor Feghali <ifeghali@php.net>                              |
-// +----------------------------------------------------------------------+
-//
-// $Id$
-//
+<?php /* vim: se et ts=4 sw=4 sts=4 fdm=marker tw=80: */
+/**
+ * Copyright (c) 1998-2010 Manuel Lemos, Tomas V.V.Cox,
+ * Stig. S. Bakken, Lukas Smith, Igor Feghali
+ * All rights reserved.
+ *
+ * MDB2_Schema enables users to maintain RDBMS independant schema files
+ * in XML that can be used to manipulate both data and database schemas
+ * This LICENSE is in the BSD license style.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of Manuel Lemos, Tomas V.V.Cox, Stig. S. Bakken,
+ * Lukas Smith, Igor Feghali nor the names of his contributors may be
+ * used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+ * REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ *  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * PHP version 5
+ *
+ * @category Database
+ * @package  MDB2_Schema
+ * @author   Christian Dickmann <dickmann@php.net>
+ * @author   Igor Feghali <ifeghali@php.net>
+ * @license  BSD http://www.opensource.org/licenses/bsd-license.php
+ * @version  SVN: $Id$
+ * @link     http://pear.php.net/packages/MDB2_Schema
+ */
 
 require_once 'XML/Parser.php';
 require_once 'MDB2/Schema/Validate.php';
@@ -52,53 +54,137 @@ require_once 'MDB2/Schema/Validate.php';
 /**
  * Parses an XML schema file
  *
- * @package MDB2_Schema
  * @category Database
- * @access protected
- * @author  Christian Dickmann <dickmann@php.net>
+ * @package  MDB2_Schema
+ * @author   Christian Dickmann <dickmann@php.net>
+ * @license  BSD http://www.opensource.org/licenses/bsd-license.php
+ * @link     http://pear.php.net/packages/MDB2_Schema
  */
 class MDB2_Schema_Parser extends XML_Parser
 {
     var $database_definition = array();
+
     var $elements = array();
+
     var $element = '';
+
     var $count = 0;
+
     var $table = array();
+
     var $table_name = '';
+
     var $field = array();
+
     var $field_name = '';
+
     var $init = array();
+
     var $init_function = array();
+
     var $init_expression = array();
+
     var $init_field = array();
+
     var $index = array();
+
     var $index_name = '';
+
     var $constraint = array();
+
     var $constraint_name = '';
+
     var $var_mode = false;
+
     var $variables = array();
+
     var $sequence = array();
+
     var $sequence_name = '';
+
     var $error;
+
     var $structure = false;
+
     var $val;
 
-    function __construct($variables, $fail_on_invalid_names = true, $structure = false, $valid_types = array(), $force_defaults = true)
-    {
+    /**
+     * PHP 5 constructor
+     *
+     * @param array $variables              mixed array with user defined schema
+     *                                      variables
+     * @param bool  $fail_on_invalid_names  array with reserved words per RDBMS
+     * @param array $structure              multi dimensional array with 
+     *                                      database schema and data
+     * @param array $valid_types            information of all valid fields 
+     *                                      types
+     * @param bool  $force_defaults         if true sets a default value to
+     *                                      field when not explicit
+     * @param int   $max_identifiers_length maximum allowed size for entities 
+     *                                      name
+     *
+     * @return void
+     *
+     * @access public
+     * @static
+     */
+    function __construct($variables, $fail_on_invalid_names = true,
+        $structure = false, $valid_types = array(), $force_defaults = true,
+        $max_identifiers_length = null
+    ) {
         // force ISO-8859-1 due to different defaults for PHP4 and PHP5
         // todo: this probably needs to be investigated some more andcleaned up
-        parent::XML_Parser('ISO-8859-1');
+        parent::__construct('ISO-8859-1');
+
         $this->variables = $variables;
         $this->structure = $structure;
-        $this->val = new MDB2_Schema_Validate($fail_on_invalid_names, $valid_types, $force_defaults);
+        $this->val       = new MDB2_Schema_Validate(
+            $fail_on_invalid_names,
+            $valid_types,
+            $force_defaults,
+            $max_identifiers_length
+        );
     }
 
-    function MDB2_Schema_Parser($variables, $fail_on_invalid_names = true, $structure = false, $valid_types = array(), $force_defaults = true)
-    {
+    /**
+     * PHP 4 compatible constructor
+     *
+     * @param array $variables              mixed array with user defined schema
+     *                                      variables
+     * @param bool  $fail_on_invalid_names  array with reserved words per RDBMS
+     * @param array $structure              multi dimensional array with 
+     *                                      database schema and data
+     * @param array $valid_types            information of all valid fields 
+     *                                      types
+     * @param bool  $force_defaults         if true sets a default value to
+     *                                      field when not explicit
+     * @param int   $max_identifiers_length maximum allowed size for entities 
+     *                                      name
+     *
+     * @return void
+     *
+     * @access public
+     * @static
+     */
+    function MDB2_Schema_Parser($variables, $fail_on_invalid_names = true,
+        $structure = false, $valid_types = array(), $force_defaults = true,
+        $max_identifiers_length = null
+    ) {
         $this->__construct($variables, $fail_on_invalid_names, $structure, $valid_types, $force_defaults);
     }
 
-    function startHandler($xp, $element, $attribs)
+    /**
+     * Triggered when reading a XML open tag <element>
+     *
+     * @param resource $xp      xml parser resource
+     * @param string   $element element name
+     * @param array    $attribs attributes
+     *
+     * @return void
+     * @access private
+     * @static
+     */
+    function startHandler($xp, $element, &$attribs)
     {
         if (strtolower($element) == 'variable') {
             $this->var_mode = true;
@@ -106,6 +192,7 @@ class MDB2_Schema_Parser extends XML_Parser
         }
 
         $this->elements[$this->count++] = strtolower($element);
+
         $this->element = implode('-', $this->elements);
 
         switch ($this->element) {
@@ -211,6 +298,7 @@ class MDB2_Schema_Parser extends XML_Parser
             break;
         case 'database-table':
             $this->table_name = '';
+
             $this->table = array(
                 'was' => '',
                 'description' => '',
@@ -225,10 +313,12 @@ class MDB2_Schema_Parser extends XML_Parser
         case 'database-table-declaration-foreign-field':
         case 'database-table-declaration-foreign-references-field':
             $this->field_name = '';
+
             $this->field = array();
             break;
         case 'database-table-declaration-index-field':
             $this->field_name = '';
+
             $this->field = array('sorting' => '', 'length' => '');
             break;
         /* force field attributes to be initialized when the tag is empty in the XML */
@@ -264,6 +354,7 @@ class MDB2_Schema_Parser extends XML_Parser
             break;
         case 'database-table-declaration-index':
             $this->index_name = '';
+
             $this->index = array(
                 'was' => '',
                 'unique' =>'',
@@ -273,6 +364,7 @@ class MDB2_Schema_Parser extends XML_Parser
             break;
         case 'database-table-declaration-foreign':
             $this->constraint_name = '';
+
             $this->constraint = array(
                 'was' => '',
                 'match' => '',
@@ -287,17 +379,27 @@ class MDB2_Schema_Parser extends XML_Parser
             break;
         case 'database-sequence':
             $this->sequence_name = '';
+
             $this->sequence = array(
                 'was' => '',
                 'start' => '',
                 'description' => '',
                 'comments' => '',
-                'on' => array('table' => '', 'field' => '')
             );
             break;
         }
     }
 
+    /**
+     * Triggered when reading a XML close tag </element>
+     *
+     * @param resource $xp      xml parser resource
+     * @param string   $element element name
+     *
+     * @return void
+     * @access private
+     * @static
+     */
     function endHandler($xp, $element)
     {
         if (strtolower($element) == 'variable') {
@@ -334,7 +436,7 @@ class MDB2_Schema_Parser extends XML_Parser
         case 'database-table-initialization-update-field-expression':
             $this->init_field['group'] = array('type' => 'expression', 'data' => $this->init_expression);
             break;
-        
+
         /* All */
         case 'database-table-initialization-insert-select-where-expression':
         case 'database-table-initialization-update-where-expression':
@@ -460,34 +562,60 @@ class MDB2_Schema_Parser extends XML_Parser
         $this->element = implode('-', $this->elements);
     }
 
+    /**
+     * Pushes a MDB2_Schema_Error into stack and returns it
+     *
+     * @param string   $msg      textual message
+     * @param int      $xmlecode PHP's XML parser error code
+     * @param resource $xp       xml parser resource
+     * @param int      $ecode    MDB2_Schema's error code
+     *
+     * @return object
+     * @access private
+     * @static
+     */
     function &raiseError($msg = null, $xmlecode = 0, $xp = null, $ecode = MDB2_SCHEMA_ERROR_PARSE)
     {
         if (is_null($this->error)) {
             $error = '';
             if (is_resource($msg)) {
-                $error.= 'Parser error: '.xml_error_string(xml_get_error_code($msg));
-                $xp = $msg;
+                $error .= 'Parser error: '.xml_error_string(xml_get_error_code($msg));
+                $xp     = $msg;
             } else {
-                $error.= 'Parser error: '.$msg;
+                $error .= 'Parser error: '.$msg;
                 if (!is_resource($xp)) {
                     $xp = $this->parser;
                 }
             }
+
             if ($error_string = xml_error_string($xmlecode)) {
-                $error.= ' - '.$error_string;
+                $error .= ' - '.$error_string;
             }
+
             if (is_resource($xp)) {
-                $byte = @xml_get_current_byte_index($xp);
-                $line = @xml_get_current_line_number($xp);
+                $byte   = @xml_get_current_byte_index($xp);
+                $line   = @xml_get_current_line_number($xp);
                 $column = @xml_get_current_column_number($xp);
-                $error.= " - Byte: $byte; Line: $line; Col: $column";
+                $error .= " - Byte: $byte; Line: $line; Col: $column";
             }
-            $error.= "\n";
+
+            $error .= "\n";
+
             $this->error =& MDB2_Schema::raiseError($ecode, null, null, $error);
         }
         return $this->error;
     }
 
+    /**
+     * Triggered when reading data in a XML element (text between tags) 
+     *
+     * @param resource $xp   xml parser resource
+     * @param string   $data text
+     *
+     * @return void
+     * @access private
+     * @static
+     */
     function cdataHandler($xp, $data)
     {
         if ($this->var_mode == true) {
@@ -510,17 +638,17 @@ class MDB2_Schema_Parser extends XML_Parser
         case 'database-table-initialization-insert-field-name':
         case 'database-table-initialization-insert-select-field-name':
         case 'database-table-initialization-update-field-name':
-            $this->init_field['name'].= $data;
+            $this->init_field['name'] .= $data;
             break;
         case 'database-table-initialization-insert-field-value':
         case 'database-table-initialization-insert-select-field-value':
         case 'database-table-initialization-update-field-value':
-            $this->init_field['group']['data'].= $data;
+            $this->init_field['group']['data'] .= $data;
             break;
         case 'database-table-initialization-insert-field-function-name':
         case 'database-table-initialization-insert-select-field-function-name':
         case 'database-table-initialization-update-field-function-name':
-            $this->init_function['name'].= $data;
+            $this->init_function['name'] .= $data;
             break;
         case 'database-table-initialization-insert-field-function-value':
         case 'database-table-initialization-insert-select-field-function-value':
@@ -582,7 +710,7 @@ class MDB2_Schema_Parser extends XML_Parser
         case 'database-table-initialization-update-field-expression-function-name':
         case 'database-table-initialization-update-where-expression-function-name':
         case 'database-table-initialization-delete-where-expression-function-name':
-            $this->init_function['name'].= $data;
+            $this->init_function['name'] .= $data;
             break;
         case 'database-table-initialization-insert-field-expression-function-value':
         case 'database-table-initialization-insert-select-field-expression-function-value':
@@ -620,153 +748,154 @@ class MDB2_Schema_Parser extends XML_Parser
 
         /* Database */
         case 'database-name':
-            $this->database_definition['name'].= $data;
+            $this->database_definition['name'] .= $data;
             break;
         case 'database-create':
-            $this->database_definition['create'].= $data;
+            $this->database_definition['create'] .= $data;
             break;
         case 'database-overwrite':
-            $this->database_definition['overwrite'].= $data;
+            $this->database_definition['overwrite'] .= $data;
             break;
         case 'database-charset':
-            $this->database_definition['charset'].= $data;
+            $this->database_definition['charset'] .= $data;
             break;
         case 'database-description':
-            $this->database_definition['description'].= $data;
+            $this->database_definition['description'] .= $data;
             break;
         case 'database-comments':
-            $this->database_definition['comments'].= $data;
+            $this->database_definition['comments'] .= $data;
             break;
 
         /* Table declaration */
         case 'database-table-name':
-            $this->table_name.= $data;
+            $this->table_name .= $data;
             break;
         case 'database-table-was':
-            $this->table['was'].= $data;
+            $this->table['was'] .= $data;
             break;
         case 'database-table-description':
-            $this->table['description'].= $data;
+            $this->table['description'] .= $data;
             break;
         case 'database-table-comments':
-            $this->table['comments'].= $data;
+            $this->table['comments'] .= $data;
             break;
 
         /* Field declaration */
         case 'database-table-declaration-field-name':
-            $this->field_name.= $data;
+            $this->field_name .= $data;
             break;
         case 'database-table-declaration-field-was':
-            $this->field['was'].= $data;
+            $this->field['was'] .= $data;
             break;
         case 'database-table-declaration-field-type':
-            $this->field['type'].= $data;
+            $this->field['type'] .= $data;
             break;
         case 'database-table-declaration-field-fixed':
-            $this->field['fixed'].= $data;
+            $this->field['fixed'] .= $data;
             break;
         case 'database-table-declaration-field-default':
-            $this->field['default'].= $data;
+            $this->field['default'] .= $data;
             break;
         case 'database-table-declaration-field-notnull':
-            $this->field['notnull'].= $data;
+            $this->field['notnull'] .= $data;
             break;
         case 'database-table-declaration-field-autoincrement':
-            $this->field['autoincrement'].= $data;
+            $this->field['autoincrement'] .= $data;
             break;
         case 'database-table-declaration-field-unsigned':
-            $this->field['unsigned'].= $data;
+            $this->field['unsigned'] .= $data;
             break;
         case 'database-table-declaration-field-length':
-            $this->field['length'].= $data;
+            $this->field['length'] .= $data;
             break;
         case 'database-table-declaration-field-description':
-            $this->field['description'].= $data;
+            $this->field['description'] .= $data;
             break;
         case 'database-table-declaration-field-comments':
-            $this->field['comments'].= $data;
+            $this->field['comments'] .= $data;
             break;
 
         /* Index declaration */
         case 'database-table-declaration-index-name':
-            $this->index_name.= $data;
+            $this->index_name .= $data;
             break;
         case 'database-table-declaration-index-was':
-            $this->index['was'].= $data;
+            $this->index['was'] .= $data;
             break;
         case 'database-table-declaration-index-unique':
-            $this->index['unique'].= $data;
+            $this->index['unique'] .= $data;
             break;
         case 'database-table-declaration-index-primary':
-            $this->index['primary'].= $data;
+            $this->index['primary'] .= $data;
             break;
         case 'database-table-declaration-index-field-name':
-            $this->field_name.= $data;
+            $this->field_name .= $data;
             break;
         case 'database-table-declaration-index-field-sorting':
-            $this->field['sorting'].= $data;
+            $this->field['sorting'] .= $data;
             break;
         /* Add by Leoncx */
         case 'database-table-declaration-index-field-length':
-            $this->field['length'].= $data;
+            $this->field['length'] .= $data;
             break;
 
         /* Foreign Key declaration */
         case 'database-table-declaration-foreign-name':
-            $this->constraint_name.= $data;
+            $this->constraint_name .= $data;
             break;
         case 'database-table-declaration-foreign-was':
-            $this->constraint['was'].= $data;
+            $this->constraint['was'] .= $data;
             break;
         case 'database-table-declaration-foreign-match':
-            $this->constraint['match'].= $data;
+            $this->constraint['match'] .= $data;
             break;
         case 'database-table-declaration-foreign-ondelete':
-            $this->constraint['ondelete'].= $data;
+            $this->constraint['ondelete'] .= $data;
             break;
         case 'database-table-declaration-foreign-onupdate':
-            $this->constraint['onupdate'].= $data;
+            $this->constraint['onupdate'] .= $data;
             break;
         case 'database-table-declaration-foreign-deferrable':
-            $this->constraint['deferrable'].= $data;
+            $this->constraint['deferrable'] .= $data;
             break;
         case 'database-table-declaration-foreign-initiallydeferred':
-            $this->constraint['initiallydeferred'].= $data;
+            $this->constraint['initiallydeferred'] .= $data;
             break;
         case 'database-table-declaration-foreign-field':
-            $this->field_name.= $data;
+            $this->field_name .= $data;
             break;
         case 'database-table-declaration-foreign-references-table':
-            $this->constraint['references']['table'].= $data;
+            $this->constraint['references']['table'] .= $data;
             break;
         case 'database-table-declaration-foreign-references-field':
-            $this->field_name.= $data;
+            $this->field_name .= $data;
             break;
 
         /* Sequence declaration */
         case 'database-sequence-name':
-            $this->sequence_name.= $data;
+            $this->sequence_name .= $data;
             break;
         case 'database-sequence-was':
-            $this->sequence['was'].= $data;
+            $this->sequence['was'] .= $data;
             break;
         case 'database-sequence-start':
-            $this->sequence['start'].= $data;
+            $this->sequence['start'] .= $data;
             break;
         case 'database-sequence-description':
-            $this->sequence['description'].= $data;
+            $this->sequence['description'] .= $data;
             break;
         case 'database-sequence-comments':
-            $this->sequence['comments'].= $data;
+            $this->sequence['comments'] .= $data;
+            break;
+        case 'database-sequence-on':
+            $this->sequence['on'] = array('table' => '', 'field' => '');
             break;
         case 'database-sequence-on-table':
-            $this->sequence['on']['table'].= $data;
+            $this->sequence['on']['table'] .= $data;
             break;
         case 'database-sequence-on-field':
-            $this->sequence['on']['field'].= $data;
+            $this->sequence['on']['field'] .= $data;
             break;
         }
     }
 }
-
-?>

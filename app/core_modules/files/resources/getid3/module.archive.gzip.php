@@ -133,7 +133,7 @@ class getid3_gzip {
 			//|...original file name, zero-terminated...|
 			//+=========================================+
 			// GZIP files may have only one file, with no filename, so assume original filename is current filename without .gz
-			$thisThisFileInfo['filename'] = eregi_replace('.gz$', '', $ThisFileInfo['filename']);
+			$thisThisFileInfo['filename'] = preg_replace('~.gz$~i', '', $ThisFileInfo['filename']);
 			if ($thisThisFileInfo['flags']['filename']) {
 				while (true) {
 					if (ord($buff[$fpointer]) == 0) {

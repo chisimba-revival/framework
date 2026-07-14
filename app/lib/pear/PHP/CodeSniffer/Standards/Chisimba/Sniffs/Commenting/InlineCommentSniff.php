@@ -59,7 +59,7 @@ class Chisimba_Sniffs_Commenting_InlineCommentSniff implements PHP_CodeSniffer_S
     {
         $tokens = $phpcsFile->getTokens();
 
-        if ($tokens[$stackPtr]['content']{0} === '#') {
+        if ($tokens[$stackPtr]['content'][0] === '#') {
             $error  = 'Perl-style comments are not allowed; use "// Comment" instead';
             $error .= ' instead.';
             $phpcsFile->addError($error, $stackPtr);

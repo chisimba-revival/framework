@@ -766,15 +766,18 @@ class PEARCheckAction extends StepAction
             	
             }
             if ($allowed_db['MDB2_Driver_mysqli']==TRUE) {
-               @include('MDB2_Driver_mysqli');
-            	if (!class_exists('MDB2_Driver_mysqli')) {
-            		$this->errors[] = '<span class="errors">Could not find PEAR::MDB2_Driver_mysqli </span>';
+                @include_once 'MDB2.php';
+                @include_once 'MDB2/Driver/mysqli.php';
 
-                	$this->required_packages['MDB2_Driver_mysqli']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
+                if (!class_exists('MDB2_Driver_mysqli')) {
+                    $this->errors[] = '<span class="errors">Could not find bundled PEAR::MDB2_Driver_mysqli </span>';
 
-            	}else{
-            		$this->required_packages['MDB2_Driver_mysqli']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';	
-            	}
+                    $this->required_packages['MDB2_Driver_mysqli']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
+                    $this->success = false;
+                } else {
+                    $this->required_packages['MDB2_Driver_mysqli']['available'] = true;
+                    $this->required_packages['MDB2_Driver_mysqli']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
+                }
             }
             if($allowed_db['MDB2_Driver_pgsql']==TRUE) {
                @include('MDB2_Driver_pgsql');
@@ -806,6 +809,51 @@ class PEARCheckAction extends StepAction
             }
 
             foreach ($this->required_packages as $package_name => $required_version) {
+
+                /*
+                 * Chisimba ships its curated MDB2 mysqli driver with the
+                 * application. The historical installer also expected a
+                 * system PEAR registry entry, which is not required when the
+                 * bundled driver is present and loadable.
+                 */
+                /*
+                 * Chisimba ships a pinned, tested PEAR/MDB2 compatibility
+                 * pack. These packages are validated by loading their
+                 * classes, rather than by consulting the legacy PEAR
+                 * registry.
+                 */
+                if ($package_name == 'MDB2') {
+                    @include_once 'MDB2.php';
+
+                    if (class_exists('MDB2')) {
+                        $this->required_packages[$package_name]['available'] = true;
+                        $this->required_packages[$package_name]['message'] = '<img src="./extra/ok.png" border="0" alt="OK" title="OK" />';
+                        continue;
+                    }
+                }
+
+                if ($package_name == 'MDB2_Schema') {
+                    @include_once 'MDB2.php';
+                    @include_once 'XML/Parser.php';
+                    @include_once 'MDB2/Schema.php';
+
+                    if (class_exists('MDB2_Schema')) {
+                        $this->required_packages[$package_name]['available'] = true;
+                        $this->required_packages[$package_name]['message'] = '<img src="./extra/ok.png" border="0" alt="OK" title="OK" />';
+                        continue;
+                    }
+                }
+
+                if ($package_name == 'MDB2_Driver_mysqli') {
+                    @include_once 'MDB2.php';
+                @include_once 'MDB2/Driver/mysqli.php';
+
+                    if (class_exists('MDB2_Driver_mysqli')) {
+                        $this->required_packages[$package_name]['available'] = true;
+                        $this->required_packages[$package_name]['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
+                        continue;
+                    }
+                }
 
                 $package_info = $pear_registry->packageInfo($package_name);
 

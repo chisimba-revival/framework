@@ -29,7 +29,7 @@ class strvalidate extends ChisimbaObject
     * Digits(0-9), one to many characters.
     */
     function isAlphaNumeric( $string ) {
-        return ereg( "^[[:alpha:][:digit:][:space:]]+$", $string );
+        return preg_match("~^[[:alpha:][:digit:][:space:]]+$~", $string );
     }
 
     /**
@@ -38,7 +38,7 @@ class strvalidate extends ChisimbaObject
     * Any Letter, upper or lower case, one to many characters.
     */
     function isAlpha( $string ) {
-        return ereg( "^[[:alpha:][:space:]]+$", $string );
+        return preg_match("~^[[:alpha:][:space:]]+$~", $string );
     }
 
     /**
@@ -47,7 +47,7 @@ class strvalidate extends ChisimbaObject
     * Any Digits(0-9), one to many charaters.
     */
     function isNumeric( $string ) {
-        return ereg( "^[[:digit:][:space:]]+$", $string );
+        return preg_match("~^[[:digit:][:space:]]+$~", $string );
     }
 } // end class
 ?>

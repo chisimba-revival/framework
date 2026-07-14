@@ -464,7 +464,7 @@ class Chisimba_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer
                 $this->currentFile->addError($error, $errorPos);
             } else {
                 // Starts with a capital letter and ends with a fullstop.
-                $firstChar = $content{0};
+                $firstChar = $content[0];
                 if (strtoupper($firstChar) !== $firstChar) {
                     $error = '@throws tag comment must start with a capital letter';
                     $this->currentFile->addError($error, $errorPos);
@@ -638,7 +638,7 @@ class Chisimba_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer
                 } else {
                     // Param comments must start with a capital letter and
                     // end with the full stop.
-                    $firstChar = $paramComment{0};
+                    $firstChar = $paramComment[0];
                     //if (strtoupper($firstChar) !== $firstChar) {
                     //    $error = 'Param comment must start with a capital letter';
                     //    $this->currentFile->addError($error, $errorPos);

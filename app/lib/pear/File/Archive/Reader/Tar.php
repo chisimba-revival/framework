@@ -195,10 +195,10 @@ class File_Archive_Reader_Tar extends File_Archive_Reader_Archive
 
             $checksum = 8*ord(" ");
             for ($i = 0; $i < 148; $i++) {
-                $checksum += ord($rawHeader{$i});
+                $checksum += ord($rawHeader[$i]);
             }
             for ($i = 156; $i < 512; $i++) {
-                $checksum += ord($rawHeader{$i});
+                $checksum += ord($rawHeader[$i]);
             }
 
             if (octdec($header['checksum']) != $checksum) {

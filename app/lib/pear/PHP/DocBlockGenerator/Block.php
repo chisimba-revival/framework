@@ -501,7 +501,7 @@ Free Software Foundation, Inc.,
             // extracts the function/method name
             $name = $functName['value'];
             // the name is prefixed with '_', meaning private
-            $access = ($name{0} == '_' and $name{1} != '_')? 'private' : 'public';
+            $access = ($name[0] == '_' and $name[1] != '_')? 'private' : 'public';
         }
         // adds the access tag into the DocBlock
         isset($access) and $block[] = "@access $access";
@@ -655,7 +655,7 @@ Free Software Foundation, Inc.,
             $id = $this->tokens->id[T_VAR];
             // extracts the variable name, if the name is prefixed with '_', meaning private
             $name = $var['value'];
-            $access = ($name{1} == '_' and $name{2} != '_')? 'private' : 'public';
+            $access = ($name[1] == '_' and $name[2] != '_')? 'private' : 'public';
         } else if (isset($this->tokens->id['access'])) {
             // the visibility property is set, captures the visibility token position
             list($id, $access) = $this->tokens->id['access'];

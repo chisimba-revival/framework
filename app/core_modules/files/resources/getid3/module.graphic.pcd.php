@@ -68,11 +68,11 @@ class getid3_pcd
 
 				for ($x = 0; $x < $PCD_width; $x++) {
 					if ($PCDisVertical) {
-						$ThisFileInfo['pcd']['data'][$PCD_width - $x][$y]     = $this->YCbCr2RGB(ord($PCD_data_Y1{$x}), ord($PCD_data_Cb{floor($x / 2)}), ord($PCD_data_Cr{floor($x / 2)}));
-						$ThisFileInfo['pcd']['data'][$PCD_width - $x][$y + 1] = $this->YCbCr2RGB(ord($PCD_data_Y2{$x}), ord($PCD_data_Cb{floor($x / 2)}), ord($PCD_data_Cr{floor($x / 2)}));
+						$ThisFileInfo['pcd']['data'][$PCD_width - $x][$y]     = $this->YCbCr2RGB(ord($PCD_data_Y1[$x]), ord($PCD_data_Cb[floor($x / 2)]), ord($PCD_data_Cr[floor($x / 2)]));
+						$ThisFileInfo['pcd']['data'][$PCD_width - $x][$y + 1] = $this->YCbCr2RGB(ord($PCD_data_Y2[$x]), ord($PCD_data_Cb[floor($x / 2)]), ord($PCD_data_Cr[floor($x / 2)]));
 					} else {
-						$ThisFileInfo['pcd']['data'][$y][$x]                  = $this->YCbCr2RGB(ord($PCD_data_Y1{$x}), ord($PCD_data_Cb{floor($x / 2)}), ord($PCD_data_Cr{floor($x / 2)}));
-						$ThisFileInfo['pcd']['data'][$y + 1][$x]              = $this->YCbCr2RGB(ord($PCD_data_Y2{$x}), ord($PCD_data_Cb{floor($x / 2)}), ord($PCD_data_Cr{floor($x / 2)}));
+						$ThisFileInfo['pcd']['data'][$y][$x]                  = $this->YCbCr2RGB(ord($PCD_data_Y1[$x]), ord($PCD_data_Cb[floor($x / 2)]), ord($PCD_data_Cr[floor($x / 2)]));
+						$ThisFileInfo['pcd']['data'][$y + 1][$x]              = $this->YCbCr2RGB(ord($PCD_data_Y2[$x]), ord($PCD_data_Cb[floor($x / 2)]), ord($PCD_data_Cr[floor($x / 2)]));
 					}
 				}
 			}

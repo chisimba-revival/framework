@@ -2,8 +2,8 @@
 // +----------------------------------------------------------------------+
 // | PHP versions 4 and 5                                                 |
 // +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2006 Manuel Lemos, Tomas V.V.Cox,                 |
-// | Stig. S. Bakken, Lukas Smith                                         |
+// | Copyright (c) 1998-2008 Manuel Lemos, Tomas V.V.Cox,                 |
+// | Stig. S. Bakken, Lukas Smith, Lorenzo Alberton                       |
 // | All rights reserved.                                                 |
 // +----------------------------------------------------------------------+
 // | MDB2 is a merge of PEAR DB and Metabases that provides a unified DB  |
@@ -63,14 +63,16 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     /**
      * create a new database
      *
-     * @param string $name name of the database that should be created
+     * @param string $name    name of the database that should be created
+     * @param array  $options array with charset info
+     *
      * @return mixed MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    function createDatabase($name)
+    function createDatabase($name, $options = array())
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -84,6 +86,10 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
         if (!$handle) {
             return $db->raiseError(MDB2_ERROR_CANNOT_CREATE, null, null,
                 (isset($php_errormsg) ? $php_errormsg : 'could not create the database file'), __FUNCTION__);
+        }
+        if (!empty($options['charset'])) {
+            $query = 'PRAGMA encoding = ' . $db->quote($options['charset'], 'text');
+            @sqlite_query($query, $handle);
         }
         @sqlite_close($handle);
         return MDB2_OK;
@@ -102,7 +108,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function dropDatabase($name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -115,6 +121,328 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
         if (!$result) {
             return $db->raiseError(MDB2_ERROR_CANNOT_DROP, null, null,
                 (isset($php_errormsg) ? $php_errormsg : 'could not remove the database file'), __FUNCTION__);
+        }
+        return MDB2_OK;
+    }
+
+    // }}}
+    // {{{ _getAdvancedFKOptions()
+
+    /**
+     * Return the FOREIGN KEY query section dealing with non-standard options
+     * as MATCH, INITIALLY DEFERRED, ON UPDATE, ...
+     *
+     * @param array $definition
+     * @return string
+     * @access protected
+     */
+    function _getAdvancedFKOptions($definition)
+    {
+        $query = '';
+        if (!empty($definition['match'])) {
+            $query .= ' MATCH '.$definition['match'];
+        }
+        if (!empty($definition['onupdate']) && (strtoupper($definition['onupdate']) != 'NO ACTION')) {
+            $query .= ' ON UPDATE '.$definition['onupdate'];
+        }
+        if (!empty($definition['ondelete']) && (strtoupper($definition['ondelete']) != 'NO ACTION')) {
+            $query .= ' ON DELETE '.$definition['ondelete'];
+        }
+        if (!empty($definition['deferrable'])) {
+            $query .= ' DEFERRABLE';
+        } else {
+            $query .= ' NOT DEFERRABLE';
+        }
+        if (!empty($definition['initiallydeferred'])) {
+            $query .= ' INITIALLY DEFERRED';
+        } else {
+            $query .= ' INITIALLY IMMEDIATE';
+        }
+        return $query;
+    }
+
+    // }}}
+    // {{{ _getCreateTableQuery()
+
+    /**
+     * Create a basic SQL query for a new table creation
+     * @param string $name   Name of the database that should be created
+     * @param array $fields  Associative array that contains the definition of each field of the new table
+     * @param array $options  An associative array of table options
+     * @return mixed string (the SQL query) on success, a MDB2 error on failure
+     * @see createTable()
+     */
+    function _getCreateTableQuery($name, $fields, $options = array())
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        if (!$name) {
+            return $db->raiseError(MDB2_ERROR_CANNOT_CREATE, null, null,
+                'no valid table name specified', __FUNCTION__);
+        }
+        if (empty($fields)) {
+            return $db->raiseError(MDB2_ERROR_CANNOT_CREATE, null, null,
+                'no fields specified for table "'.$name.'"', __FUNCTION__);
+        }
+        $query_fields = $this->getFieldDeclarationList($fields);
+        if (MDB2::isError($query_fields)) {
+            return $query_fields;
+        }
+        if (!empty($options['primary'])) {
+            $query_fields.= ', PRIMARY KEY ('.implode(', ', array_keys($options['primary'])).')';
+        }
+        if (!empty($options['foreign_keys'])) {
+            foreach ($options['foreign_keys'] as $fkname => $fkdef) {
+                if (empty($fkdef)) {
+                    continue;
+                }
+                $query_fields.= ', CONSTRAINT '.$fkname.' FOREIGN KEY ('.implode(', ', array_keys($fkdef['fields'])).')';
+                $query_fields.= ' REFERENCES '.$fkdef['references']['table'].' ('.implode(', ', array_keys($fkdef['references']['fields'])).')';
+                $query_fields.= $this->_getAdvancedFKOptions($fkdef);
+            }
+        }
+
+        $name = $db->quoteIdentifier($name, true);
+        $result = 'CREATE ';
+        if (!empty($options['temporary'])) {
+            $result .= $this->_getTemporaryTableQuery();
+        }
+        $result .= " TABLE $name ($query_fields)";
+        return $result;
+    }
+
+    // }}}
+    // {{{ createTable()
+
+    /**
+     * create a new table
+     *
+     * @param string $name    Name of the database that should be created
+     * @param array  $fields  Associative array that contains the definition
+     *                        of each field of the new table
+     * @param array  $options An associative array of table options
+     *
+     * @return mixed MDB2_OK on success, a MDB2 error on failure
+     * @access public
+     */
+    function createTable($name, $fields, $options = array())
+    {
+        $result = parent::createTable($name, $fields, $options);
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        // create triggers to enforce FOREIGN KEY constraints
+        if (!empty($options['foreign_keys'])) {
+            $db = $this->getDBInstance();
+            if (MDB2::isError($db)) {
+                return $db;
+            }
+            foreach ($options['foreign_keys'] as $fkname => $fkdef) {
+                if (empty($fkdef)) {
+                    continue;
+                }
+                //set actions to default if not set
+                $fkdef['onupdate'] = empty($fkdef['onupdate']) ? $db->options['default_fk_action_onupdate'] : strtoupper($fkdef['onupdate']);
+                $fkdef['ondelete'] = empty($fkdef['ondelete']) ? $db->options['default_fk_action_ondelete'] : strtoupper($fkdef['ondelete']);
+
+                $trigger_names = array(
+                    'insert'    => $fkname.'_insert_trg',
+                    'update'    => $fkname.'_update_trg',
+                    'pk_update' => $fkname.'_pk_update_trg',
+                    'pk_delete' => $fkname.'_pk_delete_trg',
+                );
+                
+                //create the [insert|update] triggers on the FK table
+                $table_fields = array_keys($fkdef['fields']);
+                $referenced_fields = array_keys($fkdef['references']['fields']);
+                $query = 'CREATE TRIGGER %s BEFORE %s ON '.$name
+                        .' FOR EACH ROW BEGIN'
+                        .' SELECT RAISE(ROLLBACK, \'%s on table "'.$name.'" violates FOREIGN KEY constraint "'.$fkname.'"\')'
+                        .' WHERE  (SELECT ';
+                $aliased_fields = array();
+                foreach ($referenced_fields as $field) {
+                    $aliased_fields[] = $fkdef['references']['table'] .'.'.$field .' AS '.$field;
+                }
+                $query .= implode(',', $aliased_fields)
+                       .' FROM '.$fkdef['references']['table']
+                       .' WHERE ';
+                $conditions = array();
+                for ($i=0; $i<count($table_fields); $i++) {
+                    $conditions[] = $referenced_fields[$i] .' = NEW.'.$table_fields[$i];
+                }
+                $query .= implode(' AND ', $conditions).') IS NULL; END;';
+                $result = $db->exec(sprintf($query, $trigger_names['insert'], 'INSERT', 'insert'));
+                if (MDB2::isError($result)) {
+                    return $result;
+                }
+
+                $result = $db->exec(sprintf($query, $trigger_names['update'], 'UPDATE', 'update'));
+                if (MDB2::isError($result)) {
+                    return $result;
+                }
+                
+                //create the ON [UPDATE|DELETE] triggers on the primary table
+                $restrict_action = 'SELECT RAISE(ROLLBACK, \'%s on table "'.$name.'" violates FOREIGN KEY constraint "'.$fkname.'"\')'
+                                  .' WHERE  (SELECT ';
+                $aliased_fields = array();
+                foreach ($table_fields as $field) {
+                    $aliased_fields[] = $name .'.'.$field .' AS '.$field;
+                }
+                $restrict_action .= implode(',', $aliased_fields)
+                       .' FROM '.$name
+                       .' WHERE ';
+                $conditions  = array();
+                $new_values  = array();
+                $null_values = array();
+                for ($i=0; $i<count($table_fields); $i++) {
+                    $conditions[]  = $table_fields[$i] .' = OLD.'.$referenced_fields[$i];
+                    $new_values[]  = $table_fields[$i] .' = NEW.'.$referenced_fields[$i];
+                    $null_values[] = $table_fields[$i] .' = NULL';
+                }
+                $conditions2 = array();
+                for ($i=0; $i<count($referenced_fields); $i++) {
+                    $conditions2[]  = 'NEW.'.$referenced_fields[$i] .' <> OLD.'.$referenced_fields[$i];
+                }
+                $restrict_action .= implode(' AND ', $conditions).') IS NOT NULL'
+                                 .' AND (' .implode(' OR ', $conditions2) .')';
+
+                $cascade_action_update = 'UPDATE '.$name.' SET '.implode(', ', $new_values) .' WHERE '.implode(' AND ', $conditions);
+                $cascade_action_delete = 'DELETE FROM '.$name.' WHERE '.implode(' AND ', $conditions);
+                $setnull_action        = 'UPDATE '.$name.' SET '.implode(', ', $null_values).' WHERE '.implode(' AND ', $conditions);
+
+                if ('SET DEFAULT' == $fkdef['onupdate'] || 'SET DEFAULT' == $fkdef['ondelete']) {
+                    $db->loadModule('Reverse', null, true);
+                    $default_values = array();
+                    foreach ($table_fields as $table_field) {
+                        $field_definition = $db->reverse->getTableFieldDefinition($name, $field);
+                        if (MDB2::isError($field_definition)) {
+                            return $field_definition;
+                        }
+                        $default_values[] = $table_field .' = '. $field_definition[0]['default'];
+                    }
+                    $setdefault_action = 'UPDATE '.$name.' SET '.implode(', ', $default_values).' WHERE '.implode(' AND ', $conditions);
+                }
+
+                $query = 'CREATE TRIGGER %s'
+                        .' %s ON '.$fkdef['references']['table']
+                        .' FOR EACH ROW BEGIN ';
+
+                if ('CASCADE' == $fkdef['onupdate']) {
+                    $sql_update = sprintf($query, $trigger_names['pk_update'], 'AFTER UPDATE',  'update') . $cascade_action_update. '; END;';
+                } elseif ('SET NULL' == $fkdef['onupdate']) {
+                    $sql_update = sprintf($query, $trigger_names['pk_update'], 'BEFORE UPDATE', 'update') . $setnull_action. '; END;';
+                } elseif ('SET DEFAULT' == $fkdef['onupdate']) {
+                    $sql_update = sprintf($query, $trigger_names['pk_update'], 'BEFORE UPDATE', 'update') . $setdefault_action. '; END;';
+                } elseif ('NO ACTION' == $fkdef['onupdate']) {
+                    $sql_update = sprintf($query.$restrict_action, $trigger_names['pk_update'], 'AFTER UPDATE', 'update') . '; END;';
+                } elseif ('RESTRICT' == $fkdef['onupdate']) {
+                    $sql_update = sprintf($query.$restrict_action, $trigger_names['pk_update'], 'BEFORE UPDATE', 'update') . '; END;';
+                }
+                if ('CASCADE' == $fkdef['ondelete']) {
+                    $sql_delete = sprintf($query, $trigger_names['pk_delete'], 'AFTER DELETE',  'delete') . $cascade_action_delete. '; END;';
+                } elseif ('SET NULL' == $fkdef['ondelete']) {
+                    $sql_delete = sprintf($query, $trigger_names['pk_delete'], 'BEFORE DELETE', 'delete') . $setnull_action. '; END;';
+                } elseif ('SET DEFAULT' == $fkdef['ondelete']) {
+                    $sql_delete = sprintf($query, $trigger_names['pk_delete'], 'BEFORE DELETE', 'delete') . $setdefault_action. '; END;';
+                } elseif ('NO ACTION' == $fkdef['ondelete']) {
+                    $sql_delete = sprintf($query.$restrict_action, $trigger_names['pk_delete'], 'AFTER DELETE', 'delete')  . '; END;';
+                } elseif ('RESTRICT' == $fkdef['ondelete']) {
+                    $sql_delete = sprintf($query.$restrict_action, $trigger_names['pk_delete'], 'BEFORE DELETE', 'delete') . '; END;';
+                }
+
+                if (MDB2::isError($result)) {
+                    return $result;
+                }
+                $result = $db->exec($sql_delete);
+                if (MDB2::isError($result)) {
+                    return $result;
+                }
+                $result = $db->exec($sql_update);
+                if (MDB2::isError($result)) {
+                    return $result;
+                }
+            }
+        }
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
+    }
+
+    // }}}
+    // {{{ dropTable()
+
+    /**
+     * drop an existing table
+     *
+     * @param string $name name of the table that should be dropped
+     * @return mixed MDB2_OK on success, a MDB2 error on failure
+     * @access public
+     */
+    function dropTable($name)
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+        
+        //delete the triggers associated to existing FK constraints
+        $constraints = $this->listTableConstraints($name);
+        if (!MDB2::isError($constraints) && !empty($constraints)) {
+            $db->loadModule('Reverse', null, true);
+            foreach ($constraints as $constraint) {
+                $definition = $db->reverse->getTableConstraintDefinition($name, $constraint);
+                if (!MDB2::isError($definition) && !empty($definition['foreign'])) {
+                    $result = $this->_dropFKTriggers($name, $constraint, $definition['references']['table']);
+                    if (MDB2::isError($result)) {
+                        return $result;
+                    }
+                }
+            }
+        }
+
+        $name = $db->quoteIdentifier($name, true);
+        $result = $db->exec("DROP TABLE $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
+    }
+
+    // }}}
+    // {{{ vacuum()
+
+    /**
+     * Optimize (vacuum) all the tables in the db (or only the specified table)
+     * and optionally run ANALYZE.
+     *
+     * @param string $table table name (all the tables if empty)
+     * @param array  $options an array with driver-specific options:
+     *               - timeout [int] (in seconds) [mssql-only]
+     *               - analyze [boolean] [pgsql and mysql]
+     *               - full [boolean] [pgsql-only]
+     *               - freeze [boolean] [pgsql-only]
+     *
+     * @return mixed MDB2_OK success, a MDB2 error on failure
+     * @access public
+     */
+    function vacuum($table = null, $options = array())
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        $query = 'VACUUM';
+        if (!empty($table)) {
+            $query .= ' '.$db->quoteIdentifier($table, true);
+        }
+        $result = $db->exec($query);
+        if (MDB2::isError($result)) {
+            return $result;
         }
         return MDB2_OK;
     }
@@ -215,7 +543,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function alterTable($name, $changes, $check, $options = array())
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -241,50 +569,63 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
 
         // actually sqlite 2.x supports no ALTER TABLE at all .. so we emulate it
         $fields = $db->manager->listTableFields($name);
-        if (PEAR::isError($fields)) {
+        if (MDB2::isError($fields)) {
             return $fields;
         }
 
         $fields = array_flip($fields);
         foreach ($fields as $field => $value) {
             $definition = $db->reverse->getTableFieldDefinition($name, $field);
-            if (PEAR::isError($definition)) {
+            if (MDB2::isError($definition)) {
                 return $definition;
             }
             $fields[$field] = $definition[0];
         }
 
         $indexes = $db->manager->listTableIndexes($name);
-        if (PEAR::isError($indexes)) {
+        if (MDB2::isError($indexes)) {
             return $indexes;
         }
 
         $indexes = array_flip($indexes);
         foreach ($indexes as $index => $value) {
             $definition = $db->reverse->getTableIndexDefinition($name, $index);
-            if (PEAR::isError($definition)) {
+            if (MDB2::isError($definition)) {
                 return $definition;
             }
             $indexes[$index] = $definition;
         }
 
         $constraints = $db->manager->listTableConstraints($name);
-        if (PEAR::isError($constraints)) {
+        if (MDB2::isError($constraints)) {
             return $constraints;
         }
 
+        if (!array_key_exists('foreign_keys', $options)) {
+            $options['foreign_keys'] = array();
+        }
         $constraints = array_flip($constraints);
         foreach ($constraints as $constraint => $value) {
             if (!empty($definition['primary'])) {
                 if (!array_key_exists('primary', $options)) {
                     $options['primary'] = $definition['fields'];
+                    //remove from the $constraint array, it's already handled by createTable()
+                    unset($constraints[$constraint]);
                 }
             } else {
-                $definition = $db->reverse->getTableConstraintDefinition($name, $constraint);
-                if (PEAR::isError($definition)) {
-                    return $definition;
+                $c_definition = $db->reverse->getTableConstraintDefinition($name, $constraint);
+                if (MDB2::isError($c_definition)) {
+                    return $c_definition;
                 }
-                $constraints[$constraint] = $definition;
+                if (!empty($c_definition['foreign'])) {
+                    if (!array_key_exists($constraint, $options['foreign_keys'])) {
+                        $options['foreign_keys'][$constraint] = $c_definition;
+                    }
+                    //remove from the $constraint array, it's already handled by createTable()
+                    unset($constraints[$constraint]);
+                } else {
+                    $constraints[$constraint] = $c_definition;
+                }
             }
         }
 
@@ -333,12 +674,12 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
         }
 
         $result = $this->dropTable($name);
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $result;
         }
 
         $result = $this->createTable($name_new, $fields, $options);
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $result;
         }
 
@@ -354,13 +695,13 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
             $query = 'INSERT INTO '.$db->quoteIdentifier($name_new, true);
             $query.= '('.implode(', ', array_slice(array_keys($fields), 0, count($select_fields))).')';
             $query.=' VALUES (?'.str_repeat(', ?', (count($select_fields) - 1)).')';
-            $stmt =& $db->prepare($query, null, MDB2_PREPARE_MANIP);
-            if (PEAR::isError($stmt)) {
+            $stmt = $db->prepare($query, null, MDB2_PREPARE_MANIP);
+            if (MDB2::isError($stmt)) {
                 return $stmt;
             }
             foreach ($data as $row) {
                 $result = $stmt->execute($row);
-                if (PEAR::isError($result)) {
+                if (MDB2::isError($result)) {
                     return $result;
                 }
             }
@@ -380,7 +721,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listDatabases()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -400,7 +741,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listUsers()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -420,13 +761,13 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listViews()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $query = "SELECT name FROM sqlite_master WHERE type='view' AND sql NOT NULL";
         $result = $db->queryCol($query);
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $result;
         }
         if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
@@ -448,13 +789,13 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listTableViews($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $query = "SELECT name, sql FROM sqlite_master WHERE type='view' AND sql NOT NULL";
         $views = $db->queryAll($query, array('text', 'text'), MDB2_FETCHMODE_ASSOC);
-        if (PEAR::isError($views)) {
+        if (MDB2::isError($views)) {
             return $views;
         }
         $result = array();
@@ -484,13 +825,13 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listTables()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $query = "SELECT name FROM sqlite_master WHERE type='table' AND sql NOT NULL ORDER BY name";
         $table_names = $db->queryCol($query);
-        if (PEAR::isError($table_names)) {
+        if (MDB2::isError($table_names)) {
             return $table_names;
         }
         $result = array();
@@ -518,12 +859,12 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listTableFields($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $result = $db->loadModule('Reverse', null, true);
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $result;
         }
         $query = "SELECT sql FROM sqlite_master WHERE type='table' AND ";
@@ -533,7 +874,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
             $query.= 'name='.$db->quote($table, 'text');
         }
         $sql = $db->queryOne($query);
-        if (PEAR::isError($sql)) {
+        if (MDB2::isError($sql)) {
             return $sql;
         }
         $columns = $db->reverse->_getTableColumns($sql);
@@ -566,12 +907,12 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listTableTriggers($table = null)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $query = "SELECT name FROM sqlite_master WHERE type='trigger' AND sql NOT NULL";
-        if (!is_null($table)) {
+        if (null !== $table) {
             if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
                 $query.= ' AND LOWER(tbl_name)='.$db->quote(strtolower($table), 'text');
             } else {
@@ -579,7 +920,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
             }
         }
         $result = $db->queryCol($query);
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $result;
         }
         if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
@@ -626,16 +967,16 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function createIndex($table, $name, $definition)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $table = $db->quoteIdentifier($table, true);
-        $name  = $db->getIndexName($name);
+        $name  = $db->quoteIdentifier($db->getIndexName($name), true);
         $query = "CREATE INDEX $name ON $table";
         $fields = array();
         foreach ($definition['fields'] as $field_name => $field) {
-            $field_string = $field_name;
+            $field_string = $db->quoteIdentifier($field_name, true);
             if (!empty($field['sorting'])) {
                 switch ($field['sorting']) {
                 case 'ascending':
@@ -649,7 +990,11 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
             $fields[] = $field_string;
         }
         $query .= ' ('.implode(', ', $fields) . ')';
-        return $db->exec($query);
+        $result = $db->exec($query);
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -666,12 +1011,16 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function dropIndex($table, $name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $name = $db->getIndexName($name);
-        return $db->exec("DROP INDEX $name");
+        $result = $db->exec("DROP INDEX $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -687,7 +1036,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listTableIndexes($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -700,7 +1049,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
         }
         $query.= " AND sql NOT NULL ORDER BY name";
         $indexes = $db->queryCol($query, 'text');
-        if (PEAR::isError($indexes)) {
+        if (MDB2::isError($indexes)) {
             return $indexes;
         }
 
@@ -726,34 +1075,38 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     /**
      * create a constraint on a table
      *
-     * @param string    $table         name of the table on which the constraint is to be created
-     * @param string    $name         name of the constraint to be created
-     * @param array     $definition        associative array that defines properties of the constraint to be created.
-     *                                 Currently, only one property named FIELDS is supported. This property
-     *                                 is also an associative with the names of the constraint fields as array
-     *                                 constraints. Each entry of this array is set to another type of associative
-     *                                 array that specifies properties of the constraint that are specific to
-     *                                 each field.
+     * @param string $table      name of the table on which the constraint is to be created
+     * @param string $name       name of the constraint to be created
+     * @param array  $definition associative array that defines properties of the constraint to be created.
+     *                           Currently, only one property named FIELDS is supported. This property
+     *                           is also an associative with the names of the constraint fields as array
+     *                           constraints. Each entry of this array is set to another type of associative
+     *                           array that specifies properties of the constraint that are specific to
+     *                           each field.
      *
-     *                                 Example
-     *                                    array(
-     *                                        'fields' => array(
-     *                                            'user_name' => array(),
-     *                                            'last_login' => array()
-     *                                        )
-     *                                    )
+     *                           Example
+     *                              array(
+     *                                  'fields' => array(
+     *                                      'user_name' => array(),
+     *                                      'last_login' => array()
+     *                                  )
+     *                              )
      * @return mixed MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
     function createConstraint($table, $name, $definition)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         if (!empty($definition['primary'])) {
             return $db->manager->alterTable($table, array(), false, array('primary' => $definition['fields']));
+        }
+        
+        if (!empty($definition['foreign'])) {
+            return $db->manager->alterTable($table, array(), false, array('foreign_keys' => array($name => $definition)));
         }
 
         $table = $db->quoteIdentifier($table, true);
@@ -775,7 +1128,11 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
             $fields[] = $field_string;
         }
         $query .= ' ('.implode(', ', $fields) . ')';
-        return $db->exec($query);
+        $result = $db->exec($query);
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -792,17 +1149,71 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
      */
     function dropConstraint($table, $name, $primary = false)
     {
+        if ($primary || $name == 'PRIMARY') {
+            return $this->alterTable($table, array(), false, array('primary' => null));
+        }
+
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
-        if ($primary || $name == 'PRIMARY') {
-            return $db->manager->alterTable($table, array(), false, array('primary' => null));
+        //is it a FK constraint? If so, also delete the associated triggers
+        $db->loadModule('Reverse', null, true);
+        $definition = $db->reverse->getTableConstraintDefinition($table, $name);
+        if (!MDB2::isError($definition) && !empty($definition['foreign'])) {
+            //first drop the FK enforcing triggers
+            $result = $this->_dropFKTriggers($table, $name, $definition['references']['table']);
+            if (MDB2::isError($result)) {
+                return $result;
+            }
+            //then drop the constraint itself
+            return $this->alterTable($table, array(), false, array('foreign_keys' => array($name => null)));
         }
 
         $name = $db->getIndexName($name);
-        return $db->exec("DROP INDEX $name");
+        $result = $db->exec("DROP INDEX $name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
+    }
+
+    // }}}
+    // {{{ _dropFKTriggers()
+    
+    /**
+     * Drop the triggers created to enforce the FOREIGN KEY constraint on the table
+     *
+     * @param string $table  table name
+     * @param string $fkname FOREIGN KEY constraint name
+     * @param string $referenced_table  referenced table name
+     *
+     * @return mixed MDB2_OK on success, a MDB2 error on failure
+     * @access private
+     */
+    function _dropFKTriggers($table, $fkname, $referenced_table)
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        $triggers  = $this->listTableTriggers($table);
+        $triggers2 = $this->listTableTriggers($referenced_table);
+        if (!MDB2::isError($triggers2) && !MDB2::isError($triggers)) {
+            $triggers = array_merge($triggers, $triggers2);
+            $pattern = '/^'.$fkname.'(_pk)?_(insert|update|delete)_trg$/i';
+            foreach ($triggers as $trigger) {
+                if (preg_match($pattern, $trigger)) {
+                    $result = $db->exec('DROP TRIGGER '.$trigger);
+                    if (MDB2::isError($result)) {
+                        return $result;
+                    }
+                }
+            }
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -818,7 +1229,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listTableConstraints($table)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -831,7 +1242,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
         }
         $query.= " AND sql NOT NULL ORDER BY name";
         $indexes = $db->queryCol($query, 'text');
-        if (PEAR::isError($indexes)) {
+        if (MDB2::isError($indexes)) {
             return $indexes;
         }
 
@@ -842,6 +1253,29 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
                 if (!empty($index)) {
                     $result[$index] = true;
                 }
+            }
+        }
+        
+        // also search in table definition for PRIMARY KEYs...
+        $query = "SELECT sql FROM sqlite_master WHERE type='table' AND ";
+        if ($db->options['portability'] & MDB2_PORTABILITY_FIX_CASE) {
+            $query.= 'LOWER(name)='.strtolower($table);
+        } else {
+            $query.= "name=$table";
+        }
+        $query.= " AND sql NOT NULL ORDER BY name";
+        $table_def = $db->queryOne($query, 'text');
+        if (MDB2::isError($table_def)) {
+            return $table_def;
+        }
+        if (preg_match("/\bPRIMARY\s+KEY\b/i", $table_def, $tmp)) {
+            $result['primary'] = true;
+        }
+
+        // ...and for FOREIGN KEYs
+        if (preg_match_all("/\bCONSTRAINT\b\s+([^\s]+)\s+\bFOREIGN\s+KEY/imsx", $table_def, $tmp)) {
+            foreach ($tmp[1] as $fk) {
+                $result[$fk] = true;
             }
         }
 
@@ -865,7 +1299,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function createSequence($seq_name, $start = 1)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
@@ -873,19 +1307,19 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
         $seqcol_name = $db->quoteIdentifier($db->options['seqcol_name'], true);
         $query = "CREATE TABLE $sequence_name ($seqcol_name INTEGER PRIMARY KEY DEFAULT 0 NOT NULL)";
         $res = $db->exec($query);
-        if (PEAR::isError($res)) {
+        if (MDB2::isError($res)) {
             return $res;
         }
         if ($start == 1) {
             return MDB2_OK;
         }
         $res = $db->exec("INSERT INTO $sequence_name ($seqcol_name) VALUES (".($start-1).')');
-        if (!PEAR::isError($res)) {
+        if (!MDB2::isError($res)) {
             return MDB2_OK;
         }
         // Handle error
         $result = $db->exec("DROP TABLE $sequence_name");
-        if (PEAR::isError($result)) {
+        if (MDB2::isError($result)) {
             return $db->raiseError($result, null, null,
                 'could not drop inconsistent sequence table', __FUNCTION__);
         }
@@ -906,12 +1340,16 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function dropSequence($seq_name)
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $sequence_name = $db->quoteIdentifier($db->getSequenceName($seq_name), true);
-        return $db->exec("DROP TABLE $sequence_name");
+        $result = $db->exec("DROP TABLE $sequence_name");
+        if (MDB2::isError($result)) {
+            return $result;
+        }
+        return MDB2_OK;
     }
 
     // }}}
@@ -926,13 +1364,13 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
     function listSequences()
     {
         $db = $this->getDBInstance();
-        if (PEAR::isError($db)) {
+        if (MDB2::isError($db)) {
             return $db;
         }
 
         $query = "SELECT name FROM sqlite_master WHERE type='table' AND sql NOT NULL ORDER BY name";
         $table_names = $db->queryCol($query);
-        if (PEAR::isError($table_names)) {
+        if (MDB2::isError($table_names)) {
             return $table_names;
         }
         $result = array();

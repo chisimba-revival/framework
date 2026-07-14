@@ -51,22 +51,22 @@ class getid3_matroska
 		// 0000 001x  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx            - value 0 to 2^49-2
 		// 0000 0001  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx  xxxx xxxx - value 0 to 2^56-2
 
-		if (0x80 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x7F);
-		} elseif (0x40 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x3F);
-		} elseif (0x20 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x1F);
-		} elseif (0x10 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x0F);
-		} elseif (0x08 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x07);
-		} elseif (0x04 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x03);
-		} elseif (0x02 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x01);
-		} elseif (0x01 & ord($EBMLstring{0})) {
-			$EBMLstring{0} = chr(ord($EBMLstring{0}) & 0x00);
+		if (0x80 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x7F);
+		} elseif (0x40 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x3F);
+		} elseif (0x20 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x1F);
+		} elseif (0x10 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x0F);
+		} elseif (0x08 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x07);
+		} elseif (0x04 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x03);
+		} elseif (0x02 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x01);
+		} elseif (0x01 & ord($EBMLstring[0])) {
+			$EBMLstring[0] = chr(ord($EBMLstring[0]) & 0x00);
 		} else {
 			return false;
 		}

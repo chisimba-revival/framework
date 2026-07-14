@@ -152,15 +152,25 @@ class washout extends ChisimbaObject
        
         // Find all filters that match the format [FILTERNAME*]*[/FILTERNAME]
         //    where * is anything and replace.
-        $txt = preg_replace('/\\[(\\w+)(\\W([^\\]\\[]*?)|)\\](?s:.*?)(\\[\\/\\1\\])/Ueim',
-          "\$this->getHTML('\\0', '\\1')", $txt);
+        $txt = preg_replace_callback(
+            '/\\[(\\w+)(\\W([^\\]\\[]*?)|)\\](?s:.*?)(\\[\\/\\1\\])/Uim',
+            function ($matches) {
+                return $this->getHTML($matches[0], $matches[1]);
+            },
+            $txt
+        );
         // @todo Author please explain what this does
         if (PREG_NO_ERROR !== preg_last_error()){
             $this->pcre_error_decode();
         }
 
-        $txt = preg_replace('/\\[(\\w+)(\\W([^\\]\\[]*?)|)\\]/ie',
-          "\$this->getHTML('\\0', '\\1')", $txt);
+        $txt = preg_replace_callback(
+            '/\\[(\\w+)(\\W([^\\]\\[]*?)|)\\]/i',
+            function ($matches) {
+                return $this->getHTML($matches[0], $matches[1]);
+            },
+            $txt
+        );
                 
         // All the filters that don't conform to [FILTERNAME*]*[/FILTERNAME],
         //  manually execute them.

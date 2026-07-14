@@ -380,12 +380,12 @@ class Mail_mime
         if ($filesize == 0){
             $cont =  "";
         }else{
-            if ($magic_quote_setting = get_magic_quotes_runtime()){
-                set_magic_quotes_runtime(0);
+            if ($magic_quote_setting = (bool) ini_get('magic_quotes_runtime')){
+                @ini_set('magic_quotes_runtime', (string) (0));
             }
             $cont = fread($fd, $filesize);
             if ($magic_quote_setting){
-                set_magic_quotes_runtime($magic_quote_setting);
+                @ini_set('magic_quotes_runtime', (string) ($magic_quote_setting));
             }
         }
         fclose($fd);
@@ -928,11 +928,11 @@ class Mail_mime
                     //so later we can concat the encoded string and the double quotes back 
                     //together to get the intended string.
                     $quotePrefix = $quoteSuffix = '';
-                    if ($hdr_value{0} == '"') {
+                    if ($hdr_value[0] == '"') {
                         $hdr_value = substr($hdr_value, 1);
                         $quotePrefix = '"';
                     }
-                    if ($hdr_value{strlen($hdr_value)-1} == '"') {
+                    if ($hdr_value[strlen($hdr_value)-1] == '"') {
                         $hdr_value = substr($hdr_value, 0, -1);
                         $quoteSuffix = '"';
                     }

@@ -475,7 +475,9 @@ class useradmin_model2 extends dbtable
             if (FileMaker::isError ( $result )) {
                 // OK there is a horrible screwup, so lets continue on the the db so that it can handle it
                 // through the Chisimba customException Class.
-                continue;
+                // FileMaker unavailable.
+                // Fall back to the normal Chisimba database handling.
+
             } else {
                 $record = $result->getFirstRecord ();
                 $fmid = $record->getRecordId ();

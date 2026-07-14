@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------+
 // | PHP versions 4 and 5                                                 |
 // +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2006 Manuel Lemos, Tomas V.V.Cox,                 |
+// | Copyright (c) 1998-2008 Manuel Lemos, Tomas V.V.Cox,                 |
 // | Stig. S. Bakken, Lukas Smith                                         |
 // | All rights reserved.                                                 |
 // +----------------------------------------------------------------------+
@@ -90,6 +90,22 @@ class MDB2_Driver_Function_sqlite extends MDB2_Driver_Function_Common
     }
 
     // }}}
+    // {{{ unixtimestamp()
+
+    /**
+     * return string to call a function to get the unix timestamp from a iso timestamp
+     *
+     * @param string $expression
+     *
+     * @return string to call a variable with the timestamp
+     * @access public
+     */
+    function unixtimestamp($expression)
+    {
+        return 'strftime("%s",'. $expression.', "utc")';
+    }
+
+    // }}}
     // {{{ substring()
 
     /**
@@ -100,10 +116,10 @@ class MDB2_Driver_Function_sqlite extends MDB2_Driver_Function_Common
      */
     function substring($value, $position = 1, $length = null)
     {
-        if (!is_null($length)) {
-            return "substr($value,$position,$length)";
+        if (null !== $length) {
+            return "substr($value, $position, $length)";
         }
-        return "substr($value,$position,length($value))";
+        return "substr($value, $position, length($value))";
     }
 
     // }}}
@@ -118,6 +134,27 @@ class MDB2_Driver_Function_sqlite extends MDB2_Driver_Function_Common
     function random()
     {
         return '((RANDOM()+2147483648)/4294967296)';
+    }
+
+    // }}}
+    // {{{ replace()
+
+    /**
+     * return string to call a function to get a replacement inside an SQL statement.
+     *
+     * @return string to call a function to get a replace
+     * @access public
+     */
+    function replace($str, $from_str, $to_str)
+    {
+        $db = $this->getDBInstance();
+        if (MDB2::isError($db)) {
+            return $db;
+        }
+
+        $error = $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
+            'method not implemented', __FUNCTION__);
+        return $error;
     }
 
     // }}}

@@ -1148,6 +1148,18 @@ class dbTable extends ChisimbaObject {
     private function _queryRow($query) {
         if ($this->dbLayer === 'MDB2') {
             $ret = $this->_db->queryRow($query, array());
+
+            if (PEAR::isError($ret)) {
+                error_log(
+                    'MDB2 queryRow failed: '
+                    . $ret->getMessage()
+                    . ' | SQL: '
+                    . $query
+                );
+
+                return FALSE;
+            }
+
             return $ret;
         } elseif ($this->dbLayer === 'PDO') {
             try {

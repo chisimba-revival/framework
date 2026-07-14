@@ -615,7 +615,7 @@ class RDF_Serializer extends RDF_Object
         $hasBreaks = false;
         $whiteSpaceOnly = true;
         for ($i = 0; $i < strlen($textValue); $i++) {
-            $c = $textValue{$i};
+            $c = $textValue[$i];
             if ($c == '<' || $c == '>' || $c == '&') {
                 return RDF_USE_CDATA;
             }

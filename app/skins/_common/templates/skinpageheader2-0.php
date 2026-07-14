@@ -54,11 +54,11 @@ if (!isset($numColumns)) {
 $useragent = $_SERVER['HTTP_USER_AGENT'];
 function isMSIE($useragent)
 {
-    if(eregi("msie", $useragent) && !eregi("opera",$useragent))
+    if(preg_match("~msie~i", $useragent) && !preg_match("~opera~i",$useragent))
     {
         return TRUE;
     }
-    if(eregi("microsoft internet explorer", $useragent))
+    if(preg_match("~microsoft internet explorer~i", $useragent))
     {
         return TRUE;
     }

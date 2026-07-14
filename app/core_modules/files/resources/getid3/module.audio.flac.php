@@ -130,7 +130,7 @@ class getid3_flac
 				$ThisFileInfo['md5_data_source'] = '';
 				$md5 = $ThisFileInfo['flac']['STREAMINFO']['audio_signature'];
 				for ($i = 0; $i < strlen($md5); $i++) {
-					$ThisFileInfo['md5_data_source'] .= str_pad(dechex(ord($md5{$i})), 2, '00', STR_PAD_LEFT);
+					$ThisFileInfo['md5_data_source'] .= str_pad(dechex(ord($md5[$i])), 2, '00', STR_PAD_LEFT);
 				}
 				if (!preg_match('/^[0-9a-f]{32}$/', $ThisFileInfo['md5_data_source'])) {
 					unset($ThisFileInfo['md5_data_source']);

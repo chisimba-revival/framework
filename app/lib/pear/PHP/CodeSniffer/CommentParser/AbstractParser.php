@@ -197,7 +197,7 @@ abstract class PHP_CodeSniffer_CommentParser_AbstractParser
                     $line = substr($line, 3);
                 } else if (substr($line, -2, 2) === '*/') {
                     $line = substr($line, 0, -2);
-                } else if ($line{0} === '*') {
+                } else if ($line[0] === '*') {
                     $line = substr($line, 1);
                 }
 
@@ -238,7 +238,7 @@ abstract class PHP_CodeSniffer_CommentParser_AbstractParser
                 $wordWasEmpty = false;
             }
 
-            if ($word{0} === '@') {
+            if ($word[0] === '@') {
 
                 $tag = substr($word, 1);
 

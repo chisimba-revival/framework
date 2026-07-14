@@ -56,7 +56,7 @@ class getid3_voc
 
 			$BlockOffset    = ftell($fd);
 			$BlockData      = fread($fd, 4);
-			$BlockType      = ord($BlockData{0});
+			$BlockType      = ord($BlockData[0]);
 			$BlockSize      = getid3_lib::LittleEndian2Int(substr($BlockData, 1, 3));
 			$ThisBlock      = array();
 

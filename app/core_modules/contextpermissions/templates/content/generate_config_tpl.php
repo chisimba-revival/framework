@@ -21,7 +21,7 @@
     $regCondition = '';
     $arrFunctions = array();
     foreach( $arrConditions as $name=>$params ) {
-        $_params = ereg_replace(' \| ', '|', $params['params']); // Insert spaces
+        $_params = preg_replace('~ \| ~', '|', $params['params']); // Insert spaces
         $arrFunctions[$params['function']['function']][] = $params['function']['params'];
         $regCondition .= 'CONDITION: '.$name.'|'.$_params."<BR>";
     }

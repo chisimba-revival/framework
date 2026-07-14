@@ -1,96 +1,148 @@
-<?php
-// +----------------------------------------------------------------------+
-// | PHP versions 4 and 5                                                 |
-// +----------------------------------------------------------------------+
-// | Copyright (c) 1998-2008 Manuel Lemos, Tomas V.V.Cox,                 |
-// | Stig. S. Bakken, Lukas Smith, Igor Feghali                           |
-// | All rights reserved.                                                 |
-// +----------------------------------------------------------------------+
-// | MDB2_Schema enables users to maintain RDBMS independant schema files |
-// | in XML that can be used to manipulate both data and database schemas |
-// | This LICENSE is in the BSD license style.                            |
-// |                                                                      |
-// | Redistribution and use in source and binary forms, with or without   |
-// | modification, are permitted provided that the following conditions   |
-// | are met:                                                             |
-// |                                                                      |
-// | Redistributions of source code must retain the above copyright       |
-// | notice, this list of conditions and the following disclaimer.        |
-// |                                                                      |
-// | Redistributions in binary form must reproduce the above copyright    |
-// | notice, this list of conditions and the following disclaimer in the  |
-// | documentation and/or other materials provided with the distribution. |
-// |                                                                      |
-// | Neither the name of Manuel Lemos, Tomas V.V.Cox, Stig. S. Bakken,    |
-// | Lukas Smith, Igor Feghali nor the names of his contributors may be   |
-// | used to endorse or promote products derived from this software       |
-// | without specific prior written permission.                           |
-// |                                                                      |
-// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS  |
-// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT    |
-// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS    |
-// | FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE      |
-// | REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,          |
-// | INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, |
-// | BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS|
-// |  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED  |
-// | AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT          |
-// | LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY|
-// | WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE          |
-// | POSSIBILITY OF SUCH DAMAGE.                                          |
-// +----------------------------------------------------------------------+
-// | Author: Christian Dickmann <dickmann@php.net>                        |
-// | Author: Igor Feghali <ifeghali@php.net>                              |
-// +----------------------------------------------------------------------+
-//
-// $Id$
-//
+<?php /* vim: se et ts=4 sw=4 sts=4 fdm=marker tw=80: */
+/**
+ * Copyright (c) 1998-2010 Manuel Lemos, Tomas V.V.Cox,
+ * Stig. S. Bakken, Lukas Smith, Igor Feghali
+ * All rights reserved.
+ *
+ * MDB2_Schema enables users to maintain RDBMS independant schema files
+ * in XML that can be used to manipulate both data and database schemas
+ * This LICENSE is in the BSD license style.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of Manuel Lemos, Tomas V.V.Cox, Stig. S. Bakken,
+ * Lukas Smith, Igor Feghali nor the names of his contributors may be
+ * used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+ * REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ *  OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * PHP version 5
+ *
+ * @category Database
+ * @package  MDB2_Schema
+ * @author   Christian Dickmann <dickmann@php.net>
+ * @author   Igor Feghali <ifeghali@php.net>
+ * @license  BSD http://www.opensource.org/licenses/bsd-license.php
+ * @version  SVN: $Id$
+ * @link     http://pear.php.net/packages/MDB2_Schema
+ */
 
 /**
  * Validates an XML schema file
  *
- * @package MDB2_Schema
  * @category Database
- * @access protected
- * @author Igor Feghali <ifeghali@php.net>
+ * @package  MDB2_Schema
+ * @author   Igor Feghali <ifeghali@php.net>
+ * @license  BSD http://www.opensource.org/licenses/bsd-license.php
+ * @link     http://pear.php.net/packages/MDB2_Schema
  */
 class MDB2_Schema_Validate
 {
     // {{{ properties
 
     var $fail_on_invalid_names = true;
+
     var $valid_types = array();
+
     var $force_defaults = true;
+
+    var $max_identifiers_length = null;
 
     // }}}
     // {{{ constructor
 
-    function __construct($fail_on_invalid_names = true, $valid_types = array(), $force_defaults = true)
-    {
+    /**
+     * PHP 5 constructor
+     *
+     * @param bool  $fail_on_invalid_names  array with reserved words per RDBMS
+     * @param array $valid_types            information of all valid fields 
+     *                                      types
+     * @param bool  $force_defaults         if true sets a default value to
+     *                                      field when not explicit
+     * @param int   $max_identifiers_length maximum allowed size for entities 
+     *                                      name
+     *
+     * @return void
+     *
+     * @access public
+     * @static
+     */
+    function __construct($fail_on_invalid_names = true, $valid_types = array(),
+        $force_defaults = true, $max_identifiers_length = null
+    ) {
         if (empty($GLOBALS['_MDB2_Schema_Reserved'])) {
             $GLOBALS['_MDB2_Schema_Reserved'] = array();
         }
 
         if (is_array($fail_on_invalid_names)) {
-            $this->fail_on_invalid_names
-                = array_intersect($fail_on_invalid_names, array_keys($GLOBALS['_MDB2_Schema_Reserved']));
+            $this->fail_on_invalid_names = array_intersect($fail_on_invalid_names,
+                                                           array_keys($GLOBALS['_MDB2_Schema_Reserved']));
         } elseif ($fail_on_invalid_names === true) {
             $this->fail_on_invalid_names = array_keys($GLOBALS['_MDB2_Schema_Reserved']);
         } else {
             $this->fail_on_invalid_names = array();
         }
-        $this->valid_types = $valid_types;
-        $this->force_defaults = $force_defaults;
+        $this->valid_types            = $valid_types;
+        $this->force_defaults         = $force_defaults;
+        $this->max_identifiers_length = $max_identifiers_length;
     }
 
-    function MDB2_Schema_Validate($fail_on_invalid_names = true, $valid_types = array(), $force_defaults = true)
-    {
+    /**
+     * PHP 4 compatible constructor
+     *
+     * @param bool  $fail_on_invalid_names  array with reserved words per RDBMS
+     * @param array $valid_types            information of all valid fields 
+     *                                      types
+     * @param bool  $force_defaults         if true sets a default value to
+     *                                      field when not explicit
+     * @param int   $max_identifiers_length maximum allowed size for entities 
+     *                                      name
+     *
+     * @return void
+     *
+     * @access public
+     * @static
+     */
+    function MDB2_Schema_Validate($fail_on_invalid_names = true, $valid_types = array(),
+        $force_defaults = true, $max_identifiers_length = null
+    ) {
         $this->__construct($fail_on_invalid_names, $valid_types, $force_defaults);
     }
 
     // }}}
     // {{{ raiseError()
 
+    /**
+     * Pushes a MDB2_Schema_Error into stack and returns it
+     *
+     * @param int    $ecode MDB2_Schema's error code
+     * @param string $msg   textual message
+     *
+     * @return object
+     * @access private
+     * @static
+     */
     function &raiseError($ecode, $msg = null)
     {
         $error =& MDB2_Schema::raiseError($ecode, null, null, $msg);
@@ -105,7 +157,7 @@ class MDB2_Schema_Validate
      * to true or false according to its actual contents and return true. If
      * not, keep its contents untouched and return false.
      *
-     * @param mixed  value to be checked
+     * @param mixed &$value value to be checked
      *
      * @return bool
      *
@@ -117,13 +169,16 @@ class MDB2_Schema_Validate
         if (is_bool($value)) {
             return true;
         }
+
         if ($value === 0 || $value === 1 || $value === '') {
             $value = (bool)$value;
             return true;
         }
+
         if (!is_string($value)) {
             return false;
         }
+
         switch ($value) {
         case '0':
         case 'N':
@@ -153,11 +208,11 @@ class MDB2_Schema_Validate
      * Checks whether the definition of a parsed table is valid. Modify table
      * definition when necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                tables of current database.
-     * @param array  multi dimensional array that contains the
-     *                structure and optional data of the table.
-     * @param string  name of the parsed table
+     * @param array  $tables     multi dimensional array that contains the
+     *                           tables of current database.
+     * @param array  &$table     multi dimensional array that contains the
+     *                           structure and optional data of the table.
+     * @param string $table_name name of the parsed table
      *
      * @return bool|error object
      *
@@ -165,27 +220,18 @@ class MDB2_Schema_Validate
      */
     function validateTable($tables, &$table, $table_name)
     {
-        /* Have we got a name? */
-        if (!$table_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'a table has to have a name');
-        }
-
         /* Table name duplicated? */
         if (is_array($tables) && isset($tables[$table_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'table "'.$table_name.'" already exists');
         }
 
-        /* Table name reserved? */
-        if (is_array($this->fail_on_invalid_names)) {
-            $name = strtoupper($table_name);
-            foreach ($this->fail_on_invalid_names as $rdbms) {
-                if (in_array($name, $GLOBALS['_MDB2_Schema_Reserved'][$rdbms])) {
-                    return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                        'table name "'.$table_name.'" is a reserved word in: '.$rdbms);
-                }
-            }
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($table_name, 'table');
+        if (PEAR::isError($result)) {
+            return $result;
         }
 
         /* Was */
@@ -203,11 +249,11 @@ class MDB2_Schema_Validate
         $autoinc = $primary = false;
         foreach ($table['fields'] as $field_name => $field) {
             if (!empty($field['autoincrement'])) {
-                if ($primary) {
+                if ($autoinc) {
                     return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                         'there was already an autoincrement field in "'.$table_name.'" before "'.$field_name.'"');
                 }
-                $autoinc = $primary = true;
+                $autoinc = $field_name;
             }
         }
 
@@ -226,9 +272,11 @@ class MDB2_Schema_Validate
                      * already an auto increment on this field this implying
                      * a primary key index.
                      */
-                    if ($autoinc && count($index['fields']) == '1') {
+                    if (count($index['fields']) == '1'
+                        && $autoinc
+                        && array_key_exists($autoinc, $index['fields'])) {
                         $skip_index = true;
-                    } elseif ($primary) {
+                    } elseif ($autoinc || $primary) {
                         return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                             'there was already an primary index or autoincrement field in "'.$table_name.'" before "'.$name.'"');
                     } else {
@@ -264,11 +312,11 @@ class MDB2_Schema_Validate
      * Checks whether the definition of a parsed field is valid. Modify field
      * definition when necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                fields of current table.
-     * @param array  multi dimensional array that contains the
-     *                structure of the parsed field.
-     * @param string  name of the parsed field
+     * @param array  $fields     multi dimensional array that contains the
+     *                           fields of current table.
+     * @param array  &$field     multi dimensional array that contains the
+     *                           structure of the parsed field.
+     * @param string $field_name name of the parsed field
      *
      * @return bool|error object
      *
@@ -276,27 +324,18 @@ class MDB2_Schema_Validate
      */
     function validateField($fields, &$field, $field_name)
     {
-        /* Have we got a name? */
-        if (!$field_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'field name missing');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($field_name, 'field');
+        if (PEAR::isError($result)) {
+            return $result;
         }
 
         /* Field name duplicated? */
         if (is_array($fields) && isset($fields[$field_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'field "'.$field_name.'" already exists');
-        }
-
-        /* Field name reserverd? */
-        if (is_array($this->fail_on_invalid_names)) {
-            $name = strtoupper($field_name);
-            foreach ($this->fail_on_invalid_names as $rdbms) {
-                if (in_array($name, $GLOBALS['_MDB2_Schema_Reserved'][$rdbms])) {
-                    return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                        'field name "'.$field_name.'" is a reserved word in: '.$rdbms);
-                }
-            }
         }
 
         /* Type check */
@@ -326,7 +365,7 @@ class MDB2_Schema_Validate
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'length has to be an integer greater 0');
         }
- 
+
         // if it's a DECIMAL datatype, check if a 'scale' value is provided:
         // <length>8,4</length> should be translated to DECIMAL(8,4)
         if (is_float($this->valid_types[$field['type']])
@@ -397,11 +436,11 @@ class MDB2_Schema_Validate
      * Checks whether a parsed index is valid. Modify index definition when
      * necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                indexes of current table.
-     * @param array  multi dimensional array that contains the
-     *                structure of the parsed index.
-     * @param string  name of the parsed index
+     * @param array  $table_indexes multi dimensional array that contains the
+     *                              indexes of current table.
+     * @param array  &$index        multi dimensional array that contains the
+     *                              structure of the parsed index.
+     * @param string $index_name    name of the parsed index
      *
      * @return bool|error object
      *
@@ -409,10 +448,14 @@ class MDB2_Schema_Validate
      */
     function validateIndex($table_indexes, &$index, $index_name)
     {
-        if (!$index_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'an index has to have a name');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($index_name, 'index');
+        if (PEAR::isError($result)) {
+            return $result;
         }
+
         if (is_array($table_indexes) && isset($table_indexes[$index_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'index "'.$index_name.'" already exists');
@@ -445,11 +488,11 @@ class MDB2_Schema_Validate
      * Checks whether a parsed index-field is valid. Modify its definition when
      * necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                fields of current index.
-     * @param array  multi dimensional array that contains the
-     *                structure of the parsed index-field.
-     * @param string  name of the parsed index-field
+     * @param array  $index_fields multi dimensional array that contains the
+     *                             fields of current index.
+     * @param array  &$field       multi dimensional array that contains the
+     *                             structure of the parsed index-field.
+     * @param string $field_name   name of the parsed index-field
      *
      * @return bool|error object
      *
@@ -457,17 +500,21 @@ class MDB2_Schema_Validate
      */
     function validateIndexField($index_fields, &$field, $field_name)
     {
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($field_name, 'index field');
+        if (PEAR::isError($result)) {
+            return $result;
+        }
+
         if (is_array($index_fields) && isset($index_fields[$field_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'index field "'.$field_name.'" already exists');
         }
-        if (!$field_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'the index-field-name is required');
-        }
         if (empty($field['sorting'])) {
             $field['sorting'] = 'ascending';
-        } elseif($field['sorting'] !== 'ascending' && $field['sorting'] !== 'descending') {
+        } elseif ($field['sorting'] !== 'ascending' && $field['sorting'] !== 'descending') {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'sorting type unknown');
         }
@@ -481,11 +528,11 @@ class MDB2_Schema_Validate
      * Checks whether a parsed foreign key is valid. Modify its definition when
      * necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                constraints of current table.
-     * @param array  multi dimensional array that contains the
-     *                structure of the parsed foreign key.
-     * @param string  name of the parsed foreign key
+     * @param array  $table_constraints multi dimensional array that contains the
+     *                                  constraints of current table.
+     * @param array  &$constraint       multi dimensional array that contains the
+     *                                  structure of the parsed foreign key.
+     * @param string $constraint_name   name of the parsed foreign key
      *
      * @return bool|error object
      *
@@ -493,10 +540,14 @@ class MDB2_Schema_Validate
      */
     function validateConstraint($table_constraints, &$constraint, $constraint_name)
     {
-        if (!$constraint_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'a foreign key has to have a name');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($constraint_name, 'foreign key');
+        if (PEAR::isError($result)) {
+            return $result;
         }
+
         if (is_array($table_constraints) && isset($table_constraints[$constraint_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'foreign key "'.$constraint_name.'" already exists');
@@ -532,9 +583,9 @@ class MDB2_Schema_Validate
     /**
      * Checks whether a foreign-field is valid.
      *
-     * @param array  multi dimensional array that contains the
-     *                fields of current foreign key.
-     * @param string  name of the parsed foreign-field
+     * @param array  $constraint_fields multi dimensional array that contains the
+     *                                  fields of current foreign key.
+     * @param string $field_name        name of the parsed foreign-field
      *
      * @return bool|error object
      *
@@ -542,10 +593,14 @@ class MDB2_Schema_Validate
      */
     function validateConstraintField($constraint_fields, $field_name)
     {
-        if (!$field_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'empty value for foreign-field');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($field_name, 'foreign key field');
+        if (PEAR::isError($result)) {
+            return $result;
         }
+
         if (is_array($constraint_fields) && isset($constraint_fields[$field_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'foreign field "'.$field_name.'" already exists');
@@ -559,9 +614,9 @@ class MDB2_Schema_Validate
     /**
      * Checks whether a foreign-referenced field is valid.
      *
-     * @param array  multi dimensional array that contains the
-     *                fields of current foreign key.
-     * @param string  name of the parsed foreign-field
+     * @param array  $referenced_fields multi dimensional array that contains the
+     *                                  fields of current foreign key.
+     * @param string $field_name        name of the parsed foreign-field
      *
      * @return bool|error object
      *
@@ -569,10 +624,14 @@ class MDB2_Schema_Validate
      */
     function validateConstraintReferencedField($referenced_fields, $field_name)
     {
-        if (!$field_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'empty value for referenced foreign-field');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($field_name, 'referenced foreign field');
+        if (PEAR::isError($result)) {
+            return $result;
         }
+
         if (is_array($referenced_fields) && isset($referenced_fields[$field_name])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'foreign field "'.$field_name.'" already referenced');
@@ -587,11 +646,11 @@ class MDB2_Schema_Validate
      * Checks whether the definition of a parsed sequence is valid. Modify
      * sequence definition when necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                sequences of current database.
-     * @param array  multi dimensional array that contains the
-     *                structure of the parsed sequence.
-     * @param string  name of the parsed sequence
+     * @param array  $sequences     multi dimensional array that contains the
+     *                              sequences of current database.
+     * @param array  &$sequence     multi dimensional array that contains the
+     *                              structure of the parsed sequence.
+     * @param string $sequence_name name of the parsed sequence
      *
      * @return bool|error object
      *
@@ -599,9 +658,12 @@ class MDB2_Schema_Validate
      */
     function validateSequence($sequences, &$sequence, $sequence_name)
     {
-        if (!$sequence_name) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'a sequence has to have a name');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($sequence_name, 'sequence');
+        if (PEAR::isError($result)) {
+            return $result;
         }
 
         if (is_array($sequences) && isset($sequences[$sequence_name])) {
@@ -639,8 +701,8 @@ class MDB2_Schema_Validate
      * Checks whether a parsed database is valid. Modify its structure and
      * data when necessary.
      *
-     * @param array  multi dimensional array that contains the
-     *                structure and optional data of the database.
+     * @param array &$database multi dimensional array that contains the
+     *                         structure and optional data of the database.
      *
      * @return bool|error object
      *
@@ -648,21 +710,17 @@ class MDB2_Schema_Validate
      */
     function validateDatabase(&$database)
     {
-        /* Have we got a name? */
-        if (!is_array($database) || !isset($database['name']) || !$database['name']) {
+        if (!is_array($database)) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'a database has to have a name');
+                'something wrong went with database definition');
         }
 
-        /* Database name reserved? */
-        if (is_array($this->fail_on_invalid_names)) {
-            $name = strtoupper($database['name']);
-            foreach ($this->fail_on_invalid_names as $rdbms) {
-                if (in_array($name, $GLOBALS['_MDB2_Schema_Reserved'][$rdbms])) {
-                    return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                        'database name "'.$database['name'].'" is a reserved word in: '.$rdbms);
-                }
-            }
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($database['name'], 'database');
+        if (PEAR::isError($result)) {
+            return $result;
         }
 
         /* Create */
@@ -699,6 +757,7 @@ class MDB2_Schema_Validate
 
                         if (empty($constraint['references']['fields'])) {
                             $referenced_table = $database['tables'][$referenced_table_name];
+
                             $primary = false;
 
                             if (!empty($referenced_table['indexes'])) {
@@ -772,11 +831,11 @@ class MDB2_Schema_Validate
      * necessary. This is called when validating INSERT and
      * UPDATE.
      *
-     * @param array  multi dimensional array that contains the
-     *                definition for current table's fields.
-     * @param array  multi dimensional array that contains the
-     *                parsed fields of the current DML instruction.
-     * @param string  array that contains the parsed instruction field
+     * @param array  $table_fields       multi dimensional array that contains the
+     *                                   definition for current table's fields.
+     * @param array  $instruction_fields multi dimensional array that contains the
+     *                                   parsed fields of the current DML instruction.
+     * @param string &$field             array that contains the parsed instruction field
      *
      * @return bool|error object
      *
@@ -784,22 +843,29 @@ class MDB2_Schema_Validate
      */
     function validateDataField($table_fields, $instruction_fields, &$field)
     {
-        if (!$field['name']) {
-            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
-                'field-name has to be specified');
+        /**
+         * Valid name ?
+         */
+        $result = $this->validateIdentifier($field['name'], 'field');
+        if (PEAR::isError($result)) {
+            return $result;
         }
+
         if (is_array($instruction_fields) && isset($instruction_fields[$field['name']])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'field "'.$field['name'].'" already initialized');
         }
+
         if (is_array($table_fields) && !isset($table_fields[$field['name']])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 '"'.$field['name'].'" is not defined');
         }
+
         if (!isset($field['group']['type'])) {
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 '"'.$field['name'].'" has no initial value');
         }
+
         if (isset($field['group']['data'])
             && $field['group']['type'] == 'value'
             && $field['group']['data'] !== ''
@@ -808,6 +874,7 @@ class MDB2_Schema_Validate
             return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
                 'value of "'.$field['name'].'" is incorrect: '.$result->getUserinfo());
         }
+
         return MDB2_OK;
     }
 
@@ -818,10 +885,10 @@ class MDB2_Schema_Validate
      * Checks whether a given value is compatible with a table field. This is
      * done when parsing a field for a INSERT or UPDATE instruction.
      *
-     * @param array  multi dimensional array that contains the
-     *                definition for current table's fields.
-     * @param string  value to fill the parsed field
-     * @param string  name of the parsed field
+     * @param array  $field_def    multi dimensional array that contains the
+     *                             definition for current table's fields.
+     * @param string &$field_value value to fill the parsed field
+     * @param string $field_name   name of the parsed field
      *
      * @return bool|error object
      *
@@ -872,6 +939,7 @@ class MDB2_Schema_Validate
             break;
         case 'timestamp':
             if (!preg_match('/([0-9]{4})-([0-9]{1,2})-([0-9]{1,2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})/', $field_value)
+                && strcasecmp($field_value, 'now()') != 0
                 && $field_value !== 'CURRENT_TIMESTAMP'
             ) {
                 return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
@@ -897,6 +965,62 @@ class MDB2_Schema_Validate
         }
         return MDB2_OK;
     }
-}
 
-?>
+    // }}}
+    // {{{ validateIdentifier()
+
+    /**
+     * Checks whether a given identifier is valid for current driver.
+     *
+     * @param string $id   identifier to check
+     * @param string $type whether identifier represents a table name, index, etc.
+     *
+     * @return bool|error object
+     *
+     * @access public
+     */
+    function validateIdentifier($id, $type)
+    {
+        $max_length = $this->max_identifiers_length;
+        $cur_length = strlen($id);
+
+        /**
+         * Have we got a name?
+         */
+        if (!$id) {
+            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
+                "a $type has to have a name");
+        }
+
+        /**
+         * Supported length ?
+         */
+        if ($max_length !== null
+            && $cur_length > $max_length
+        ) {
+            return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
+                "$type name '$id' is too long for current driver");
+        } elseif ($cur_length > 30) {
+            // FIXME: find a way to issue a warning in MDB2_Schema object
+            /* $this->warnings[] = "$type name '$id' might not be 
+            portable to other drivers"; */
+        }
+
+        /**
+         * Reserved ?
+         */
+        if (is_array($this->fail_on_invalid_names)) {
+            $name = strtoupper($id);
+            foreach ($this->fail_on_invalid_names as $rdbms) {
+                if (in_array($name, $GLOBALS['_MDB2_Schema_Reserved'][$rdbms])) {
+                    return $this->raiseError(MDB2_SCHEMA_ERROR_VALIDATE,
+                        "$type name '$id' is a reserved word in: $rdbms");
+                }
+            }
+        }
+
+        return MDB2_OK;
+    }
+
+    // }}}
+}

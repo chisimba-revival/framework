@@ -195,7 +195,7 @@ class PHP_CompatInfo_Cli extends PHP_CompatInfo
         if ($this->args->isDefined('d')) {
             $d = $this->args->getValue('d');
             if (file_exists($d)) {
-                if ($d{strlen($d)-1} == '/' || $d{strlen($d)-1} == '\\') {
+                if ($d[strlen($d)-1] == '/' || $d[strlen($d)-1] == '\\') {
                     $d = substr($d, 0, -1);
                 }
                 $this->dir = str_replace('\\', '/', realpath($d));

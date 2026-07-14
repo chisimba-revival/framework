@@ -711,9 +711,9 @@ class Cache_Lite
         if ($fp) {
             clearstatcache();
             $length = @filesize($this->_file);
-            $mqr = get_magic_quotes_runtime();
+            $mqr = (bool) ini_get('magic_quotes_runtime');
             if ($mqr) {
-                set_magic_quotes_runtime(0);
+                @ini_set('magic_quotes_runtime', (string) (0));
             }
             if ($this->_readControl) {
                 $hashControl = @fread($fp, 32);
@@ -725,7 +725,7 @@ class Cache_Lite
                 $data = '';
             }
             if ($mqr) {
-                set_magic_quotes_runtime($mqr);
+                @ini_set('magic_quotes_runtime', (string) ($mqr));
             }
             if ($this->_fileLocking) @flock($fp, LOCK_UN);
             @fclose($fp);
@@ -770,13 +770,13 @@ class Cache_Lite
             if ($this->_readControl) {
                 @fwrite($fp, $this->_hash($data, $this->_readControlType), 32);
             }
-            $mqr = get_magic_quotes_runtime();
+            $mqr = (bool) ini_get('magic_quotes_runtime');
             if ($mqr) {
-                set_magic_quotes_runtime(0);
+                @ini_set('magic_quotes_runtime', (string) (0));
             }
             @fwrite($fp, $data);
             if ($mqr) {
-                set_magic_quotes_runtime($mqr);
+                @ini_set('magic_quotes_runtime', (string) ($mqr));
             }
             if ($this->_fileLocking) @flock($fp, LOCK_UN);
             @fclose($fp);

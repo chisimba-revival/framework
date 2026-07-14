@@ -88,7 +88,7 @@ $objForm->addToFormEx($objHiddenInput->show());
 $objForm->addToFormEx($objHiddenInput2->show());
 $objForm->addRule('request_captcha', $this->objLanguage->languageText("mod_blogcomments_captchaval",'blogcomments'), 'required');
 
-$this->objButton=&new button($objLanguage->languageText('word_sendtodevs', 'errors'));
+$this->objButton= new button($objLanguage->languageText('word_sendtodevs', 'errors'));
 $this->objButton->setValue($objLanguage->languageText('word_sendtodevs', 'errors'));
 $this->objButton->setToSubmit();
 $objForm->addToFormEx($this->objButton->show());

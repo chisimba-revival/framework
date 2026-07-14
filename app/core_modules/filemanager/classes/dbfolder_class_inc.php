@@ -270,9 +270,9 @@ class dbfolder extends dbTable {
                 }
 
                 if ($treeType == 'htmldropdown') {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $folder['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $folder['id'], 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass));
                 } else {
-                    $node = & new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'viewfolder', 'folder' => $folder['id'])), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass, 'titleattr' => $titleAttr));
+                    $node = new treenode(array('title' => $folderText, 'text' => $folderShortText, 'link' => $this->uri(array('action' => 'viewfolder', 'folder' => $folder['id'])), 'icon' => $icon, 'expandedIcon' => $expandedIcon, 'cssClass' => $cssClass, 'titleattr' => $titleAttr));
                 }
 
 
@@ -289,13 +289,13 @@ class dbfolder extends dbTable {
         $menu->addItem($allFilesNode);
 
         if ($treeType == 'htmldropdown') {
-            $treeMenu = &new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
+            $treeMenu = new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
         } else {
             $this->appendArrayVar('headerParams', $this->getJavascriptFile('TreeMenu.js', 'tree'));
             $this->setVar('pageSuppressXML', TRUE);
 
             $objSkin = & $this->getObject('skin', 'skin');
-            $treeMenu = &new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
+            $treeMenu = new dhtml($menu, array('images' => 'skins/_common/icons/tree', 'defaultClass' => 'treeMenuDefault'));
         }
 
 
@@ -659,7 +659,7 @@ class dbfolder extends dbTable {
         }
         if (count($folders) > 0) {
             foreach ($folders as $folder) {
-                $node = & new treenode(array('text' => basename($folder['folderpath']), 'link' => $folder['id']));
+                $node = new treenode(array('text' => basename($folder['folderpath']), 'link' => $folder['id']));
 
                 $parent = '/' . dirname($folder['folderpath']);
 
@@ -677,7 +677,7 @@ class dbfolder extends dbTable {
         $this->setVar('pageSuppressXML', TRUE);
 
         $objSkin = & $this->getObject('skin', 'skin');
-        $treeMenu = &new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
+        $treeMenu = new htmldropdown($menu, array('inputName' => 'parentfolder', 'id' => 'input_parentfolder', 'selected' => $selected));
         return $treeMenu->getMenu();
     }
 

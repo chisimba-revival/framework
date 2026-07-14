@@ -187,7 +187,7 @@ class RDF_Parser extends RDF_Object
     {
         $ordinal = -1;
 
-        if ($local_name{0} == '_') {
+        if ($local_name[0] == '_') {
             $ordinal = substr($local_name, 1) + 1 ;
         }
 
@@ -244,7 +244,7 @@ class RDF_Parser extends RDF_Object
             || ($local_name == RDF_LIST)
             || ($local_name == RDF_FIRST)
             || ($local_name == RDF_REST)
-            || ($local_name{0} == '_'
+            || ($local_name[0] == '_'
         );
     }
 
@@ -292,7 +292,7 @@ class RDF_Parser extends RDF_Object
             || ($local_name == RDF_FIRST)
             || ($local_name == RDF_REST)
             || ($local_name == RDF_NIL)
-            || ($local_name{0} == '_'
+            || ($local_name[0] == '_'
         );
     }
 
@@ -346,18 +346,18 @@ class RDF_Parser extends RDF_Object
     {
         $result = false;
         $uri_p = 0;
-        if ($uri && $this->_is_alpha($uri{$uri_p})) {
+        if ($uri && $this->_is_alpha($uri[$uri_p])) {
             ++$uri_p;
 
-            while (($uri_p < strlen($uri)) && ($this->_is_alnum($uri{$uri_p})
-                || ($uri{$uri_p} == '+')
-                || ($uri{$uri_p} == '-')
-                || ($uri{$uri_p} == '.'))
+            while (($uri_p < strlen($uri)) && ($this->_is_alnum($uri[$uri_p])
+                || ($uri[$uri_p] == '+')
+                || ($uri[$uri_p] == '-')
+                || ($uri[$uri_p] == '.'))
             ) {
                 ++$uri_p;
             }
 
-            $result = ($uri{$uri_p} == ':');
+            $result = ($uri[$uri_p] == ':');
         }
         return $result;
     }
@@ -486,8 +486,8 @@ class RDF_Parser extends RDF_Object
                 $result_authority = $base_authority;
 
                 if ($reference_path != '') {
-                    if ($reference_path{0} == '/' || $reference_path{0} == '\\') {
-                        if ($reference_path{1} == '/' || $reference_path{1} == '\\') {
+                    if ($reference_path[0] == '/' || $reference_path[0] == '\\') {
+                        if ($reference_path[1] == '/' || $reference_path[1] == '\\') {
                             $result_authority = '';
                             $result_path = $reference_path;
                         } else {
@@ -496,7 +496,7 @@ class RDF_Parser extends RDF_Object
                     } elseif (substr($reference_path, 0, 3) == '../'
                         || substr($reference_path, 0, 3) == '..\\'
                     ) {
-                        $slash = $reference_path{2};
+                        $slash = $reference_path[2];
                         while ($base_path != ''
                             && (substr($reference_path, 0, 3) == '../'
                             || substr($reference_path, 0, 3) == '..\\')
@@ -563,13 +563,13 @@ class RDF_Parser extends RDF_Object
         $result = false;
 
         if ($id) {
-            if ($this->_is_alpha($id{0}) || $id{0} == '_') {
+            if ($this->_is_alpha($id[0]) || $id[0] == '_') {
                 $result = true;
                 $i = 0;
                 $len = strlen($id);
                 while ($result != false && ++$i < $len) {
-                    if (!($this->_is_alnum($id{$i}) || $id{$i} == '.'
-                        || $id{$i} == '-' || $id{$i} == '_')
+                    if (!($this->_is_alnum($id[$i]) || $id[$i] == '.'
+                        || $id[$i] == '-' || $id[$i] == '_')
                     ) {
                         $result = false;
                     }
@@ -619,8 +619,8 @@ class RDF_Parser extends RDF_Object
             $namespace_uri = $cosas[0];
             $local_name = $cosas[1];
         } else {
-            if (($buffer{ 0 } == 'x') && ($buffer{ 1 } == 'm')
-                && ($buffer{ 2 } == 'l') && ($buffer{ 3 } == ':')
+            if (($buffer[ 0 ] == 'x') && ($buffer[ 1 ] == 'm')
+                && ($buffer[ 2 ] == 'l') && ($buffer[ 3 ] == ':')
             ) {
                 $namespace_uri = RDF_XML_NAMESPACE_URI;
                 $local_name = substr($buffer, 4);
@@ -1829,7 +1829,7 @@ class RDF_Parser extends RDF_Object
 
             if ($this->rdf_parser['top']['state'] == RDF_IN_PROPERTY_UNKNOWN_OBJECT) {
                 /* look for non-whitespace */
-                for ($i = 0; (($i < $len) && (ereg(" |\n|\t", $s{ $i }))); $i++);
+                for ($i = 0; (($i < $len) && (ereg(" |\n|\t", $s[ $i ]))); $i++);
                 /* if we found non-whitespace, this is a literal */
                 if ($i < $len) {
                     $this->rdf_parser['top']['state'] = RDF_IN_PROPERTY_LITERAL;

@@ -156,7 +156,7 @@ class PHP_CodeSniffer_CommentParser_CommentElement extends PHP_CodeSniffer_Comme
         for ($i = $pos; $i < $count; $i++) {
             $content = trim($this->tokens[$i]);
             if ($content !== '') {
-                if ($content{0} === '@') {
+                if ($content[0] === '@') {
                     return -1;
                 }
 

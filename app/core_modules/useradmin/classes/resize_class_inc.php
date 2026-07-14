@@ -90,7 +90,7 @@ class resize extends ChisimbaObject
     function loadimage($imgfile,$filename)
     {
         //detect image format
-        $this->img["format"]=ereg_replace(".*\.(.*)$","\\1",$filename); 
+        $this->img["format"]=preg_replace("~.*\.(.*)$~","\\1",$filename); 
         $this->img["format"]=strtoupper($this->img["format"]);
         if ($this->img["format"]=="JPG" || $this->img["format"]=="JPEG") {
             //JPEG

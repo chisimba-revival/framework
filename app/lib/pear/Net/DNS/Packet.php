@@ -438,7 +438,7 @@ class Net_DNS_Packet
                 $offset += $len;
             }
         }
-        $name = ereg_replace('\.$', '', $name);
+        $name = preg_replace('~\.$~', '', $name);
         return array($name, $offset);
     }
 

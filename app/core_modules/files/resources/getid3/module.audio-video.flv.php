@@ -47,10 +47,10 @@ class getid3_flv
 			return false;
 		}
 		$ThisFileInfo['flv']['header']['signature'] = $FLVmagic;
-		$ThisFileInfo['flv']['header']['version']   = ord($FLVfileData{3});
+		$ThisFileInfo['flv']['header']['version']   = ord($FLVfileData[3]);
 		$ThisFileInfo['fileformat'] = 'flv';
 
-		$TypeFlags = ord($FLVfileData{4});
+		$TypeFlags = ord($FLVfileData[4]);
 		$ThisFileInfo['flv']['header']['hasAudio'] = (bool) ($TypeFlags & 4);
 		$ThisFileInfo['flv']['header']['hasVideo'] = (bool) ($TypeFlags & 1);
 

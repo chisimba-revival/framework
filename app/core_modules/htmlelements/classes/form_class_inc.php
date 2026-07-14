@@ -730,7 +730,7 @@ class form implements ifhtml
                     }
                     ok = ok && selected;
                 }else{
-                    alert('Error in form validation. ID=\'$elemIdPrefix{$fieldname}\'.');
+                    alert('Error in form validation. ID=\'$elemIdPrefix[$fieldname]\'.');
                     return false;
                 }
             }

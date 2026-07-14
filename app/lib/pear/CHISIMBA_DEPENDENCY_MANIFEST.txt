@@ -1,0 +1,11 @@
+Chisimba PEAR/MDB2 compatibility pack
+
+PEAR core: 1.10.18
+MDB2 fork: https://github.com/imrelaszlo/PEAR-MDB2 commit 96380f6
+MDB2_Schema: https://github.com/pear/MDB2_Schema commit e9cc352
+XML_Parser: 1.3.8
+
+MDB2_Date and MDB2_Driver_mysqli are supplied by the pinned MDB2 fork.
+MDB2_Schema is supplied as a separate pinned package.
+
+XML_RPC: 1.5.5 — official PEAR archive installed through package.xml

@@ -36,7 +36,7 @@ class getid3_tta
 			return false;
 		}
 
-		switch ($ttaheader{3}) {
+		switch ($ttaheader[3]) {
 			case "\x01": // TTA v1.x
 			case "\x02": // TTA v1.x
 			case "\x03": // TTA v1.x
@@ -44,7 +44,7 @@ class getid3_tta
 				$ThisFileInfo['tta']['major_version'] = 1;
 				$ThisFileInfo['avdataoffset'] += 16;
 
-				$ThisFileInfo['tta']['compression_level']   = ord($ttaheader{3});
+				$ThisFileInfo['tta']['compression_level']   = ord($ttaheader[3]);
 				$ThisFileInfo['tta']['channels']            = getid3_lib::LittleEndian2Int(substr($ttaheader,  4,  2));
 				$ThisFileInfo['tta']['bits_per_sample']     = getid3_lib::LittleEndian2Int(substr($ttaheader,  6,  2));
 				$ThisFileInfo['tta']['sample_rate']         = getid3_lib::LittleEndian2Int(substr($ttaheader,  8,  4));
@@ -87,7 +87,7 @@ class getid3_tta
 				break;
 
 			default:
-				$ThisFileInfo['error'][] = 'This version of getID3() only knows how to handle TTA v1 and v2 - it may not work correctly with this file which appears to be TTA v'.$ttaheader{3};
+				$ThisFileInfo['error'][] = 'This version of getID3() only knows how to handle TTA v1 and v2 - it may not work correctly with this file which appears to be TTA v'.$ttaheader[3];
 				return false;
 				break;
 		}

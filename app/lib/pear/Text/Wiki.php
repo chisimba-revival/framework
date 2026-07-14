@@ -1048,7 +1048,7 @@ public function mb_ucwords($str) {
             for ($i = 0; $i < $k; $i++) {
 
                 // the current character
-                $char = $this->source{$i};
+                $char = $this->source[$i];
 
                 // are alredy in a delimited section?
                 if ($in_delim) {
