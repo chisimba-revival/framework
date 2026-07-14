@@ -71,11 +71,11 @@ if ($modules) {
         $batchAction = $batchButton->show();
     } else {
         $actiontotake = 'batchinstall';
-        $batchButton = &new Link($this->uri(array('cat'=>$activeCat,'uninstall'=>'1'),'modulecatalogue'));
+        $batchButton = new Link($this->uri(array('cat'=>$activeCat,'uninstall'=>'1'),'modulecatalogue'));
         $batchButton->link = $this->objLanguage->languageText('mod_modulecatalogue_batchuninstall','modulecatalogue');
         $batchButton->extra = "class='pseudobutton'";
         $batchChange = $batchButton->show();
-        $batchButton = &new button('formsub');
+        $batchButton = new button('formsub');
         $batchButton->setIconClass("wrench");
         $batchButton->setValue($this->objLanguage->languageText('mod_modulecatalogue_installselected','modulecatalogue'));
         $batchButton->setToSubmit();  //If you want to make the button a submit button
@@ -113,7 +113,7 @@ if ($modules) {
         $icon->setModuleIcon($moduleId);
         $icon->alt = $moduleId;
         if (in_array($moduleId,$localModules)) { //dont display downloadable modules until that functionality is complete
-            $textButton = &new Link($this->uri(array('action'=>'textelements','mod'=>$moduleId,'cat'=>$activeCat),'modulecatalogue'));
+            $textButton = new Link($this->uri(array('action'=>'textelements','mod'=>$moduleId,'cat'=>$activeCat),'modulecatalogue'));
             $textButton->link = $this->objLanguage->languageText('mod_modulecatalogue_textelement','modulecatalogue');
             $textButton->extra = "class=\"pseudobutton\"";
             $class = ($count % 2 == 0)? 'even' : 'odd';
@@ -129,7 +129,7 @@ if ($modules) {
             $desc = $this->objLanguage->abstractText(($desc));
             $objWasher = $this->getObject('bbcodeparser', 'utilities');
             $desc = $objWasher->parse4BBcode($desc);
-            $infoButton = &new Link($this->uri(array('action'=>'info','mod'=>$moduleId,'cat'=>$activeCat),'modulecatalogue'));
+            $infoButton = new Link($this->uri(array('action'=>'info','mod'=>$moduleId,'cat'=>$activeCat),'modulecatalogue'));
             $infoButton->link = $this->objLanguage->languageText('mod_modulecatalogue_info2','modulecatalogue');
             $link = $moduleName = ucfirst($moduleName);
             $objCheck = new checkbox('arrayList[]');
@@ -141,7 +141,7 @@ if ($modules) {
                 $texts = $textButton->show();
                 $info = $infoButton->show();
                 if (!(in_array($moduleId,$rMods))) { //not registered
-                    $instButton = &new Link($this->uri(array('action'=>'install','mod'=>$moduleId,'cat'=>$activeCat,'srchstr' => $srchStr, 'srchtype' => $srchType, 'lastaction' => $lastAction),'modulecatalogue'));
+                    $instButton = new Link($this->uri(array('action'=>'install','mod'=>$moduleId,'cat'=>$activeCat,'srchstr' => $srchStr, 'srchtype' => $srchType, 'lastaction' => $lastAction),'modulecatalogue'));
                     $instButton->link = $this->objLanguage->languageText('word_install');
                     $instButton->extra = "class=\"pseudobutton\"";
                     $instButtonShow = $instButton->show();
@@ -154,7 +154,7 @@ if ($modules) {
                     if ($this->objModFile->findController($moduleId)) {
                         $link = "<a href='{$this->uri(null,$moduleId)}'>$moduleName</a>";
                     }
-                    $instButton = &new Link($this->uri(array('action'=>'uninstall','mod'=>$moduleId,'cat'=>$activeCat,'srchstr'=>$srchStr,'srchtype'=>$srchType,'lastaction'=>$lastAction),'modulecatalogue'));
+                    $instButton = new Link($this->uri(array('action'=>'uninstall','mod'=>$moduleId,'cat'=>$activeCat,'srchstr'=>$srchStr,'srchtype'=>$srchType,'lastaction'=>$lastAction),'modulecatalogue'));
                     $instButton->link = $this->objLanguage->languageText('word_uninstall');
                     $instButton->extra = "class=\"pseudobutton\"";
                     $objConfirm = &$this->getObject('confirm','utilities');
@@ -260,7 +260,7 @@ if (($output=$this->getSession('output'))!=null) {
     $this->unsetSession('output');
 }
 
-$objForm = &new form('batchform',$this->uri(array('action'=>$actiontotake,'cat'=>$activeCat),'modulecatalogue'));
+$objForm = new form('batchform',$this->uri(array('action'=>$actiontotake,'cat'=>$activeCat),'modulecatalogue'));
 $objForm->displayType = 3;
 $objForm->addToForm($notice);
 $objForm->addToForm($top);

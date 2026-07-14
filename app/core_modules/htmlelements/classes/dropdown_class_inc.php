@@ -52,7 +52,7 @@ require_once("ifhtml_class_inc.php");
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za
  * @example
- *  $dd=&new dropdown('mydropdown');
+ *  $dd= new dropdown('mydropdown');
  *  $dd->addOption()    will add a blank option
  *  $dd->addOption('1','Male')
  *  $dd->addOption('2','Female')

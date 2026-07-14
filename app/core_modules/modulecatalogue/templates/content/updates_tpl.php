@@ -115,7 +115,7 @@ $str = '';
 if (!empty($patchArray)) {
     foreach ($patchArray as $patch) {
         $uri = $this->uri(array('action'=>'update','mod'=>$patch['module_id'],'patchver'=>$patch['new_version']),'modulecatalogue');
-        $link = &new Link($uri);
+        $link = new Link($uri);
         $link->link = $this->objLanguage->languageText('mod_modulecatalogue_applypatch','modulecatalogue');
         $pIcon = $this->getObject('geticon','htmlelements');
         $pIcon->setModuleIcon($patch['module_id']);
@@ -135,14 +135,14 @@ if (!empty($patchArray)) {
     $patchAll = '';
 }
 
-$searchForm = &new form('searchform',$this->uri(array('action'=>'search','cat'=>'all'),'modulecatalogue'));
+$searchForm = new form('searchform',$this->uri(array('action'=>'search','cat'=>'all'),'modulecatalogue'));
 $searchForm->displayType = 3;
-$srchStr = &new textinput('srchstr',$this->getParam('srchstr'),null,'21');
-$srchButton = &new button('search');
+$srchStr = new textinput('srchstr',$this->getParam('srchstr'),null,'21');
+$srchButton = new button('search');
 $srchButton->setValue($this->objLanguage->languageText('word_search'));
 $srchButton->setIconClass("search");
 $srchButton->setToSubmit();
-$srchType = &new dropdown('srchtype');
+$srchType = new dropdown('srchtype');
 $srchType->addOption('name',$this->objLanguage->languageText('mod_modulecatalogue_modname','modulecatalogue'));
 $srchType->addOption('description',$this->objLanguage->languageText('mod_modulecatalogue_description','modulecatalogue'));
 $srchType->addOption('both',$this->objLanguage->languageText('word_all'));

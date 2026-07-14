@@ -148,7 +148,7 @@ class captcha extends ChisimbaObject {
 
         'debug' => $this->debug );
 
-        $captcha = & new hn_captcha ( $CAPTCHA_INIT );
+        $captcha = new hn_captcha ( $CAPTCHA_INIT );
 
         $image = $captcha->display_captcha ( TRUE );
         $hiddenInput = new hiddeninput ( $this->name, md5 ( strtoupper ( $captcha->private_key ) ) );

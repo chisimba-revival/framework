@@ -203,7 +203,7 @@ class groupadmin_tree extends ChisimbaObject {
     */
     function createTreeMenu()
     {
-        $this->_objTreeMenu =& new treemenu();
+        $this->_objTreeMenu = new treemenu();
         
         $rootMenu = &$this->createRootNode();
         $this->_objTreeMenu->addItem( $rootMenu );

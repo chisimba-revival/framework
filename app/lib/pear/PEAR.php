@@ -68,7 +68,7 @@ if(function_exists('ini_set')) {
  * destructor, use error_log(), syslog() or something similar.
  *
  * IMPORTANT! To use the emulated destructors you need to create the
- * objects by reference: $obj =& new PEAR_child;
+ * objects by reference: $obj = new PEAR_child;
  *
  * @category   pear
  * @package    PEAR

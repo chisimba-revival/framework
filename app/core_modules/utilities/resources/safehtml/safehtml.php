@@ -43,7 +43,7 @@ require_once("core_modules/utilities/resources/safehtml/HTMLSax3.php");
  *
  * <b>Example:</b>
  * <pre>
- * $parser =& new SafeHTML();
+ * $parser = new SafeHTML();
  * $result = $parser->parse($doc);
  * </pre>
  *
@@ -604,7 +604,7 @@ class SafeHTML
        $doc = $this->repackUTF7($doc);
 
        // Instantiate the parser
-       $parser=& new XML_HTMLSax3();
+       $parser= new XML_HTMLSax3();
 
        // Set up the parser
        $parser->set_object($this);

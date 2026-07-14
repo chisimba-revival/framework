@@ -40,7 +40,7 @@ class htmlcleaner  extends ChisimbaObject
     public function init()
     {
 
-        $this->_objSafeHtml =& new safehtml();
+        $this->_objSafeHtml = new safehtml();
     }
 
     /**

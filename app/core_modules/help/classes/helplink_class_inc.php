@@ -62,7 +62,7 @@ class helplink extends ChisimbaObject  {
         $objSkin =  $this->getObject('skin','skin');
         $this->objHelpIcon->setModuleIcon('help');
         //Popup window
-        //$this->objPop=&new windowpop;
+        //$this->objPop= new windowpop;
         $this->objPop= $this->getObject('windowpop','htmlelements');
         $location=$this->uri(array(
           'helpid'=>$helpid,

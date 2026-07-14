@@ -94,8 +94,8 @@ class tree extends controller
         
         // Create the presentation class
         
-        $treeMenu = &new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
-        $listBox  = &new listbox($menu, array('linkTarget' => '_self','submitText' => 'Go Somewhere','promoText' => 'Choose Tree Item...'));
+        $treeMenu = new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
+        $listBox  = new listbox($menu, array('linkTarget' => '_self','submitText' => 'Go Somewhere','promoText' => 'Choose Tree Item...'));
       
         $this->setVar('treemenu',$treeMenu->getMenu());
         $this->setVar('listbox',$listBox->getMenu());
@@ -119,7 +119,7 @@ class tree extends controller
         //add base node to the menu
         $menu->addItem($basenode);
         
-        $treeMenu = &new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'/treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
+        $treeMenu = new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'/treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
 
         $this->setVar('dirtree',$treeMenu->getMenu());        
         

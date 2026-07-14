@@ -12,7 +12,7 @@ class strvalidate_test extends PHPUnit_TestCase
     
     function setUp() {
         global $_globalObjEngine;
-        $this->strValidate =& new strvalidate( &$_globalObjEngine, 'strvalidate');
+        $this->strValidate = new strvalidate( &$_globalObjEngine, 'strvalidate');
     }
 
     function tearDown() {

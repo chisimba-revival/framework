@@ -114,7 +114,7 @@ class contenttree extends ChisimbaObject{
         //$menu->addItem($this->recurTree($rootnodeid,$rootlabel));
 
         // Create the presentation class
-        $treeMenu = &new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
+        $treeMenu = new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
 
         
         //Added by ghinde
@@ -249,7 +249,7 @@ class contenttree extends ChisimbaObject{
         //$menu->addItem($this->recurTree($rootnodeid,$rootlabel));
 
         // Create the presentation class
-        $treeMenu = &new dhtml($menu, array('images' => 'treeimages', 'defaultClass' => 'treeMenuDefault'));
+        $treeMenu = new dhtml($menu, array('images' => 'treeimages', 'defaultClass' => 'treeMenuDefault'));
       
         return $treeMenu->getMenu();
      
@@ -319,10 +319,10 @@ class contenttree extends ChisimbaObject{
         //$menu->addItem($this->recurTree($rootnodeid,$rootlabel));
 
         // Create the presentation class
-        $treeMenu = &new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'/treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
+        $treeMenu = new dhtml($menu, array('images' => $this->objSkin->getSkinURL().'/treeimages/imagesAlt2', 'defaultClass' => 'treeMenuDefault'));
         if($mode == 'listbox')
         {
-           $listBox  = &new listbox($menu, array('linkTarget' => '_self','submitText' => $modeParams['submitText'],'promoText' => $modeParams['promoText']));
+           $listBox  = new listbox($menu, array('linkTarget' => '_self','submitText' => $modeParams['submitText'],'promoText' => $modeParams['promoText']));
            return  $listBox->getMenu();
         }
         return '<h5>'.$this->objDBContext->getTitle().'</h5>'.$treeMenu->getMenu();

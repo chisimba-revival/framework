@@ -41,7 +41,7 @@ class xmlserial extends ChisimbaObject
     */
     function readXML($file,$type=TRUE)
     {
-        $objUnserializer = &new XML_Unserializer();
+        $objUnserializer = new XML_Unserializer();
         $objUnserializer->unserialize($file,$type);
         $data = $objUnserializer->getUnserializedData();
         return $data;
@@ -56,7 +56,7 @@ class xmlserial extends ChisimbaObject
     function writeXML($data)
     {
         require_once('XML/Serializer.php');
-        $objSerializer = &new XML_Serializer(NULL);
+        $objSerializer = new XML_Serializer(NULL);
         $objSerializer->serialize($data);
         $xmldata=$objSerializer->getSerializedData();
         return $xmldata;

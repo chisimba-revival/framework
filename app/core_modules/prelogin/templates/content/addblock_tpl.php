@@ -58,24 +58,24 @@ if (!isset($blockName)) {
     $blockContent = '';
     $bType = 'block';
 }
-$nameInput = &new textinput('title',$blockName,null,40);
-$radio = &new radio('side');
+$nameInput = new textinput('title',$blockName,null,40);
+$radio = new radio('side');
 $radio->addOption('left',$objLanguage->languageText('word_left'));
 $radio->addOption('middle',$objLanguage->languageText('word_middle'));
 $radio->addOption('right',$objLanguage->languageText('word_right'));
 $radio->setSelected($location);
-$radio2 = &new radio('type');
+$radio2 = new radio('type');
 
 $radio2->addOption('block','Block');
 $radio2->addOption('nonblock','Content');
 $radio2->extra = 'onchange="updateForm(this.form)"';
 $radio2->setSelected($bType);
 
-$contInput = &new textarea('content',htmlentities(html_entity_decode($blockContent,ENT_QUOTES),ENT_NOQUOTES),6,37);
+$contInput = new textarea('content',htmlentities(html_entity_decode($blockContent,ENT_QUOTES),ENT_NOQUOTES),6,37);
 
 $objModuleBlocks = &$this->getObject('dbmoduleblocks','modulecatalogue');
 $blockList = $objModuleBlocks->getBlocks();
-$moduleDrop = &new dropdown('moduleblock');
+$moduleDrop = new dropdown('moduleblock');
 $moduleDrop->addOption(NULL,$this->objLanguage->languageText('mod_prelogin_selectblock','prelogin'));
 if (isset($blockList)) {
     foreach($blockList as $moduleBlock){
@@ -86,9 +86,9 @@ if (isset($block)) {
     $moduleDrop->setSelected("{$block['module']}|{$block['name']}");
 }
 
-$submit = &new button('editform_submit',$this->objLanguage->languageText('word_update'));
+$submit = new button('editform_submit',$this->objLanguage->languageText('word_update'));
 $submit->setToSubmit();
-$cancel = &new button('editform_cancel',$this->objLanguage->languageText('word_cancel'));
+$cancel = new button('editform_cancel',$this->objLanguage->languageText('word_cancel'));
 $returnUrl = $this->uri(array('action'=>'admin'));
 $cancel->setOnClick("window.location = '$returnUrl'");
 
@@ -121,7 +121,7 @@ $table->startRow();
 $table->addCell($submit->show().' '.$cancel->show(),'50%');
 $table->endRow();
 
-$form = &new form('blockform',$this->uri(array('action'=>'submitblock')));
+$form = new form('blockform',$this->uri(array('action'=>'submitblock')));
 $form->addToForm($table);
 if (isset($id)) {
     $form->addToForm(new textinput('id',$id,'hidden'));

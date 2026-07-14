@@ -68,7 +68,7 @@ class Apache extends Step
 
 	{
 
-		$this->actions[] =& new ApacheAction(get_class($this));
+		$this->actions[] = new ApacheAction(get_class($this));
 
 		
 

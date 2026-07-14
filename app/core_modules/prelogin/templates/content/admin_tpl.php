@@ -91,7 +91,7 @@ foreach ($leftBlocks as $block) {
         $conf = $objDelIcon->getDeleteIconWithConfirm('', $delLink, 'prelogin', $deletephrase);
         $actions = $upLink->show() . ' ' . $downLink->show() . ' ' . $ed . ' ' . $conf;
         ($block['visible'] == $this->TRUE) ? $visibile = TRUE : $visibile = FALSE;
-        $visibility = &new checkBox($block['id'] . '_vis', $block['title'], $visibile);
+        $visibility = new checkBox($block['id'] . '_vis', $block['title'], $visibile);
         $updated = date('d/m/y', strtotime($block['datelastupdated']));
         $table->startRow();
         $table->addCell($block['title'], NULL, NULL, 'left', $style);
@@ -123,7 +123,7 @@ if (!empty($contentSmallBlocks)) {
         } else {
             ($mBlock['visible'] == $this->TRUE) ? $visibile = TRUE : $visibile = FALSE;
         }
-        $visibility = &new checkBox($csId . '_vis', $csBlock['title'], $visibile);
+        $visibility = new checkBox($csId . '_vis', $csBlock['title'], $visibile);
         //echo "Normal Blocks: _vis: ".$block['id'] . '_vis'." title: ". $block['title']." visibile: ".$visibile;
         $updated = date('d/m/y', strtotime($csBlock['datemodified']));
         $table->startRow();
@@ -158,7 +158,7 @@ foreach ($middleBlocks as $block) {
         $conf = $objDelIcon->getDeleteIconWithConfirm('', $delLink, 'prelogin', $deletephrase);
         $actions = $upLink->show() . ' ' . $downLink->show() . ' ' . $ed . ' ' . $conf;
         ($block['visible'] == $this->TRUE) ? $visibile = TRUE : $visibile = FALSE;
-        $visibility = &new checkBox($block['id'] . '_vis', $block['title'], $visibile);
+        $visibility = new checkBox($block['id'] . '_vis', $block['title'], $visibile);
         //echo "Normal Blocks: _vis: ".$block['id'] . '_vis'." title: ". $block['title']." visibile: ".$visibile;
         $updated = date('d/m/y', strtotime($block['datelastupdated']));
         $table->startRow();
@@ -193,7 +193,7 @@ if (!empty($contentWideBlocks)) {
         } else {
             ($mBlock['visible'] == $this->TRUE) ? $visibile = TRUE : $visibile = FALSE;
         }
-        $visibility = &new checkBox($contentWideBlock['id'] . '_mc_vis', $contentWideBlock['title'], $visibile);
+        $visibility = new checkBox($contentWideBlock['id'] . '_mc_vis', $contentWideBlock['title'], $visibile);
         //echo "Normal Blocks: _vis: ".$block['id'] . '_vis'." title: ". $block['title']." visibile: ".$visibile;
         $updated = date('d/m/y', strtotime($contentWideBlock['datemodified']));
         $table->startRow();
@@ -226,7 +226,7 @@ foreach ($rightBlocks as $block) {
         $conf = $objDelIcon->getDeleteIconWithConfirm('', $delLink, 'prelogin', $deletephrase);
         $actions = $upLink->show() . ' ' . $downLink->show() . ' ' . $ed . ' ' . $conf;
         ($block['visible'] == $this->TRUE) ? $visibile = TRUE : $visibile = FALSE;
-        $visibility = &new checkBox($block['id'] . '_vis', $block['title'], $visibile);
+        $visibility = new checkBox($block['id'] . '_vis', $block['title'], $visibile);
         $updated = date('d/m/y', strtotime($block['datelastupdated']));
         $table->startRow();
         $table->addCell($block['title'], NULL, NULL, 'left', $style);
@@ -261,7 +261,7 @@ if (!empty($contentSmallBlocks)) {
         } else {
             ($mBlock['visible'] == $this->TRUE) ? $visibile = TRUE : $visibile = FALSE;
         }
-        $visibility = &new checkBox($csBlock['id'] . '_rc_vis', $csBlock['title'], $visibile);
+        $visibility = new checkBox($csBlock['id'] . '_rc_vis', $csBlock['title'], $visibile);
         //echo "Normal Blocks: _vis: ".$block['id'] . '_vis'." title: ". $block['title']." visibile: ".$visibile;
         $updated = date('d/m/y', strtotime($csBlock['datemodified']));
         $table->startRow();
@@ -275,9 +275,9 @@ if (!empty($contentSmallBlocks)) {
     }
 }
 
-$submitButton = &new button('update', $this->objLanguage->languageText('word_update'));
+$submitButton = new button('update', $this->objLanguage->languageText('word_update'));
 $submitButton->setToSubmit();
-$objForm = &new form('vis_form', $this->uri(array('action' => 'update')));
+$objForm = new form('vis_form', $this->uri(array('action' => 'update')));
 $objForm->addToForm($table->show());
 $objForm->addToForm($submitButton);
 $link = &$this->getObject('link', 'htmlelements');

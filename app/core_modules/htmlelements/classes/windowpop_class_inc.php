@@ -53,7 +53,7 @@ require_once("ifhtml_class_inc.php");
 * @author    Derek Keats
 * @example: 
 *            //Popup window
-*            $this->objPop=&new windowpop;
+*            $this->objPop= new windowpop;
 *            $this->objPop->set('location','/modules/htmltabledemo/popup.htm');
 *            $this->objPop->set('linktext','Click me baby');
 *            $this->objPop->set('width','200');

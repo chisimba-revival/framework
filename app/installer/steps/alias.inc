@@ -66,7 +66,7 @@ class Alias extends Step
 
 	{
 
-		$this->actions[] =& new AliasAction(get_class($this));
+		$this->actions[] = new AliasAction(get_class($this));
 
 		$this->step_title = 'Apache Aliases';
 
