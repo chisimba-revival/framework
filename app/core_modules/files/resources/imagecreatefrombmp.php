@@ -108,6 +108,7 @@ function ConvertBMP2GD($src, $dest = false)
     return true;
 }
 
+if (!function_exists('imagecreatefrombmp')) {
 function imagecreatefrombmp($filename)
 {
     $tmp_name = tempnam("/tmp", "GD");
@@ -117,6 +118,7 @@ function imagecreatefrombmp($filename)
         return $img;
     }
     return false;
+}
 }
 
 

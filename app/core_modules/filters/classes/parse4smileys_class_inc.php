@@ -149,14 +149,48 @@ class parse4smileys extends ChisimbaObject {
     *
     */
     public function parseSmiley($str)
-    {   
-        $regex = '/(\\&(g(t(\\;(\\-(\\)(|))|\\:(\\-(\\)(|)|D(\\&(l(t(\\;(|))))|))))))|l(t(\\;(\\)(\\:(\\-(\\)(\\&(g(t(\\;(|))))))))))))|O(\\:(\\-(\\)(|))))|o(\\:(\\-(\\)(|))))|X(\\-(\\((|))|X(\\-(P(|))))|x(\\-(\\((|))|x(\\-(P(|))))|\\=(D(\\&(g(t(\\;(|)))))|P(\\~(|))|p(\\~(|))|b(\\~(|)))|b(\\-(\\((|)))|P(\\-(\\((|)))|p(\\-(\\((|)))|\\:(\\-(\\[(|)|p(|)|P(|)|\\/(|)|\\((\\((|)|)|L(|)|D(|)|\\*(|)|\\)(\\)(|)|\\&(g(t(\\;(\\-(|))))|)|)|x(|)|X(|)|B(|)|O(|)|o(|)|\\&(a(m(p(\\;(|))))|q(u(o(t(\\;(|)))))|)|\\|(|)|\\?(|)|s(|)|S(|))|o(\\)(|))|O(\\)(|))|\\&(q(u(o(t(\\;(\\-(\\&(g(t(\\;(|))))))))))))|\\~(\\:(\\&(g(t(\\;(|))))))|B(\\-(\\)(|)))|8(\\-(\\}(|)|\\|(|)|X(|)|x(|)))|\\/(\\:(\\-(D(\\/(|))|\\)(|))))|\\#(\\-(o(|)))|\\@(\\-(\\)(|))|\\}(\\;(\\-(|))))|\\*(\\-(\\:(\\-(\\)(|)))))|\\[(\\-(\\((|)|o(\\&(l(t(\\;(|))))|)|O(\\&(l(t(\\;(|))))|)|X(|)|x(|)))|\\;(\\;(\\-(\\)(|)))|\\-(\\)(|)))|I(\\-(\\)(|)))|\\((\\:(\\-(\\|(|)))))/e';
-        //Uncomment the two following lines to generate a new regular expression
-        //$regex = $this->createSmileyRegex();
-        //echo str_replace('\\', '\\\\', $regex);
-        return preg_replace($regex, "\$this->getSmiley('\\1')", $str);
+    {
+        // BEGIN MODERN STRTR SMILEY PARSER
+        //
+        // The original implementation generated one very large regular
+        // expression and evaluated matches through preg_replace(). That
+        // expression produces PREG_INTERNAL_ERROR with modern PCRE.
+        //
+        // The public behaviour is preserved:
+        //   smiley token -> existing geticon renderer -> icon HTML.
+        //
+        // strtr() performs literal multi-token replacement without regex
+        // compilation, recursion, callbacks, or deprecated /e evaluation.
+        static $replacementTable = NULL;
+
+        if (!is_string($str) || $str === '') {
+            return $str;
+        }
+
+        if ($replacementTable === NULL) {
+            $replacementTable = array();
+
+            foreach ($this->smileyIcons as $smiley => $iconName) {
+                $replacementTable[$smiley] = $this->getSmiley($smiley);
+            }
+
+            uksort(
+                $replacementTable,
+                function ($left, $right) {
+                    $lengthDifference = strlen($right) - strlen($left);
+
+                    if ($lengthDifference !== 0) {
+                        return $lengthDifference;
+                    }
+
+                    return strcmp($left, $right);
+                }
+            );
+        }
+
+        return strtr($str, $replacementTable);
+        // END MODERN STRTR SMILEY PARSER
     }
-    
 
     /**
      * Method to take a string and return it with smiley
@@ -200,7 +234,7 @@ class parse4smileys extends ChisimbaObject {
     public function createSmileyRegex()
     {
         $regexGraph = $this->constructSmileyRegexGraph();
-        $regex = '/(' . $this->depthFirstRegex($regexGraph) . ')/e';
+        $regex = '/(' . $this->depthFirstRegex($regexGraph) . ')';
         return $regex;
     }
     
