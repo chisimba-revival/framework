@@ -116,7 +116,7 @@ class folderaccess extends ChisimbaObject {
         if (key_exists("alerts", $folder)) {
             $alertVal = $folder['alerts'];
         }
-        $alerts = $alertVal == NULL ? false : $folder['alerts'] == 'y' ? true : false;
+        $alerts = ($alertVal !== NULL && $folder['alerts'] === 'y');
         $objElement->setChecked($alerts);
 
 
@@ -486,14 +486,14 @@ echo $destFilePathFull;
             return "filenotavailable_tpl.php";
 
         // Make sure we can't download files above the current directory location.
-        if (eregi("\.\.", $filepath))
+        if (preg_match('/\.\./i', $filepath))
             return "filenotavailable_tpl.php";
         $file = str_replace("..", "", $filepath);
 
 
 
         // Make sure we can't download .ht control files.
-        if (eregi("\.ht.+", $filepath))
+        if (preg_match('/\.ht.+/i', $filepath))
             return "filenotavailable_tpl.php";
 
         // Combine the download path and the filename to create the full path to the file.
