@@ -52,7 +52,7 @@ class cssmenu extends ChisimbaObject {
                 $home = $this->objConfig->getdefaultModuleName();
 
                 $str = '<ul id="menuList" class="adxm">'; //this is not using this javascript menu. its using the css one
-                $str .= '<li id="home" class="navigation-list first" ><a href="' . $this->uri('', $home) . '">' . $homeLabel . '</a></li>';
+                $str .= '<li id="home" class="navigation-list first" ><a href="' . $this->uri(NULL, $home) . '">' . $homeLabel . '</a></li>';
                 foreach ($this->menu as $key => $item) {
                         $objLink = new link('#');
                         $objLink->link = $key . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -66,17 +66,20 @@ class cssmenu extends ChisimbaObject {
                                 $this->toolbarIcon->extra = ' vspace="3" hspace="5" width="17" height="17"';
                                 $icon = $this->toolbarIcon->show();
 
-                                $objLink = new link($this->uri('', $link));
+                                $objLink = new link($this->uri(NULL, $link));
                                 $objLink->link = $icon . '<div class="menulinktext">' . $val . '</div>';
 
                                 $valLink = $objLink->show();
+
+                                $cssclass = '';
 
                                 if ($counter == 1) {
                                         $cssclass = 'first';
                                 } else if ($counter == $numitems) {
                                         $cssclass = 'last';
                                 }
-                                $str.='<li id=""  class="' . $cssclass . '">' . $valLink . "</li>\r\n";
+
+                                $str.='<li class="' . $cssclass . '">' . $valLink . "</li>\r\n";
                                 $counter++;
                         }
                         $str.="</ul></li>\n";
