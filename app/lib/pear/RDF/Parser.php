@@ -324,7 +324,7 @@ class RDF_Parser extends RDF_Object
      */
     function _is_alnum($val)
     {
-        return ereg('[A-Za-z0-9]', $val);
+        return preg_match('~[A-Za-z0-9]~', $val);
     }
 
     /**
@@ -334,7 +334,7 @@ class RDF_Parser extends RDF_Object
      */
     function _is_alpha($val)
     {
-        return ereg('[A-Za-z]', $val);
+        return preg_match('~[A-Za-z]~', $val);
     }
 
     /**
@@ -1829,7 +1829,7 @@ class RDF_Parser extends RDF_Object
 
             if ($this->rdf_parser['top']['state'] == RDF_IN_PROPERTY_UNKNOWN_OBJECT) {
                 /* look for non-whitespace */
-                for ($i = 0; (($i < $len) && (ereg(" |\n|\t", $s[ $i ]))); $i++);
+                for ($i = 0; (($i < $len) && (preg_match("~ |\n|\t~", $s[ $i ]))); $i++);
                 /* if we found non-whitespace, this is a literal */
                 if ($i < $len) {
                     $this->rdf_parser['top']['state'] = RDF_IN_PROPERTY_LITERAL;

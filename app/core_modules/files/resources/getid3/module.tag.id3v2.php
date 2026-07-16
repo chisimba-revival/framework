@@ -2981,12 +2981,12 @@ class getid3_id3v2
 	function IsValidID3v2FrameName($framename, $id3v2majorversion) {
 		switch ($id3v2majorversion) {
 			case 2:
-				return ereg('[A-Z][A-Z0-9]{2}', $framename);
+				return preg_match('~[A-Z][A-Z0-9]{2}~', $framename);
 				break;
 
 			case 3:
 			case 4:
-				return ereg('[A-Z][A-Z0-9]{3}', $framename);
+				return preg_match('~[A-Z][A-Z0-9]{3}~', $framename);
 				break;
 		}
 		return false;
