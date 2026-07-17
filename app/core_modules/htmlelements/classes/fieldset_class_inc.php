@@ -73,7 +73,7 @@ class fieldset extends ChisimbaObject implements ifhtml
     /**
     * Alternate constructor for including the file
     */
-    public function fieldset()
+        public function fieldset()
     {
         return $this->init();
     }

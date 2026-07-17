@@ -70,7 +70,7 @@ class logactivity extends dbTable
     /**
      * Constructor method
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         try {
             //  Set the parent table

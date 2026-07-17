@@ -22,7 +22,7 @@ class acl_descriptiondb extends dbTable
     /**
     * Method to initialize the acl_descriptiondb object.
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init( 'tbl_permissions_acl_description' );
     } 

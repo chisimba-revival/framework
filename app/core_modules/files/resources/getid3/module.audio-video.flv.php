@@ -34,7 +34,7 @@ define('GETID3_FLV_VIDEO_VP6',    4);
 class getid3_flv
 {
 
-	function getid3_flv(&$fd, &$ThisFileInfo, $ReturnAllTagData=false) {
+		function getid3_flv(&$fd, &$ThisFileInfo, $ReturnAllTagData=false) {
 		fseek($fd, $ThisFileInfo['avdataoffset'], SEEK_SET);
 
 		$FLVfileData = fread($fd, $ThisFileInfo['avdataend'] - $ThisFileInfo['avdataoffset']);
@@ -243,7 +243,7 @@ class AMFStream {
 	var $bytes;
 	var $pos;
 
-	function AMFStream(&$bytes) {
+		function AMFStream(&$bytes) {
 		$this->bytes =& $bytes;
 		$this->pos = 0;
 	}
@@ -326,7 +326,7 @@ class AMFStream {
 class AMFReader {
 	var $stream;
 
-	function AMFReader(&$stream) {
+		function AMFReader(&$stream) {
 		$this->stream =& $stream;
 	}
 

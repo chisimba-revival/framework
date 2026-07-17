@@ -79,7 +79,7 @@ function install_gpc_stripslashes($var)
 
 {
 
-	if (get_magic_quotes_gpc()) {
+	if (false) {
 
 		if (is_array($var)) install_stripslashes_array($var, true);
 

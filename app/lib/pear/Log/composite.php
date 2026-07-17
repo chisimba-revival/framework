@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * $Header$
  * $Horde: horde/lib/Log/composite.php,v 1.2 2000/06/28 21:36:13 jon Exp $
@@ -25,65 +28,69 @@ class Log_composite extends Log
     /**
      * Array holding all of the Log instances to which log events should be
      * sent.
-     *
-     * @var array
-     * @access private
      */
-    var $_children = array();
+    private array $children = [];
 
 
     /**
      * Constructs a new composite Log object.
      *
-     * @param boolean   $name       This parameter is ignored.
-     * @param boolean   $ident      This parameter is ignored.
-     * @param boolean   $conf       This parameter is ignored.
-     * @param boolean   $level      This parameter is ignored.
-     *
-     * @access public
+     * @param string   $name       This parameter is ignored.
+     * @param string   $ident      The label that uniquely identifies this set of log messages.
+     * @param array    $conf       This parameter is ignored.
+     * @param int      $level      This parameter is ignored.
      */
-    function Log_composite($name, $ident = '', $conf = array(),
-                           $level = PEAR_LOG_DEBUG)
-    {
-        $this->_ident = $ident;
+    public function __construct(
+        string $name,
+        string $ident = '',
+        array $conf = [],
+        int $level = PEAR_LOG_DEBUG
+    ) {
+        $this->ident = $ident;
     }
 
     /**
      * Opens all of the child instances.
      *
-     * @return  True if all of the child instances were successfully opened.
-     *
-     * @access public
+     * @return bool True if all of the child instances were successfully opened.
      */
-    function open()
+    public function open(): bool
     {
         /* Attempt to open each of our children. */
-        $this->_opened = true;
-        foreach ($this->_children as $id => $child) {
-            $this->_opened &= $this->_children[$id]->open();
+        $this->opened = true;
+        foreach ($this->children as $child) {
+            if (!$child->open()) {
+                $this->opened = false;
+            }
         }
 
         /* If all children were opened, return success. */
-        return $this->_opened;
+        return $this->opened;
     }
 
     /**
-     * Closes all of the child instances.
+     * Closes all open child instances.
      *
-     * @return  True if all of the child instances were successfully closed.
-     *
-     * @access public
+     * @return bool True if all of the opened child instances were successfully
+     *          closed.
      */
-    function close()
+    public function close(): bool
     {
-        /* Attempt to close each of our children. */
-        $closed = true;
-        foreach ($this->_children as $id => $child) {
-            $closed &= $this->_children[$id]->close();
+        /* If we haven't been opened, there's nothing more to do. */
+        if (!$this->opened) {
+            return true;
         }
 
-        /* Track the _opened state for consistency. */
-        $this->_opened = false;
+        /* Attempt to close each of our children. */
+        $closed = true;
+        foreach ($this->children as $child) {
+            if ($child->opened && !$child->close()) {
+                $closed = false;
+            }
+        }
+
+        /* Clear the opened state for consistency. */
+        $this->opened = false;
 
         /* If all children were closed, return success. */
         return $closed;
@@ -93,17 +100,18 @@ class Log_composite extends Log
      * Flushes all child instances.  It is assumed that all of the children
      * have been successfully opened.
      *
-     * @return  True if all of the child instances were successfully flushed.
+     * @return bool True if all of the child instances were successfully flushed.
      *
-     * @access public
      * @since Log 1.8.2
      */
-    function flush()
+    public function flush(): bool
     {
         /* Attempt to flush each of our children. */
         $flushed = true;
-        foreach ($this->_children as $id => $child) {
-            $flushed &= $this->_children[$id]->flush();
+        foreach ($this->children as $child) {
+            if (!$child->flush()) {
+                $flushed = false;
+            }
         }
 
         /* If all children were flushed, return success. */
@@ -112,11 +120,11 @@ class Log_composite extends Log
 
     /**
      * Sends $message and $priority to each child of this composite.  If the
-     * children aren't already open, they will be opened here.
+     * appropriate children aren't already open, they will be opened here.
      *
      * @param mixed     $message    String or object containing the message
      *                              to log.
-     * @param string    $priority   (optional) The priority of the message.
+     * @param int|null  $priority   (optional) The priority of the message.
      *                              Valid values are: PEAR_LOG_EMERG,
      *                              PEAR_LOG_ALERT, PEAR_LOG_CRIT,
      *                              PEAR_LOG_ERR, PEAR_LOG_WARNING,
@@ -124,46 +132,79 @@ class Log_composite extends Log
      *                              PEAR_LOG_DEBUG.
      *
      * @return boolean  True if the entry is successfully logged.
-     *
-     * @access public
      */
-    function log($message, $priority = null)
+    public function log($message, ?int $priority = null): bool
     {
         /* If a priority hasn't been specified, use the default value. */
         if ($priority === null) {
-            $priority = $this->_priority;
+            $priority = $this->priority;
         }
 
         /*
-         * If the handlers haven't been opened, attempt to open them now.
-         * However, we don't treat failure to open all of the handlers as a
-         * fatal error.  We defer that consideration to the success of calling
-         * each handler's log() method below.
+         * Abort early if the priority is above the composite handler's
+         * maximum logging level.
+         *
+         * XXX: Consider whether or not introducing this change would break
+         * backwards compatibility.  Some users may be expecting composite
+         * handlers to pass on all events to their children regardless of
+         * their own priority.
          */
-        if (!$this->_opened) {
-            $this->open();
-        }
+        #if (!$this->isMasked($priority)) {
+        #    return false;
+        #}
 
-        /* Attempt to log the event using each of the children. */
+        /*
+         * Iterate over all of our children.  If a unopened child will respond
+         * to this log event, we attempt to open it immediately.  The composite
+         * handler's opened state will be enabled as soon as the first child
+         * handler is successfully opened.
+         *
+         * We track an overall success state that indicates whether or not all
+         * of the relevant child handlers were opened and successfully logged
+         * the event.  If one handler fails, we still attempt any remaining
+         * children, but we consider the overall result a failure.
+         */
         $success = true;
-        foreach ($this->_children as $id => $child) {
-            $success &= $this->_children[$id]->log($message, $priority);
+        foreach ($this->children as $child) {
+            /* If this child won't respond to this event, skip it. */
+            if (!$child->isMasked($priority)) {
+                continue;
+            }
+
+            /* If this child has yet to be opened, attempt to do so now. */
+            if (!$child->opened) {
+                if (!$child->open()) {
+                    $success = false;
+                }
+
+                /*
+                 * If we've successfully opened our first handler, the
+                 * composite handler itself is considered to be opened.
+                 */
+                if (!$this->opened && $success) {
+                    $this->opened = true;
+                }
+            }
+
+            /* Finally, attempt to log the message to the child handler. */
+            if ($child->opened && !$child->log($message, $priority)) {
+                $success = false;
+            }
         }
 
-        $this->_announce(array('priority' => $priority, 'message' => $message));
+        /* Notify the observers. */
+        $this->announce(['priority' => $priority, 'message' => $message]);
 
-        /* Return success if all of the children logged the event. */
+        /* Return success if all of the open children logged the event. */
         return $success;
     }
 
     /**
      * Returns true if this is a composite.
      *
-     * @return boolean  True if this is a composite class.
-     *
-     * @access public
+     * @return bool True if this is a composite class.
      */
-    function isComposite()
+    public function isComposite(): bool
     {
         return true;
     }
@@ -173,37 +214,29 @@ class Log_composite extends Log
      *
      * @param string    $ident      The new identification string.
      *
-     * @access public
      * @since  Log 1.6.7
      */
-    function setIdent($ident)
+    public function setIdent(string $ident): void
     {
         /* Call our base class's setIdent() method. */
         parent::setIdent($ident);
 
         /* ... and then call setIdent() on all of our children. */
-        foreach ($this->_children as $id => $child) {
-            $this->_children[$id]->setIdent($ident);
+        foreach ($this->children as $child) {
+            $child->setIdent($ident);
         }
     }
 
     /**
      * Adds a Log instance to the list of children.
      *
-     * @param object    $child      The Log instance to add.
+     * @param Log    $child      The Log instance to add.
      *
      * @return boolean  True if the Log instance was successfully added.
-     *
-     * @access public
      */
-    function addChild(&$child)
+    public function addChild(Log $child): bool
     {
-        /* Make sure this is a Log instance. */
-        if (!is_a($child, 'Log')) {
-            return false;
-        }
-
-        $this->_children[$child->_id] = &$child;
+        $this->children[$child->id] = $child;
 
         return true;
     }
@@ -211,19 +244,17 @@ class Log_composite extends Log
     /**
      * Removes a Log instance from the list of children.
      *
-     * @param object    $child      The Log instance to remove.
+     * @param Log    $child      The Log instance to remove.
      *
-     * @return boolean  True if the Log instance was successfully removed.
-     *
-     * @access public
+     * @return bool True if the Log instance was successfully removed.
      */
-    function removeChild($child)
+    public function removeChild(Log $child): bool
     {
-        if (!is_a($child, 'Log') || !isset($this->_children[$child->_id])) {
+        if (!isset($this->children[$child->id])) {
             return false;
         }
 
-        unset($this->_children[$child->_id]);
+        unset($this->children[$child->id]);
 
         return true;
     }

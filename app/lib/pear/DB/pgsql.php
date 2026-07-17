@@ -152,7 +152,7 @@ class DB_pgsql extends DB_common
      *
      * @return void
      */
-    function DB_pgsql()
+        function DB_pgsql()
     {
         $this->DB_common();
     }

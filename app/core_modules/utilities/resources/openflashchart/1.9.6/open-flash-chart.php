@@ -9,7 +9,7 @@ class graph
 	* Constructer for the open_flash_chart_api
 	* Sets our default variables
 	*/
-	function graph()
+		function graph()
 	{
 		$this->data_sets = array();
 		
@@ -1239,7 +1239,7 @@ class bar
 	var $key_size;
 	var $var;
 	
-	function bar( $alpha, $colour )
+		function bar( $alpha, $colour )
 	{
 		$this->var = 'bar';
 		
@@ -1312,7 +1312,7 @@ class bar
 
 class bar_3d extends bar
 {
-	function bar_3d( $alpha, $colour )
+		function bar_3d( $alpha, $colour )
 	{
 		parent::bar( $alpha, $colour );
 		$this->var = 'bar_3d';
@@ -1321,7 +1321,7 @@ class bar_3d extends bar
 
 class bar_fade extends bar
 {
-	function bar_fade( $alpha, $colour )
+		function bar_fade( $alpha, $colour )
 	{
 		parent::bar( $alpha, $colour );
 		$this->var = 'bar_fade';
@@ -1332,7 +1332,7 @@ class bar_outline extends bar
 {
 	var $outline_colour;
 	
-	function bar_outline( $alpha, $colour, $outline_colour )
+		function bar_outline( $alpha, $colour, $outline_colour )
 	{
 		parent::bar( $alpha, $colour );
 		$this->var = 'filled_bar';
@@ -1359,7 +1359,7 @@ class bar_outline extends bar
 
 class bar_glass extends bar_outline
 {
-	function bar_glass( $alpha, $colour, $outline_colour )
+		function bar_glass( $alpha, $colour, $outline_colour )
 	{
 		parent::bar_outline( $alpha, $colour, $outline_colour );
 		$this->var = 'bar_glass';
@@ -1374,7 +1374,7 @@ class bar_sketch extends bar_outline
 {
 	var $offset;
 	
-	function bar_sketch( $alpha, $offset, $colour, $outline_colour )
+		function bar_sketch( $alpha, $offset, $colour, $outline_colour )
 	{
 		parent::bar_outline( $alpha, $colour, $outline_colour );
 		$this->var = 'bar_sketch';
@@ -1404,7 +1404,7 @@ class candle
 {
 	var $out;
 	
-	function candle( $high, $open, $close, $low )
+		function candle( $high, $open, $close, $low )
 	{
 		$this->out = array();
 		$this->out[] = $high;
@@ -1423,7 +1423,7 @@ class hlc
 {
 	var $out;
 	
-	function hlc( $high, $low, $close )
+		function hlc( $high, $low, $close )
 	{
 		$this->out = array();
 		$this->out[] = $high;
@@ -1441,7 +1441,7 @@ class point
 {
 	var $out;
 	
-	function point( $x, $y, $size_px )
+		function point( $x, $y, $size_px )
 	{
 		$this->out = array();
 		$this->out[] = $x;

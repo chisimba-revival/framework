@@ -79,7 +79,7 @@ class htmlHeading implements ifhtml
      * @param  string  $str  The heading content.
      * @param  integer $type The heading level.
      */
-    public function htmlheading($str=null, $type=3)
+        public function htmlheading($str=null, $type=3)
     {
         $this->str = $str;
         $this->type = $type;

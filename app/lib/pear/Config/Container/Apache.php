@@ -41,7 +41,7 @@ class Config_Container_Apache {
     * @access public
     * @param    string  $options    (optional)Options to be used by renderer
     */
-    function Config_Container_Apache($options = array())
+        function Config_Container_Apache($options = array())
     {
         $this->options = $options;
     } // end constructor

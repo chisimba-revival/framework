@@ -91,7 +91,7 @@ class Text_Wiki_Parse_Smiley extends Text_Wiki_Parse {
      * @return The parser object
      * @access public
      */
-    function Text_Wiki_Parse_Smiley(&$obj)
+        function Text_Wiki_Parse_Smiley(&$obj)
     {
         $default = $this->conf;
         parent::Text_Wiki_Parse($obj);

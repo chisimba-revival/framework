@@ -116,7 +116,7 @@ class curl
    * @param string $theURL [optional] the URL to be accessed by this instance of the class.
    */
 
-  function curl($theURL=null)
+    function curl($theURL=null)
     {
       $this->m_handle = curl_init() ;
       if (!empty($theURL))

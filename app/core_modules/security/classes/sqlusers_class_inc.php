@@ -44,7 +44,7 @@ class sqlUsers extends dbtable
     var $objLanguage;
     var $objConfig;
     
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
     parent::init('tbl_users');
         $this->objConfig=$this->getObject('config','config');

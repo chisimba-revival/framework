@@ -24,7 +24,18 @@ class Licence extends Step
 	* @return void
 	* @access public
 	*/
-	function Licence() 
+				/**
+		 * PHP 8 constructor wrapper for the legacy Licence() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'Licence'],
+		        func_get_args()
+		    );
+		}
+
+function Licence() 
 	{
 		
 		$this->actions[] = new LicenceAction(get_class($this));

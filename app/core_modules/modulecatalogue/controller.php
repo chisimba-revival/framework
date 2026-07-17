@@ -1336,7 +1336,7 @@ EOT;
      *
      * @return TRUE|FALSE false if the user is carrying out first time module registration, else true.
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         try {
             if ($this->getParm ( 'action' ) == 'firsttimeregistration') {
                 return FALSE;

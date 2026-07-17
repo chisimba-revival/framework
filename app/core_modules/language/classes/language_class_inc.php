@@ -115,7 +115,7 @@ class language extends dbTable {
     /**
      * Constructor method for the language class
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         try {
             parent::init('tbl_languagelist');
             $this->objConfig = $this->getObject('altconfig', 'config');
@@ -389,7 +389,7 @@ class language extends dbTable {
      * @param  string     $itemName
      * @return TRUE/FALSE
      */
-    public function valueExists($code, $item) {
+    public function valueExists($code, $item, $table = null) {
         $line = $this->lang->get($item, '', 'en');
         if ($line != null) {
             return TRUE;

@@ -37,7 +37,7 @@ class formatfilesize
     /**
     * Constructor
     */
-    function formatfilesize()
+        function formatfilesize()
     {  }
     
     /**

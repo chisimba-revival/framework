@@ -87,7 +87,7 @@ class checkbox  extends abhtmlbase implements ifhtml
    * @param string $label The text of the accompanying label
    * @param bool $ischecked whether or not the box is checkedd by default
    */
-  public function checkbox($name,$label=NULL,$ischecked=false){
+    public function checkbox($name,$label=NULL,$ischecked=false){
       $this->name=$name;
     $this->ischecked=$ischecked;
     $this->label=$label;

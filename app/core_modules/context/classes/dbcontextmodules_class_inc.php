@@ -60,7 +60,7 @@ class dbcontextmodules extends dbTable {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_contextmodules' );
         $this->_objModule = $this->newObject ( 'modules', 'modulecatalogue' );
     }

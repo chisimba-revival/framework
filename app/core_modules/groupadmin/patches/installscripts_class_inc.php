@@ -1,6 +1,6 @@
 <?php
 class groupadmin_installscripts extends dbTable {
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_users' );
         $this->objGroupOps = $this->getObject('groupops', 'groupadmin');
         $this->objGroupModel = $this->getObject('groupadminmodel', 'groupadmin');

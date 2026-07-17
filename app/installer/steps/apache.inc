@@ -64,7 +64,18 @@ class Apache extends Step
 
 	*/
 
-	function Apache()
+				/**
+		 * PHP 8 constructor wrapper for the legacy Apache() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'Apache'],
+		        func_get_args()
+		    );
+		}
+
+function Apache()
 
 	{
 

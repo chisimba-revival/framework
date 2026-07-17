@@ -52,7 +52,7 @@ class dbquotas extends dbTable {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_files_quotas');
         $this->objUser = $this->getObject('user', 'security');
         $this->objLanguage = $this->getObject('language', 'language');

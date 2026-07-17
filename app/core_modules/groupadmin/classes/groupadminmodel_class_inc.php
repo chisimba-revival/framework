@@ -108,7 +108,7 @@ class groupAdminModel extends dbTable {
      * @param  void
      * @return void
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         //if($this->objLuAdmin === null) {
         //    $this->objLuAdmin = $this->objEngine->getLuAdmin();
         //}

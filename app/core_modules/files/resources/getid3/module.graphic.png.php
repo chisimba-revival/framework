@@ -17,7 +17,7 @@
 class getid3_png
 {
 
-	function getid3_png(&$fd, &$ThisFileInfo) {
+		function getid3_png(&$fd, &$ThisFileInfo) {
 
 	    // shortcut
 	    $ThisFileInfo['png'] = array();

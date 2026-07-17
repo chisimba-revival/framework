@@ -488,7 +488,7 @@ class HTMLPurifier_Config
      */
     public static function prepareArrayFromForm($array, $index = false, $allowed = true, $mq_fix = true, $schema = null) {
         if ($index !== false) $array = (isset($array[$index]) && is_array($array[$index])) ? $array[$index] : array();
-        $mq = $mq_fix && function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc();
+        $mq = $mq_fix && function_exists('get_magic_quotes_gpc') && false;
 
         $allowed = HTMLPurifier_Config::getAllowedDirectivesForForm($allowed, $schema);
         $ret = array();

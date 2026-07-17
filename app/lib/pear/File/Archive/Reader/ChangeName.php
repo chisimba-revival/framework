@@ -45,7 +45,7 @@ require_once "File/Archive/Reader/Relay.php";
 class File_Archive_Reader_AddBaseName extends File_Archive_Reader_Relay
 {
     var $baseName;
-    function File_Archive_Reader_AddBaseName($baseName, &$source)
+        function File_Archive_Reader_AddBaseName($baseName, &$source)
     {
         parent::File_Archive_Reader_Relay($source);
         $this->baseName = $this->getStandardURL($baseName);
@@ -132,7 +132,7 @@ class File_Archive_Reader_ChangeBaseName extends File_Archive_Reader_Relay
     var $oldBaseName;
     var $newBaseName;
 
-    function File_Archive_Reader_ChangeBaseName
+        function File_Archive_Reader_ChangeBaseName
                         ($oldBaseName, $newBaseName, &$source)
     {
         parent::File_Archive_Reader_Relay($source);

@@ -19,7 +19,8 @@ class auth_fmp extends abauth implements ifauth {
      * and instantiates required objects.
      *
      */
-    public function init() {
+    // AUTH_FMP_INIT_SIGNATURE_PHP82
+    public function init($dataTable = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         //Instantiate the configuration object
         $this->objConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
         // User object

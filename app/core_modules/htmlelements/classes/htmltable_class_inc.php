@@ -240,7 +240,7 @@ class htmlTable extends ChisimbaObject implements ifhtml
     /**
     * Alternate constructor for including the file. eg. from radio buttons class
     */
-    public function htmltable()
+        public function htmltable()
     {
         return $this->init();
     }

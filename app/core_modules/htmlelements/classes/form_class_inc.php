@@ -156,7 +156,7 @@ class form implements ifhtml
     /**
      * Form contructor
      */
-    public function form($name = null, $action = null)
+        public function form($name = null, $action = null)
     {
         // set the name
         $this->name = $name;
@@ -730,7 +730,8 @@ class form implements ifhtml
                     }
                     ok = ok && selected;
                 }else{
-                    alert('Error in form validation. ID=\'$elemIdPrefix[$fieldname]\'.');
+                    // FORM_VALIDATION_JS_LITERAL_PHP82
+                    alert('Error in form validation. ID=\''.$elemIdPrefix.$fieldname.'\'.');
                     return false;
                 }
             }

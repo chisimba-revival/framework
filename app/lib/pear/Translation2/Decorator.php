@@ -88,7 +88,12 @@ class Translation2_Decorator extends Translation2
      *
      * @param object &$translation2 Translation2 object to decorate
      */
-    function Translation2_Decorator(& $translation2)
+        public function __construct(& $translation2)
+        {
+            $this->Translation2_Decorator($translation2);
+        }
+
+        function Translation2_Decorator(& $translation2)
     {
         $this->translation2 = & $translation2;
         //used for debug only

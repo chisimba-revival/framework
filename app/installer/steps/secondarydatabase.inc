@@ -38,7 +38,18 @@ class SecondaryDatabase extends Step
 
 	
 
-	function SecondaryDatabase()
+				/**
+		 * PHP 8 constructor wrapper for the legacy SecondaryDatabase() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'SecondaryDatabase'],
+		        func_get_args()
+		    );
+		}
+
+function SecondaryDatabase()
 
 	{
 
@@ -100,7 +111,18 @@ class SecondaryDatabaseAction extends FiveStepAction
 
 	*/
 
-	function SecondaryDatabaseAction($sn)
+				/**
+		 * PHP 8 constructor wrapper for the legacy SecondaryDatabaseAction() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'SecondaryDatabaseAction'],
+		        func_get_args()
+		    );
+		}
+
+function SecondaryDatabaseAction($sn)
 
 	{
 

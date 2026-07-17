@@ -60,7 +60,7 @@ class dbcontextparams extends dbTable {
     /**
      *Initialize by send the table name to be accessed
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_contextparams' );
         $this->_objDBContext = $this->newObject ( 'dbcontext', 'context' );
     }

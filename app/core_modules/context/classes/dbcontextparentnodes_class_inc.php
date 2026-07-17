@@ -75,7 +75,7 @@ class dbcontextparentnodes extends dbTable {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_context_parentnodes_has_tbl_context' );
         $this->objDBContext = $this->newObject ( 'dbcontext', 'context' );
         $this->objUser = $this->newObject ( 'user', 'security' );

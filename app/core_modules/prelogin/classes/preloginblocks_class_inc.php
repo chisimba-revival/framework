@@ -23,7 +23,7 @@ class preloginBlocks extends dbTable {
      * Standard chisimba init function
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         try {
             parent::init('tbl_prelogin_blocks');
             $this->objUser = $this->getObject('user', 'security');

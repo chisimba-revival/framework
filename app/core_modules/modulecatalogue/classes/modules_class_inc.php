@@ -92,7 +92,7 @@ class modules extends dbTable
     /**
      * Standard object init function
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         try {
             parent::init('tbl_modules');
             //Config and Language Objects

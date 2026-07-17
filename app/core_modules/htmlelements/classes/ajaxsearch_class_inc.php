@@ -118,7 +118,7 @@ class ajaxsearch extends abhtmlbase implements ifhtml
     * @param string Callback class that will supply the data
     * @param string Callback module
     */
-    public function ajaxsearch($name, $params, $callback_class, $callback_module, $submitButton=NULL)
+        public function ajaxsearch($name, $params, $callback_class, $callback_module, $submitButton=NULL)
     {
         global $_globalObjEngine;
         $this->object = new ChisimbaObject($_globalObjEngine, 'htmlelements');

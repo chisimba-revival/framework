@@ -958,7 +958,7 @@ class DB_Error extends PEAR_Error
      *
      * @see PEAR_Error
      */
-    function DB_Error($code = DB_ERROR, $mode = PEAR_ERROR_RETURN,
+        function DB_Error($code = DB_ERROR, $mode = PEAR_ERROR_RETURN,
                       $level = E_USER_NOTICE, $debuginfo = null)
     {
         if (is_int($code)) {
@@ -1094,7 +1094,7 @@ class DB_result
      *
      * @return void
      */
-    function DB_result(&$dbh, $result, $options = array())
+        function DB_result(&$dbh, $result, $options = array())
     {
         $this->autofree    = $dbh->options['autofree'];
         $this->dbh         = &$dbh;
@@ -1467,7 +1467,7 @@ class DB_row
      *
      * @return void
      */
-    function DB_row(&$arr)
+        function DB_row(&$arr)
     {
         foreach ($arr as $key => $value) {
             $this->$key = &$arr[$key];

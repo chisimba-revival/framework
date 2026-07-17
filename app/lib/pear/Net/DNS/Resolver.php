@@ -243,7 +243,7 @@ class Net_DNS_Resolver
      *
      * @return Net_DNS_Resolver
      */
-    function Net_DNS_Resolver($defaults = array())
+        function Net_DNS_Resolver($defaults = array())
     {
         $mydefaults = array(
                 'nameservers' => array(),

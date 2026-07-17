@@ -90,7 +90,7 @@ class htmlbase extends ChisimbaObject
     /**
     * Constructor
     */
-    function htmlbase($name)
+        function htmlbase($name)
     {
         //set the name of the element
         $this->name=$name;

@@ -76,7 +76,7 @@ class Translation2_Admin extends Translation2
      * @access public
      * @static
      */
-    function & factory($driver, $options = '', $params = array())
+    public static function & factory($driver, $options = '', $params = array())
     {
         $tr = new Translation2_Admin;
         $tr->storage = Translation2_Admin::_storageFactory($driver, $options);
@@ -104,7 +104,7 @@ class Translation2_Admin extends Translation2
      * @access private
      * @static
      */
-    function & _storageFactory($driver, $options = '')
+    public static function & _storageFactory($driver, $options = '')
     {
         if (is_object($driver)) {
             return $driver;

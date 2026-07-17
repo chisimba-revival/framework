@@ -32,7 +32,7 @@ class dbmenu extends dbtable {
     /**
      * Method to construct the class.
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_menu_category' );
         $this->table = 'tbl_menu_category';
     }

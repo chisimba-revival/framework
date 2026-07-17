@@ -39,7 +39,7 @@ class permissions_acl extends dbTable
     /**
     * Method to initialise an object.
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->objUser = $this->getObject( 'user', 'security' );
         parent::init( 'tbl_permissions_acl' );

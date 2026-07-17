@@ -122,7 +122,8 @@ class MDB2_Date
     public static function date2Mdbstamp($hour = null, $minute = null, $second = null,
         $month = null, $day = null, $year = null)
     {
-        return MDB2_Date::unix2Mdbstamp(mktime($hour, $minute, $second, $month, $day, $year, -1));
+        // MDB2_DATE_MKTIME_PHP82
+        return MDB2_Date::unix2Mdbstamp(mktime($hour, $minute, $second, $month, $day, $year));
     }
     // }}}
 
@@ -156,7 +157,7 @@ class MDB2_Date
     {
         $arr = MDB2_Date::mdbstamp2Date($mdb_timestamp);
 
-        return mktime($arr['hour'], $arr['minute'], $arr['second'], $arr['month'], $arr['day'], $arr['year'], -1);
+        return mktime($arr['hour'], $arr['minute'], $arr['second'], $arr['month'], $arr['day'], $arr['year']);
     }
     // }}}
 

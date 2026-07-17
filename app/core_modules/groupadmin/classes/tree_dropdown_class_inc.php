@@ -98,7 +98,7 @@ class tree_dropdown extends presentation
     *                          o linkTarget Target for the links. Defaults to "_self"
     *                          o submitText Text for the submit button. Defaults to "Go"
     */
-    function tree_dropdown($structure, $options = array())
+        function tree_dropdown($structure, $options = array())
     {
         $this->presentation($structure);
 

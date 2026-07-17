@@ -51,7 +51,7 @@ class dbmediafileinfo extends dbTable
     /**
     * Constructor
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_files_metadata_media');
         $this->objUser = $this->getObject('user', 'security');

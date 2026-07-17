@@ -237,7 +237,7 @@ class packages extends controller
      * @return bool
      * @access public
      */
-     public function requiresLogin() 
+     public function requiresLogin($action = null) 
      {
         return FALSE;
      }

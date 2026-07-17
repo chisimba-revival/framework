@@ -29,7 +29,7 @@ class Text_Diff {
      *                           lines from a file.
      * @param array $to_lines    An array of strings.
      */
-    function Text_Diff($engine, $params)
+        function Text_Diff($engine, $params)
     {
         // Backward compatibility workaround.
         if (!is_string($engine)) {
@@ -225,7 +225,7 @@ class Text_MappedDiff extends Text_Diff {
      * @param array $mapped_to_lines    This array should have the same number
      *                                  of elements as $to_lines.
      */
-    function Text_MappedDiff($from_lines, $to_lines,
+        function Text_MappedDiff($from_lines, $to_lines,
                              $mapped_from_lines, $mapped_to_lines)
     {
         assert(count($from_lines) == count($mapped_from_lines));
@@ -287,7 +287,7 @@ class Text_Diff_Op {
  */
 class Text_Diff_Op_copy extends Text_Diff_Op {
 
-    function Text_Diff_Op_copy($orig, $final = false)
+        function Text_Diff_Op_copy($orig, $final = false)
     {
         if (!is_array($final)) {
             $final = $orig;
@@ -312,7 +312,7 @@ class Text_Diff_Op_copy extends Text_Diff_Op {
  */
 class Text_Diff_Op_delete extends Text_Diff_Op {
 
-    function Text_Diff_Op_delete($lines)
+        function Text_Diff_Op_delete($lines)
     {
         $this->orig = $lines;
         $this->final = false;
@@ -334,7 +334,7 @@ class Text_Diff_Op_delete extends Text_Diff_Op {
  */
 class Text_Diff_Op_add extends Text_Diff_Op {
 
-    function Text_Diff_Op_add($lines)
+        function Text_Diff_Op_add($lines)
     {
         $this->final = $lines;
         $this->orig = false;
@@ -356,7 +356,7 @@ class Text_Diff_Op_add extends Text_Diff_Op {
  */
 class Text_Diff_Op_change extends Text_Diff_Op {
 
-    function Text_Diff_Op_change($orig, $final)
+        function Text_Diff_Op_change($orig, $final)
     {
         $this->orig = $orig;
         $this->final = $final;

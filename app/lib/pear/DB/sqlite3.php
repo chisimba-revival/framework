@@ -52,7 +52,7 @@ class DB_sqlite3 extends DB_common
    * @return void
    */
   
-  function DB_sqlite3()
+    function DB_sqlite3()
   {
     $this->DB_common();
   }

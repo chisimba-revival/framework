@@ -187,7 +187,7 @@ class DB
  */
 class DB_Error extends PEAR_Error
 {
-    function DB_Error($code = DB_ERROR, $mode = PEAR_ERROR_RETURN,
+        function DB_Error($code = DB_ERROR, $mode = PEAR_ERROR_RETURN,
               $level = E_USER_NOTICE, $debuginfo = NULL)
     {
         if (is_int($code)) {
@@ -215,7 +215,7 @@ class DB_result
 
     var $limit_count = NULL;
 
-    function DB_result(&$dbh, $result)
+        function DB_result(&$dbh, $result)
     {
         $this->dbh = &$dbh;
         $this->result = $result;
@@ -282,7 +282,7 @@ class DB_result
 
 class DB_row
 {
-    function DB_row(&$arr)
+        function DB_row(&$arr)
     {
         for (reset($arr); $key = key($arr); next($arr)) {
             $this->$key = &$arr[$key];
@@ -294,7 +294,7 @@ class MDB_PEAR_PROXY
 {
     var $MDB_object;
 
-    function MDB_PEAR_PROXY($MDB_object)
+        function MDB_PEAR_PROXY($MDB_object)
     {
         $this->MDB_object = $MDB_object;
         $this->MDB_object->option['sequence_col_name'] = 'id';

@@ -17,7 +17,7 @@
 class getid3_bink
 {
 
-	function getid3_bink(&$fd, &$ThisFileInfo) {
+		function getid3_bink(&$fd, &$ThisFileInfo) {
 
 $ThisFileInfo['error'][] = 'Bink / Smacker files not properly processed by this version of getID3()';
 

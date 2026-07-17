@@ -104,7 +104,7 @@ class MDB_oci8 extends MDB_Common {
     /**
      * Constructor
      */
-    function MDB_oci8()
+        function MDB_oci8()
     {
         $this->MDB_Common();
         $this->phptype = 'oci8';

@@ -42,7 +42,7 @@ class userregistration extends controller
     /**
      * Method to turn off login requirement for all actions in this module
      */
-    public function requiresLogin() 
+    public function requiresLogin($action = null) 
     {
         return FALSE;
     }

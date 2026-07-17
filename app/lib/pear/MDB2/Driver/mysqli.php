@@ -521,6 +521,12 @@ class MDB2_Driver_mysqli extends MDB2_Driver_Common
      */
     function _doConnect($username, $password, $persistent = false)
     {
+        // PHP 8.1+ throws mysqli_sql_exception by default. MDB2 expects
+        // mysqli calls to return FALSE so its own error and on-demand
+        // sequence-table handling can run.
+        if (function_exists('mysqli_report')) {
+            mysqli_report(MYSQLI_REPORT_OFF);
+        }
         if (!extension_loaded($this->phptype)) {
             return $this->raiseError(MDB2_ERROR_NOT_FOUND, null, null,
                 'extension '.$this->phptype.' is not compiled into PHP', __FUNCTION__);

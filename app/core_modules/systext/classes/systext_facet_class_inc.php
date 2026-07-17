@@ -67,7 +67,7 @@ class systext_facet extends dbTable
     *
     * @access private
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_sysconfig_properties');
         $this -> _objSystemTypeDb = $this -> getObject('dbsystem', 'systext');

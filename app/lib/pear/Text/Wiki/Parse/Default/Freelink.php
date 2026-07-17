@@ -56,7 +56,7 @@ class Text_Wiki_Parse_Freelink extends Text_Wiki_Parse {
     * 
     */
     
-    function Text_Wiki_Parse_Freelink(&$obj)
+        function Text_Wiki_Parse_Freelink(&$obj)
     {
         parent::Text_Wiki_Parse($obj);
         if ($this->getConf('utf-8')) {

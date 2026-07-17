@@ -62,7 +62,7 @@ class tigraNode extends ChisimbaObject
     /**
     * Alternate constructor
     */
-    public function tigranode($caption, $link = null, $scope = null)
+        public function tigranode($caption, $link = null, $scope = null)
     {
         $this->caption = $caption;
         $this->link = $link;

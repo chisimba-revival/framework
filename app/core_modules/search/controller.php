@@ -35,7 +35,7 @@ class search extends controller
     /**
 	* This is a method to determine if the user has to be logged in or not
     */
-    public function requiresLogin() // overides that in parent class
+    public function requiresLogin($action = null) // overides that in parent class
     {
        return FALSE;
     }

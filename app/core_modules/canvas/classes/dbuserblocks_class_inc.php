@@ -80,7 +80,7 @@ class dbuserblocks extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         // Guess the module we are in so we can load its data connection
         $objGuess = $this->getObject('bestguess', 'utilities');

@@ -69,7 +69,7 @@ class dbcontext extends dbTable {
     /**
      * Initialize by send the table name to be accessed
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_context');
         $this->table = 'tbl_context';
         $this->objUser = $this->getObject('user', 'security');

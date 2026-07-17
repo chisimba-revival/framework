@@ -82,7 +82,12 @@ class Config_Container {
     * @param  string  $content    Content of container object
     * @param  array   $attributes Array of attributes for container object
     */
-    function Config_Container($type = 'section', $name = '', $content = '', $attributes = null)
+    public function __construct($type = 'section', $name = '', $content = '', $attributes = null)
+    {
+        $this->Config_Container($type, $name, $content, $attributes);
+    }
+
+        function Config_Container($type = 'section', $name = '', $content = '', $attributes = null)
     {
         $this->type       = $type;
         $this->name       = $name;
@@ -694,7 +699,7 @@ class Config_Container {
         $array[$this->name] = array();
         switch ($this->type) {
             case 'directive':
-                if ($useAttr && count($this->attributes) > 0) {
+                if ($useAttr && count((array) $this->attributes) > 0) {
                     $array[$this->name]['#'] = $this->content;
                     $array[$this->name]['@'] = $this->attributes;
                 } else {
@@ -702,10 +707,10 @@ class Config_Container {
                 }
                 break;
             case 'section':
-                if ($useAttr && count($this->attributes) > 0) {
+                if ($useAttr && count((array) $this->attributes) > 0) {
                     $array[$this->name]['@'] = $this->attributes;
                 }
-                if ($count = count($this->children)) {
+                if ($count = count((array) $this->children)) {
                     for ($i = 0; $i < $count; $i++) {
                         $newArr = $this->children[$i]->toArray($useAttr);
                         if (!is_null($newArr)) {

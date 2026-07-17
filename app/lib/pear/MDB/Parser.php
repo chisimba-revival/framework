@@ -95,7 +95,7 @@ class MDB_Parser extends XML_Parser
     );
     var $fail_on_invalid_names = 1;
 
-    function MDB_Parser($variables, $fail_on_invalid_names = 1) 
+        function MDB_Parser($variables, $fail_on_invalid_names = 1) 
     {
         $this->XML_Parser();
         $this->variables = $variables;

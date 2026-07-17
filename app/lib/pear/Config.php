@@ -75,7 +75,12 @@ class Config {
     *
     * @access public
     */
-    function Config()
+    public function __construct()
+    {
+        $this->Config();
+    }
+
+        function Config()
     {
         $this->container = new Config_Container('section', 'root');
     } // end constructor

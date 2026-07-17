@@ -211,7 +211,7 @@ class I18Nv2_Locale
      * @access  public
      * @param   string  $locale
      */
-    function I18Nv2_Locale($locale = null, $paranoid = false)
+        function I18Nv2_Locale($locale = null, $paranoid = false)
     {
         $locale or $locale = I18Nv2::lastLocale(0, 'locale');
         $this->setLocale($locale);

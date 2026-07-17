@@ -177,7 +177,7 @@ class DB_oci8 extends DB_common
      *
      * @return void
      */
-    function DB_oci8()
+        function DB_oci8()
     {
         $this->DB_common();
     }

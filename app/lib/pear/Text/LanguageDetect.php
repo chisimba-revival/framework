@@ -179,7 +179,7 @@ class Text_LanguageDetect
      * a PEAR_Error object returned when you try to use detect()
      *
      */
-    function Text_LanguageDetect()
+        function Text_LanguageDetect()
     {
         $data = $this->_readdb($this->_db_filename);
         if (PEAR::isError($data)) {

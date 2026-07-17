@@ -71,7 +71,7 @@ class Calendar_Decorator_Wrapper extends Calendar_Decorator
      *
      * @access public
      */
-    function Calendar_Decorator_Wrapper(&$Calendar)
+        function Calendar_Decorator_Wrapper(&$Calendar)
     {
         parent::Calendar_Decorator($Calendar);
     }

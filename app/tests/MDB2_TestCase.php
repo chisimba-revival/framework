@@ -15,7 +15,7 @@ class MDB2_TestCase extends PHPUnit_TestCase {
     // contains the types of the fields from the test table
     var $types;
 
-    function MDB2_TestCase($name) {
+        function MDB2_TestCase($name) {
         $this->PHPUnit_TestCase($name);
     }
 

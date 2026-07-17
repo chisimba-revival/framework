@@ -68,7 +68,7 @@ class dbRuleCondition extends dbTable {
      * @author Jonathan Abrahams
      * @return nothing
      */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_decisiontable_rule_condition');
     }

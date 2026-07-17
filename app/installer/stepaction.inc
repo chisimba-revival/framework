@@ -56,7 +56,18 @@ class StepAction
 	* @param string $step_name The name of the parent step
 	* @access public
 	*/
-	function StepAction($step_name='')
+				/**
+		 * PHP 8 constructor wrapper for the legacy StepAction() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'StepAction'],
+		        func_get_args()
+		    );
+		}
+
+function StepAction($step_name='')
 	{
 		$this->parent_step = $step_name;
 

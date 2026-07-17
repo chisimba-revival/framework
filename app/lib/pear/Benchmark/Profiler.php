@@ -146,7 +146,7 @@ class Benchmark_Profiler extends PEAR {
      *
      * @access public
      */
-    function Benchmark_Profiler($auto = FALSE) {
+        function Benchmark_Profiler($auto = FALSE) {
         $this->_auto = $auto;
 
         if ($this->_auto) {

@@ -60,7 +60,7 @@ class contextusers extends dbTable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_users');
         $this->objLanguage = $this->getObject('language', 'language');

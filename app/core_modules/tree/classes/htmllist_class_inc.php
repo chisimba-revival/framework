@@ -23,7 +23,7 @@ class htmllist extends presentation
     *                           o allLiClasses     CSS Class that should be applied to all <LI>
     *                           o target           target of links
     */
-    function htmllist($structure, $options = array())
+        function htmllist($structure, $options = array())
     {
         $this->presentation($structure);
         

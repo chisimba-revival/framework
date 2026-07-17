@@ -80,7 +80,7 @@ class Calendar_Hour extends Calendar
      *
      * @access public
      */
-    function Calendar_Hour($y, $m, $d, $h)
+        function Calendar_Hour($y, $m, $d, $h)
     {
         parent::Calendar($y, $m, $d, $h);
     }

@@ -106,6 +106,11 @@ class LiveUser_Admin_Storage
      * @access protected
      * @return void
      */
+    public function __construct()
+    {
+        $this->LiveUser_Admin_Storage();
+    }
+
     function LiveUser_Admin_Storage()
     {
         $this->stack = &PEAR_ErrorStack::singleton('LiveUser_Admin');
@@ -160,7 +165,7 @@ class LiveUser_Admin_Storage
      *
      * @access public
      */
-    function setSelectDefaultParams($params)
+    static function setSelectDefaultParams($params)
     {
         if (!is_array($params)) {
             PEAR_ErrorStack::staticPush('LiveUser_Admin', LIVEUSER_ADMIN_ERROR,

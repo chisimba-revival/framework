@@ -134,7 +134,7 @@ class Auth_Yadis_XMLParser {
  * @package OpenID
  */
 class Auth_Yadis_domxml extends Auth_Yadis_XMLParser {
-    function Auth_Yadis_domxml()
+        function Auth_Yadis_domxml()
     {
         $this->xml = null;
         $this->doc = null;
@@ -217,7 +217,7 @@ class Auth_Yadis_domxml extends Auth_Yadis_XMLParser {
  * @package OpenID
  */
 class Auth_Yadis_dom extends Auth_Yadis_XMLParser {
-    function Auth_Yadis_dom()
+        function Auth_Yadis_dom()
     {
         $this->xml = null;
         $this->doc = null;

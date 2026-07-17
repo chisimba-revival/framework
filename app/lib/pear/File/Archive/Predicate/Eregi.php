@@ -45,7 +45,7 @@ class File_Archive_Predicate_Eregi extends File_Archive_Predicate
     /**
      * @param string $ereg is the regular expression
      */
-    function File_Archive_Predicate_Eregi($ereg)
+        function File_Archive_Predicate_Eregi($ereg)
     {
         $this->ereg = $ereg;
     }

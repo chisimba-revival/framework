@@ -138,7 +138,7 @@ class System_Command {
      * 
      * @access public
      */
-    function System_Command($in_shell = null)
+        function System_Command($in_shell = null)
     {
         // Defining constants
         $this->options = array(
@@ -572,7 +572,7 @@ class System_Command_Error extends PEAR_Error
     // }}}
     // {{{ constructor
 
-    function System_Command_Error($code = SYSTEM_COMMAND_ERROR, $mode = PEAR_ERROR_RETURN,
+        function System_Command_Error($code = SYSTEM_COMMAND_ERROR, $mode = PEAR_ERROR_RETURN,
               $level = E_USER_NOTICE, $debuginfo = null)
     {
         if (is_int($code)) {

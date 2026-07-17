@@ -50,7 +50,18 @@ class InstallDirectory extends Step
 
      */
 
-    function InstallDirectory()
+                /**
+         * PHP 8 constructor wrapper for the legacy InstallDirectory() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'InstallDirectory'],
+                func_get_args()
+            );
+        }
+
+function InstallDirectory()
 
     {
 

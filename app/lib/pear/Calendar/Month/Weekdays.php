@@ -108,7 +108,7 @@ class Calendar_Month_Weekdays extends Calendar_Month
      *
      * @access public
      */
-    function Calendar_Month_Weekdays($y, $m, $firstDay=null)
+        function Calendar_Month_Weekdays($y, $m, $firstDay=null)
     {
         parent::Calendar_Month($y, $m, $firstDay);
     }

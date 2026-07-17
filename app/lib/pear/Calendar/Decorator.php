@@ -76,7 +76,7 @@ class Calendar_Decorator
      *
      * @param object &$calendar subclass to Calendar to decorate
      */
-    function Calendar_Decorator(&$calendar)
+        function Calendar_Decorator(&$calendar)
     {
         $this->calendar = & $calendar;
     }

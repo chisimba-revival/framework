@@ -238,7 +238,7 @@ class MDB_querysim extends MDB_Common
     /**
     * Constructor
     */
-    function MDB_querysim()
+        function MDB_querysim()
     {
         $this->MDB_Common();
         $this->phptype  = 'querysim';

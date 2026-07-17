@@ -180,7 +180,7 @@ class dbTable extends ChisimbaObject {
      * @param  callback $errorCallback The name of a custom error callback function (defaults to the global)
      * @return void
      */
-    public function init($tableName, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
         $modname = $this->objEngine->_moduleName;
         $this->objLuAdmin = $this->objEngine->luAdmin;
         $this->objLu = $this->objEngine->lu;
@@ -905,41 +905,91 @@ class dbTable extends ChisimbaObject {
      * @access     public
      */
     public function query($stmt) {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt));
-                $ret = unserialize($cache);
-            } else {
-                if ($this->debug == TRUE) {
-                    log_debug($stmt);
-                }
-                $ret = $this->_queryAll($stmt);
-                if (PEAR::isError($ret)) {
-                    $ret = FALSE;
-                }
-                chisimbacache::getMem()->set(md5($this->cachePrefix . $stmt), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . $stmt);
-            if ($ret == FALSE) {
-                $ret = $this->_queryAll($stmt);
-                if (PEAR::isError($ret)) {
-                    $ret = FALSE;
-                }
-                apc_store($this->cachePrefix . $stmt, $ret, $this->cacheTTL);
-            }
-        } else {
-            if ($this->debug == TRUE) {
-                log_debug($stmt);
-            }
+        $isResultQuery = $this->_isResultQuery($stmt);
+
+        if ($this->debug == TRUE) {
+            log_debug($stmt);
+        }
+
+        if ($isResultQuery) {
             $ret = $this->_queryAll($stmt);
-            if (PEAR::isError($ret)) {
-                $ret = FALSE;
-            }
+        } else {
+            $ret = $this->_executeStatement($stmt);
+        }
+
+        if (PEAR::isError($ret)) {
+            return FALSE;
         }
 
         return $ret;
     }
+
+    /**
+     * Determine whether an SQL statement returns rows.
+     *
+     * @param string $stmt
+     * @return bool
+     */
+    private function _isResultQuery($stmt) {
+        $sql = ltrim($stmt);
+
+        do {
+            $previous = $sql;
+
+            $sql = preg_replace(
+                '/^\/\*.*?\*\/\s*/s',
+                '',
+                $sql
+            );
+
+            $sql = preg_replace(
+                '/^(?:--[^\r\n]*|#[^\r\n]*)[\r\n]+\s*/',
+                '',
+                $sql
+            );
+        } while ($sql !== $previous);
+
+        return preg_match(
+            '/^(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN|WITH)\b/i',
+            $sql
+        ) === 1;
+    }
+
+    /**
+     * Execute SQL that does not return rows.
+     *
+     * @param string $stmt
+     * @return mixed
+     */
+    private function _executeStatement($stmt) {
+        if ($this->dbLayer === 'MDB2') {
+            $ret = $this->_db->exec($stmt);
+
+            if (PEAR::isError($ret)) {
+                error_log(
+                    'MDB2 exec failed: '
+                    . $ret->getMessage()
+                    . ' | SQL: '
+                    . $stmt
+                );
+
+                return FALSE;
+            }
+
+            return $ret;
+        }
+
+        if ($this->dbLayer === 'PDO') {
+            try {
+                return $this->_db->exec($stmt);
+            } catch (PDOException $e) {
+                throw new customException($e->getMessage());
+            }
+        }
+
+        return FALSE;
+    }
+
 
     /**
      * Method to construct a sql join statement.

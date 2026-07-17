@@ -44,7 +44,7 @@ class useradmin_model extends dbtable
     private $objUser;
     private $objLanguage;
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_users');
         $this->objConfig=$this->getObject('altconfig','config');

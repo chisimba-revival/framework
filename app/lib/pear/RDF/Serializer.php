@@ -42,7 +42,7 @@ class RDF_Serializer extends RDF_Object
     /**
      * @access public
      */
-    function RDF_Serializer()
+        function RDF_Serializer()
     {
         // default serializer configuration
         $this->use_entities = RDF_SER_USE_ENTITIES;

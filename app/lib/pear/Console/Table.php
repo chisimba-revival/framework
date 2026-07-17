@@ -134,7 +134,7 @@ class Console_Table
      *
      * @param integer $align  Default alignment
      */
-    function Console_Table($align = CONSOLE_TABLE_ALIGN_LEFT)
+        function Console_Table($align = CONSOLE_TABLE_ALIGN_LEFT)
     {
         $this->_defaultAlign = $align;
     }

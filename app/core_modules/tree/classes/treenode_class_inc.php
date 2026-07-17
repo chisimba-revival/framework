@@ -123,7 +123,7 @@ class treenode
     *                       for the 'onexpand', 'oncollapse' and 'ontoggle' events which will be fired
     *                       whenever a node is collapsed and/or expanded.
     */
-    function treenode($options = array(), $events = array())
+        function treenode($options = array(), $events = array())
     {
         $this->text          = '';
         $this->link          = '';

@@ -202,7 +202,7 @@ class layer extends ChisimbaObject implements ifhtml
     *
     * @var string $strn The string to pass to the layer
     */
-    public function layer()
+        public function layer()
     {
         $this->str='';
         return $this->init();

@@ -134,7 +134,7 @@ class image implements ifhtml
     /**
     * Initialization method to set default values
     */
-    public function image()
+        public function image()
     {
         $this->alt = null;
         $this->imageTag = null;

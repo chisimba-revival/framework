@@ -59,6 +59,13 @@ require_once("ifhtml_class_inc.php");
 */
 class link extends abhtmlbase implements ifhtml
 {
+    // LINK_CONSTRUCTOR_BRIDGE_PHP82
+    public function __construct($href=null)
+    {
+        $this->link($href);
+    }
+
+
     /**
     *
     * @var string $linkType The type of link, e.g. http, mailto, etc.
@@ -162,7 +169,7 @@ class link extends abhtmlbase implements ifhtml
     /**
     * Initialization method to set default values
     */
-    public function link($href=null)
+        public function link($href=null)
     {
         $this->href=$href;
     }

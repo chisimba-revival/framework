@@ -80,8 +80,8 @@ class LiveUser_Auth_Session extends LiveUser_Auth_Common
      * @return bool true on success or false on failure
      *
      * @access public
-     */
-    function init(&$conf, $containerName)
+     */// LIVEUSER_AUTH_SESSION_INIT_SIGNATURE_PHP82
+    public function init($conf, $containerName)
     {
         parent::init($conf, $containerName);
 

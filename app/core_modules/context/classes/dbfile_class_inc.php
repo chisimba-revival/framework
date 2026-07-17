@@ -77,7 +77,7 @@ class dbfile extends dbTable {
      * @return void
      * @access public
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_context_file' );
         $this->objDBContext = $this->newObject ( 'dbcontext', 'context' );
         $this->objDBFileData = $this->newObject ( 'dbfiledata', 'context' );

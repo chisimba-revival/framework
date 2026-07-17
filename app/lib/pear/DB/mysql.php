@@ -166,7 +166,7 @@ class DB_mysql extends DB_common
      *
      * @return void
      */
-    function DB_mysql()
+        function DB_mysql()
     {
         $this->DB_common();
     }

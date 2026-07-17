@@ -61,7 +61,7 @@ class confirm extends ChisimbaObject{
     /**
     *Constructor
     */
-    function confirm(){
+        function confirm(){
         $this->init();
     }
 

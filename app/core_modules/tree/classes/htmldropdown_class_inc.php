@@ -47,7 +47,7 @@ class htmldropdown extends presentation
     *                           o indentNum  How many of the indentChars to use per indentation level
     *                                        Defaults to 2
     */
-    function htmldropdown($structure, $options = array())
+        function htmldropdown($structure, $options = array())
     {
         $this->presentation($structure);
 

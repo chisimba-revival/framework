@@ -16,7 +16,7 @@ class freemindmap extends presentation
     *
     * @param object $structure The menu structure
     */
-    function freemindmap($structure)
+        function freemindmap($structure)
     {
         $this->presentation($structure);
     }

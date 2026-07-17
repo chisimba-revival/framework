@@ -48,7 +48,7 @@ class listbox extends presentation
     *                           o linkTarget Target for the links. Defaults to "_self"
     *                           o submitText Text for the submit button. Defaults to "Go"
     */
-    function listbox($structure, $options = array())
+        function listbox($structure, $options = array())
     {
         $this->presentation($structure);
 

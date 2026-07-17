@@ -66,7 +66,7 @@ class href implements ifhtml
      * @return void href
      * @access public.
      */
-        public function href($link=Null,$text=Null,$other=Null)
+                public function href($link=Null,$text=Null,$other=Null)
         {
             $this->link=$link;
             $this->text=$text;

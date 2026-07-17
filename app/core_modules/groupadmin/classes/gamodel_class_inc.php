@@ -109,7 +109,7 @@ class gaModel extends dbTable
      * @param  void
      * @return void
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         // Create instance of groupusersDb object, and connect back to groupsDb
         $this->_objGroupUsers = $this->getObject( 'groupusersdb', 'groupadmin' );

@@ -97,7 +97,7 @@ $GLOBALS['kewl_entry_point_run']) {
      * @param  void  
      * @return void  
      */
-    public function init( )
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_decisiontable_decisiontable');
         $this->_objDBDecisionTableAction = $this->newObject( 'dbdecisiontableaction','decisiontable' );

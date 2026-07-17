@@ -88,7 +88,7 @@ class Benchmark_Timer extends PEAR {
      * @param  boolean $auto
      * @access public
      */
-    function Benchmark_Timer($auto = FALSE) {
+        function Benchmark_Timer($auto = FALSE) {
         $this->auto = $auto;
 
         if ($this->auto) {

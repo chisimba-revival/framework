@@ -56,7 +56,18 @@ class SystemDetails extends Step
 
      */
 
-    function SystemDetails()
+                /**
+         * PHP 8 constructor wrapper for the legacy SystemDetails() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'SystemDetails'],
+                func_get_args()
+            );
+        }
+
+function SystemDetails()
 
     {
 

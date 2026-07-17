@@ -40,7 +40,7 @@ class dbeditlock extends dbTable
     * 
     * @access public
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_edit_lock');
         $this->table = 'tbl_edit_lock';

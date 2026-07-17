@@ -69,7 +69,7 @@ class Display
      * @return void
      * @access public
      */
-  public function Display(&$webpage) {
+    public function Display(&$webpage) {
     $this->webpage = &$webpage;
   }
 

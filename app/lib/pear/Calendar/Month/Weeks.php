@@ -100,7 +100,7 @@ class Calendar_Month_Weeks extends Calendar_Month
      *
      * @access public
      */
-    function Calendar_Month_Weeks($y, $m, $firstDay=null)
+        function Calendar_Month_Weeks($y, $m, $firstDay=null)
     {
         parent::Calendar_Month($y, $m, $firstDay);
     }

@@ -46,7 +46,7 @@ class tableinfo extends dbtable
     /**
      * Init function for class
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_users');
     }

@@ -105,7 +105,7 @@ class onlineCount extends dbTable
     /**
     * Method to initialise the object.
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->_objDBContext = $this->getObject('dbcontext','context');
         $this->_objGroupAdmin = $this->getObject('groupAdminModel','groupadmin');

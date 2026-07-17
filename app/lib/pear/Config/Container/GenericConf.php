@@ -42,7 +42,7 @@ class Config_Container_GenericConf {
     * @access public
     * @param    string  $options    (optional)Options to be used by renderer
     */
-    function Config_Container_GenericConf($options = array())
+        function Config_Container_GenericConf($options = array())
     {
         if (empty($options['comment'])) {
             $options['comment'] = '#';

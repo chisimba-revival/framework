@@ -94,7 +94,13 @@ class ChisimbaObject
      * @param  mixed  $moduleName The name of the module
      * @return object instantiation against the engine object
      */
-    public function __construct($objEngine, $moduleName) {
+    public function __construct($objEngine = null, $moduleName = null) {
+        // CHISIMBAOBJECT_ZERO_ARG_COMPAT_PHP82
+        // Legacy helper code sometimes instantiates ChisimbaObject only
+        // to use inherited utility methods, without engine/module context.
+        if ($objEngine === null && $moduleName === null) {
+            return;
+        }
         $this->objEngine  = $objEngine;
         $this->moduleName = $moduleName;
         $this->objLu = $objEngine->lu;

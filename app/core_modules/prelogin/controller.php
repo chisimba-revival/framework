@@ -284,7 +284,7 @@ class prelogin extends controller {
      *
      * @return FALSE
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         switch ($this->getParam('action')) {
             case 'admin':
             case 'update':

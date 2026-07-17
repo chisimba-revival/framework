@@ -66,7 +66,7 @@ class multitabbedbox extends abhtmlbase implements ifhtml
     * @param int $height (optional);
     * @param int $width (optional);
     */
-    public function multitabbedbox($height=100,$width=500)
+        public function multitabbedbox($height=100,$width=500)
     {
         $this->height=$height;
         $this->width=$width;    

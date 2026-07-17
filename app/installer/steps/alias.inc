@@ -62,7 +62,18 @@ class Alias extends Step
 
 	*/
 
-	function Alias()
+				/**
+		 * PHP 8 constructor wrapper for the legacy Alias() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'Alias'],
+		        func_get_args()
+		    );
+		}
+
+function Alias()
 
 	{
 

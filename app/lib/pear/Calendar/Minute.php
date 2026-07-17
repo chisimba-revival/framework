@@ -81,7 +81,7 @@ class Calendar_Minute extends Calendar
      *
      * @access public
      */
-    function Calendar_Minute($y, $m, $d, $h, $i)
+        function Calendar_Minute($y, $m, $d, $h, $i)
     {
         parent::Calendar($y, $m, $d, $h, $i);
     }

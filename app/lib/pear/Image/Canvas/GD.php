@@ -138,7 +138,7 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
      *
      * @param array $param Parameter array
      */
-    function Image_Canvas_GD($param)
+        function Image_Canvas_GD($param)
     {
         include_once 'Image/Canvas/Color.php';
 

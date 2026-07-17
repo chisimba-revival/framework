@@ -27,7 +27,7 @@ class PhpPsdReader {
     var $tempFileName;
     var $colorBytesLength;
 
-    function PhpPsdReader($fileName) {
+        function PhpPsdReader($fileName) {
         set_time_limit(0);
         $this->infoArray = array();
         $this->fileName = $fileName;

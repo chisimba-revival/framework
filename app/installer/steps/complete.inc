@@ -23,7 +23,18 @@ class Complete extends Step
     * @return void
     * @access public
     */
-    function Complete()
+                /**
+         * PHP 8 constructor wrapper for the legacy Complete() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'Complete'],
+                func_get_args()
+            );
+        }
+
+function Complete()
     {
         $this->actions[] = new CompleteAction(get_class($this));
         $this->step_title = 'Complete';

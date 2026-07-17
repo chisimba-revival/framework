@@ -91,7 +91,7 @@ class LiveUser_Admin_Perm_Storage_MDB2 extends LiveUser_Admin_Storage_MDB2
      * @access public
      * @uses LiveUser_Admin_Storage_DB::init
      */
-    function init(&$storageConf)
+    function init(&$storageConf, $structure = null)
     {
         require_once 'LiveUser/Perm/Storage/Globals.php';
         parent::init($storageConf, $GLOBALS['_LiveUser']['perm']);

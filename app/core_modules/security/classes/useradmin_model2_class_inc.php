@@ -65,7 +65,7 @@ class useradmin_model2 extends dbtable
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_users');
         $this->objConfig=$this->getObject('altconfig','config');

@@ -64,7 +64,7 @@ class dbnonce extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         //Set the parent table
         parent::init('tbl_login_nonce');

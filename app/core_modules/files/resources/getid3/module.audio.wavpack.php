@@ -17,7 +17,7 @@
 class getid3_wavpack
 {
 
-	function getid3_wavpack(&$fd, &$ThisFileInfo) {
+		function getid3_wavpack(&$fd, &$ThisFileInfo) {
 
 		fseek($fd, $ThisFileInfo['avdataoffset'], SEEK_SET);
 

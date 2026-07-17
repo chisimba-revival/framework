@@ -30,7 +30,18 @@ class DatabaseCreate extends Step
 
 	*/
 
-	function DatabaseCreate()
+				/**
+		 * PHP 8 constructor wrapper for the legacy DatabaseCreate() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'DatabaseCreate'],
+		        func_get_args()
+		    );
+		}
+
+function DatabaseCreate()
 
 	{
 

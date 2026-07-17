@@ -70,7 +70,7 @@ class hiddeninput extends abhtmlbase implements ifhtml
     * @param string $name  optional :sets the name of the hidden form input
     * @param string $value optional :sets the value of the hidden form input
     */
-    public function hiddeninput($name = null, $value = null)
+        public function hiddeninput($name = null, $value = null)
     {
         $this->name = $name;
         $this->value = $value;

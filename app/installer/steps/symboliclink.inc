@@ -52,7 +52,18 @@ class SymbolicLink extends Step
 
 	*/
 
-	function SymbolicLink()
+				/**
+		 * PHP 8 constructor wrapper for the legacy SymbolicLink() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'SymbolicLink'],
+		        func_get_args()
+		    );
+		}
+
+function SymbolicLink()
 
 	{
 

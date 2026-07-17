@@ -20,7 +20,7 @@ class presentation
     *
     * @param object $structure The menu structure
     */
-    function presentation(&$structure)
+        function presentation(&$structure)
     {
         $this->menu = &$structure;
     }

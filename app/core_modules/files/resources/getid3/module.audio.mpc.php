@@ -17,7 +17,7 @@
 class getid3_mpc
 {
 
-	function getid3_mpc(&$fd, &$ThisFileInfo) {
+		function getid3_mpc(&$fd, &$ThisFileInfo) {
 		// http://www.uni-jena.de/~pfk/mpp/sv8/header.html
 
 		$ThisFileInfo['mpc']['header'] = array();

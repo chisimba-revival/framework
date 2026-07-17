@@ -115,6 +115,7 @@ class LiveUser_Admin_Perm_Simple
         'getRights' => array('rights', 'userrights', 'areas', 'applications', 'translations'),
         'getAreas' => array('areas', 'applications', 'translations'),
         'getApplications' => array('applications', 'translations'),
+        'getGroups' => array('groups', 'groupusers', 'grouprights', 'rights', 'translations'),
         'getTranslations' => array('translations'),
     );
 

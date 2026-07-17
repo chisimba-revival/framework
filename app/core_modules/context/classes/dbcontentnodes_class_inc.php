@@ -97,7 +97,7 @@ class dbcontentnodes extends dbtable {
     /**
      * Initializing the object
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_context_nodes' );
         $user = $this->newObject ( 'user', 'security' );
         $this->objDBContext = $this->newObject ( 'dbcontext', 'context' );

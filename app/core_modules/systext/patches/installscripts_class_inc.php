@@ -74,7 +74,7 @@ class systext_installscripts extends dbtable
      *
      * @access public
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->objUser = $this->getObject('user', 'security');
         $this->userId = $this->objUser->PKId();

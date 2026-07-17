@@ -171,7 +171,7 @@ class I18Nv2
      * @param   string  $locale     The locale to use.
      * @param   bool    $paranoid   Whether to operate in paranoid mode.
      */
-    function &createLocale($locale = null, $paranoid = false)
+    public static function &createLocale($locale = null, $paranoid = false)
     {
         require_once 'I18Nv2/Locale.php';
         $obj = new I18Nv2_Locale($locale, $paranoid);
@@ -378,7 +378,7 @@ class I18Nv2
      * @return  mixed   Returns a reference to a static property
      * @param   string  $property   the static property
      */
-    function &getStaticProperty($property)
+    public static function &getStaticProperty($property)
     {
         static $properties;
         return $properties[$property];
@@ -393,7 +393,7 @@ class I18Nv2
      * @access  private
      * @return  void
      */
-    function _main()
+    public static function _main()
     {
         // initialize the locale stack
         $last = &I18Nv2::getStaticProperty('last');

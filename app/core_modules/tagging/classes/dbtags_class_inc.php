@@ -30,7 +30,7 @@ class dbtags extends dbTable
      * @param void
      * @return void
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->objLanguage = $this->getObject("language", "language");
         parent::init('tbl_tags');

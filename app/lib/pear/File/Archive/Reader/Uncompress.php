@@ -89,7 +89,7 @@ class File_Archive_Reader_Uncompress extends File_Archive_Reader_Relay
      */
     var $currentFileNotDisplayed = false;
 
-    function File_Archive_Reader_Uncompress(
+        function File_Archive_Reader_Uncompress(
                         &$innerReader, $uncompressionLevel = -1)
     {
         parent::File_Archive_Reader_Relay($innerReader);

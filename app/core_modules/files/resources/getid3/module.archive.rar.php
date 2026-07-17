@@ -17,7 +17,7 @@
 class getid3_rar
 {
 
-	function getid3_rar(&$fd, &$ThisFileInfo) {
+		function getid3_rar(&$fd, &$ThisFileInfo) {
 
 		$ThisFileInfo['fileformat'] = 'rar';
 

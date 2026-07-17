@@ -38,8 +38,8 @@ abstract class abauth extends dbtable
     public $userLoginHistory;
     public $loggedInUsers;
 
-    public function init($dataTable)
-    {
+        // ABAUTH_INIT_SIGNATURE_PHP82
+    public function init($dataTable = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init($dataTable);
         $this->userLoginHistory = $this->getObject('userLoginHistory', 'security');
         $this->loggedInUsers = $this->getObject('loggedInUsers', 'security');

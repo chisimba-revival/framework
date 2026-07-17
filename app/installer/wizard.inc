@@ -984,7 +984,7 @@ class Wizard
 
         if (count($this->errors) > 0) {
 
-            $errStr = implode($this->errors, '<br />');
+            $errStr = implode('<br />', $this->errors);
 
             $this->template->set('error', $errStr);
 

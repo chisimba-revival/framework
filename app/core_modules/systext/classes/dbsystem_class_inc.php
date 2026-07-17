@@ -13,7 +13,7 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
 class dbsystem extends dbTable
 {
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_systext_system');
         $this -> table = 'tbl_systext_system';

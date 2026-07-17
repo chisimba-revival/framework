@@ -50,7 +50,18 @@ class VersionCheck extends Step
 
     */
 
-    function VersionCheck()
+                /**
+         * PHP 8 constructor wrapper for the legacy VersionCheck() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'VersionCheck'],
+                func_get_args()
+            );
+        }
+
+function VersionCheck()
 
     {
         //Register PHP check actions

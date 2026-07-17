@@ -28,7 +28,7 @@ class logshow extends dbTable
     /**
      * Constructor method
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         try {
             parent::init('tbl_logger');

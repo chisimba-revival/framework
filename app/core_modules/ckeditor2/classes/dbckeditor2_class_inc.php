@@ -69,7 +69,7 @@ class dbckeditor2 extends dbtable
     * @return VOID
     *
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         //Set the parent table to our demo table
         parent::init('tbl_ckeditor2_text');

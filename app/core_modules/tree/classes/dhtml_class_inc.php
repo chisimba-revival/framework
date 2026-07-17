@@ -76,7 +76,7 @@ class dhtml extends presentation
     * @param array  $options   Array of options
     * @param bool   $isDynamic Whether the tree is dynamic or not
     */
-    function dhtml(&$structure, $options = array(), $isDynamic = true)
+        function dhtml(&$structure, $options = array(), $isDynamic = true)
     {
         $this->presentation($structure);
         $this->isDynamic = $isDynamic;

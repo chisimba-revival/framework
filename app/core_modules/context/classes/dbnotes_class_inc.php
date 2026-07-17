@@ -59,7 +59,7 @@ class dbnotes extends dbTable {
     /**
      * Constructor method to define the table
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_context_usernotes' );
     }
 

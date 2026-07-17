@@ -97,7 +97,7 @@ require_once("ifhtml_class_inc.php");
     /**
     * Method to establish the default values
     */
-    public function textarea($name=null,$value='',$rows=4,$cols=50, $characters = NULL, $label = NULL)
+        public function textarea($name=null,$value='',$rows=4,$cols=50, $characters = NULL, $label = NULL)
      {
         $this->name=$name;
         $this->value=$value;

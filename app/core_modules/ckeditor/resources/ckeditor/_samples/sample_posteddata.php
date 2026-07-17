@@ -32,7 +32,7 @@ else
 
 foreach ( $postArray as $sForm => $value )
 {
-	if ( get_magic_quotes_gpc() )
+	if ( false )
 		$postedValue = htmlspecialchars( stripslashes( $value ) ) ;
 	else
 		$postedValue = htmlspecialchars( $value ) ;

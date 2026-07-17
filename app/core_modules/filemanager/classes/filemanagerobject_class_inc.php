@@ -50,7 +50,7 @@ class filemanagerobject extends dbTable // which extends ChisimbaObject
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {  }
 
     /**

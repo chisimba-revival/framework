@@ -32,7 +32,7 @@ class RDF_Store_MDB extends RDF_Object
      * @param string $options
      * @access public
      */
-    function RDF_Store_MDB($dsn, $options = null)
+        function RDF_Store_MDB($dsn, $options = null)
     {
         require_once 'MDB.php';
         // create a new connection object

@@ -89,7 +89,7 @@ class HTML_QuickForm_Renderer_ObjectFlexy extends HTML_QuickForm_Renderer_Object
      * @param $flexy object   HTML_Template_Flexy instance
      * @public
      */
-    function HTML_QuickForm_Renderer_ObjectFlexy(&$flexy)
+        function HTML_QuickForm_Renderer_ObjectFlexy(&$flexy)
     {
         $this->HTML_QuickForm_Renderer_Object(true);
         $this->_obj = new QuickformFlexyForm();

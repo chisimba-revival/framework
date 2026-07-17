@@ -184,7 +184,7 @@ class DB_ibase extends DB_common
      *
      * @return void
      */
-    function DB_ibase()
+        function DB_ibase()
     {
         $this->DB_common();
     }

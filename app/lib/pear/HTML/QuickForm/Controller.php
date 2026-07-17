@@ -78,7 +78,7 @@ class HTML_QuickForm_Controller
     * @param  string  form name
     * @param  bool    whether the form is modal
     */
-    function HTML_QuickForm_Controller($name, $modal = true)
+        function HTML_QuickForm_Controller($name, $modal = true)
     {
         $this->_name  = $name;
         $this->_modal = $modal;

@@ -134,7 +134,7 @@ class File_Bittorrent2_MakeTorrent
      *
      * @param string Path to use
      */
-    function File_Bittorrent2_MakeTorrent($path)
+        function File_Bittorrent2_MakeTorrent($path)
     {
         $this->setPath($path);
     }

@@ -43,7 +43,7 @@
      * @access public
      * @return void
      */
-     public function YAMLNode($nodeId) {
+          public function YAMLNode($nodeId) {
       $this->id = $nodeId;
     }
   }

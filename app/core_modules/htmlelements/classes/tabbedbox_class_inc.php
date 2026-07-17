@@ -92,7 +92,7 @@ class tabbedbox implements ifhtml
     /**
     * Initialization method to set default values
     */
-    public function tabbedbox()
+        public function tabbedbox()
     {
         $this->tabLabel=NULL;
         $this->boxContent=NULL;

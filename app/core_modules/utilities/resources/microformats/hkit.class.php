@@ -77,7 +77,7 @@
 		private $doc		= '';
 		
 		
-		public function hKit()
+				public function hKit()
 		{
 			// pre-flight checks
 			$pass 		= true; 

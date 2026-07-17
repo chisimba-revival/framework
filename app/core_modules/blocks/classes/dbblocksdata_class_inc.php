@@ -32,7 +32,7 @@ class dbblocksdata extends dbTable
 	    * @access public
 	    * @return void
 	    */
-        public function init()
+        public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
         {
             try {
                 parent::init('tbl_module_blocks');

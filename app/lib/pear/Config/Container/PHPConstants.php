@@ -43,7 +43,7 @@ class Config_Container_PHPConstants extends Config_Container {
     * @access public
     * @param    string  $options    (optional)Options to be used by renderer
     */
-    function Config_Container_PHPConstants($options = array())
+        function Config_Container_PHPConstants($options = array())
     {
         $this->options = $options;
     } // end constructor

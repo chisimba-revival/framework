@@ -26,7 +26,7 @@ class dbContext_learneroutcomes extends dbTable
     /**
      * Constructor method to define the table
      */
-    function init() 
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') 
     {
         parent::init('tbl_context_learneroutcomes');
         $this->objUser = &$this->getObject('user', 'security');

@@ -183,6 +183,74 @@ class altconfig extends ChisimbaObject {
      *                          2. XML
      * @return boolean TRUE for success / FALSE fail.
      */
+
+    /**
+     * PHP 8 compatibility: normalize legacy PEAR XML output.
+     *
+     * The legacy PEAR Config writer emits adjacent top-level elements.
+     * Modern XML parsers require one document root.
+     */
+    private function _writeConfigAndNormalize()
+    {
+        $arguments = func_get_args();
+
+        $result = call_user_func_array(
+            array($this->_objPearConfig, 'writeConfig'),
+            $arguments
+        );
+
+        $configFile = $this->_path . 'config.xml';
+
+        if (
+            isset($arguments[0])
+            && is_string($arguments[0])
+            && basename($arguments[0]) !== 'config.xml'
+        ) {
+            return $result;
+        }
+
+        $this->_normalizeConfigXml($configFile);
+
+        return $result;
+    }
+
+    /**
+     * Ensure a PEAR-generated configuration file has one XML root element.
+     */
+    private function _normalizeConfigXml($configFile)
+    {
+        if (!is_file($configFile)) {
+            return false;
+        }
+
+        $configXml = @file_get_contents($configFile);
+
+        if ($configXml === false || trim($configXml) === '') {
+            return false;
+        }
+
+        libxml_use_internal_errors(true);
+        $validXml = simplexml_load_string($configXml);
+        libxml_clear_errors();
+
+        if ($validXml !== false) {
+            return true;
+        }
+
+        $configBody = preg_replace(
+            '/^\s*<\?xml[^>]*\?>\s*/i',
+            '',
+            $configXml
+        );
+
+        $configXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+            . "<Settings>\n"
+            . trim($configBody)
+            . "\n</Settings>\n";
+
+        return @file_put_contents($configFile, $configXml) !== false;
+    }
+
     public function writeConfig($values, $property) {
         // set xml root element
         try {
@@ -194,7 +262,7 @@ class altconfig extends ChisimbaObject {
             if (file_exists ( $this->_path . 'config.xml' )) {
                 unlink ( $this->_path . 'config.xml' );
             }
-            $this->_objPearConfig->writeConfig ( "{$this->_path}config.xml", $property, $this->_options );
+            $this->_writeConfigAndNormalize( "{$this->_path}config.xml", $property, $this->_options );
             $this->readConfig ( '', 'XML' );
             return true;
         } catch ( Exception $e ) {
@@ -341,7 +409,7 @@ class altconfig extends ChisimbaObject {
             // set xml root element
             $this->_options = array ('name' => 'sysConfigSettings' );
             $this->_property = & $this->_objPearConfig->parseConfig ( $propertyValues, "PHPArray" );
-            $this->_objPearConfig->writeConfig ( "config/sysconfig_properties.xml", $property, $this->_options );
+            $this->_writeConfigAndNormalize( "config/sysconfig_properties.xml", $property, $this->_options );
             if ($this->_objPearConfig != TRUE) {
                 throw new Exception ( 'word_read_fail' );
             } else {
@@ -379,7 +447,7 @@ class altconfig extends ChisimbaObject {
                 $path = "config/";
                 if (($path !== false) && (file_exists ( $path . 'config.xml' ))) {
                     unlink ( $path . 'config.xml' );
-                    $value = $this->_objPearConfig->writeConfig ();
+                    $value = $this->_writeConfigAndNormalize();
                     return $value;
                 }
             }
@@ -397,7 +465,7 @@ class altconfig extends ChisimbaObject {
      * @var    string $pname The name of the parameter being set, use UPPER_CASE
      * @return string $value The value of the config parameter
      */
-    public function getParam($pname, $pmodule) {
+    public function getParam($pname, $pmodule = null) {
         try {
             //Read conf
             if (! isset ( $this->_property )) {
@@ -487,7 +555,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITENAME" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
     }
@@ -526,7 +594,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SYSTEM_TYPE" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
     }
 
@@ -564,7 +632,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITENAME" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
     }
@@ -603,7 +671,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_INSTITUTION_NAME" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_INSTITUTION_NAME;
     }
@@ -642,7 +710,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITEEMAIL" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_SITEEMAIL;
     }
@@ -681,7 +749,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SYSTEMTIMEOUT" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_SYSTEMTIMEOUT;
     }
@@ -719,7 +787,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_PRELOGIN_MODULE" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
     }
@@ -779,7 +847,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITE_ROOT" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_SITE_ROOT;
     }
@@ -819,7 +887,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DEFAULT_SKIN" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
         // KEWL_SKINROOT;
@@ -862,7 +930,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SKIN_ROOT" );
         //finally unearth whats inside
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
         // KEWL_DEFAULT_SKIN;
@@ -902,7 +970,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DEFAULT_LANGUAGE" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
         // KEWL_DEFAULT_LANGUAGE;
@@ -943,7 +1011,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DEFAULT_LANGUAGE_ABBREV" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_DEFAULT_LANGUAGE_ABBREV;
     }
@@ -983,7 +1051,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_BANNER_EXT" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
         // KEWL_BANNER_EXT;
@@ -1023,7 +1091,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITEROOT_PATH" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
         // KEWL_SITEROOT_PATH;
@@ -1044,7 +1112,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_ALLOW_SELFREGISTER" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
         // KEWL_ALLOW_SELFREGISTER;
@@ -1109,7 +1177,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_POSTLOGIN_MODULE" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
     }
@@ -1154,7 +1222,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "LDAP_USED" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
 
@@ -1254,7 +1322,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_CONTENT_PATH" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_CONTENT_PATH;
     }
@@ -1294,7 +1362,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_CONTENT_PATH" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
         // KEWL_CONTENT_PATH;
     }
@@ -1597,7 +1665,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_ERROR_REPORTING" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
     }
 
@@ -1624,7 +1692,7 @@ class altconfig extends ChisimbaObject {
 
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
         return $bool;
 
     }
@@ -1684,7 +1752,7 @@ class altconfig extends ChisimbaObject {
         $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DB2_DSN" );
         //finally save value
         $SettingsDirective->setContent ( $value );
-        $bool = $this->_objPearConfig->writeConfig ();
+        $bool = $this->_writeConfigAndNormalize();
 
         return $bool;
     }

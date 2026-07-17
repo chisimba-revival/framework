@@ -13,7 +13,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class useractivity extends dbtable {
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_useractivity');
     }
 

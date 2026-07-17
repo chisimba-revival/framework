@@ -47,7 +47,18 @@ class DatabaseDetails extends Step
 
 	*/
 
-	function DatabaseDetails()
+				/**
+		 * PHP 8 constructor wrapper for the legacy DatabaseDetails() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'DatabaseDetails'],
+		        func_get_args()
+		    );
+		}
+
+function DatabaseDetails()
 
 	{
 

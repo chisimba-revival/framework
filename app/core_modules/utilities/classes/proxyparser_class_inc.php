@@ -174,7 +174,8 @@ class proxyparser extends ChisimbaObject
             $parsed['proxy_protocol'] = $str;
         }
 
-        if (!count($proxystring)) {
+        // PROXYPARSER_COUNT_GUARD_PHP82
+        if (!(is_countable($proxystring) ? count($proxystring) : 0)) {
             return $parsed;
         }
         // Get (if found): username and password

@@ -718,7 +718,7 @@ class MDB_Error extends PEAR_Error
      *                           $mode & PEAR_ERROR_TRIGGER
      * @param smixed  $debuginfo additional debug info, such as the last query
      */
-    function MDB_Error($code = MDB_ERROR, $mode = PEAR_ERROR_RETURN,
+        function MDB_Error($code = MDB_ERROR, $mode = PEAR_ERROR_RETURN,
               $level = E_USER_NOTICE, $debuginfo = NULL)
     {
         if (is_int($code)) {

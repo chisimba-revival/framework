@@ -27,7 +27,7 @@ class dbsysconfig extends dbTable
     * Standard init function to set the database table and instantiate
     * common classes.
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         // Set the database table for this class and set mirroring to
         // false since configuration paramaters should not be mirrored.

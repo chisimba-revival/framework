@@ -54,7 +54,7 @@ class patch extends dbtable {
      * Chisimba init function
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         try {
             parent::init('tbl_modules');
             $this->objConfig = $this->getObject('altconfig','config');

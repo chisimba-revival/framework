@@ -75,7 +75,7 @@ class treemenu
     *
     * @access public
     */
-    function treemenu()
+        function treemenu()
     {
         // Not much to do here :(
     }

@@ -98,7 +98,7 @@ class HTML_QuickForm_Renderer_ITStatic extends HTML_QuickForm_Renderer
     *
     * @param object     An HTML_Template_IT or other compatible Template object to use
     */
-    function HTML_QuickForm_Renderer_ITStatic(&$tpl)
+        function HTML_QuickForm_Renderer_ITStatic(&$tpl)
     {
         $this->HTML_QuickForm_Renderer();
         $this->_tpl =& $tpl;

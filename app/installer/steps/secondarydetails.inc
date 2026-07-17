@@ -56,7 +56,18 @@ class SecondaryDetails extends Step
 
 	*/
 
-	function SecondaryDetails()
+				/**
+		 * PHP 8 constructor wrapper for the legacy SecondaryDetails() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'SecondaryDetails'],
+		        func_get_args()
+		    );
+		}
+
+function SecondaryDetails()
 
 	{
 
@@ -130,7 +141,18 @@ class DbSecondUser extends FiveStepAction
 
 	*/
 
-	function DbSecondUser($sn, $pr='db_')
+				/**
+		 * PHP 8 constructor wrapper for the legacy DbSecondUser() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'DbSecondUser'],
+		        func_get_args()
+		    );
+		}
+
+function DbSecondUser($sn, $pr='db_')
 
 	{
 

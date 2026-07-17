@@ -46,7 +46,18 @@ class Start extends Step
 
 	*/
 
-	function Start()
+				/**
+		 * PHP 8 constructor wrapper for the legacy Start() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'Start'],
+		        func_get_args()
+		    );
+		}
+
+function Start()
 
 	{
 

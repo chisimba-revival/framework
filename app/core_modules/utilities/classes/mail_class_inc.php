@@ -58,7 +58,7 @@ class mailer extends phpmailer
     * @param string $Mailer
     * @param string $WordWrap
     */
-    function mailer($From, $FromName, $Host, $Mailer, $WordWrap)
+        function mailer($From, $FromName, $Host, $Mailer, $WordWrap)
     {
         $this->From = $From;
         $this->FromName = $FromName;

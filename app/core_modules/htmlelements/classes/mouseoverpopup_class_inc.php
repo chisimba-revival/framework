@@ -111,7 +111,7 @@ Public License
     * @param string $caption : The tooltip Caption
     * @param string $url : the url of the link
     */
-    public function mouseoverpopup($urltext=null,$content=null,$caption=null,$url=null){
+        public function mouseoverpopup($urltext=null,$content=null,$caption=null,$url=null){
         $this->urltext=$urltext;
         $this->caption=$caption;
         $this->content=$content;

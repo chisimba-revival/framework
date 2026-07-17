@@ -153,7 +153,7 @@ class Event_Dispatcher
      * 
      * @return object Event_Dispatcher
      */
-    function &getInstance($name = '__default')
+    public static function &getInstance($name = '__default')
     {
         static $dispatchers = array();
 

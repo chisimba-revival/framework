@@ -92,7 +92,7 @@ class radio extends abhtmlbase implements ifhtml
     * Class Constructor
     * @param string $name : The name of the radio group
     */
-    public function radio($name){
+        public function radio($name){
         $this->name=$name;
         $this->cssClass='transparentbgnb';
     }

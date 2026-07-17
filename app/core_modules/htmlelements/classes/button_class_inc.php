@@ -100,7 +100,7 @@ class button extends abhtmlbase implements ifhtml
     * @param string $value   optional :value of the button
     * @param string $onclick optional :javascript function that will be called
     */
-    public function button($name=null, $value = null, $onclick = null)
+        public function button($name=null, $value = null, $onclick = null)
     {
         $this->name = $name;
         $this->value = $value;

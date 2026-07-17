@@ -27,7 +27,8 @@ class auth_uwcldap extends abauth implements ifauth {
      * and instantiates required objects.
      *
      */
-    public function init() {
+    // AUTH_UWCLDAP_INIT_SIGNATURE_PHP82
+    public function init($dataTable = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         //Instantiate the configuration object
         $this->objConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
         $this->objUser = $this->getObject ( 'user', 'security' );

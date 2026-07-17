@@ -49,7 +49,7 @@
  * @category authentication
  * @package LiveUser_Admin
  * @author  Markus Wolff <wolff@21st.de>
- * @author  Helgi Þormar Þorbjörnsson <dufuz@php.net>
+ * @author  Helgi ï¿½ormar ï¿½orbjï¿½rnsson <dufuz@php.net>
  * @author  Lukas Smith <smith@pooteeweet.org>
  * @author  Arnaud Limbourg <arnaud@php.net>
  * @author  Christian Dickmann <dickmann@php.net>
@@ -91,7 +91,7 @@ class LiveUser_Admin_Auth_Storage_MDB2 extends LiveUser_Admin_Storage_MDB2
      * @access public
      * @uses LiveUser_Admin_Storage_DB::init
      */
-    function init(&$storageConf)
+    function init(&$storageConf, $structure = null)
     {
         require_once 'LiveUser/Auth/Storage/Globals.php';
         parent::init($storageConf, $GLOBALS['_LiveUser']['auth']);

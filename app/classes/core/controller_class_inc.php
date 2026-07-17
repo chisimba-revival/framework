@@ -371,7 +371,7 @@ class controller extends access {
      * @param  $default mixed  The value to return if the session value is unset (optional)
      * @return mixed    the value of the parameter, or $default if unset
      */
-    public function getSession($name, $default = NULL) {
+    public function getSession($name, $default = null, $module = '_MODULE_') {
         $val = $default;
         foreach ($_SESSION as $key => $cval) {
             $arrayKey = explode("~", $key);

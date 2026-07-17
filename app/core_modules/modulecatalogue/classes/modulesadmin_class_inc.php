@@ -134,7 +134,8 @@ class modulesadmin extends dbTableManager
      * Standard initilisation method
      *
      */
-    public function init()
+    // MODULESADMIN_INIT_SIGNATURE_PHP82
+    public function init($dbName = null, $pearDbManager = null, $errorCallback = 'globalPearErrorHandler')
     {
         try {
             parent::init('tbl_modules');

@@ -117,7 +117,7 @@ class Net_SMTP
      * @access  public
      * @since   1.0
      */
-    function Net_SMTP($host = null, $port = null, $localhost = null)
+        function Net_SMTP($host = null, $port = null, $localhost = null)
     {
         if (isset($host)) $this->host = $host;
         if (isset($port)) $this->port = $port;

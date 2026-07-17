@@ -77,7 +77,7 @@ class groupusersdb extends dbTable
     /**
     * Method to initialize the groupuserDb object.
     */
-    function init( ) {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         // Initialize the connection to the database
         parent::init('tbl_groupadmin_groupuser');
         // The connectUsers, and connectGroups methods must be called as well.

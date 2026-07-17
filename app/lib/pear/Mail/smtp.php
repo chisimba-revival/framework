@@ -152,7 +152,7 @@ class Mail_smtp extends Mail {
      *              defaults.
      * @access public
      */
-    function Mail_smtp($params)
+        function Mail_smtp($params)
     {
         if (isset($params['host'])) $this->host = $params['host'];
         if (isset($params['port'])) $this->port = $params['port'];

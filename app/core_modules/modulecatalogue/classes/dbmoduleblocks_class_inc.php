@@ -81,7 +81,7 @@ class dbmoduleblocks extends dbTable
      * standard init function
      *
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         try {
             parent::init('tbl_module_blocks');

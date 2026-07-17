@@ -5,7 +5,7 @@
  */
 class dbuseractivity extends dbtable {
 
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_useractivity');
         $this->objUser = $this->getObject('user', 'security');
     }

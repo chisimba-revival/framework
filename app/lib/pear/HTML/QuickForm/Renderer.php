@@ -33,7 +33,7 @@ class HTML_QuickForm_Renderer
     *
     * @access public
     */
-    function HTML_QuickForm_Renderer()
+        function HTML_QuickForm_Renderer()
     {
     } // end constructor
 

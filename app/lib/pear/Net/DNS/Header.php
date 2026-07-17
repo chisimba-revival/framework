@@ -140,7 +140,7 @@ class Net_DNS_Header
      * @return  object  Net_DNS_Header
      * @access public
      */
-    function Net_DNS_Header($data = '')
+        function Net_DNS_Header($data = '')
     {
         if ($data != '') {
             /*

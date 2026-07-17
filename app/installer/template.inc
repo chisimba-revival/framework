@@ -26,7 +26,18 @@ class Template
 	* @return void
 	* @access public
 	*/
-    function Template($file = null) 
+                /**
+         * PHP 8 constructor wrapper for the legacy Template() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'Template'],
+                func_get_args()
+            );
+        }
+
+function Template($file = null) 
 	{
         $this->file = $file;
     }//end Template()

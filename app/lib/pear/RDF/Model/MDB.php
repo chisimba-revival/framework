@@ -52,7 +52,7 @@ class RDF_Model_MDB extends RDF_Model
      * @param  string $baseURI
      * @access public
      */
-    function RDF_Model_MDB(&$dbConnection, $modelURI, $modelID, $baseURI = null)
+        function RDF_Model_MDB(&$dbConnection, $modelURI, $modelID, $baseURI = null)
     {
         $this->dbConn = &$dbConnection;
         $this->modelURI = $modelURI;

@@ -64,7 +64,7 @@ class usersdb extends dbTable
     /**
     * Method to initialize the groupuserDb object.
     */
-    function init( ) {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_users');
         $this->_objUser = $this->getObject( 'user', 'security' );
     }

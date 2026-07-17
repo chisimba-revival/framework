@@ -53,7 +53,7 @@ class loggedInUsers extends dbTable {
      * updates login for anyone logged into the system.
      *
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_loggedinusers');
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->systemTimeOut = $this->objConfig->getsystemTimeout();

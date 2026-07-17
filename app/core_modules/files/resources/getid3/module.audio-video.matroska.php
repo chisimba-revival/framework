@@ -17,7 +17,7 @@
 class getid3_matroska
 {
 
-	function getid3_matroska(&$fd, &$ThisFileInfo) {
+		function getid3_matroska(&$fd, &$ThisFileInfo) {
 
 		$ThisFileInfo['fileformat'] = 'matroska';
 

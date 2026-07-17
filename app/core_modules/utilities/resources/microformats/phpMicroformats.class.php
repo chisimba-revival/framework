@@ -21,7 +21,7 @@ class phpMicroformats {
 	/**
 	 * initialization
 	 */
-    function phpMicroformats() {
+        function phpMicroformats() {
     }
     
     /**

@@ -122,7 +122,7 @@ class Translation2
     /**
      * Constructor
      */
-    function Translation2()
+        function Translation2()
     {
         if (func_num_args()) {
             $msg = '<b>Translation2 error:</b>'
@@ -148,7 +148,7 @@ class Translation2
      * @return object Translation2 instance or PEAR_Error on failure
      * @static
      */
-    function & factory($driver, $options = '', $params = array())
+    public static function & factory($driver, $options = '', $params = array())
     {
         $tr = new Translation2;
         $tr->storage = Translation2::_storageFactory($driver, $options);
@@ -174,7 +174,7 @@ class Translation2
      * @static
      * @access private
      */
-    function & _storageFactory($driver, $options = '')
+    public static function & _storageFactory($driver, $options = '')
     {
         $storage_path  = 'Translation2/Container/'.strtolower($driver).'.php';
         $storage_class = 'Translation2_Container_'.strtolower($driver);

@@ -17,7 +17,7 @@
 class getid3_swf
 {
 
-	function getid3_swf(&$fd, &$ThisFileInfo, $ReturnAllTagData=false) {
+		function getid3_swf(&$fd, &$ThisFileInfo, $ReturnAllTagData=false) {
 		$ThisFileInfo['fileformat']          = 'swf';
 		$ThisFileInfo['video']['dataformat'] = 'swf';
 

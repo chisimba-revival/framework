@@ -183,7 +183,7 @@ class DB_mssql extends DB_common
      *
      * @return void
      */
-    function DB_mssql()
+        function DB_mssql()
     {
         $this->DB_common();
     }

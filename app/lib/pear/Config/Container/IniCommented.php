@@ -39,7 +39,7 @@ class Config_Container_IniCommented {
     * @access public
     * @param    string  $options    (optional)Options to be used by renderer
     */
-    function Config_Container_IniCommented($options = array())
+        function Config_Container_IniCommented($options = array())
     {
         $this->options = $options;
     } // end constructor

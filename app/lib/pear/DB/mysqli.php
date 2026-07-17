@@ -228,7 +228,7 @@ class DB_mysqli extends DB_common
      *
      * @return void
      */
-    function DB_mysqli()
+        function DB_mysqli()
     {
         $this->DB_common();
     }

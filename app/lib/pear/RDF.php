@@ -331,7 +331,7 @@ class RDF_Error extends PEAR_Error
      *                           $mode & PEAR_ERROR_TRIGGER
      * @param smixed  $debuginfo additional debug info, such as the last query
      */
-    function RDF_Error($code = RDF_ERROR, $mode = PEAR_ERROR_RETURN,
+        function RDF_Error($code = RDF_ERROR, $mode = PEAR_ERROR_RETURN,
               $level = E_USER_NOTICE, $debuginfo = null)
     {
         if (is_int($code)) {

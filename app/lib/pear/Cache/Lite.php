@@ -277,7 +277,7 @@ class Cache_Lite
     * @param array $options options
     * @access public
     */
-    function Cache_Lite($options = array(NULL))
+        function Cache_Lite($options = array(NULL))
     {
         foreach($options as $key => $value) {
             $this->setOption($key, $value);

@@ -49,7 +49,7 @@ class dbfolder extends dbTable {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_files_folders');
 
         $this->objFiles = $this->getObject('dbfile');

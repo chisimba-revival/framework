@@ -45,7 +45,18 @@ class SetupType extends Step
 
      */
 
-    function SetupType()
+                /**
+         * PHP 8 constructor wrapper for the legacy SetupType() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'SetupType'],
+                func_get_args()
+            );
+        }
+
+function SetupType()
 
     {
 

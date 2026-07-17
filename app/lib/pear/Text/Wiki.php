@@ -383,7 +383,7 @@ class Text_Wiki {
     *   to null, which will load the default ruleset for this parser.
     */
 
-    function Text_Wiki($rules = null)
+        function Text_Wiki($rules = null)
     {
         if (is_array($rules)) {
             $this->rules = array();

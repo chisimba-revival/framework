@@ -64,7 +64,7 @@ class dbpagecontent extends dbTable {
      * @return void
      * @access public
      */
-    function init() {
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init ( 'tbl_context_page_content' );
     }
 }

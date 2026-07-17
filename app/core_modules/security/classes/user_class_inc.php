@@ -58,7 +58,7 @@ class user extends dbTable {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         parent::init('tbl_users');
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objLanguage = $this->getObject('language', 'language');
@@ -102,11 +102,70 @@ class user extends dbTable {
      * @return TRUE|FALSE Boolean value indicating success of authentication
      */
     public function authenticateUser($username, $password, $remember = NULL) {
+        require_once dirname(__FILE__)
+            . '/nativeauth/nativeauthshadowtrace.php';
+
         $username = trim($username);
+        NativeAuthShadowTrace::log(
+            'user.authenticateUser',
+            'entered',
+            array('username' => $username)
+        );
+
         $this->objAuth = $this->getObject('authenticate');
         $result = $this->objAuth->authenticateUser($username, $password, $remember);
 
+        NativeAuthShadowTrace::log(
+            'user.authenticateUser',
+            'provider returned',
+            array('result' => $result === TRUE)
+        );
+
+        // Milestone 8 shadow comparison. This is disabled unless the constant
+        // CHISIMBA_NATIVE_AUTH_SHADOW is explicitly defined as TRUE.
+        // It never changes the authentication result or session state.
+        if ($result === TRUE) {
+            NativeAuthShadowTrace::log(
+                'user.authenticateUser',
+                'starting shadow comparison'
+            );
+            $this->runNativeAuthShadowComparison($username);
+            NativeAuthShadowTrace::log(
+                'user.authenticateUser',
+                'shadow comparison returned'
+            );
+        }
+
+        NativeAuthShadowTrace::log(
+            'user.authenticateUser',
+            'returning',
+            array('result' => $result === TRUE)
+        );
+
         return $result;
+    }
+
+    /**
+     * Compare the canonical identity derived from tbl_users with the session
+     * state established by the existing authentication path.
+     *
+     * This method is observational only and fails silently so diagnostics can
+     * never prevent a successful login.
+     */
+    private function runNativeAuthShadowComparison($username) {
+        try {
+            require_once dirname(__FILE__)
+                . '/nativeauth/nativeauthshadowcomparator.php';
+
+            $comparator = new NativeAuthShadowComparator();
+            $comparator->compare($this, $username);
+        } catch (Exception $exception) {
+            // Shadow diagnostics must never change login behaviour.
+            error_log(
+                'Native auth shadow comparison failed: '
+                . $exception->getMessage()
+            );
+        }
     }
 
     /**

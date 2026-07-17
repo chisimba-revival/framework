@@ -130,7 +130,7 @@ class DB_msql extends DB_common
      *
      * @return void
      */
-    function DB_msql()
+        function DB_msql()
     {
         $this->DB_common();
     }

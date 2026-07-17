@@ -119,7 +119,7 @@ class errors extends controller
      * @return boolean Return
      * @access public 
      */
-    public function requiresLogin() {
+    public function requiresLogin($action = null) {
         return FALSE;
     }
 

@@ -46,7 +46,7 @@ class I18Nv2_DecoratedList
      * @access  public
      * @param   object  $list   I18Nv2_DecoratedList or I18Nv2_CommonList
      */
-    function I18Nv2_DecoratedList(&$list)
+        function I18Nv2_DecoratedList(&$list)
     {
         if (is_a($list, 'I18Nv2_CommonList') ||
             is_a($list, 'I18Nv2_DecoratedList')) {

@@ -46,7 +46,18 @@ class DatabaseName extends Step
 
 
 
-	function DatabaseName()
+				/**
+		 * PHP 8 constructor wrapper for the legacy DatabaseName() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'DatabaseName'],
+		        func_get_args()
+		    );
+		}
+
+function DatabaseName()
 
 	{
 
@@ -123,7 +134,18 @@ class DbNameAction extends FiveStepAction
 
 	*/
 
-	function DbNameAction($ps, $pr='db_')
+				/**
+		 * PHP 8 constructor wrapper for the legacy DbNameAction() constructor.
+		 */
+		public function __construct()
+		{
+		    call_user_func_array(
+		        [$this, 'DbNameAction'],
+		        func_get_args()
+		    );
+		}
+
+function DbNameAction($ps, $pr='db_')
 
 	{
 

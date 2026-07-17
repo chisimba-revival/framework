@@ -43,7 +43,18 @@ class CreateConfigs extends Step
 
      */
 
-    function CreateConfigs()
+                /**
+         * PHP 8 constructor wrapper for the legacy CreateConfigs() constructor.
+         */
+        public function __construct()
+        {
+            call_user_func_array(
+                [$this, 'CreateConfigs'],
+                func_get_args()
+            );
+        }
+
+function CreateConfigs()
 
     {
 
@@ -449,6 +460,40 @@ class CreateConfigsAction extends FiveStepAction
             chmod ( $path . 'config.xml', 0666 );
         }
         $write = $this->_root->writeConfig("{$path}config.xml", 'XML', $options);
+
+        /*
+         * PHP 8 compatibility: ensure config.xml has one document root.
+         *
+         * The legacy PEAR Config XML writer can emit the individual
+         * configuration directives as adjacent top-level XML elements.
+         * XML documents require exactly one root element.
+         */
+        $configFile = "{$path}config.xml";
+        $configXml = @file_get_contents($configFile);
+
+        if ($configXml !== false) {
+            libxml_use_internal_errors(true);
+            $validConfigXml = simplexml_load_string($configXml);
+
+            if ($validConfigXml === false) {
+                $configBody = preg_replace(
+                    '/^\\s*<\\?xml[^>]*\\?>\\s*/i',
+                    '',
+                    $configXml
+                );
+
+                $configXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+                    . "<Settings>\n"
+                    . trim($configBody)
+                    . "\n</Settings>\n";
+
+                if (@file_put_contents($configFile, $configXml) === false) {
+                    $this->errors[] = 'Could not write a valid config.xml file.';
+                }
+            }
+
+            libxml_clear_errors();
+        }
 
 	$GLOBALS['SQ_INSTALL'] = false;
 

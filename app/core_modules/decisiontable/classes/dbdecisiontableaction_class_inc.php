@@ -71,7 +71,7 @@ class dbDecisionTableAction extends dbTable {
      * @param  void  
      * @return void  
      */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_decisiontable_decisiontable_action');
     }

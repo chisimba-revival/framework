@@ -54,7 +54,7 @@ class SMTP
      * @access public
      * @return void
      */
-    function SMTP() {
+        function SMTP() {
         $this->smtp_conn = 0;
         $this->error = null;
         $this->helo_rply = null;

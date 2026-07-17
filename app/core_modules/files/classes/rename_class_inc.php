@@ -94,7 +94,7 @@ class rename extends ChisimbaObject
     * @access Public
     *                
     */
-    function rename()
+        function rename()
     {
         if ($this->oldFilePath != NULL && $this->newFilePath != NULL) {
                 rename($this->oldFilePath,$this->newFilePath);

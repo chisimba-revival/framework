@@ -42,6 +42,12 @@
 * @author Dave Mertens <zyprexia@php.net>
  */
 class Crypt_Rc4 {
+    // CRYPT_RC4_CONSTRUCTOR_BRIDGE_PHP82
+    public function __construct($key = null)
+    {
+        $this->Crypt_RC4($key);
+    }
+
 
     /**
     * Real programmers...
@@ -74,7 +80,7 @@ class Crypt_Rc4 {
     * @return void
     * @access public
     */
-    function Crypt_RC4($key = null) {
+        function Crypt_RC4($key = null) {
         if ($key != null) {
             $this->setKey($key);
         }

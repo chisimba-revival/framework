@@ -116,7 +116,7 @@ function sort_array_by_field($original, $field, $descending = false) {
 
 function checkValues($value) {
         $value = trim($value);
-        if (get_magic_quotes_gpc()) {
+        if (false) {
                 $value = stripslashes($value);
         }
         $value = strtr($value, array_flip(get_html_translation_table(HTML_ENTITIES)));
@@ -225,7 +225,7 @@ class cURL {
         var $cookie_file;
         var $proxy;
 
-        function cURL($cookies = TRUE, $cookie = '/tmp/cookies.txt', $compression = 'gzip', $proxy = '') {
+                function cURL($cookies = TRUE, $cookie = '/tmp/cookies.txt', $compression = 'gzip', $proxy = '') {
                 $this->headers[] = 'Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg';
                 $this->headers[] = 'Connection: Keep-Alive';
                 $this->headers[] = 'Content-type: application/x-www-form-urlencoded;charset=UTF-8';

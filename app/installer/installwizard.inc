@@ -65,6 +65,18 @@ class InstallWizard extends Wizard
 
 	*/
 
+	/**
+	 * PHP 8 constructor wrapper.
+	 *
+	 * PHP 8 no longer invokes methods named after their class
+	 * as constructors. Preserve the existing initialization
+	 * logic by calling the legacy constructor explicitly.
+	 */
+	public function __construct()
+	{
+	    $this->InstallWizard();
+	}
+
 	public function InstallWizard()
 	{
             $GLOBALS['SQ_INSTALL'] = true;

@@ -137,7 +137,7 @@ class iframe implements ifhtml
     /**
      * Initialization method to set default values
      */
-    public function iframe()
+        public function iframe()
     {
         $this->width="800";
         $this->height="600";

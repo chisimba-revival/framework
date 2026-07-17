@@ -49,7 +49,7 @@ class permissions_model extends dbTable
     * 
     * @access private 
     */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->_objAcl = $this->getObject( 'permissions_acl', 'permissions' );
         $this->_objUserDb = $this->getObject( 'user', 'security' );

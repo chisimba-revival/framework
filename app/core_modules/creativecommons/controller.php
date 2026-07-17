@@ -67,7 +67,7 @@ class creativecommons extends controller
     /**
     * Method to turn off login requirement for this module
     */
-    public function requiresLogin()
+    public function requiresLogin($action = null)
     {
         return FALSE;
     }

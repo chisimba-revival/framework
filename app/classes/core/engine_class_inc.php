@@ -617,6 +617,10 @@ class engine {
         //the language elements module
         $this->_objLanguage = $this->getObject ( 'language', 'language' );
 
+        // HTMLPURIFIER_BOOTSTRAP_PHP82: load the bundled library before use.
+        if (!class_exists('HTMLPurifier', false)) {
+            require_once dirname(dirname(dirname(__FILE__))) . '/lib/HTMLPurifier.auto.php';
+        }
         $this->purifier = new HTMLPurifier();
 
         // other fields
@@ -1612,7 +1616,7 @@ class engine {
      * @access public
      */
     public function install_gpc_stripslashes($var) {
-        if (get_magic_quotes_gpc ()) {
+        if (false) {
             if (is_array ( $var ))
                 $this->install_stripslashes_array ( $var, true );
             else
