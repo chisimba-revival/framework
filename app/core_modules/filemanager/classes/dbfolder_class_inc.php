@@ -166,7 +166,8 @@ class dbfolder extends dbTable {
      * @param   bool   $javascriptCompatibility flag to produce javascript compatible URLs
      * @returns string $uri the URL
      */
-    public function uri($params = array(), $module = '', $mode = '', $omitServerName = FALSE, $javascriptCompatibility = FALSE) {
+    // DBFOLDER_URI_SIGNATURE_PHP82
+    public function uri($params = array(), $module = '', $mode = '', $omitServerName = false, $javascriptCompatibility = false, $Strict = false) {
         $objFileManagerObject = $this->getObject('filemanagerobject');
         return $objFileManagerObject->uri($params, $module, $mode, $omitServerName, $javascriptCompatibility);
     }
