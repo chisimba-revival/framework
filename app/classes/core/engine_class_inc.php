@@ -1825,6 +1825,10 @@ class engine {
         } elseif ($mode != '') {
             throw new customException ( "Incorrect URI mode in Engine::uri" );
         }
+        // POSTLOGIN_MENU_NULL_COUNT_PHP82
+        if ($params === null) {
+            $params = array();
+        }
         if (count ( $params ) > 1) {
             $params = array_reverse ( $params, TRUE );
         }
