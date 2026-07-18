@@ -1195,7 +1195,7 @@ abstract class BaseFacebook
       }
 
       if (!empty($retained_params)) {
-        $query = '?'.implode($retained_params, '&');
+        $query = '?'.implode('&', $retained_params);
       }
     }
 
@@ -1360,7 +1360,7 @@ abstract class BaseFacebook
       $pair = explode('=', $part, 2);
       if (!empty($pair[0])) {
         $metadata[urldecode($pair[0])] =
-          (count($pair) > 1) ? urldecode($pair[1]) : '';
+          ((is_countable($pair) ? count($pair) : 0) > 1) ? urldecode($pair[1]) : '';
       }
     }
 

@@ -362,7 +362,7 @@ class DB_sqlite extends DB_common
 
             /* Remove extraneous " characters from the fields in the result.
              * Fixes bug #11716. */
-            if (is_array($arr) && count($arr) > 0) {
+            if (is_array($arr) && (is_countable($arr) ? count($arr) : 0) > 0) {
                 $strippedArr = array();
                 foreach ($arr as $field => $value) {
                     $strippedArr[trim($field, '"')] = $value;
@@ -809,7 +809,7 @@ class DB_sqlite extends DB_common
             $case_func = 'strval';
         }
 
-        $count = count($id);
+        $count = (is_countable($id) ? count($id) : 0);
         $res   = array();
 
         if ($mode) {

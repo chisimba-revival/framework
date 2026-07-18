@@ -53,7 +53,7 @@ class HTMLPurifier_AttrDef_CSS_Font extends HTMLPurifier_AttrDef
         $stage_1 = array('font-style', 'font-variant', 'font-weight');
         $final = ''; // output
 
-        for ($i = 0, $size = count($bits); $i < $size; $i++) {
+        for ($i = 0, $size = (is_countable($bits) ? count($bits) : 0); $i < $size; $i++) {
             if ($bits[$i] === '') continue;
             switch ($stage) {
 
@@ -70,7 +70,7 @@ class HTMLPurifier_AttrDef_CSS_Font extends HTMLPurifier_AttrDef
                         }
                     }
                     // all three caught, continue on
-                    if (count($caught) >= 3) $stage = 1;
+                    if ((is_countable($caught) ? count($caught) : 0) >= 3) $stage = 1;
                     if ($r !== false) break;
 
                 // attempting to catch font-size and perhaps line-height

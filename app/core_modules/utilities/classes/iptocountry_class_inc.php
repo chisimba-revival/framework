@@ -50,7 +50,7 @@ Public License
         $numbers = preg_split( "/\./", $ip);
         
         // A sort of validation. IP has to have four parts
-        if (count($numbers) == 4) {
+        if ((is_countable($numbers) ? count($numbers) : 0) == 4) {
             
             // Generate Include File
             /*Based in the first number of the IP address ("101" in the example), a PHP file in ip_files/ directory will be included (in the example the file to be included will be "ip_files/101.php"). This file has known country codes for IP addresses starting with the selected first number (p.e: 101.###.###.###, where # is any digit). */

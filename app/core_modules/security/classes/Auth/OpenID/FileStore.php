@@ -578,7 +578,7 @@ class Auth_OpenID_FileStore extends Auth_OpenID_OpenIDStore {
         $filename = "";
         $b = Auth_OpenID::toBytes($str);
 
-        for ($i = 0; $i < count($b); $i++) {
+        for ($i = 0; $i < (is_countable($b) ? count($b) : 0); $i++) {
             $c = $b[$i];
             if (Auth_OpenID_FileStore::_isFilenameSafe($c)) {
                 $filename .= $c;

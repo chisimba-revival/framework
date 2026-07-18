@@ -657,7 +657,7 @@ class Validate
         }
         $sum = 0;
 
-        $count = min(count($weights), strlen($number));
+        $count = min((is_countable($weights) ? count($weights) : 0), strlen($number));
         if ($count == 0)  { // empty string or weights array
             return -1;
         }
@@ -711,10 +711,10 @@ class Validate
      * @access protected
      */
     function _checkControlNumber($number, &$weights, $modulo = 10, $subtract = 0) {
-        if (strlen($number) < count($weights)) {
+        if (strlen($number) < (is_countable($weights) ? count($weights) : 0)) {
             return false;
         }
-        $target_digit  = substr($number, count($weights), 1);
+        $target_digit  = substr($number, (is_countable($weights) ? count($weights) : 0), 1);
         $control_digit = Validate::_getControlNumber($number, $weights, $modulo, $subtract, $target_digit === 'X');
 
         if ($control_digit == -1) {
@@ -766,7 +766,7 @@ class Validate
                 $method = $opt['type'];
                 unset($opt['type']);
 
-                if (sizeof($opt) == 1) {
+                if ((is_countable($opt) ? sizeof($opt) : 0) == 1) {
                     $opt = array_pop($opt);
                 }
                 $valid[$var_name] = call_user_func(array('Validate', $method), $val2check, $opt);
@@ -794,7 +794,7 @@ class Validate
                     continue;
                 }
                 unset($opt['type']);
-                if (sizeof($opt) == 1) {
+                if ((is_countable($opt) ? sizeof($opt) : 0) == 1) {
                     $opt = array_pop($opt);
                 }
                 $valid[$var_name] = call_user_func(array($class, $method), $data[$var_name], $opt);

@@ -661,7 +661,7 @@ class XML_Unserializer extends PEAR
                     );
 
         if ($this->options[XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE] == true
-            && (count($attribs) > 0)
+            && ((is_countable($attribs) ? count($attribs) : 0) > 0)
         ) {
             $val['children'] = array();
             $val['type']     = $this->_getComplexType($element);

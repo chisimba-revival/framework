@@ -145,7 +145,7 @@
 			foreach($items as $item){
 				$data	= array();
 
-				for ($i=0; $i<sizeof($classes); $i++){
+				for ($i=0; $i<(is_countable($classes) ? sizeof($classes) : 0); $i++){
 					
 					if (!is_array($classes[$i])){
 
@@ -156,7 +156,7 @@
 							foreach ($results as $result){ 
 								if (isset($classes[$i+1]) && is_array($classes[$i+1])){
 									$nodes				= $this->processNodes($results, $classes[$i+1]);
-									if (sizeof($nodes) > 0){
+									if ((is_countable($nodes) ? sizeof($nodes) : 0) > 0){
 										$nodes = array_merge(array('text'=>$this->getNodeValue($result, $classes[$i])), $nodes);
 										$data[$classes[$i]]	= $nodes;
 									}else{
@@ -232,7 +232,7 @@
 				$out[]	= $data;
 			}
 			
-			if (sizeof($out) > 1){
+			if ((is_countable($out) ? sizeof($out) : 0) > 1){
 				return $out;
 			}else if (isset($data)){
 				return $data;
@@ -344,7 +344,7 @@
 
 			// xml:base attribute - PITA with SimpleXML
 			preg_match('/xml:base="(.*)"/', $xml->asXML(), $matches);
-			if (is_array($matches) && sizeof($matches)>1) $this->base = $matches[1];
+			if (is_array($matches) && (is_countable($matches) ? sizeof($matches) : 0)>1) $this->base = $matches[1];
 								
 			return 	$xml->xpath("//*[contains(concat(' ',normalize-space(@class),' '),' $this->root_class ')]");
 			
@@ -412,8 +412,8 @@
 				return ''.$domain . implode('/', $file);
 			}else{
 				// relative path
-				if ($path[sizeof($path)-1] == '') array_pop($path);
-				if (strpos($path[sizeof($path)-1], '.') !== false) array_pop($path);
+				if ($path[(is_countable($path) ? sizeof($path) : 0)-1] == '') array_pop($path);
+				if (strpos($path[(is_countable($path) ? sizeof($path) : 0)-1], '.') !== false) array_pop($path);
 
 				foreach ($file as $segment){
 					if ($segment == '..'){

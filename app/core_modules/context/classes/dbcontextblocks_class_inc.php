@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Context Blocks
@@ -81,7 +82,7 @@ class dbcontextblocks extends dbTable {
      */
     public function getContextBlocks($contextCode, $side) {
         $results = $this->getContextBlocksList ( $contextCode, $side );
-        if (count ( $results ) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
         } else {
             $str = '';
@@ -127,7 +128,7 @@ class dbcontextblocks extends dbTable {
     public function getContextBlocksArray($contextCode) {
         $results = $this->getAll ( ' WHERE contextcode=\'' . $contextCode . '\' ' );
         $array = array ();
-        if (count ( $results ) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ( $results as $result ) {
                 $array [] = $result ['block'];
             }
@@ -146,7 +147,7 @@ class dbcontextblocks extends dbTable {
      *
      */
     public function addBlock($block, $side, $contextCode, $module) {
-        return $this->insert ( array ('contextcode' => $contextCode, 'block' => $block, 'side' => $side, 'module' => $module, 'position' => $this->getLastOrder ( $side, $contextCode ) + 1, 'updatedby' => $this->objUser->userId (), 'datelastupdated' => strftime ( '%Y-%m-%d %H:%M:%S', mktime () ) ) );
+        return $this->insert ( array ('contextcode' => $contextCode, 'block' => $block, 'side' => $side, 'module' => $module, 'position' => $this->getLastOrder ( $side, $contextCode ) + 1, 'updatedby' => $this->objUser->userId (), 'datelastupdated' => strftime ( '%Y-%m-%d %H:%M:%S', time() ) ) );
     }
 
     /**
@@ -160,7 +161,7 @@ class dbcontextblocks extends dbTable {
      */
     private function getLastOrder($side, $contextCode) {
         $results = $this->getAll ( ' WHERE side=\'' . $side . '\' AND contextcode=\'' . $contextCode . '\' ORDER BY position DESC LIMIT 1' );
-        if (count ( $results ) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results [0] ['position'];
@@ -248,7 +249,7 @@ class dbcontextblocks extends dbTable {
      */
     private function getPreviousBlock($contextCode, $side, $position) {
         $results = $this->getAll ( ' WHERE side=\'' . $side . '\' AND contextcode=\'' . $contextCode . '\' AND position < ' . $position . ' ORDER BY position DESC LIMIT 1' );
-        if (count ( $results ) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results [0];
@@ -266,7 +267,7 @@ class dbcontextblocks extends dbTable {
      */
     private function getNextBlock($contextCode, $side, $position) {
         $results = $this->getAll ( ' WHERE side=\'' . $side . '\' AND contextcode=\'' . $contextCode . '\' AND position > ' . $position . ' ORDER BY position LIMIT 1' );
-        if (count ( $results ) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results [0];

@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 /**
  *
  * Dynamic canvas data access for modules with module-level blocks
@@ -104,7 +105,7 @@ class dbmodblocks extends dbtable
     {
         $results = $this->getModuleBlocksList($side);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
            return '';
         } else {
             $str = '';
@@ -158,7 +159,7 @@ class dbmodblocks extends dbtable
 
         $array = array();
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $result)
             {
                 $array[] = $result['block'];
@@ -188,7 +189,7 @@ class dbmodblocks extends dbtable
                 'side' => $side,
                 'module' => $module,
                 'position' => $this->getLastOrder($side)+1,
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 
@@ -204,7 +205,7 @@ class dbmodblocks extends dbtable
     private function getLastOrder($side)
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' ORDER BY position DESC LIMIT 1');
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['position'];
@@ -290,7 +291,7 @@ class dbmodblocks extends dbtable
     private function getPreviousBlock($side, $position)
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND position < '.$position.' ORDER BY position DESC LIMIT 1');
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -310,7 +311,7 @@ class dbmodblocks extends dbtable
     private function getNextBlock($side, $position)
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND position > '.$position.' ORDER BY position LIMIT 1');
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];

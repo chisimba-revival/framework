@@ -239,7 +239,7 @@ class groupadmin_tree extends ChisimbaObject {
         $users = $model->getSubGroupUsers( $groupId );
         
         // Check if an empty group
-        $isEmptyFolder = (count( $users )) == 0;
+        $isEmptyFolder = ((is_countable($users) ? count($users) : 0)) == 0;
 
         // Selected node
         $objGA = &$this->_objGroupAdminModel;

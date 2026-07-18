@@ -265,7 +265,7 @@ class Squiz_Sniffs_Arrays_ArrayDeclarationSniff implements PHP_CodeSniffer_Sniff
         */
 
         if ($keyUsed === false && empty($indices) === false) {
-            $count     = count($indices);
+            $count     = (is_countable($indices) ? count($indices) : 0);
             $lastIndex = $indices[($count - 1)]['value'];
 
             $trailingContent = $phpcsFile->findNext(array(T_WHITESPACE, T_COMMA), ($lastIndex + 1), $arrayEnd, true);
@@ -306,7 +306,7 @@ class Squiz_Sniffs_Arrays_ArrayDeclarationSniff implements PHP_CodeSniffer_Sniff
             to be moved back one space however, then both errors would be fixed.
         */
 
-        $numValues = count($indices);
+        $numValues = (is_countable($indices) ? count($indices) : 0);
 
         $indicesStart = ($keywordStart + 1);
         $arrowStart   = ($indicesStart + $maxLength + 1);

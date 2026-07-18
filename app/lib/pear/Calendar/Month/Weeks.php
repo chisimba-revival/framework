@@ -135,7 +135,7 @@ class Calendar_Month_Weeks extends Calendar_Month
         $this->children[$numWeeks]->setLast(true);
 
         // Handle selected weeks here
-        if (count($sDates) > 0) {
+        if ((is_countable($sDates) ? count($sDates) : 0) > 0) {
             $this->setSelection($sDates);
         }
         return true;

@@ -249,7 +249,7 @@ class PEAR_Validate
         }
         $version = $this->_packagexml->getVersion();
         $versioncomponents = explode('.', $version);
-        if (count($versioncomponents) != 3) {
+        if ((is_countable($versioncomponents) ? count($versioncomponents) : 0) != 3) {
             $this->_addWarning('version',
                 'A version number should have 3 decimals (x.y.z)');
             return true;
@@ -440,7 +440,7 @@ class PEAR_Validate
 
             if (!preg_match('/(\d\d\d\d)\-(\d\d)\-(\d\d)/',
                   $this->_packagexml->getDate(), $res) ||
-                  count($res) < 4
+                  (is_countable($res) ? count($res) : 0) < 4
                   || !checkdate($res[2], $res[3], $res[1])
                 ) {
                 $this->_addFailure('date', 'invalid release date "' .

@@ -729,7 +729,7 @@ class Text_LanguageDetect
         $sample_obj->analyze();
 
         $trigram_freqs =& $sample_obj->getTrigramRanks();
-        $trigram_count = count($trigram_freqs);
+        $trigram_count = (is_countable($trigram_freqs) ? count($trigram_freqs) : 0);
 
         if ($trigram_count == 0) {
             return array();
@@ -1029,7 +1029,7 @@ class Text_LanguageDetect
         if ($block_count != -1) {
             $high = $block_count - 1;
         } else {
-            $high = count($blocks) - 1;
+            $high = (is_countable($blocks) ? count($blocks) : 0) - 1;
         }
 
         $low = 1; // start with 1 because ascii was 0
@@ -1232,7 +1232,7 @@ class Text_LanguageDetect
         }
         
         $i = 0;
-        while (count($langs) > 2 && $i++ < 200) {
+        while ((is_countable($langs) ? count($langs) : 0) > 2 && $i++ < 200) {
             $highest_score = -1;
             $highest_key1 = '';
             $highest_key2 = '';
@@ -1412,7 +1412,7 @@ class Text_LanguageDetect
         $sample_obj->setPadStart(!$this->_perl_compatible);
         $sample_obj->analyze();
         $sample_result = $sample_obj->getTrigramRanks();
-        $sample_count  = count($sample_result);
+        $sample_count  = (is_countable($sample_result) ? count($sample_result) : 0);
 
         // input check
         if ($sample_count == 0) {

@@ -161,7 +161,7 @@ class Auth_OpenID_MathLibrary {
             // duplicated range.
             $duplicate = $this->mod($mxrand, $stop);
 
-            if (count($duplicate_cache) > 10) {
+            if ((is_countable($duplicate_cache) ? count($duplicate_cache) : 0) > 10) {
                 $duplicate_cache = array();
             }
 

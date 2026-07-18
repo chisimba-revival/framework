@@ -105,7 +105,7 @@ class dbnonce extends dbtable
         $sql = 'SELECT id,enabled FROM tbl_login_nonce WHERE sessionid=\''
            . $sessionId . '\' ORDER BY datecreated DESC LIMIT 1';
         $ar = $this->query($sql);
-        if (count($ar) >= 1) {
+        if ((is_countable($ar) ? count($ar) : 0) >= 1) {
             $enabled = $ar['0']['enabled'];
         } else {
             // The nonce has timed out
@@ -158,7 +158,7 @@ class dbnonce extends dbtable
     {
         $sql = 'SELECT id,tries,nonce FROM tbl_login_nonce WHERE nonce=\'' . $nonce . '\'';
         $ar = $this->getArrayWithLimit($sql,0,1);
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             $tries = $ar['0']['tries'];
             $id = $ar[0]['id'];
             $tries++;

@@ -101,7 +101,7 @@ class Calendar_Month extends Calendar
         for ($i=1; $i<=$daysInMonth; $i++) {
             $this->children[$i] = new Calendar_Day($this->year, $this->month, $i);
         }
-        if (count($sDates) > 0) {
+        if ((is_countable($sDates) ? count($sDates) : 0) > 0) {
             $this->setSelection($sDates);
         }
         return true;

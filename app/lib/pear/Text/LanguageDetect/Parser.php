@@ -229,7 +229,7 @@ class Text_LanguageDetect_Parser extends Text_LanguageDetect
                 $this->_unicode_blocks = $blocks;
 
             } else {
-                $block_count = count($blocks);
+                $block_count = (is_countable($blocks) ? count($blocks) : 0);
             }
 
             $skipped_count = 0;

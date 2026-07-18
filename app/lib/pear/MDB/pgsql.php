@@ -1462,7 +1462,7 @@ class MDB_pgsql extends MDB_Common
             if (in_array($num_field + 1, $keys)) {
                 $flags .= ($row[0] == 't') ? 'unique ' : '';
                 $flags .= ($row[1] == 't') ? 'primary ' : '';
-                if (count($keys) > 1)
+                if ((is_countable($keys) ? count($keys) : 0) > 1)
                     $flags .= 'multiple_key ';
             }
         }

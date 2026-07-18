@@ -1065,7 +1065,7 @@ public function mb_ucwords($str) {
                             if ($opts['type'] == 'start') {
                                 array_push($tokenStack, $rule);
                             } elseif ($opts['type'] == 'end') {
-                                if ($tokenStack[count($tokenStack) - 1] != $rule) {
+                                if ($tokenStack[(is_countable($tokenStack) ? count($tokenStack) : 0) - 1] != $rule) {
                                     return Text_Wiki::error('Unbalanced tokens, check your syntax');
                                 } else {
                                     array_pop($tokenStack);

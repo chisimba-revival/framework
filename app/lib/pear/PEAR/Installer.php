@@ -393,8 +393,8 @@ class PEAR_Installer extends PEAR_Downloader
                     }
                 }
 
-                $this->log(3, "doing ".sizeof($subst_from)." substitution(s) for $final_dest_file");
-                if (sizeof($subst_from)) {
+                $this->log(3, "doing ".(is_countable($subst_from) ? sizeof($subst_from) : 0)." substitution(s) for $final_dest_file");
+                if ((is_countable($subst_from) ? sizeof($subst_from) : 0)) {
                     $contents = str_replace($subst_from, $subst_to, $contents);
                 }
 
@@ -559,7 +559,7 @@ class PEAR_Installer extends PEAR_Downloader
         unset($atts['attribs']);
         // pretty much nothing happens if we are only registering the install
         if (empty($this->_options['register-only'])) {
-            if (!count($atts)) { // no tasks
+            if (!(is_countable($atts) ? count($atts) : 0)) { // no tasks
                 if (!file_exists($orig_file)) {
                     return $this->raiseError("file $orig_file does not exist",
                                              PEAR_INSTALLER_FAILED);
@@ -831,7 +831,7 @@ class PEAR_Installer extends PEAR_Downloader
         $n = count($this->file_operations);
         $this->log(2, "about to commit $n file operations for " . $this->pkginfo->getName());
 
-        $m = count($errors);
+        $m = (is_countable($errors) ? count($errors) : 0);
         if ($m > 0) {
             foreach ($errors as $error) {
                 if (!isset($this->_options['soft'])) {
@@ -1192,7 +1192,7 @@ class PEAR_Installer extends PEAR_Downloader
                 return $test;
             }
 
-            if (sizeof($test)) {
+            if ((is_countable($test) ? sizeof($test) : 0)) {
                 $pkgs = $this->getInstallPackages();
                 $found = false;
                 foreach ($pkgs as $param) {
@@ -1268,7 +1268,7 @@ class PEAR_Installer extends PEAR_Downloader
                     }
                 }
 
-                if (count($test)) {
+                if ((is_countable($test) ? count($test) : 0)) {
                     $msg = "$channel/$pkgname: conflicting files found:\n";
                     $longest = max(array_map("strlen", array_keys($test)));
                     $fmt = "%{$longest}s (%s)\n";

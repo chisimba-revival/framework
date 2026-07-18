@@ -185,7 +185,7 @@ class PEAR_Sniffs_Commenting_FileCommentSniff implements PHP_CodeSniffer_Sniff
 
             // Exactly one blank line before tags.
             $tags = $this->commentParser->getTagOrders();
-            if (count($tags) > 1) {
+            if ((is_countable($tags) ? count($tags) : 0) > 1) {
                 $newlineSpan = $comment->getNewlineAfter();
                 if ($newlineSpan !== 2) {
                     $error = 'There must be exactly one blank line before the tags in file comment';
@@ -308,7 +308,7 @@ class PEAR_Sniffs_Commenting_FileCommentSniff implements PHP_CodeSniffer_Sniff
             // Get the tag order.
             $foundIndexes = array_keys($foundTags, $tag);
 
-            if (count($foundIndexes) > 1) {
+            if ((is_countable($foundIndexes) ? count($foundIndexes) : 0) > 1) {
                 // Multiple occurance not allowed.
                 if ($info['allow_multiple'] === false) {
                     $error = "Only 1 @$tag tag is allowed in $docBlock comment";

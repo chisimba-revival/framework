@@ -92,6 +92,19 @@ class radio extends abhtmlbase implements ifhtml
     * Class Constructor
     * @param string $name : The name of the radio group
     */
+        /*
+         * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+         *
+         * PHP 8 no longer treats a method named after the class as a
+         * constructor. Keep the historical constructor intact and
+         * delegate to it from __construct() so existing behaviour and
+         * call sites remain unchanged.
+         */
+        public function __construct($name)
+        {
+            $this->radio($name);
+        }
+        
         public function radio($name){
         $this->name=$name;
         $this->cssClass='transparentbgnb';

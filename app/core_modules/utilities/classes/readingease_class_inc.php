@@ -142,10 +142,10 @@ class readingease extends ChisimbaObject {
     {
         $words = explode(' ', $str);
         $syllables="";
-        for ($i = 0; $i < count($words); $i++) {
+        for ($i = 0; $i < (is_countable($words) ? count($words) : 0); $i++) {
             $syllables = $syllables + $this->countSyllables($words[$i]);
         }
-        return ($syllables/count($words));
+        return ($syllables/(is_countable($words) ? count($words) : 0));
     } #function averageSyllablesWord
 
     /**
@@ -211,7 +211,7 @@ class readingease extends ChisimbaObject {
         if (strlen($word) == 1) {
             $syllables++;
         }
-        $syllables += count($valid_word_parts);
+        $syllables += (is_countable($valid_word_parts) ? count($valid_word_parts) : 0);
         $syllables = ($syllables == 0) ? 1 : $syllables;
         return $syllables;
     } #function countSyllables
@@ -225,12 +225,12 @@ class readingease extends ChisimbaObject {
     function percentageNumberWords3Syllables($str) {
         $syllables = 0;
         $words = explode(' ', $str);
-        for ($i = 0; $i < count($words); $i++) {
+        for ($i = 0; $i < (is_countable($words) ? count($words) : 0); $i++) {
             if ($this->countSyllables($words[$i]) > 2) {
                 $syllables ++;
             }
         }
-        $score = number_format((($syllables / count($words)) * 100));
+        $score = number_format((($syllables / (is_countable($words) ? count($words) : 0)) * 100));
         return ($score);
     } #function percentageNumberWords3Syllables
     

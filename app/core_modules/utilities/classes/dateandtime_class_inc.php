@@ -704,7 +704,7 @@ class dateandtime extends ChisimbaObject
             array_unshift($caldays, $sunday);
 
         }
-        //echo implode($caldays, "!");
+        //echo implode("!", $caldays);
         return $caldays;
     }
 

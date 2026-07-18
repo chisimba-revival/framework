@@ -134,7 +134,7 @@ class MDB2_Datatype_TestCase extends MDB2_TestCase
         $query = sprintf('INSERT INTO %s (%s) VALUES (%s)',
             $this->table,
             implode(', ', array_keys($values)),
-            implode(', ', array_fill(0, count($values), '?'))
+            implode(', ', array_fill(0, (is_countable($values) ? count($values) : 0), '?'))
         );
         $stmt = $this->db->prepare($query, $types, false);
         if (PEAR::isError($stmt)) {

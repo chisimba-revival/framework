@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Class to handle interaction with table tbl_files
@@ -246,8 +247,8 @@ class dbfile extends dbTable {
             'moduleuploaded' => $this->getParam('module'),
             'creatorid' => $userId,
             'modifierid' => $userId,
-            'datecreated' => strftime('%Y-%m-%d', mktime()),
-            'timecreated' => strftime('%H:%M:%S', mktime())
+            'datecreated' => strftime('%Y-%m-%d', time()),
+            'timecreated' => strftime('%H:%M:%S', time())
         );
         $id = $this->insert($file);
 
@@ -314,7 +315,7 @@ class dbfile extends dbTable {
     public function updateFileSearch() {
         $files = $this->getAll();
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             foreach ($files as $file) {
                 $this->indexFile($file);
             }
@@ -337,7 +338,7 @@ class dbfile extends dbTable {
             $where .= ' AND category=\'' . $category . '\'';
         }
 
-        if ($restrictfiletype != NULL && is_array($restrictfiletype) && count($restrictfiletype) > 0) {
+        if ($restrictfiletype != NULL && is_array($restrictfiletype) && (is_countable($restrictfiletype) ? count($restrictfiletype) : 0) > 0) {
 
             $where .= ' AND (';
             $or = '';
@@ -379,7 +380,7 @@ class dbfile extends dbTable {
     public function getNumUniqueFiles($userId) {
         $sql = 'SELECT filename FROM tbl_files WHERE userid=\'' . $userId . '\' AND category != \'temp\'';
         $result = $this->getArray($sql);
-        return count($result);
+        return (is_countable($result) ? count($result) : 0);
     }
 
     /**
@@ -464,7 +465,7 @@ class dbfile extends dbTable {
      */
     public function getOriginalFile($filename, $userId) {
         $result = $this->getAll('WHERE filename=\'' . $filename . '\' AND category != \'temp\' AND userid =\'' . $userId . '\' ORDER BY version DESC');
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             return $result[0];
         } else {
             return FALSE;
@@ -625,7 +626,7 @@ class dbfile extends dbTable {
             $mediaInfoArray['info_url'] = $file['url'];
         }
 
-        if (count($mediaInfoArray) < 1) {
+        if ((is_countable($mediaInfoArray) ? count($mediaInfoArray) : 0) < 1) {
             return FALSE;
         } else {
             $objTable = $this->newObject('htmltable', 'htmlelements');
@@ -642,7 +643,7 @@ class dbfile extends dbTable {
                 if ($count % 2 == 0) {
                     $objTable->endRow();
                     $rowStarted = FALSE;
-                    if ((count($mediaInfoArray) - $count) != 0) {
+                    if (((is_countable($mediaInfoArray) ? count($mediaInfoArray) : 0) - $count) != 0) {
                         $objTable->startRow();
                         $rowStarted = TRUE;
                     }
@@ -678,7 +679,7 @@ class dbfile extends dbTable {
         if ($includeArchives) {
             $otherFiles = $this->getAll('WHERE filename=\'' . $file['filename'] . '\' AND userid=\'' . $file['userid'] . '\' AND id != \'' . $fileId . '\'');
 
-            if (count($otherFiles) > 0) {
+            if ((is_countable($otherFiles) ? count($otherFiles) : 0) > 0) {
                 foreach ($otherFiles as $otherfile) {
                     $this->removeFile($otherfile['id'], $otherfile['path']);
                 }
@@ -774,7 +775,7 @@ class dbfile extends dbTable {
     public function updateFilePath() {
         $files = $this->getAll(' WHERE filefolder IS NULL OR filefolder=\'\'');
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             foreach ($files as $file) {
                 $this->update('id', $file['id'], array('filefolder' => dirname($file['path'])));
             }

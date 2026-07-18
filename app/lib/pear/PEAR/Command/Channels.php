@@ -193,7 +193,7 @@ configuration.',
                                     $channel->getSummary());
         }
 
-        if (count($registered) === 0) {
+        if ((is_countable($registered) ? count($registered) : 0) === 0) {
             $data = '(no registered channels)';
         }
         $this->ui->outputData($data, $command);
@@ -225,7 +225,7 @@ configuration.',
 
     function doInfo($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError("No channel specified");
         }
 
@@ -362,7 +362,7 @@ configuration.',
 
     function doDelete($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError('channel-delete: no channel specified');
         }
 
@@ -392,7 +392,7 @@ configuration.',
             return $err;
         }
 
-        if (count($err)) {
+        if ((is_countable($err) ? count($err) : 0)) {
             return $this->raiseError('Channel "' . $channel .
                 '" has installed packages, cannot delete');
         }
@@ -407,7 +407,7 @@ configuration.',
 
     function doAdd($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError('channel-add: no channel file specified');
         }
 
@@ -505,7 +505,7 @@ configuration.',
 
     function doUpdate($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError("No channel file specified");
         }
 
@@ -670,11 +670,11 @@ configuration.',
 
     function doAlias($command, $options, $params)
     {
-        if (count($params) === 1) {
+        if ((is_countable($params) ? count($params) : 0) === 1) {
             return $this->raiseError('No channel alias specified');
         }
 
-        if (count($params) !== 2 || (!empty($params[1]) && $params[1][0] == '-')) {
+        if ((is_countable($params) ? count($params) : 0) !== 2 || (!empty($params[1]) && $params[1][0] == '-')) {
             return $this->raiseError(
                 'Invalid format, correct is: channel-alias channel alias');
         }
@@ -725,7 +725,7 @@ configuration.',
      */
     function doDiscover($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError("No channel server specified");
         }
 

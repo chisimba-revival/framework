@@ -119,7 +119,7 @@ class sitestories extends dbTable {
         * determine whether or not to display a horizontal
         * rule after the entry
         */
-        $elems=count($ar);
+        $elems=(is_countable($ar) ? count($ar) : 0);
         //Initialize counter
         $count=0;
         //Initialize the return string
@@ -208,7 +208,7 @@ class sitestories extends dbTable {
 
             //Check for translations
             $ar = $this->getTranslations($id);
-            if (count($ar) > 0 ) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0 ) {
                 $ret .= "<br />" .
                   $this->objLanguage->languageText("mod_stories_alsoavailable",'stories');
                 foreach ($ar as $line) {
@@ -343,7 +343,7 @@ class sitestories extends dbTable {
         * determine whether or not to display a horizontal
         * rule after the entry
         */
-        $elems=count($ar);
+        $elems=(is_countable($ar) ? count($ar) : 0);
         //Initialize counter
         $count=0;
         //Initialize the return string
@@ -524,7 +524,7 @@ class sitestories extends dbTable {
             }
             //Check for translations
             $ar = $this->getTranslations($id);
-            if (count($ar) > 0 ) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0 ) {
                 $ret .= "&nbsp;&nbsp;&nbsp;" .
                   $this->objLanguage->languageText("mod_stories_alsoavailable",'stories');
                 foreach ($ar as $line) {
@@ -565,7 +565,7 @@ class sitestories extends dbTable {
         * determine whether or not to display a horizontal
         * rule after the entry
         */
-        $elems=count($ar);
+        $elems=(is_countable($ar) ? count($ar) : 0);
         //Initialize counter
         $count=0;
         //Initialize the return string
@@ -684,7 +684,7 @@ class sitestories extends dbTable {
             }
             //Check for translations
             $ar = $this->getTranslations($id);
-            if (count($ar) > 0 ) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0 ) {
                 $ret .= "&nbsp;&nbsp;&nbsp;" .
                   $this->objLanguage->languageText("mod_stories_alsoavailable",'stories');
                 foreach ($ar as $line) {

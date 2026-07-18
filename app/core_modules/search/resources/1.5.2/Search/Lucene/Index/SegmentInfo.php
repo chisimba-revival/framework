@@ -981,7 +981,7 @@ class Zend_Search_Lucene_Index_SegmentInfo
             }
         }
 
-        if (count($delFileList) == 0) {
+        if ((is_countable($delFileList) ? count($delFileList) : 0) == 0) {
         	// There is no deletions file for current segment in the directory
         	// Set detetions file generation number to 1
         	$this->_delGen = 1;

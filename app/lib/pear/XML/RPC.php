@@ -1201,8 +1201,8 @@ class XML_RPC_Message extends XML_RPC_Base
         function XML_RPC_Message($meth, $pars = 0)
     {
         $this->methodname = $meth;
-        if (is_array($pars) && sizeof($pars) > 0) {
-            for ($i = 0; $i < sizeof($pars); $i++) {
+        if (is_array($pars) && (is_countable($pars) ? sizeof($pars) : 0) > 0) {
+            for ($i = 0; $i < (is_countable($pars) ? sizeof($pars) : 0); $i++) {
                 $this->addParam($pars[$i]);
             }
         }
@@ -1486,7 +1486,7 @@ class XML_RPC_Message extends XML_RPC_Base
         $data = substr($data, 0, strpos($data, "</methodResponse>") + 17);
         $this->response_payload = $data;
 
-        if (!xml_parse($parser_resource, $data, sizeof($data))) {
+        if (!xml_parse($parser_resource, $data, (is_countable($data) ? sizeof($data) : 0))) {
             // thanks to Peter Kocks <peter.kocks@baygate.com>
             if (xml_get_current_line_number($parser_resource) == 1) {
                 $errstr = 'XML error at line 1, check URL';
@@ -1862,7 +1862,7 @@ class XML_RPC_Value extends XML_RPC_Base
     {
         reset($this->me);
         list($a, $b) = each($this->me);
-        return sizeof($b);
+        return (is_countable($b) ? sizeof($b) : 0);
     }
 
     /**
@@ -1986,7 +1986,7 @@ function XML_RPC_encode($php_val)
             $XML_RPC_val->addArray($php_val);
             break;
         }
-        $tmp = array_diff(array_keys($php_val), range(0, count($php_val)-1));
+        $tmp = array_diff(array_keys($php_val), range(0, (is_countable($php_val) ? count($php_val) : 0)-1));
         if (empty($tmp)) {
            $arr = array();
            foreach ($php_val as $k => $v) {

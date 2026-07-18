@@ -99,7 +99,7 @@ class contextsidebar extends ChisimbaObject
         $objModules = $this->getObject('modules', 'modulecatalogue');
         $nodes = array();
         $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('mod_context_contexthome', 'context', NULL, '[-context-] Home')), 'uri'=>$this->uri(NULL, 'context'), 'nodeid'=>'context', 'css'=>'sidebarhomelink');
-        if (count($contextModules) > 0) {
+        if ((is_countable($contextModules) ? count($contextModules) : 0) > 0) {
             foreach ($contextModules as $module) {
                 $moduleInfo = $objModules->getModuleInfo($module);
                 if ($moduleInfo['isreg']) {

@@ -196,7 +196,7 @@ class LiveUser_Perm_Medium extends LiveUser_Perm_Simple
     {
         $this->group_right_ids = array();
 
-        if (!is_array($group_ids) || !count($group_ids)) {
+        if (!is_array($group_ids) || !(is_countable($group_ids) ? count($group_ids) : 0)) {
             return null;
         }
 

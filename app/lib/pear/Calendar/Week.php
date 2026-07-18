@@ -244,7 +244,7 @@ class Calendar_Week extends Calendar
             }
         }
 
-        if (count($sDates) > 0) {
+        if ((is_countable($sDates) ? count($sDates) : 0) > 0) {
             $this->setSelection($sDates);
         }
         return true;

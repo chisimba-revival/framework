@@ -116,7 +116,7 @@ class HTMLPurifier_Printer
     protected function listify($array, $polite = false) {
         if (empty($array)) return 'None';
         $ret = '';
-        $i = count($array);
+        $i = (is_countable($array) ? count($array) : 0);
         foreach ($array as $value) {
             $i--;
             $ret .= $value;

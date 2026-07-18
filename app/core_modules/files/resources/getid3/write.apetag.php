@@ -171,7 +171,7 @@ class getid3_write_apetag
 		$APEheader  = 'APETAGEX';
 		$APEheader .= getid3_lib::LittleEndian2String(2000, 4);
 		$APEheader .= getid3_lib::LittleEndian2String(32 + $tagdatalength, 4);
-		$APEheader .= getid3_lib::LittleEndian2String(count($items), 4);
+		$APEheader .= getid3_lib::LittleEndian2String((is_countable($items) ? count($items) : 0), 4);
 		$APEheader .= $this->GenerateAPEtagFlags(true, true, $isheader, 0, false);
 		$APEheader .= str_repeat("\x00", 8);
 

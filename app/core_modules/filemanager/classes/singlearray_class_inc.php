@@ -110,7 +110,7 @@ class singlearray extends ChisimbaObject
             {
                 // Check if item value is array
                 if (is_array($value)) {
-                    if (count($value) == 1 && isset($value[0]) && !is_array($value[0])) {
+                    if ((is_countable($value) ? count($value) : 0) == 1 && isset($value[0]) && !is_array($value[0])) {
                         $this->addItem($item, $value[0]);
                     } else {
                         // If it is, loop through item value array

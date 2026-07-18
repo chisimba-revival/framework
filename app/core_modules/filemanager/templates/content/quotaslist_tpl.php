@@ -1,7 +1,7 @@
 <?php
 
 
-if (count($results) == 0) {
+if ((is_countable($results) ? count($results) : 0) == 0) {
     echo '<div class="noRecordsMessage">'.$this->objLanguage->languageText('mod_filemanager_noresultsquotasearch', 'filemanager', 'No results matching search criteria found').'</div>';
 } else {
     $this->loadClass('formatfilesize', 'files');

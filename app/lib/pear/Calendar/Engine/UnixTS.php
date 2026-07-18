@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 /* vim: set expandtab tabstop=4 shiftwidth=4: */
 
 /**
@@ -38,7 +39,7 @@
 
 /**
  * Performs calendar calculations based on the PHP date() function and
- * Unix timestamps (using PHP's mktime() function).
+ * Unix timestamps (using PHP's time() function).
  *
  * @category  Date and Time
  * @package   Calendar

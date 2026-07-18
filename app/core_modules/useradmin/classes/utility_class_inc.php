@@ -94,7 +94,7 @@ class utility extends ChisimbaObject {
         $userCount = $this->objUserAdmin->getRecordCount();
 		$var_users = $this->objUserAdmin->getAll($where." ORDER BY title ".$filter);
 
-		if(count($var_users) > 0){
+		if((is_countable($var_users) ? count($var_users) : 0) > 0){
 
 		$arr = array();
 		$users = array();
@@ -231,8 +231,8 @@ class utility extends ChisimbaObject {
 		$singleuser = array();
 
 		$users = $this->objUserAdmin->getAll($where);
-		$totalCount = count($users);
-		if(count($users) > 0){
+		$totalCount = (is_countable($users) ? count($users) : 0);
+		if((is_countable($users) ? count($users) : 0) > 0){
 		foreach($users as $user){
         //error_log(var_export('Test+'.$user['id'], true));
 			$arr['id'] = $user['id'];

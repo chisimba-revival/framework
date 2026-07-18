@@ -58,7 +58,7 @@ class fileparts extends ChisimbaObject
         //explode into an array by .
         $ext = explode (".", basename($fName));
         //Count array elements and subtract 1 due to 0th element being first
-        $elem = (count($ext) - 1);
+        $elem = ((is_countable($ext) ? count($ext) : 0) - 1);
         //Return the last element which is the extension
         return $ext[$elem];
     

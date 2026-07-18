@@ -148,7 +148,30 @@ class language extends dbTable {
      *                            looked up
      * @param  string $modulename : The module name that owns the string
      */
-    public function languageText($itemName, $modulename='system', $default = false) {
+    /*
+     * CHISIMBA_PHP82_LANGUAGE_DEFAULT_FALLBACK
+     *
+     * Preserve the historical translation lookup unchanged, but ensure
+     * that PHP 8.2 cannot turn a supplied fallback label into blank text.
+     * Missing translations may be returned as NULL, FALSE, or an empty
+     * string by the retained Translation2 stack.
+     */
+    public function languageText($itemName, $modulename='system', $default = false)
+    {
+        $result = $this->languageTextLegacy($itemName, $modulename, $default);
+    
+        if (
+            ($result === NULL || $result === FALSE || $result === '')
+            && $default !== FALSE
+            && $default !== NULL
+        ) {
+            return $default;
+        }
+    
+        return $result;
+    }
+    
+    public function languageTextLegacy($itemName, $modulename='system', $default = false) {
 
         try {
             //$abstractList = $this -> objAbstract -> getSession('systext');

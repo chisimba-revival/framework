@@ -46,7 +46,7 @@ function print_suggs_elem( $suggs, $index, $text_input_idx ) {
 	foreach( $suggs as $key=>$val ) {
 		if( $val ) {
 			echo "'" . escape_quote( $val ) . "'";
-			if ( $key+1 < count( $suggs )) {
+			if ( $key+1 < (is_countable($suggs) ? count($suggs) : 0)) {
 				echo ", ";
 			}
 		}
@@ -80,7 +80,7 @@ function print_checker_results() {
 
 	# open temp file, add the submitted text.
 	if( $fh = fopen( $tempfile, 'w' )) {
-		for( $i = 0; $i < count( $textinputs ); $i++ ) {
+		for( $i = 0; $i < (is_countable($textinputs) ? count($textinputs) : 0); $i++ ) {
 			$text = urldecode( $textinputs[$i] );
 
 			// Strip all tags for the text. (by FredCK - #339 / #681)

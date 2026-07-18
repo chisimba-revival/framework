@@ -223,7 +223,7 @@ http://pear.php.net/dtd/package-2.0.xsd',
                 $origperms = fileperms($file);
                 $tfile = $packageDir . DIRECTORY_SEPARATOR . $fname;
                 unset($orig['attribs']);
-                if (count($orig)) { // file with tasks
+                if ((is_countable($orig) ? count($orig) : 0)) { // file with tasks
                     // run any package-time tasks
                     $contents = file_get_contents($file);
                     foreach ($orig as $tag => $raw) {
@@ -447,7 +447,7 @@ http://pear.php.net/dtd/package-2.0.xsd',
 
     function _formatDir(&$dirs)
     {
-        if (!count($dirs)) {
+        if (!(is_countable($dirs) ? count($dirs) : 0)) {
             return array();
         }
         $newdirs = array();
@@ -471,7 +471,7 @@ http://pear.php.net/dtd/package-2.0.xsd',
 
     function _deFormat(&$dirs)
     {
-        if (!count($dirs)) {
+        if (!(is_countable($dirs) ? count($dirs) : 0)) {
             return array();
         }
         $newdirs = array();
@@ -673,7 +673,7 @@ http://pear.php.net/dtd/package-2.0.xsd',
         */
         if (is_array($array) && $this->options['mode'] == 'simplexml') {
             $indexed = true;
-            if (!count($array)) {
+            if (!(is_countable($array) ? count($array) : 0)) {
                 $indexed = false;
             }
             foreach ($array as $key => $val) {

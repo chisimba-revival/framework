@@ -154,7 +154,7 @@ class parse4tweets extends ChisimbaObject
     {
         $ar = explode("|", $str);
         $tweetRequest = array_shift($ar);
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             foreach ($ar as $entry) {
                 $ar2 = explode("=", $entry);
                 $key = (string)$ar2[0];

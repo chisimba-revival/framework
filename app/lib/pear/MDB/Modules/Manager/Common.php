@@ -263,7 +263,7 @@ class MDB_Manager_Common
         if (!isset($name) || !strcmp($name, '')) {
             return($db->raiseError(MDB_ERROR_CANNOT_CREATE, NULL, NULL, 'no valid table name specified'));
         }
-        if (count($fields) == 0) {
+        if ((is_countable($fields) ? count($fields) : 0) == 0) {
             return($db->raiseError(MDB_ERROR_CANNOT_CREATE, NULL, NULL, 'no fields specified for table "'.$name.'"'));
         }
         if (MDB::isError($query_fields = $db->getFieldDeclarationList($fields))) {

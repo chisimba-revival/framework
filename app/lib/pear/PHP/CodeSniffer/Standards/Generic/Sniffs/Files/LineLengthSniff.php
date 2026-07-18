@@ -73,7 +73,7 @@ class Generic_Sniffs_Files_LineLengthSniff implements PHP_CodeSniffer_Sniff
             return;
         }
 
-        $tokenLimit         = count($tokens);
+        $tokenLimit         = (is_countable($tokens) ? count($tokens) : 0);
         $tokenCount         = 0;
         $currentLineContent = '';
         $currentLine        = 1;

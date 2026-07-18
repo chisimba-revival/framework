@@ -12,7 +12,7 @@ function formatBytes($val, $digits = 3, $mode = 'SI', $bB = 'B'){ //$mode == 'SI
        case 'b' : $val *= 8; break;
        default : $bB = 'B'; break;
    }
-   for($i=0;$i<count($symbols)-1 && $val>=$factor;$i++)
+   for($i=0;$i<(is_countable($symbols) ? count($symbols) : 0)-1 && $val>=$factor;$i++)
        $val /= $factor;
    $p = strpos($val, '.');
    if($p !== false && $p > $digits) $val = round($val);

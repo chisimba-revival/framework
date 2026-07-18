@@ -186,7 +186,7 @@ class Generic_Sniffs_Formatting_MultipleStatementAlignmentSniff implements PHP_C
                 $found        = ($tokens[$assignment]['column'] - ($contentLength + $leadingSpace));
                 $found       .= ($found === 1) ? ' space' : ' spaces';
 
-                if (count($assignments) === 1) {
+                if ((is_countable($assignments) ? count($assignments) : 0) === 1) {
                     $error = "Equals sign not aligned correctly; expected $expected but found $found";
                 } else {
                     $error = "Equals sign not aligned with surrounding assignments; expected $expected but found $found";

@@ -1788,7 +1788,7 @@ class getid3_write_id3v2
 		if (is_array($var)) {
 			$keys = array_keys($var);
 			$all_num = true;
-			for ($i = 0; $i < count($keys); $i++) {
+			for ($i = 0; $i < (is_countable($keys) ? count($keys) : 0); $i++) {
 				if (is_string($keys[$i])) {
 					return true;
 				}

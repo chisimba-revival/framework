@@ -95,7 +95,7 @@ class parse4blog extends ChisimbaObject
         {
             $txt = $results[1][$counter];
             $ar = explode(",", $txt);
-            if (count($ar) > 0) {
+            if ((is_countable($ar) ? count($ar) : 0) > 0) {
                 foreach ($ar as $entry) {
                     $ar2 = explode("=", $entry);
                     $key = (string)$ar2[0];

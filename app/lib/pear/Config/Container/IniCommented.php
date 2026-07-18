@@ -78,7 +78,7 @@ class Config_Container_IniCommented {
                     return PEAR::raiseError($values);
                 }
                 
-                if (count($values)) {
+                if ((is_countable($values) ? count($values) : 0)) {
                     foreach($values as $value) {
                         if ($value[0] == 'normal') {
                             $currentSection->createDirective(trim($match[1]), $value[1]);

@@ -300,7 +300,7 @@ class canvaschooser extends controller
     {
         if ($canvas !== NULL) {
             $ar = explode('/', $canvas);
-            $ct = count($ar) -1;
+            $ct = (is_countable($ar) ? count($ar) : 0) -1;
             return $ar[$ct];
         } else {
             return FALSE;

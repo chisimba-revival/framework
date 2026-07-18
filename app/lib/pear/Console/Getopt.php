@@ -187,7 +187,7 @@ class Console_Getopt {
         @list($opt, $opt_arg) = explode('=', $arg);
         $opt_len = strlen($opt);
 
-        for ($i = 0; $i < count($long_options); $i++) {
+        for ($i = 0; $i < (is_countable($long_options) ? count($long_options) : 0); $i++) {
             $long_opt  = $long_options[$i];
             $opt_start = substr($long_opt, 0, $opt_len);
 
@@ -200,7 +200,7 @@ class Console_Getopt {
             /* Check that the options uniquely matches one of the allowed
                options. */
             if ($opt_rest != '' && $opt[0] != '=' &&
-                $i + 1 < count($long_options) &&
+                $i + 1 < (is_countable($long_options) ? count($long_options) : 0) &&
                 $opt == substr($long_options[$i+1], 0, $opt_len)) {
                 return PEAR::raiseError("Console_Getopt: option --$opt is ambiguous");
             }

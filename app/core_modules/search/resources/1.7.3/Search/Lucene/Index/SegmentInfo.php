@@ -900,11 +900,11 @@ class Zend_Search_Lucene_Index_SegmentInfo
                 $filter = &$docsFilter->segmentFilters[$this->_name];
 
                 // Check if filter is not empty
-                if (count($filter) == 0) {
+                if ((is_countable($filter) ? count($filter) : 0) == 0) {
                     return array();
                 }
 
-                if ($this->_docCount/count($filter) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
+                if ($this->_docCount/(is_countable($filter) ? count($filter) : 0) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
                     // Perform fetching
 // ---------------------------------------------------------------
                     $updatedFilterData = array();
@@ -1022,12 +1022,12 @@ class Zend_Search_Lucene_Index_SegmentInfo
                 $filter = &$docsFilter->segmentFilters[$this->_name];
 
                 // Check if filter is not empty
-                if (count($filter) == 0) {
+                if ((is_countable($filter) ? count($filter) : 0) == 0) {
                     return array();
                 }
 
 
-                if ($this->_docCount/count($filter) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
+                if ($this->_docCount/(is_countable($filter) ? count($filter) : 0) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
                     // Perform fetching
 // ---------------------------------------------------------------
                     $updatedFilterData = array();
@@ -1146,11 +1146,11 @@ class Zend_Search_Lucene_Index_SegmentInfo
                 $filter = &$docsFilter->segmentFilters[$this->_name];
 
                 // Check if filter is not empty
-                if (count($filter) == 0) {
+                if ((is_countable($filter) ? count($filter) : 0) == 0) {
                     return array();
                 }
 
-                if ($this->_docCount/count($filter) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
+                if ($this->_docCount/(is_countable($filter) ? count($filter) : 0) < self::FULL_SCAN_VS_FETCH_BOUNDARY) {
                     // Perform fetching
 // ---------------------------------------------------------------
                     for ($count = 0; $count < $termInfo->docFreq; $count++) {
@@ -1460,7 +1460,7 @@ class Zend_Search_Lucene_Index_SegmentInfo
             }
         }
 
-        if (count($delFileList) == 0) {
+        if ((is_countable($delFileList) ? count($delFileList) : 0) == 0) {
             // There is no deletions file for current segment in the directory
             // Set detetions file generation number to 1
             $this->_delGen = -1;

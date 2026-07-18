@@ -267,7 +267,7 @@ class getid3_midi
 
 					}
 				}
-				if (($tracknumber > 0) || (count($trackdataarray) == 1)) {
+				if (($tracknumber > 0) || ((is_countable($trackdataarray) ? count($trackdataarray) : 0) == 1)) {
 					$thisfile_midi['totalticks'] = max($thisfile_midi['totalticks'], $CumulativeDeltaTime);
 				}
 			}

@@ -36,7 +36,7 @@ class camelcase extends ChisimbaObject {
         
         $ret = "";
         $i = 0;
-        while ($i <= count($ar)) {
+        while ($i <= (is_countable($ar) ? count($ar) : 0)) {
             $ret .= $ar[$i] . " ";
         }
         return $ret;

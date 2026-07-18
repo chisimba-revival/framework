@@ -108,7 +108,7 @@ FROM tbl_users WHERE '.$field.' LIKE "'.$search.'%" GROUP BY userId ORDER BY '.$
                     
         } else if(($context=='all')&&($group!='all')) {
             $contexts=$this->objContext->getListOfContext();
-            $length=count($contexts);
+            $length=(is_countable($contexts) ? count($contexts) : 0);
             
             
             $sqlGroups="";

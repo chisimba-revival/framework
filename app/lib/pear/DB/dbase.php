@@ -472,7 +472,7 @@ class DB_dbase extends DB_common
         }
 
         $res   = array();
-        $count = count($id);
+        $count = (is_countable($id) ? count($id) : 0);
 
         if ($mode) {
             $res['num_fields'] = $count;

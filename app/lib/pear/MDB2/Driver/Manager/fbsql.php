@@ -381,7 +381,7 @@ class MDB2_Driver_Manager_fbsql extends MDB2_Driver_Manager_Common
             return $table_names;
         }
         $result = array();
-        for ($i = 0, $j = count($table_names); $i < $j; ++$i) {
+        for ($i = 0, $j = (is_countable($table_names) ? count($table_names) : 0); $i < $j; ++$i) {
             if (!$this->_fixSequenceName($table_names[$i], true)) {
                 $result[] = $table_names[$i];
             }
@@ -582,7 +582,7 @@ class MDB2_Driver_Manager_fbsql extends MDB2_Driver_Manager_Common
             return $table_names;
         }
         $result = array();
-        for ($i = 0, $j = count($table_names); $i < $j; ++$i) {
+        for ($i = 0, $j = (is_countable($table_names) ? count($table_names) : 0); $i < $j; ++$i) {
             if ($sqn = $this->_fixSequenceName($table_names[$i], true)) {
                 $result[] = $sqn;
             }

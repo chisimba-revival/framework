@@ -562,7 +562,7 @@ class MDB2_Driver_Reverse_odbc extends MDB2_Driver_Reverse_Common
                 $val = array_change_key_case($val, CASE_LOWER);
                 $keys = explode(', ', $val['index_keys']);
 
-                if (sizeof($keys) > 1) {
+                if ((is_countable($keys) ? sizeof($keys) : 0) > 1) {
                     foreach ($keys as $key) {
                         $this->_add_flag($flags[$key], 'multiple_key');
                     }

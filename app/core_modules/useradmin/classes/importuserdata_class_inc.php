@@ -35,7 +35,7 @@ class importuserdata extends ChisimbaObject
         $fp=fopen($file,'r');
         while ($line = fgetcsv($fp, 1024, ","))
         {
-            if (count($line)==$this->fieldcount){
+            if ((is_countable($line) ? count($line) : 0)==$this->fieldcount){
                 $newline=array();
                 $num=0;
                 foreach ($this->userfields as $key)
@@ -128,7 +128,7 @@ class importuserdata extends ChisimbaObject
     public function checkForUser($username,$firstname,$surname,$email)
     {
         $data=$this->objUser->getAll("where username='$username' and firstname='$firstname' and surname='$surname' and emailAddress='$email'");
-        $count=count($data);
+        $count=(is_countable($data) ? count($data) : 0);
         if ($count==0){
             return FALSE;
         } else {

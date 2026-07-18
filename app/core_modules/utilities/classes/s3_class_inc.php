@@ -439,7 +439,7 @@ class s3 extends ChisimbaObject
     {
         $ret = array();
         $object = $this->getBucketContents($bucket, $object);
-        if(count($object) == 0)
+        if((is_countable($object) ? count($object) : 0) == 0)
         {
             return FALSE;
         }

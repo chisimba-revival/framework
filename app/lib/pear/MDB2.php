@@ -457,7 +457,7 @@ class MDB2
             $dsninfo = MDB2::parseDSN($dsn);
             $dsninfo = array_merge($GLOBALS['_MDB2_dsninfo_default'], $dsninfo);
             $keys = array_keys($GLOBALS['_MDB2_databases']);
-            for ($i=0, $j=count($keys); $i<$j; ++$i) {
+            for ($i=0, $j=(is_countable($keys) ? count($keys) : 0); $i<$j; ++$i) {
                 if (isset($GLOBALS['_MDB2_databases'][$keys[$i]])) {
                     $tmp_dsn = $GLOBALS['_MDB2_databases'][$keys[$i]]->getDSN('array');
                     if (count(array_diff_assoc($tmp_dsn, $dsninfo)) == 0) {
@@ -487,7 +487,7 @@ class MDB2
      */
     static function areEquals($arr1, $arr2)
     {
-        if (count($arr1) != count($arr2)) {
+        if ((is_countable($arr1) ? count($arr1) : 0) != (is_countable($arr2) ? count($arr2) : 0)) {
             return false;
         }
         foreach (array_keys($arr1) as $k) {
@@ -2775,7 +2775,7 @@ class MDB2_Driver_Common
         if (MDB2::isError($col)) {
             return $col;
         }
-        if (!is_array($col) || count($col) == 0) {
+        if (!is_array($col) || (is_countable($col) ? count($col) : 0) == 0) {
             return 'NULL';
         }
         if ($type) {
@@ -2856,7 +2856,7 @@ class MDB2_Driver_Common
             return MDB2_Driver_Common::raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
                 'replace query is not supported', __FUNCTION__);
         }
-        $count = count($fields);
+        $count = (is_countable($fields) ? count($fields) : 0);
         $condition = $values = array();
         for ($colnum = 0, reset($fields); $colnum < $count; next($fields), $colnum++) {
             $name = key($fields);
@@ -3023,7 +3023,7 @@ class MDB2_Driver_Common
                         $types[$parameter] = $types_tmp[$count];
                     }
                 } else {
-                    $positions[$p_position] = count($positions);
+                    $positions[$p_position] = (is_countable($positions) ? count($positions) : 0);
                 }
                 $position = $p_position + 1;
             } else {
@@ -3883,7 +3883,7 @@ class MDB2_Result_Common extends MDB2_Result
             if (is_object($row)) {
                 $colnum = count(get_object_vars($row));
             } else {
-                $colnum = count($row);
+                $colnum = (is_countable($row) ? count($row) : 0);
             }
             if ($colnum < 2) {
                 return MDB2::raiseError(MDB2_ERROR_TRUNCATED, null, null,
@@ -4259,7 +4259,7 @@ class MDB2_Statement_Common
      */
     function bindValueArray($values, $types = null)
     {
-        $types = is_array($types) ? array_values($types) : array_fill(0, count($values), null);
+        $types = is_array($types) ? array_values($types) : array_fill(0, (is_countable($values) ? count($values) : 0), null);
         $parameters = array_keys($values);
         $this->db->pushErrorHandling(PEAR_ERROR_RETURN);
         $this->db->expectError(MDB2_ERROR_NOT_FOUND);
@@ -4332,7 +4332,7 @@ class MDB2_Statement_Common
      */
     function bindParamArray(&$values, $types = null)
     {
-        $types = is_array($types) ? array_values($types) : array_fill(0, count($values), null);
+        $types = is_array($types) ? array_values($types) : array_fill(0, (is_countable($values) ? count($values) : 0), null);
         $parameters = array_keys($values);
         foreach ($parameters as $key => $parameter) {
             $err = $this->bindParam($parameter, $values[$parameter], $types[$key]);

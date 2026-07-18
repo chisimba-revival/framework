@@ -523,7 +523,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
         if ($this->_persistantFreeze) {
             $name = $this->getPrivateName();
             // Only use id attribute if doing single hidden input
-            if (1 == count($value)) {
+            if (1 == (is_countable($value) ? count($value) : 0)) {
                 $id     = $this->getAttribute('id');
                 $idAttr = isset($id)? array('id' => $id): array();
             } else {

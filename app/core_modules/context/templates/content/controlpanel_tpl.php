@@ -24,14 +24,14 @@ foreach ($cpBlocks as $block)
         $right[] = $block;
     }
 }
-if (count($left) > 0) {
+if ((is_countable($left) ? count($left) : 0) > 0) {
     $ret .= '<div class="context_cp_left">';
     foreach ($left as $block) {
         $ret .= $block;
     }
     $ret .= '</div>';
 }
-if (count($right) > 0) {
+if ((is_countable($right) ? count($right) : 0) > 0) {
     $ret .= '<div class="context_cp_right">';
     foreach ($right as $block)
     {

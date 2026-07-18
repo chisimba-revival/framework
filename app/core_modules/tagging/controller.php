@@ -54,7 +54,7 @@ class tagging extends controller
                 } else {
                     $tags = $this->objDbTags->getSimilarTags($tag);
                     
-                    if (count($tags) == 0) {
+                    if ((is_countable($tags) ? count($tags) : 0) == 0) {
                         echo '';
                     } else {
                         $array = array();

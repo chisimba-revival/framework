@@ -750,7 +750,7 @@ class dbcontentnodes extends dbtable {
      */
     public function hasChildren($parentId) {
         $arr = $this->getAll ( 'WHERE parent_Node ="' . $parentId . '"' );
-        if (count ( $arr ) < 1) {
+        if ((is_countable($arr) ? count($arr) : 0) < 1) {
             return FALSE;
         } else {
             return TRUE;

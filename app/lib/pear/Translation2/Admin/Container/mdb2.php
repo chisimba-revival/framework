@@ -366,7 +366,7 @@ class Translation2_Admin_Container_mdb2 extends Translation2_Container_mdb2
             $this->getLangs('ids')
         );
 
-        if (!count($langs)) {
+        if (!(is_countable($langs) ? count($langs) : 0)) {
             //return error: no valid lang provided
             return true;
         }

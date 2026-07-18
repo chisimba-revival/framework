@@ -391,7 +391,7 @@ class MDB_Manager extends PEAR
                                             {
                                                 break;
                                             }
-                                            $lob = count($lobs);
+                                            $lob = (is_countable($lobs) ? count($lobs) : 0);
                                             $lobs[$lob] = $result;
                                             $result = $this->database->setParamClob($prepared_query,
                                                 $field_number, $lobs[$lob], $field_name);
@@ -405,7 +405,7 @@ class MDB_Manager extends PEAR
                                             if(MDB::isError($result = $this->database->createLob($lob_definition))) {
                                                 break;
                                             }
-                                            $lob = count($lobs);
+                                            $lob = (is_countable($lobs) ? count($lobs) : 0);
                                             $lobs[$lob] = $result;
                                             $result = $this->database->setParamBlob($prepared_query,
                                                 $field_number, $lobs[$lob], $field_name);
@@ -447,7 +447,7 @@ class MDB_Manager extends PEAR
                             if(!MDB::isError($result)) {
                                 $result = $this->database->executeQuery($prepared_query);
                             }
-                            for($lob = 0; $lob < count($lobs); $lob++) {
+                            for($lob = 0; $lob < (is_countable($lobs) ? count($lobs) : 0); $lob++) {
                                 $this->database->destroyLOB($lobs[$lob]);
                             }
                             $this->database->freePreparedQuery($prepared_query);
@@ -904,7 +904,7 @@ class MDB_Manager extends PEAR
                                     $change['type'] = $field['type'];
                                     $this->database->debug("Changed field '$field_name' type from '".$previous_fields[$was_field_name]['type']."' to '".$fields[$field_name]['type']."' in table '$table_name'");
                                 }
-                                if(count($change)) {
+                                if((is_countable($change) ? count($change) : 0)) {
                                     $query = $this->database->getFieldDeclaration($field_name, $field);
                                     if(MDB::isError($query)) {
                                         return($query);
@@ -1011,7 +1011,7 @@ class MDB_Manager extends PEAR
                                 }
                             }
                             
-                            if(count($change)) {
+                            if((is_countable($change) ? count($change) : 0)) {
                                 $this->_addDefinitionChange($changes, 'INDEXES', $table_name,array('ChangedIndexes' => array($index_name => $change)));
                             }
                         } else {
@@ -1082,7 +1082,7 @@ class MDB_Manager extends PEAR
                             $change['on'] = $sequence['on'];
                             $this->database->debug("Changed sequence '$sequence_name' on table field from '".$previous_definition['SEQUENCES'][$was_sequence_name]['on']['table'].'.'.$previous_definition['SEQUENCES'][$was_sequence_name]['on']['field']."' to '".$this->database_definition['SEQUENCES'][$sequence_name]['on']['table'].'.'.$this->database_definition['SEQUENCES'][$sequence_name]['on']['field']."'");
                         }
-                        if(count($change)) {
+                        if((is_countable($change) ? count($change) : 0)) {
                             $this->_addDefinitionChange($changes, 'SEQUENCES', $was_sequence_name,array('Change' => array($sequence_name => array($change))));
                         }
                     } else {
@@ -1161,7 +1161,7 @@ class MDB_Manager extends PEAR
                     'indexes are not supported'));
             }
             foreach($changes['INDEXES'] as $index) {
-                $table_changes = count($index);
+                $table_changes = (is_countable($index) ? count($index) : 0);
                 if(isset($index['AddedIndexes'])) {
                     $table_changes--;
                 }
@@ -1654,14 +1654,14 @@ class MDB_Manager extends PEAR
         if(MDB::isError($tables)) {
             return($tables);
         }
-        for($table = 0; $table < count($tables); $table++) {
+        for($table = 0; $table < (is_countable($tables) ? count($tables) : 0); $table++) {
             $table_name = $tables[$table];
             $fields = $this->database->listTableFields($table_name);
             if(MDB::isError($fields)) {
                 return($fields);
             }
             $this->database_definition['TABLES'][$table_name] = array('FIELDS' => array());
-            for($field = 0; $field < count($fields); $field++)
+            for($field = 0; $field < (is_countable($fields) ? count($fields) : 0); $field++)
             {
                 $field_name = $fields[$field];
                 $definition = $this->database->getTableFieldDefinition($table_name, $field_name);
@@ -1704,10 +1704,10 @@ class MDB_Manager extends PEAR
             if(MDB::isError($indexes)) {
                 return($indexes);
             }
-            if(is_array($indexes) && count($indexes) > 0 && !isset($this->database_definition['TABLES'][$table_name]['INDEXES'])) {
+            if(is_array($indexes) && (is_countable($indexes) ? count($indexes) : 0) > 0 && !isset($this->database_definition['TABLES'][$table_name]['INDEXES'])) {
                 $this->database_definition['TABLES'][$table_name]['INDEXES'] = array();
             }
-            for($index = 0, $index_cnt = count($indexes); $index < $index_cnt; $index++)
+            for($index = 0, $index_cnt = (is_countable($indexes) ? count($indexes) : 0); $index < $index_cnt; $index++)
             {
                 $index_name = $indexes[$index];
                 $definition = $this->database->getTableIndexDefinition($table_name, $index_name);
@@ -1764,10 +1764,10 @@ class MDB_Manager extends PEAR
         if(MDB::isError($sequences)) {
             return($sequences);
         }
-        if(is_array($sequences) && count($sequences) > 0 && !isset($this->database_definition['SEQUENCES'])) {
+        if(is_array($sequences) && (is_countable($sequences) ? count($sequences) : 0) > 0 && !isset($this->database_definition['SEQUENCES'])) {
             $this->database_definition['SEQUENCES'] = array();
         }
-        for($sequence = 0; $sequence < count($sequences); $sequence++) {
+        for($sequence = 0; $sequence < (is_countable($sequences) ? count($sequences) : 0); $sequence++) {
             $sequence_name = $sequences[$sequence];
             $definition = $this->database->getSequenceDefinition($sequence_name);
             if(MDB::isError($definition)) {
@@ -1967,7 +1967,7 @@ class MDB_Manager extends PEAR
                         if(MDB::isError($result)) {
                             return($result);
                         }
-                        $rows = count($result);
+                        $rows = (is_countable($result) ? count($result) : 0);
                         if($rows > 0) {
                             $buffer = ("$eol  <initialization>$eol");
                             if($output) {

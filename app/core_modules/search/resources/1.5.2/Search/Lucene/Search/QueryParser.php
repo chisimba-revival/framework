@@ -559,18 +559,18 @@ class Zend_Search_Lucene_Search_QueryParser extends Zend_Search_Lucene_FSM
     public function openedRQLastTerm()
     {
         $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($this->_rqFirstTerm, $this->_encoding);
-        if (count($tokens) > 1) {
+        if ((is_countable($tokens) ? count($tokens) : 0) > 1) {
             throw new Zend_Search_Lucene_Search_QueryParserException('Range query boundary terms must be non-multiple word terms');
-        } else if (count($tokens) == 1) {
+        } else if ((is_countable($tokens) ? count($tokens) : 0) == 1) {
             $from = new Zend_Search_Lucene_Index_Term(reset($tokens)->getTermText(), $this->_context->getField());
         } else {
             $from = null;
         }
 
         $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($this->_currentToken->text, $this->_encoding);
-        if (count($tokens) > 1) {
+        if ((is_countable($tokens) ? count($tokens) : 0) > 1) {
             throw new Zend_Search_Lucene_Search_QueryParserException('Range query boundary terms must be non-multiple word terms');
-        } else if (count($tokens) == 1) {
+        } else if ((is_countable($tokens) ? count($tokens) : 0) == 1) {
             $to = new Zend_Search_Lucene_Index_Term(reset($tokens)->getTermText(), $this->_context->getField());
         } else {
             $to = null;
@@ -601,18 +601,18 @@ class Zend_Search_Lucene_Search_QueryParser extends Zend_Search_Lucene_FSM
     public function closedRQLastTerm()
     {
         $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($this->_rqFirstTerm, $this->_encoding);
-        if (count($tokens) > 1) {
+        if ((is_countable($tokens) ? count($tokens) : 0) > 1) {
             throw new Zend_Search_Lucene_Search_QueryParserException('Range query boundary terms must be non-multiple word terms');
-        } else if (count($tokens) == 1) {
+        } else if ((is_countable($tokens) ? count($tokens) : 0) == 1) {
             $from = new Zend_Search_Lucene_Index_Term(reset($tokens)->getTermText(), $this->_context->getField());
         } else {
             $from = null;
         }
 
         $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($this->_currentToken->text, $this->_encoding);
-        if (count($tokens) > 1) {
+        if ((is_countable($tokens) ? count($tokens) : 0) > 1) {
             throw new Zend_Search_Lucene_Search_QueryParserException('Range query boundary terms must be non-multiple word terms');
-        } else if (count($tokens) == 1) {
+        } else if ((is_countable($tokens) ? count($tokens) : 0) == 1) {
             $to = new Zend_Search_Lucene_Index_Term(reset($tokens)->getTermText(), $this->_context->getField());
         } else {
             $to = null;

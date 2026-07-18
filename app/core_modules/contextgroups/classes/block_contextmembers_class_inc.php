@@ -146,7 +146,7 @@ class block_contextmembers extends ChisimbaObject
         
         $str .= '<p><strong>'.ucwords($this->objLanguage->code2Txt('word_lecturers','system')).'</strong></p>';
         
-        if (count($lecturers) == 0) {
+        if ((is_countable($lecturers) ? count($lecturers) : 0) == 0) {
             $str .= '<p>'.$this->objLanguage->code2Txt('mod_contextgroups_nolecturers','contextgroups').'<p>';
         } else {
             $str .= '<p>';
@@ -161,7 +161,7 @@ class block_contextmembers extends ChisimbaObject
         
          $str .= '<p><strong>'.ucwords($this->objLanguage->code2Txt('word_students','system')).'</strong></p>';
         
-        if (count($students) == 0) {
+        if ((is_countable($students) ? count($students) : 0) == 0) {
             $str .= '<p>'.$this->objLanguage->code2Txt('mod_groupadmin_nostuds','groupadmin').'<p>';
         } else {
             $str .= '<p>';

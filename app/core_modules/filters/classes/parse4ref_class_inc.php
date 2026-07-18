@@ -75,7 +75,7 @@ class parse4ref extends ChisimbaObject
         $result = $result['reference'];
 
         // If at least one result, start replacing
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             $count = 1; // Counter for Refences
             $referencefooter = '';
 

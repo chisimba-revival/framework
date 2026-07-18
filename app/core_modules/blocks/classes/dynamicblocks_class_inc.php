@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Dynamic Blocks class
@@ -142,7 +143,7 @@ class dynamicblocks extends dbTable {
         if ($this->blockExists ( $module, $object, $function, $parameterValue, $typeofblock )) {
             return TRUE;
         } else {
-            return $this->insert ( array ('module' => $module, 'object' => $object, 'function' => $function, 'parameter' => $parameterValue, 'title' => $title, 'typeofblock' => $typeofblock, 'userorcontextorworkgroupcode' => $userOrContextOrWorkgroupCode, 'blocksize' => strtolower ( $blocksize ), 'creatorid' => $creatorId, 'datecreated' => strftime ( '%Y-%m-%d %H:%M:%S', mktime () ) )
+            return $this->insert ( array ('module' => $module, 'object' => $object, 'function' => $function, 'parameter' => $parameterValue, 'title' => $title, 'typeofblock' => $typeofblock, 'userorcontextorworkgroupcode' => $userOrContextOrWorkgroupCode, 'blocksize' => strtolower ( $blocksize ), 'creatorid' => $creatorId, 'datecreated' => strftime ( '%Y-%m-%d %H:%M:%S', time() ) )
 
              );
         }
@@ -185,7 +186,7 @@ class dynamicblocks extends dbTable {
     public function removeBlock($module, $object, $function, $parameterValue, $typeofblock = 'context') {
         $where = ' WHERE module=\'' . $module . '\' AND object=\'' . $object . '\' AND function=\'' . $function . '\' AND parameter=\'' . $parameterValue . '\' AND typeofblock=\'' . $typeofblock . '\'';
         $results = $this->getAll ( $where );
-        if (count ( $results ) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ( $results as $result ) {
                 $this->delete ( 'id', $result ['id'] );
             }
@@ -208,7 +209,7 @@ class dynamicblocks extends dbTable {
         $where = ' WHERE module=\'' . $module . '\' AND object=\'' . $object . '\' AND function=\'' . $function . '\' AND parameter=\'' . $parameterValue . '\' AND typeofblock=\'' . $typeofblock . '\'';
 
         $results = $this->getAll ( $where );
-        if (count ( $results ) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ( $results as $result ) {
                 $this->update ( 'id', $result ['id'], array ('title' => $title ) );
             }

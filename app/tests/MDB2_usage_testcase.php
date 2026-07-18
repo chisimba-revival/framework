@@ -364,8 +364,8 @@ class MDB2_Usage_TestCase extends MDB2_TestCase {
             array(null, true)
         );
 
-        for ($test_value = 0; $test_value <= count($test_values); $test_value++) {
-            if ($test_value == count($test_values)) {
+        for ($test_value = 0; $test_value <= (is_countable($test_values) ? count($test_values) : 0); $test_value++) {
+            if ($test_value == (is_countable($test_values) ? count($test_values) : 0)) {
                 $value = 'NULL';
                 $is_null = true;
             } else {
@@ -421,7 +421,7 @@ class MDB2_Usage_TestCase extends MDB2_TestCase {
                             "\\\"\\\""
                             );
 
-        for ($string = 0; $string < count($test_strings); $string++) {
+        for ($string = 0; $string < (is_countable($test_strings) ? count($test_strings) : 0); $string++) {
             $this->clearTables();
 
             $value = $this->db->quote($test_strings[$string], 'text');
@@ -1066,7 +1066,7 @@ class MDB2_Usage_TestCase extends MDB2_TestCase {
             $this->assertTrue(false, 'Error selecting from users'.$result->getMessage());
         }
 
-        $this->assertEquals(count($this->fields), count($row), "The query result returned a number of columns unlike ".count($this->fields) .' as expected');
+        $this->assertEquals(count($this->fields), (is_countable($row) ? count($row) : 0), "The query result returned a number of columns unlike ".count($this->fields) .' as expected');
     }
 }
 

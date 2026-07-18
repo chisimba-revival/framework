@@ -235,7 +235,7 @@ class Text_Wiki_Parse {
         $tmp = explode('="', trim($text));
 
         // basic setup
-        $k = count($tmp) - 1;
+        $k = (is_countable($tmp) ? count($tmp) : 0) - 1;
         $attrs = array();
         $key = null;
 

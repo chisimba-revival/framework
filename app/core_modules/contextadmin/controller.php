@@ -434,7 +434,7 @@ class contextadmin extends controller {
 
         //Get all context Learner Outcomes and for each, get updated value
         $contextLO = $this->objDBLearnerOutcomes->getContextOutcomes($contextCode);
-        $existingOutcomes = count($contextLO);
+        $existingOutcomes = (is_countable($contextLO) ? count($contextLO) : 0);
         if ($existingOutcomes > 0) {
             $count = $existingOutcomes + 1;
             $lodrops = $existingOutcomes + $lodrops;
@@ -531,7 +531,7 @@ class contextadmin extends controller {
             $objContextModules->deleteModulesForContext($contextCode);
 
 
-            if (is_array($plugins) && count($plugins) > 0) {
+            if (is_array($plugins) && (is_countable($plugins) ? count($plugins) : 0) > 0) {
                 foreach ($plugins as $plugin) {
                     $objContextModules->addModule($contextCode, $plugin);
                 }
@@ -720,7 +720,7 @@ class contextadmin extends controller {
 
         $results = $this->objContext->getContextStartingWith($letter);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             $this->setVar('content', 'No search results for ' . $letter);
         } else {
             $this->setVarByRef('contexts', $results);
@@ -737,7 +737,7 @@ class contextadmin extends controller {
         $search = $this->getParam('search');
         $results = $this->objContext->searchContext($search);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             $this->setVar('content', $this->objLanguage->languageText('mod_contextadmin_nosearchresultsfor', 'contextadmin', 'No search results for') . ' ' . $search);
         } else {
             $this->setVarByRef('contexts', $results);

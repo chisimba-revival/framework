@@ -137,7 +137,7 @@ class Auth_Yadis_PlainHTTPFetcher extends Auth_Yadis_HTTPFetcher {
             if (preg_match("/:/", $header)) {
                 $parts = explode(": ", $header, 2);
 
-                if (count($parts) == 2) {
+                if ((is_countable($parts) ? count($parts) : 0) == 2) {
                     list($name, $value) = $parts;
                     $new_headers[$name] = $value;
                 }

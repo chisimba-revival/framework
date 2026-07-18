@@ -77,7 +77,7 @@ class extractparams extends ChisimbaObject
                 //Split them up in to a string representing each pair
                 $tmpAr = explode("=", trim($item));
                 //Make sure that there is a pair
-                if (count($tmpAr) == 2) {
+                if ((is_countable($tmpAr) ? count($tmpAr) : 0) == 2) {
                     $pName = trim($tmpAr[0]);
                     $pValue =  trim($tmpAr[1]);
                     $ret[$pName] = $pValue;

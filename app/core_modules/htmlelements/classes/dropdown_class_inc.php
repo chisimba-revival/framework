@@ -119,6 +119,19 @@ class dropdown extends abhtmlbase implements ifhtml
   *
   * @param string $name : The name of the dropdown
   */
+    /*
+     * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+     *
+     * PHP 8 no longer treats a method named after the class as a
+     * constructor. Keep the historical constructor intact and
+     * delegate to it from __construct() so existing behaviour and
+     * call sites remain unchanged.
+     */
+    public function __construct($name=NULL)
+    {
+        $this->dropdown($name);
+    }
+    
     public function dropdown($name=NULL){
     if (!is_object($name)) {
           $this->name=$name;

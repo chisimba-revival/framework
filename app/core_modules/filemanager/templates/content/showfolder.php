@@ -234,7 +234,7 @@ if ($folder['folderlevel'] != 2 && $folderPermission) {
     $folderActions.=$fieldset->show();
 }
 
-if ((count($files) > 0 || count($subfolders) > 0 || count($symlinks) > 0) && $folderPermission) {
+if (((is_countable($files) ? count($files) : 0) > 0 || (is_countable($subfolders) ? count($subfolders) : 0) > 0 || (is_countable($symlinks) ? count($symlinks) : 0) > 0) && $folderPermission) {
     $form = new form('movedeletefiles', $this->uri(array('action' => 'multimovedelete')));
     $form->addToForm($table);
 

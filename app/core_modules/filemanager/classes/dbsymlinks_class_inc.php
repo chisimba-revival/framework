@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Class to handle symlinks
@@ -68,9 +69,9 @@ class dbsymlinks extends dbTable
                     'fileid' => $file,
                     'folderid' => $folder,
                     'creatorid' => $this->objUser->userId(),
-                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time()),
                     'creatorid' => $this->objUser->userId(),
-                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                    'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time()),
                 )
             );
     }
@@ -112,7 +113,7 @@ class dbsymlinks extends dbTable
         
         $results = $this->getArray($sql);
         
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];

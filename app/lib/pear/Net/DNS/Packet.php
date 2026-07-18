@@ -358,7 +358,7 @@ class Net_DNS_Packet
     {
         $names = explode('.', $name);
         $compname = '';
-        while (count($names)) {
+        while ((is_countable($names) ? count($names) : 0)) {
             $dname = join('.', $names);
             if (isset($this->compnames[$dname])) {
                 $compname .= pack('n', 0xc000 | $this->compnames[$dname]);
@@ -371,7 +371,7 @@ class Net_DNS_Packet
             $compname .= pack('Ca*', $length, $first);
             $offset += $length + 1;
         }
-        if (! count($names)) {
+        if (! (is_countable($names) ? count($names) : 0)) {
             $compname .= pack('C', 0);
         }
         return $compname;

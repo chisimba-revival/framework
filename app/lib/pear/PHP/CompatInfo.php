@@ -93,7 +93,7 @@ class PHP_CompatInfo
     {
         $options = array_merge(array('debug' => false), $options);
         $tokens = $this->_tokenize($file);
-        if (is_array($tokens) && count($tokens) > 0) {
+        if (is_array($tokens) && (is_countable($tokens) ? count($tokens) : 0) > 0) {
             return $this->_parseTokens($tokens, $options);
         }
         return false;
@@ -122,7 +122,7 @@ class PHP_CompatInfo
     {
         $options = array_merge(array('debug' => false), $options);
         $tokens = $this->_tokenize($string, true);
-        if (is_array($tokens) && count($tokens) > 0) {
+        if (is_array($tokens) && (is_countable($tokens) ? count($tokens) : 0) > 0) {
             return $this->_parseTokens($tokens, $options);
         }
         return false;
@@ -190,7 +190,7 @@ class PHP_CompatInfo
                 if (isset($file_info['extension']) &&
                     in_array(strtolower($file_info['extension']), $options['file_ext'])) {
                     $tokens = $this->_tokenize($file);
-                    if (is_array($tokens) && count($tokens) > 0) {
+                    if (is_array($tokens) && (is_countable($tokens) ? count($tokens) : 0) > 0) {
                         $files_parsed[$file] = $this->_parseTokens($tokens, $options);
                         $files_valid++;
                     } else {
@@ -224,7 +224,7 @@ class PHP_CompatInfo
                 }
             }
 
-            if (count($files_parsed) == 0 || $files_valid == 0) {
+            if ((is_countable($files_parsed) ? count($files_parsed) : 0) == 0 || $files_valid == 0) {
                 return false;
             }
 
@@ -302,7 +302,7 @@ class PHP_CompatInfo
                 if (!in_array(strtolower($file), $options['ignore_files']) &&
                      in_array($pathinfo['extension'], $options['file_ext'])) {
                     $tokens = $this->_tokenize($file, $options['is_string']);
-                    if (is_array($tokens) && count($tokens) > 0) {
+                    if (is_array($tokens) && (is_countable($tokens) ? count($tokens) : 0) > 0) {
                         $files_parsed[$file] = $this->_parseTokens($tokens, $options);
                     } else {
                         $files_parsed[$file] = false;
@@ -312,7 +312,7 @@ class PHP_CompatInfo
                 }
             } else {
                 $tokens = $this->_tokenize($file, $options['is_string']);
-                if (is_array($tokens) && count($tokens) > 0) {
+                if (is_array($tokens) && (is_countable($tokens) ? count($tokens) : 0) > 0) {
                     $files_parsed[] = $this->_parseTokens($tokens, $options);
                 } else {
                     $files_parsed[] = false;
@@ -433,7 +433,7 @@ class PHP_CompatInfo
             $max_ver = false;
         }
 
-        $token_count = sizeof($tokens);
+        $token_count = (is_countable($tokens) ? sizeof($tokens) : 0);
         $i = 0;
         while ($i < $token_count) {
             $found_func = true;

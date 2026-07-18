@@ -183,7 +183,7 @@ class PEAR_Downloader extends PEAR_Common
         if (isset($this->_options['alldeps']) || isset($this->_options['onlyreqdeps'])) {
             $this->_installed = $this->_registry->listAllPackages();
             foreach ($this->_installed as $key => $unused) {
-                if (!count($unused)) {
+                if (!(is_countable($unused) ? count($unused) : 0)) {
                     continue;
                 }
                 $strtolower = function($a) { return strtolower($a); };
@@ -280,7 +280,7 @@ class PEAR_Downloader extends PEAR_Common
 
     function &download($params)
     {
-        if (!count($params)) {
+        if (!(is_countable($params) ? count($params) : 0)) {
             $a = array();
             return $a;
         }
@@ -397,7 +397,7 @@ class PEAR_Downloader extends PEAR_Common
 
         unset($channelschecked);
         PEAR_Downloader_Package::removeDuplicates($params);
-        if (!count($params)) {
+        if (!(is_countable($params) ? count($params) : 0)) {
             $a = array();
             return $a;
         }
@@ -428,7 +428,7 @@ class PEAR_Downloader extends PEAR_Common
             $this->log(3, 'Skipping dependency download check, --offline specified');
         }
 
-        if (!count($params)) {
+        if (!(is_countable($params) ? count($params) : 0)) {
             $a = array();
             return $a;
         }
@@ -437,7 +437,7 @@ class PEAR_Downloader extends PEAR_Common
         PEAR_Downloader_Package::removeDuplicates($params, true);
         $errorparams = array();
         if (PEAR_Downloader_Package::detectStupidDuplicates($params, $errorparams)) {
-            if (count($errorparams)) {
+            if ((is_countable($errorparams) ? count($errorparams) : 0)) {
                 foreach ($errorparams as $param) {
                     $name = $this->_registry->parsedPackageNameToString($param->getParsedPackage());
                     $this->pushError('Duplicate package ' . $name . ' found', PEAR_INSTALLER_FAILED);
@@ -448,7 +448,7 @@ class PEAR_Downloader extends PEAR_Common
         }
 
         PEAR_Downloader_Package::removeInstalled($params);
-        if (!count($params)) {
+        if (!(is_countable($params) ? count($params) : 0)) {
             $this->pushError('No valid packages found', PEAR_INSTALLER_FAILED);
             $a = array();
             return $a;
@@ -457,7 +457,7 @@ class PEAR_Downloader extends PEAR_Common
         PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
         $err = $this->analyzeDependencies($params);
         PEAR::popErrorHandling();
-        if (!count($params)) {
+        if (!(is_countable($params) ? count($params) : 0)) {
             $this->pushError('No valid packages found', PEAR_INSTALLER_FAILED);
             $a = array();
             return $a;
@@ -499,7 +499,7 @@ class PEAR_Downloader extends PEAR_Common
             PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
             $err = $this->analyzeDependencies($newparams, true);
             PEAR::popErrorHandling();
-            if (!count($newparams)) {
+            if (!(is_countable($newparams) ? count($newparams) : 0)) {
                 $this->pushError('Download failed', PEAR_INSTALLER_FAILED);
                 $a = array();
                 return $a;
@@ -551,7 +551,7 @@ class PEAR_Downloader extends PEAR_Common
                     continue;
                 }
 
-                if (count($deps)) {
+                if ((is_countable($deps) ? count($deps) : 0)) {
                     $depchecker = &$this->getDependency2Object($this->config, $this->getOptions(),
                         $param->getParsedPackage(), PEAR_VALIDATE_DOWNLOADING);
                     $send = $param->getPackageFile();
@@ -1350,7 +1350,7 @@ class PEAR_Downloader extends PEAR_Common
 
         $installOrder = Structures_Graph_Manipulator_TopologicalSorter::sort($depgraph);
         $ret = array();
-        for ($i = 0, $count = count($installOrder); $i < $count; $i++) {
+        for ($i = 0, $count = (is_countable($installOrder) ? count($installOrder) : 0); $i < $count; $i++) {
             foreach ($installOrder[$i] as $index => $sortedpackage) {
                 $data = &$installOrder[$i][$index]->getData();
                 $ret[] = &$nodes[$reg->parsedPackageNameToString(

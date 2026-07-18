@@ -307,6 +307,17 @@ class hn_captcha
 		  * @return nothing
 		  *
 		  **/
+		/**
+		 * PHP 8 compatible constructor.
+		 *
+		 * PHP 8 no longer recognises class-named methods as constructors.
+		 * Delegate to the historical constructor to initialise CAPTCHA state.
+		 */
+		function __construct($config, $secure = TRUE)
+		{
+			$this->hn_captcha($config, $secure);
+		}
+
 		function hn_captcha($config,$secure=TRUE)
 		{
 

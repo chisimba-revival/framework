@@ -84,7 +84,7 @@ class Structures_Graph_Manipulator_AcyclicTest {
         $refGenerator = array();
         foreach($nodeKeys as $key) {
             $refGenerator[] = false;
-            $nodes[$key]->setMetadata('acyclic-test-visited', $refGenerator[sizeof($refGenerator) - 1]);
+            $nodes[$key]->setMetadata('acyclic-test-visited', $refGenerator[(is_countable($refGenerator) ? sizeof($refGenerator) : 0) - 1]);
         }
 
         // Iteratively peel off leaf nodes
@@ -97,12 +97,12 @@ class Structures_Graph_Manipulator_AcyclicTest {
                 }
             }
             // Mark leafs as visited
-            for ($i=sizeof($leafNodes) - 1; $i>=0; $i--) {
+            for ($i=(is_countable($leafNodes) ? sizeof($leafNodes) : 0) - 1; $i>=0; $i--) {
                 $visited =& $leafNodes[$i]->getMetadata('acyclic-test-visited');
                 $visited = true;
                 $leafNodes[$i]->setMetadata('acyclic-test-visited', $visited);
             }
-        } while (sizeof($leafNodes) > 0);
+        } while ((is_countable($leafNodes) ? sizeof($leafNodes) : 0) > 0);
 
         // If graph is a DAG, there should be no non-visited nodes. Let's try to prove otherwise
         $result = true;

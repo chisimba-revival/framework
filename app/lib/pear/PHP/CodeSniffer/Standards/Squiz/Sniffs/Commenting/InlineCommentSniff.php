@@ -155,7 +155,7 @@ class Squiz_Sniffs_Commenting_InlineCommentSniff implements PHP_CodeSniffer_Snif
         }
 
         // Finally, the line below the last comment cannot be empty.
-        $totalTokens = count($tokens);
+        $totalTokens = (is_countable($tokens) ? count($tokens) : 0);
         $start       = false;
 
         for ($i = ($stackPtr + 1); $i < $totalTokens; $i++) {

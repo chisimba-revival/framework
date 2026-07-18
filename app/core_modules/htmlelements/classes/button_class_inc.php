@@ -100,6 +100,19 @@ class button extends abhtmlbase implements ifhtml
     * @param string $value   optional :value of the button
     * @param string $onclick optional :javascript function that will be called
     */
+        /*
+         * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+         *
+         * PHP 8 no longer treats a method named after the class as a
+         * constructor. Keep the historical constructor intact and
+         * delegate to it from __construct() so existing behaviour and
+         * call sites remain unchanged.
+         */
+        public function __construct($name=null, $value = null, $onclick = null)
+        {
+            $this->button($name, $value, $onclick);
+        }
+        
         public function button($name=null, $value = null, $onclick = null)
     {
         $this->name = $name;

@@ -407,7 +407,7 @@ class Auth_OpenID_SQLStore extends Auth_OpenID_OpenIDStore {
             $assocs = $this->_get_assocs($server_url);
         }
 
-        if (!$assocs || (count($assocs) == 0)) {
+        if (!$assocs || ((is_countable($assocs) ? count($assocs) : 0) == 0)) {
             return null;
         } else {
             $associations = array();

@@ -479,8 +479,8 @@ class MDB2_Driver_querysim extends MDB2_Driver_Common
         }
         $lineData = $this->_parseOnDelim($query, $eolDelim);
         //kill the empty last row created by final eol char if it exists
-        if (!strlen(trim($lineData[count($lineData) - 1]))) {
-            unset($lineData[count($lineData) - 1]);
+        if (!strlen(trim($lineData[(is_countable($lineData) ? count($lineData) : 0) - 1]))) {
+            unset($lineData[(is_countable($lineData) ? count($lineData) : 0) - 1]);
         }
         //populate columnNames array
         $thisLine = each($lineData);
@@ -491,13 +491,13 @@ class MDB2_Driver_querysim extends MDB2_Driver_Common
         }
         //replace double-slash tokens with single-slash
         $columnNames = str_replace('[$double-slash$]', '\\', $columnNames);
-        $columnCount = count($columnNames);
+        $columnCount = (is_countable($columnNames) ? count($columnNames) : 0);
         $rowNum = 0;
         //loop through data lines
-        if (count($lineData) > 1) {
+        if ((is_countable($lineData) ? count($lineData) : 0) > 1) {
             while ($thisLine = each($lineData)) {
                 $thisData = $this->_parseOnDelim($thisLine[1], $dataDelim);
-                $thisDataCount = count($thisData);
+                $thisDataCount = (is_countable($thisData) ? count($thisData) : 0);
                 if ($thisDataCount != $columnCount) {
                     $fileLineNo = $rowNum + 2;
                     return $this->raiseError(MDB2_ERROR_SYNTAX, null, null,

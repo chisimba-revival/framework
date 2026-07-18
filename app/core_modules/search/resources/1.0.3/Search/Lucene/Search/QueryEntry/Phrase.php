@@ -117,11 +117,11 @@ class Zend_Search_Lucene_Search_QueryEntry_Phrase extends Zend_Search_Lucene_Sea
 
         $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($this->_phrase, $encoding);
 
-        if (count($tokens) == 0) {
+        if ((is_countable($tokens) ? count($tokens) : 0) == 0) {
             return new Zend_Search_Lucene_Search_Query_Insignificant();
         }
 
-        if (count($tokens) == 1) {
+        if ((is_countable($tokens) ? count($tokens) : 0) == 1) {
             $term  = new Zend_Search_Lucene_Index_Term($tokens[0]->getTermText(), $this->_field);
             $query = new Zend_Search_Lucene_Search_Query_Term($term);
             $query->setBoost($this->_boost);

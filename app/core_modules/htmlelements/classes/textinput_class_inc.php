@@ -76,6 +76,19 @@ class textinput extends abhtmlbase implements ifhtml
      *
      * @param string $name optional :sets the name of the text input
      */
+        /*
+         * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+         *
+         * PHP 8 no longer treats a method named after the class as a
+         * constructor. Keep the historical constructor intact and
+         * delegate to it from __construct() so existing behaviour and
+         * call sites remain unchanged.
+         */
+        public function __construct($name=null, $value=null, $type=null, $size=null)
+        {
+            $this->textinput($name, $value, $type, $size);
+        }
+        
         public function textinput($name=null, $value=null, $type=null, $size=null)
     {
         $this->name = $name;

@@ -380,7 +380,7 @@ generate both package.xml.
 
             $processFile = $file;
             unset($processFile['attribs']);
-            if (count($processFile)) {
+            if ((is_countable($processFile) ? count($processFile) : 0)) {
                 foreach ($processFile as $name => $task) {
                     if ($name != $pf2->getTasksNs() . ':replace') {
                         return $this->raiseError('Cannot safely process "' . $packagexml .

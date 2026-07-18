@@ -473,7 +473,7 @@ class MDB2_Driver_Reverse_Common extends MDB2_Module_Common
         $res = array();
 
         if ($mode) {
-            $res['num_fields'] = count($fields);
+            $res['num_fields'] = (is_countable($fields) ? count($fields) : 0);
         }
 
         foreach ($fields as $i => $field) {

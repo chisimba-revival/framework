@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Class to Register File Usage as part of file tracking purposes
@@ -87,8 +88,8 @@ class registerfileusage extends dbTable
                 'workgroup' => $workgroup,
                 'filelock' => $fileLock,
                 'creatorid' => $userId,
-                'datecreated' => strftime('%Y-%m-%d', mktime()),
-                'timecreated' => strftime('%H:%M:%S', mktime())
+                'datecreated' => strftime('%Y-%m-%d', time()),
+                'timecreated' => strftime('%H:%M:%S', time())
         ));
         
         // Done to Avoid Null Values

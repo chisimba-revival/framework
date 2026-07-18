@@ -197,11 +197,11 @@ class Zend_Json
             // Initialize a result array.   
             $resultArray = array();      
             // Is the input array size 0? Then, we reached the rare CDATA text if any.      
-            if (count($simpleXmlElementObject) <= 0) {      
+            if ((is_countable($simpleXmlElementObject) ? count($simpleXmlElementObject) : 0) <= 0) {      
                 // Let us return the lonely CDATA. It could even be      
                 // an empty element or just filled with whitespaces.      
                 return (trim(strval($copyOfSimpleXmlElementObject)));      
-            } // End of if (count($simpleXmlElementObject) <= 0)      
+            } // End of if ((is_countable($simpleXmlElementObject) ? count($simpleXmlElementObject) : 0) <= 0)      
      
             // Let us walk through the child elements now.      
             foreach($simpleXmlElementObject as $key=>$value) {      

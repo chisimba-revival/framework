@@ -59,7 +59,7 @@ function Auth_Yadis_array_scramble($arr)
 {
     $result = array();
 
-    while (count($arr)) {
+    while ((is_countable($arr) ? count($arr) : 0)) {
         $index = array_rand($arr, 1);
         $result[] = $arr[$index];
         unset($arr[$index]);
@@ -258,7 +258,7 @@ class Auth_Yadis_XRDS {
         function Auth_Yadis_XRDS($xmlParser, $xrdNodes)
     {
         $this->parser = $xmlParser;
-        $this->xrdNode = $xrdNodes[count($xrdNodes) - 1];
+        $this->xrdNode = $xrdNodes[(is_countable($xrdNodes) ? count($xrdNodes) : 0) - 1];
         $this->allXrdNodes = $xrdNodes;
         $this->serviceList = array();
         $this->_parse();
@@ -449,7 +449,7 @@ class Auth_Yadis_XRDS {
                 }
 
                 if (($filter_mode == SERVICES_YADIS_MATCH_ALL) &&
-                    ($matches == count($filters))) {
+                    ($matches == (is_countable($filters) ? count($filters) : 0))) {
 
                     $pri = $service->getPriority();
                     if ($pri === null) {

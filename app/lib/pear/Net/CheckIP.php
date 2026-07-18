@@ -60,7 +60,7 @@ class Net_CheckIP
     function check_ip($ip)
     {
         $oct = explode('.', $ip);
-        if (count($oct) != 4) {
+        if ((is_countable($oct) ? count($oct) : 0) != 4) {
             return false;
         }
 

@@ -341,7 +341,7 @@ class Mail_mimePart {
         while(list(, $line) = each($lines)){
 
             $line    = preg_split('||', $line, -1, PREG_SPLIT_NO_EMPTY);
-            $linlen     = count($line);
+            $linlen     = (is_countable($line) ? count($line) : 0);
             $newline = '';
 
             for ($i = 0; $i < $linlen; $i++) {

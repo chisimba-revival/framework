@@ -390,7 +390,7 @@ class getid3_png
 				case 'gIFg': // GIF Graphic Control Extension
 					$gIFgCounter = 0;
 					if (isset($thisfile_png_chunk_type_text) && is_array($thisfile_png_chunk_type_text)) {
-						$gIFgCounter = count($thisfile_png_chunk_type_text);
+						$gIFgCounter = (is_countable($thisfile_png_chunk_type_text) ? count($thisfile_png_chunk_type_text) : 0);
 					}
 					$thisfile_png_chunk_type_text[$gIFgCounter]['header']          = $chunk;
 					$thisfile_png_chunk_type_text[$gIFgCounter]['disposal_method'] = getid3_lib::BigEndian2Int(substr($thisfile_png_chunk_type_text['header']['data'], 0, 1));
@@ -402,7 +402,7 @@ class getid3_png
 				case 'gIFx': // GIF Application Extension
 					$gIFxCounter = 0;
 					if (isset($thisfile_png_chunk_type_text) && is_array($thisfile_png_chunk_type_text)) {
-						$gIFxCounter = count($thisfile_png_chunk_type_text);
+						$gIFxCounter = (is_countable($thisfile_png_chunk_type_text) ? count($thisfile_png_chunk_type_text) : 0);
 					}
 					$thisfile_png_chunk_type_text[$gIFxCounter]['header']                 = $chunk;
 					$thisfile_png_chunk_type_text[$gIFxCounter]['application_identifier'] = substr($thisfile_png_chunk_type_text['header']['data'],  0, 8);

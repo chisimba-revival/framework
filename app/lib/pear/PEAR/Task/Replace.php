@@ -174,10 +174,10 @@ class PEAR_Task_Replace extends PEAR_Task_Common
             }
         }
         $this->logger->log(
-            3, "doing ".sizeof($subst_from).
+            3, "doing ".(is_countable($subst_from) ? sizeof($subst_from) : 0).
             " substitution(s) for $dest"
         );
-        if (sizeof($subst_from)) {
+        if ((is_countable($subst_from) ? sizeof($subst_from) : 0)) {
             $contents = str_replace($subst_from, $subst_to, $contents);
         }
 

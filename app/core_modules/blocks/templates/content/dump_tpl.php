@@ -17,7 +17,7 @@
 }
 </style>
 <?php
-if (count ( $blocks ) == 0) {
+if ((is_countable($blocks) ? count($blocks) : 0) == 0) {
     echo '<div class="error">' . $this->objLanguage->languageText ( 'mod_blocks_blocknotfound', 'blocks', 'Block not found!' ) . '</div>';
 } else {
     foreach ( $blocks as $block ) {

@@ -484,7 +484,7 @@ class PHP_CodeSniffer
 
             echo PHP_EOL;
             echo str_repeat('-', 80).PHP_EOL;
-            $numLines = count($errors);
+            $numLines = (is_countable($errors) ? count($errors) : 0);
             echo "FOUND $numErrors ERROR(S) ";
 
             if ($showWarnings === true) {

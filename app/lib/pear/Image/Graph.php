@@ -447,7 +447,7 @@ class Image_Graph extends Image_Graph_Element
         $obj = null;
 
         if (is_array($params)) {
-            switch (count($params)) {
+            switch ((is_countable($params) ? count($params) : 0)) {
             case 1:
                 $obj = new $class(
                     $params[0]

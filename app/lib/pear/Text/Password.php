@@ -156,7 +156,7 @@ class Text_Password {
     function createMultipleFromLogin($login, $type, $key = 0)
     {
         $passwords = array();
-        $number    = count($login);
+        $number    = (is_countable($login) ? count($login) : 0);
         $save      = $number;
 
         while ($number > 0) {
@@ -419,7 +419,7 @@ class Text_Password {
 
         shuffle($tmp);
 
-        return implode($tmp, '');
+        return implode('', $tmp);
     }
 
     /**

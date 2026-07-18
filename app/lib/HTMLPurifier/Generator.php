@@ -71,7 +71,7 @@ class HTMLPurifier_Generator
 
         // Basic algorithm
         $html = '';
-        for ($i = 0, $size = count($tokens); $i < $size; $i++) {
+        for ($i = 0, $size = (is_countable($tokens) ? count($tokens) : 0); $i < $size; $i++) {
             if ($this->_scriptFix && $tokens[$i]->name === 'script'
                 && $i + 2 < $size && $tokens[$i+2] instanceof HTMLPurifier_Token_End) {
                 // script special case

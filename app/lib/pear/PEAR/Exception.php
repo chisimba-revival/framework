@@ -293,7 +293,7 @@ class PEAR_Exception extends Exception
             $this->_trace = $this->getTrace();
             if (empty($this->_trace)) {
                 $backtrace = debug_backtrace();
-                $this->_trace = array($backtrace[count($backtrace)-1]);
+                $this->_trace = array($backtrace[(is_countable($backtrace) ? count($backtrace) : 0)-1]);
             }
         }
         return $this->_trace;

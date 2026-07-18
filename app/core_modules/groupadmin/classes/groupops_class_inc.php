@@ -50,6 +50,13 @@ $GLOBALS['kewl_entry_point_run']) {
  * @author     Paul Scott <pscott@uwc.ac.za>
  * @filesource
  */
+/*
+ * CHISIMBA_PHP82_GROUPADMIN_COUNT_USERS
+ *
+ * Correct legacy conditions that called count() on the boolean result
+ * of ($users > 0). PHP 8 rejects count(bool). The intended test is
+ * whether the users array contains one or more records.
+ */
 class groupops extends ChisimbaObject {
 
     /**
@@ -176,6 +183,17 @@ class groupops extends ChisimbaObject {
     }
 
     public function getJsonGroupUsers($groupId, $start=0, $limit=25) {
+        // CHISIMBA_PHP82_GROUPADMIN_MEMBERSHIP_NORMALIZATION
+        $groupId = (int) $groupId;
+        $start = ($start === null || $start === '') ? 0 : max(0, (int) $start);
+        $limit = ($limit === null || $limit === '') ? 25 : max(1, (int) $limit);
+
+        // CHISIMBA_GROUPADMIN_JSON_TRACE
+        error_log('[CHISIMBA TRACE] getJsonGroupUsers entered groupid=' . var_export($groupId, true)
+            . ' start=' . var_export($start, true)
+            . ' limit=' . var_export($limit, true)
+            . ' request=' . json_encode($_REQUEST));
+
         $params["search"] = json_decode(stripslashes($this->getParam("fields")));
         $params["query"] = ($this->getParam("query")) ? $this->getParam("query") : '';
         $params["sort"] = ($this->getParam("sort")) ? $this->getParam("sort") : null;
@@ -200,12 +218,17 @@ class groupops extends ChisimbaObject {
             $where .= ")";
         }
 
-        $sql = "SELECT gu.perm_user_id, pu.auth_user_id, us.firstname, us.surname, us.username, us.staffnumber, us.last_login, us.logins, us.emailAddress, us.isActive from tbl_perms_groupusers as gu INNER join tbl_perms_perm_users as pu on gu.perm_user_id = pu.perm_user_id INNER join tbl_users as us on pu.auth_user_id = us.userId WHERE group_id = " . $groupId . $where . " ORDER BY us.surname " . $filter;
+        $sql = "SELECT gu.perm_user_id, pu.auth_user_id, us.firstname, us.surname, us.username, us.staffnumber, us.last_login, us.logins, us.emailAddress, us.isActive from tbl_perms_groupusers as gu INNER join tbl_perms_perm_users as pu on gu.perm_user_id = pu.perm_user_id INNER join tbl_users as us on pu.auth_user_id = us.userId WHERE gu.group_id = " . $groupId . $where . " ORDER BY us.surname " . $filter;
 
         $users = $this->objDBContext->getArray($sql);
-        $userCount = count($this->getUsersInGroup($groupId));
+        error_log('[CHISIMBA TRACE] getJsonGroupUsers SQL=' . $sql);
+        error_log('[CHISIMBA TRACE] getJsonGroupUsers rows=' . (is_array($users) ? (is_countable($users) ? count($users) : 0) : 'NON_ARRAY'));
+        $countRows = $this->objDBContext->getArray(
+            "SELECT COUNT(*) AS cnt FROM tbl_perms_groupusers WHERE group_id = " . $groupId
+        );
+        $userCount = isset($countRows[0]['cnt']) ? (int) $countRows[0]['cnt'] : 0;
 
-        if (count($users > 0)) {
+        if ((is_countable($users) ? count($users) : 0) > 0) {
 
             $arr = array();
             $arrUsers = array();
@@ -250,7 +273,7 @@ class groupops extends ChisimbaObject {
 
         $groups = $this->objGroups->getTopLevelGroups($params);
         $totalCount = count($this->objGroups->getTopLevelGroups(array('filter' => $filter)));
-        $noGroups = count($groups);
+        $noGroups = (is_countable($groups) ? count($groups) : 0);
         if ($noGroups > 0) {
             $arrGroups = array();
 
@@ -340,8 +363,8 @@ class groupops extends ChisimbaObject {
         $arr = array();
         $singlegroup = array();
         $groups = $this->objUser->getArray($sql);
-        $totalCount = count($groups);
-        if (count($groups) > 0) {
+        $totalCount = (is_countable($groups) ? count($groups) : 0);
+        if ((is_countable($groups) ? count($groups) : 0) > 0) {
             foreach ($groups as $group) {
                 $arr['groupname'] = $group['group_define_name'];
             }
@@ -396,7 +419,7 @@ class groupops extends ChisimbaObject {
             $userIds = substr_replace($userIds, "", strlen($userIds) - 1);
             //error_log('Success '.$groupId.'\n'.$userIds);
             $users = explode(',', $userIds);
-            //error_log(var_export(count($users)), true);
+            //error_log(var_export((is_countable($users) ? count($users) : 0)), true);
             foreach ($users as $id) {
                 //echo 'here';
                 //error_log('here');
@@ -427,6 +450,12 @@ class groupops extends ChisimbaObject {
     }
 
     public function jsonGetAllUsers($groupId = null, $start = 0, $limit = 25) {
+        // CHISIMBA_GROUPADMIN_JSON_TRACE
+        error_log('[CHISIMBA TRACE] jsonGetAllUsers entered groupid=' . var_export($groupId, true)
+            . ' start=' . var_export($start, true)
+            . ' limit=' . var_export($limit, true)
+            . ' request=' . json_encode($_REQUEST));
+
 
         $params["start"] = ($this->getParam("start")) ? $this->getParam("start") : null;
         $params["limit"] = ($this->getParam("limit")) ? $this->getParam("limit") : null;
@@ -458,10 +487,12 @@ class groupops extends ChisimbaObject {
         //error_log(var_export($sql, true));
         //die($sql);
         $users = $this->objDBContext->getArray($sql);
+        error_log('[CHISIMBA TRACE] jsonGetAllUsers SQL=' . $sql);
+        error_log('[CHISIMBA TRACE] jsonGetAllUsers rows=' . (is_array($users) ? (is_countable($users) ? count($users) : 0) : 'NON_ARRAY'));
         $countSQL = "SELECT username FROM tbl_users";
         $userCount = count($this->objDBContext->getArray($countSQL));
 
-        if (count($users > 0)) {
+        if ((is_countable($users) ? count($users) : 0) > 0) {
 
             $arr = array();
             $arrUsers = array();
@@ -527,7 +558,7 @@ class groupops extends ChisimbaObject {
     public function getGroups() {
         $groups = $this->objGroups->getTopLevelGroups(); //$this->objGroups->getGroups();
 
-        if (count($groups) > 0) {
+        if ((is_countable($groups) ? count($groups) : 0) > 0) {
             $str = '<div id="accordion">';
             foreach ($groups as $group) {
                 $groupId = $this->objGroups->getId($group['group_define_name']);
@@ -706,7 +737,7 @@ class groupops extends ChisimbaObject {
      */
     public function isGroupMember($groupId, $userId) {
         $arr = $this->getUsersInGroup($groupId);
-        if (count($arr) > 0) {
+        if ((is_countable($arr) ? count($arr) : 0) > 0) {
             foreach ($arr as $user) {
                 if ($userId == $user['auth_user_id']) {
                     return TRUE;
@@ -804,7 +835,7 @@ class groupops extends ChisimbaObject {
      * Method to generate a list
      */
     public function generateList($arr, $groupId) {
-        if (count($arr) > 0) {
+        if ((is_countable($arr) ? count($arr) : 0) > 0) {
             $objIcon = $this->getObject('geticon', 'htmlelements');
             //$this->loadClass('link', 'htmlelements');
             $objIcon->setIcon('delete', 'png');

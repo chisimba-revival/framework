@@ -203,7 +203,7 @@ class Chisimba_Sniffs_Classes_ClassDeclarationSniff implements PHP_CodeSniffer_S
             $parents[] = $nextParent;
         }
 
-        $parentCount = count($parents);
+        $parentCount = (is_countable($parents) ? count($parents) : 0);
 
         for ($i = 0; $i < $parentCount; $i++) {
             if ($tokens[$parents[$i]]['code'] === T_IMPLEMENTS) {

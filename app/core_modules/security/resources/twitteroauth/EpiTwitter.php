@@ -90,7 +90,7 @@ class EpiTwitterJson implements ArrayAccess, Countable, IteratorAggregate
     return new ArrayIterator($this->__obj);
   }
 
-  // Implementation of Countable::count() to support count($this)
+  // Implementation of Countable::count() to support (is_countable($this) ? count($this) : 0)
   public function count ()
   {
     return count($this->__obj);

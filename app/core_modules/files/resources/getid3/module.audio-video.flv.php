@@ -461,7 +461,7 @@ class AMFReader {
 
 		$data = array();
 
-		for ($i = 0; $i < count($length); $i++) {
+		for ($i = 0; $i < (is_countable($length) ? count($length) : 0); $i++) {
 			$data[] = $this->readData();
 		}
 

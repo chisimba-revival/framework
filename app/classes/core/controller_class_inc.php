@@ -376,7 +376,7 @@ class controller extends access {
         foreach ($_SESSION as $key => $cval) {
             $arrayKey = explode("~", $key);
 
-            if (count($arrayKey) == 3) {
+            if ((is_countable($arrayKey) ? count($arrayKey) : 0) == 3) {
 
                 if ($arrayKey[2] == $name) {
                     return $cval;

@@ -305,7 +305,7 @@ class File_Archive_Reader_Zip extends File_Archive_Reader_Archive
                     $blocks[] = $size;
                     $seek += $size;
                 } else {
-                    $blocks[count($blocks)-1] += $size;   //Also remove this file
+                    $blocks[(is_countable($blocks) ? count($blocks) : 0)-1] += $size;   //Also remove this file
                     $seek += $size;
                 }
                 $gap = 0;

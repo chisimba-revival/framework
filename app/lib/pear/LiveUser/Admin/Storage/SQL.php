@@ -450,7 +450,7 @@ class LiveUser_Admin_Storage_SQL extends LiveUser_Admin_Storage
 
         $tables[$root_table] = true;
         $joinfilters = array();
-        if (count($tables) > 1) {
+        if ((is_countable($tables) ? count($tables) : 0) > 1) {
             // find join condition
             $joinfilters = array();
             $result = $this->createJoinFilter($root_table, $joinfilters, $tables, $selectable_tables);
@@ -674,7 +674,7 @@ class LiveUser_Admin_Storage_SQL extends LiveUser_Admin_Storage
                 $table_prefix = true;
                 foreach ($current_fields as $field) {
                     // append table name to all selected fields for this table
-                    for ($i = 0, $j = count($fields); $i < $j; $i++) {
+                    for ($i = 0, $j = (is_countable($fields) ? count($fields) : 0); $i < $j; $i++) {
                         if ($field == $fields[$i]) {
                             $fields[$i] = $this->prefix.$this->alias[$table].'.'.$this->alias[$fields[$i]].' AS '.$field;
                         }
@@ -694,7 +694,7 @@ class LiveUser_Admin_Storage_SQL extends LiveUser_Admin_Storage
             } else {
                 foreach ($current_fields as $field) {
                     // alias field
-                    for ($i = 0, $j = count($fields); $i < $j; $i++) {
+                    for ($i = 0, $j = (is_countable($fields) ? count($fields) : 0); $i < $j; $i++) {
                         if ($field == $fields[$i]) {
                             $fields[$i] = $this->alias[$fields[$i]].' AS '.$field;
                         }

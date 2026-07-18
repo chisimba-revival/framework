@@ -1214,7 +1214,7 @@ class modulesadmin extends dbTableManager
                 foreach ($rdata[$index] as $line) {
                     //list($code,$description,$content) = explode('|',$line);
                     $cdc = explode('|',$line);
-                    if (count($cdc) != 3) {
+                    if ((is_countable($cdc) ? count($cdc) : 0) != 3) {
                         $error = str_replace('[MODULE]',$rdata['MODULE_ID'],$this->objLanguage->languageText('mod_modulecatalogue_regerror','modulecatalogue'));
                         $error = str_replace('[ELEMENT]',$cdc[0],$error);
                         throw new customException($error);

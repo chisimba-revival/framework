@@ -850,7 +850,7 @@ class PEAR_Config extends PEAR
                 }
             }
 
-            if (!count($fail)) {
+            if (!(is_countable($fail) ? count($fail) : 0)) {
                 return true;
             }
 
@@ -1122,7 +1122,7 @@ class PEAR_Config extends PEAR
         }
 
         $called[$class] = 1;
-        if (count($vars) > 3) {
+        if ((is_countable($vars) ? count($vars) : 0) > 3) {
             return $this->raiseError('Roles can only define 3 new config variables or less');
         }
 

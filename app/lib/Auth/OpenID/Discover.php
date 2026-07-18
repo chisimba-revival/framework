@@ -392,7 +392,7 @@ function Auth_OpenID_bestMatchingService($service, $preferred_types)
         }
     }
 
-    return count($preferred_types);
+    return (is_countable($preferred_types) ? count($preferred_types) : 0);
 }
 
 function Auth_OpenID_arrangeByType($service_list, $preferred_types)
@@ -561,7 +561,7 @@ function Auth_OpenID_discoverXRI($iname, $fetcher)
 
     $openid_services = Auth_OpenID_getOPOrUserServices($openid_services);
 
-    for ($i = 0; $i < count($openid_services); $i++) {
+    for ($i = 0; $i < (is_countable($openid_services) ? count($openid_services) : 0); $i++) {
         $openid_services[$i]->canonicalID = $canonicalID;
         $openid_services[$i]->claimed_id = $canonicalID;
         $openid_services[$i]->display_identifier = $iname;

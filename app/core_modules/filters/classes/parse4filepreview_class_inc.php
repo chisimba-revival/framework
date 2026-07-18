@@ -87,7 +87,7 @@ class parse4filepreview extends ChisimbaObject
         $result = array_unique($result);
         
         // If there are any matches
-        if (count($result) > 0) {
+        if ((is_countable($result) ? count($result) : 0) > 0) {
             // Load Preview Class
             $objPreview = $this->getObject('filepreview', 'filemanager');
             // Go through each result

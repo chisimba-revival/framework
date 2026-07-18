@@ -155,7 +155,7 @@ class PHPUnit2_Util_Filter {
         $filename = self::getCanonicalFilename($filename);
         $keys     = array_keys(self::$filteredFiles);
 
-        for ($i = 0; $i < sizeof($keys); $i++) {
+        for ($i = 0; $i < (is_countable($keys) ? sizeof($keys) : 0); $i++) {
             if (self::$filteredFiles[$keys[$i]] == $filename) {
                 unset(self::$filteredFiles[$keys[$i]]);
                 break;

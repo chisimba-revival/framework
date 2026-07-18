@@ -531,11 +531,11 @@ class MDB_mysql extends MDB_Common
         if (MDB::isError($col)) {
             return($col);
         }
-        if(!is_array($col) || count($col) == 0) {
+        if(!is_array($col) || (is_countable($col) ? count($col) : 0) == 0) {
             return 'NULL';
         }
         if($quote) {
-            for($i = 0, $j = count($col); $i < $j; ++$i) {
+            for($i = 0, $j = (is_countable($col) ? count($col) : 0); $i < $j; ++$i) {
                 $col[$i] = $this->getTextValue($col[$i]);
             }
         }
@@ -611,7 +611,7 @@ class MDB_mysql extends MDB_Common
      */
     function replace($table, $fields)
     {
-        $count = count($fields);
+        $count = (is_countable($fields) ? count($fields) : 0);
         for($keys = 0, $query = $values = '',reset($fields), $field = 0;
             $field<$count;
             next($fields), $field++)

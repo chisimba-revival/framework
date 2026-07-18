@@ -363,7 +363,7 @@ class Zend_Search_Lucene_Index_Writer
         }
         $segmentsFile->close();
 
-        $segmentsCount = count($segments) + count($this->_newSegments);
+        $segmentsCount = (is_countable($segments) ? count($segments) : 0) + count($this->_newSegments);
 
         // Remove segments, not listed in $segments (deleted)
         // Load segments, not listed in $this->_segmentInfos

@@ -67,7 +67,7 @@ if (isset($ar['root']['Settings'][1])){
 	$ar = $ar['root']['Settings'];
 }
 if (isset($ar)) {
-    if (count($ar) > 0) {
+    if ((is_countable($ar) ? count($ar) : 0) > 0) {
         foreach ($ar as $key =>$value) {
             $oddOrEven = ($rowcount == 0) ? "odd" : "even";
             if($key=='creatorId'||$key=='dateCreated'){

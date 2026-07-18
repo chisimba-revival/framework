@@ -23,7 +23,7 @@ class HTMLPurifier_AttrDef_CSS_Color extends HTMLPurifier_AttrDef
             if (strpos($color, ')') !== $length - 1) return false;
             $triad = substr($color, 4, $length - 4 - 1);
             $parts = explode(',', $triad);
-            if (count($parts) !== 3) return false;
+            if ((is_countable($parts) ? count($parts) : 0) !== 3) return false;
             $type = false; // to ensure that they're all the same type
             $new_parts = array();
             foreach ($parts as $part) {

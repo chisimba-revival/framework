@@ -902,7 +902,7 @@ class MDB2_Driver_ibase extends MDB2_Driver_Common
                     $positions[] = $parameter;
                     $query = substr_replace($query, '?', $position, strlen($parameter)+1);
                 } else {
-                    $positions[] = count($positions);
+                    $positions[] = (is_countable($positions) ? count($positions) : 0);
                 }
                 $position = $p_position + 1;
             } else {

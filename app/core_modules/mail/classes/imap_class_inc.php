@@ -443,9 +443,9 @@ class imap //extends object
             $attachment = array();
             while (!$endwhile) {
                 if (!isset($parts[$i])) {
-                    if (count($stack) > 0) {
-                        $parts = $stack[count($stack)-1]["p"];
-                        $i    = $stack[count($stack)-1]["i"] + 1;
+                    if ((is_countable($stack) ? count($stack) : 0) > 0) {
+                        $parts = $stack[(is_countable($stack) ? count($stack) : 0)-1]["p"];
+                        $i    = $stack[(is_countable($stack) ? count($stack) : 0)-1]["i"] + 1;
                         array_pop($stack);
                     } else {
                         $endwhile = true;
@@ -550,7 +550,7 @@ class imap //extends object
             $parsed['imapprotocol'] = $str;
         }
 
-        if (!count($dsn)) {
+        if (!(is_countable($dsn) ? count($dsn) : 0)) {
             return $parsed;
         }
         // Get (if found): username and password

@@ -217,7 +217,7 @@ abstract class Zend_Search_Lucene_Index_SegmentWriter
         }
 
         $this->_fdxFile->writeLong($this->_fdtFile->tell());
-        $this->_fdtFile->writeVInt(count($storedFields));
+        $this->_fdtFile->writeVInt((is_countable($storedFields) ? count($storedFields) : 0));
         foreach ($storedFields as $field) {
             $this->_fdtFile->writeVInt($this->_fields[$field->name]->number);
             $fieldBits = ($field->isTokenized ? 0x01 : 0x00) |
@@ -406,9 +406,9 @@ abstract class Zend_Search_Lucene_Index_SegmentWriter
         foreach ($termDocs as $docId => $termPositions) {
             $docDelta = ($docId - $prevDoc)*2;
             $prevDoc = $docId;
-            if (count($termPositions) > 1) {
+            if ((is_countable($termPositions) ? count($termPositions) : 0) > 1) {
                 $this->_frqFile->writeVInt($docDelta);
-                $this->_frqFile->writeVInt(count($termPositions));
+                $this->_frqFile->writeVInt((is_countable($termPositions) ? count($termPositions) : 0));
             } else {
                 $this->_frqFile->writeVInt($docDelta + 1);
             }
@@ -420,7 +420,7 @@ abstract class Zend_Search_Lucene_Index_SegmentWriter
             }
         }
 
-        if (count($termDocs) >= self::$skipInterval) {
+        if ((is_countable($termDocs) ? count($termDocs) : 0) >= self::$skipInterval) {
             /**
              * @todo Write Skip Data to a freq file.
              * It's not used now, but make index more optimal
@@ -432,7 +432,7 @@ abstract class Zend_Search_Lucene_Index_SegmentWriter
 
         $term = new Zend_Search_Lucene_Index_Term($termEntry->text,
                                                   $this->_fields[$termEntry->field]->number);
-        $termInfo = new Zend_Search_Lucene_Index_TermInfo(count($termDocs),
+        $termInfo = new Zend_Search_Lucene_Index_TermInfo((is_countable($termDocs) ? count($termDocs) : 0),
                                                           $freqPointer, $proxPointer, $skipOffset);
 
         $this->_dumpTermDictEntry($this->_tisFile, $this->_prevTerm, $term, $this->_prevTermInfo, $termInfo);

@@ -121,7 +121,7 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
         $tests = array();
         $depth = isset($options['recur']) ? 14 : 1;
 
-        if (!count($params)) {
+        if (!(is_countable($params) ? count($params) : 0)) {
             $params[] = '.';
         }
 
@@ -164,11 +164,11 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
                     $dir = System::find(array($p, '-type', 'f',
                                                 '-maxdepth', $depth,
                                                 '-name', 'AllTests.php'));
-                    if (count($dir)) {
+                    if ((is_countable($dir) ? count($dir) : 0)) {
                         foreach ($dir as $p) {
                             $p = realpath($p);
-                            if (!count($tests) ||
-                                  (count($tests) && strlen($p) < strlen($tests[0]))) {
+                            if (!(is_countable($tests) ? count($tests) : 0) ||
+                                  ((is_countable($tests) ? count($tests) : 0) && strlen($p) < strlen($tests[0]))) {
                                 // this is in a higher-level directory, use this one instead.
                                 $tests = array($p);
                             }
@@ -182,8 +182,8 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
                 if (isset($options['phpunit'])) {
                     if (preg_match('/AllTests\.php\\z/i', $p)) {
                         $p = realpath($p);
-                        if (!count($tests) ||
-                              (count($tests) && strlen($p) < strlen($tests[0]))) {
+                        if (!(is_countable($tests) ? count($tests) : 0) ||
+                              ((is_countable($tests) ? count($tests) : 0) && strlen($p) < strlen($tests[0]))) {
                             // this is in a higher-level directory, use this one instead.
                             $tests = array($p);
                         }
@@ -226,7 +226,7 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
         }
 
         $skipped = $passed = $failed = array();
-        $tests_count = count($tests);
+        $tests_count = (is_countable($tests) ? count($tests) : 0);
         $this->ui->outputData('Running ' . $tests_count . ' tests', $command);
         $start = time();
         if (isset($options['realtimelog']) && file_exists('run-tests.log')) {
@@ -304,11 +304,11 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
                     '"', $command);
             }
         } else {
-            if (count($failed)) {
+            if ((is_countable($failed) ? count($failed) : 0)) {
                 $output = "TOTAL TIME: $total\n";
-                $output .= count($passed) . " PASSED TESTS\n";
-                $output .= count($skipped) . " SKIPPED TESTS\n";
-                $output .= count($failed) . " FAILED TESTS:\n";
+                $output .= (is_countable($passed) ? count($passed) : 0) . " PASSED TESTS\n";
+                $output .= (is_countable($skipped) ? count($skipped) : 0) . " SKIPPED TESTS\n";
+                $output .= (is_countable($failed) ? count($failed) : 0) . " FAILED TESTS:\n";
                 foreach ($failed as $failure) {
                     $output .= $failure . "\n";
                 }
@@ -326,16 +326,16 @@ Run regression tests with PHP\'s regression testing script (run-tests.php).',
             }
         }
         $this->ui->outputData('TOTAL TIME: ' . $total);
-        $this->ui->outputData(count($passed) . ' PASSED TESTS', $command);
-        $this->ui->outputData(count($skipped) . ' SKIPPED TESTS', $command);
-        if (count($failed)) {
-            $this->ui->outputData(count($failed) . ' FAILED TESTS:', $command);
+        $this->ui->outputData((is_countable($passed) ? count($passed) : 0) . ' PASSED TESTS', $command);
+        $this->ui->outputData((is_countable($skipped) ? count($skipped) : 0) . ' SKIPPED TESTS', $command);
+        if ((is_countable($failed) ? count($failed) : 0)) {
+            $this->ui->outputData((is_countable($failed) ? count($failed) : 0) . ' FAILED TESTS:', $command);
             foreach ($failed as $failure) {
                 $this->ui->outputData($failure, $command);
             }
         }
 
-        if (count($failed) == 0) {
+        if ((is_countable($failed) ? count($failed) : 0) == 0) {
             return true;
         }
         return $this->raiseError('Some tests failed');

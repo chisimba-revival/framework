@@ -24,7 +24,7 @@ $objFilePreview = $this->getObject('filepreview');
 
 $objFileIcons = $this->getObject('fileicons', 'files');
 
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
     echo '<p>'.$this->objLanguage->languageText('mod_filemanager_nofilesuploaded', 'filemanager', 'No files uploaded').'</p>';
 } else {
 

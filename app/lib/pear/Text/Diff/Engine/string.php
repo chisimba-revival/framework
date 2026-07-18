@@ -71,7 +71,7 @@ class Text_Diff_Engine_string {
     function parseUnifiedDiff($diff)
     {
         $edits = array();
-        $end = count($diff) - 1;
+        $end = (is_countable($diff) ? count($diff) : 0) - 1;
         for ($i = 0; $i < $end;) {
             $diff1 = array();
             switch (substr($diff[$i], 0, 1)) {
@@ -97,7 +97,7 @@ class Text_Diff_Engine_string {
                 while ($i < $end && substr($diff[$i], 0, 1) == '+') {
                     $diff2[] = substr($diff[$i++], 1);
                 }
-                if (count($diff2) == 0) {
+                if ((is_countable($diff2) ? count($diff2) : 0) == 0) {
                     $edits[] = new Text_Diff_Op_delete($diff1);
                 } else {
                     $edits[] = new Text_Diff_Op_change($diff1, $diff2);
@@ -122,7 +122,7 @@ class Text_Diff_Engine_string {
     {
         $edits = array();
         $i = $max_i = $j = $max_j = 0;
-        $end = count($diff) - 1;
+        $end = (is_countable($diff) ? count($diff) : 0) - 1;
         while ($i < $end && $j < $end) {
             while ($i >= $max_i && $j >= $max_j) {
                 // find the boundaries of the diff output of the two files
@@ -161,7 +161,7 @@ class Text_Diff_Engine_string {
                 }
                 $array[] = substr($diff[$j++], 2);
             }
-            if (count($array) > 0) {
+            if ((is_countable($array) ? count($array) : 0) > 0) {
                 $edits[] = new Text_Diff_Op_copy($array);
             }
 

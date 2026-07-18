@@ -204,7 +204,7 @@ class userregistration extends controller
             $problems[] = 'captchadoesntmatch';
         }
         // If there are problems, present from to user to fix
-        if (count($problems) > 0) {
+        if ((is_countable($problems) ? count($problems) : 0) > 0) {
             $this->setVar('mode', 'addfixup');
             $this->setVarByRef('problems', $problems);
             return 'registrationhome_tpl.php';

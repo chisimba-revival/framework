@@ -14,7 +14,38 @@ $notice = $top = $bot = '';
 $result = $this->getSession('modcatsearchresults');
 $this->setSession('modcatsearchresults', NULL);
 if (!isset($result)) {
-    $modules = $this->objCatalogueConfig->getCategoryList($activeCat);
+    /*
+     * CHISIMBA_MODULECATALOGUE_LOCAL_ONLY_FALLBACK
+     *
+     * The historical catalogue may try to contact a remote XML-RPC module
+     * server when the "All" category is opened. Chisimba Revival must remain
+     * fully usable when that optional service is absent or unconfigured.
+     *
+     * Keep the existing behaviour when the remote service works. If it fails,
+     * fall back to modules physically present in this installation and mark
+     * the remote connection unavailable so no further remote description
+     * lookups are attempted while rendering this page.
+     *
+     * Technical debt: locate and restore the original configurable repository
+     * parameter, then replace this compatibility fallback with an explicit
+     * optional repository service.
+     */
+    try {
+        $modules = $this->objCatalogueConfig->getCategoryList($activeCat);
+    } catch (Throwable $exception) {
+        $connected = false;
+        $localModuleIds = $this->objModFile->getLocalModuleList();
+        $modules = array();
+
+        foreach ($localModuleIds as $localModuleId) {
+            $modules[$localModuleId] = ucfirst($localModuleId);
+        }
+
+        log_debug(
+            'Module catalogue remote lookup skipped; local-only fallback used: '
+            . $exception->getMessage()
+        );
+    }
 } else {
     $modules = $result; //search results
 }

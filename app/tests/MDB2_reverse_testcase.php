@@ -65,7 +65,7 @@ class MDB2_Reverse_TestCase extends MDB2_TestCase
         if (PEAR::isError($table_info)) {
             $this->assertTrue(false, 'Error in tableInfo(): '.$table_info->getMessage());
         } else {
-            $this->assertEquals(count($this->fields), count($table_info), 'The number of fields retrieved is different from the expected one');
+            $this->assertEquals(count($this->fields), (is_countable($table_info) ? count($table_info) : 0), 'The number of fields retrieved is different from the expected one');
             foreach ($table_info as $field_info) {
                 $this->assertEquals('users', $field_info['table'], "the table name is not correct");
                 if (!array_key_exists(strtolower($field_info['name']), $this->fields)) {

@@ -162,10 +162,10 @@ function XML_RPC_Server_methodSignature($server, $m)
         if ($dmap[$methName]['signature']) {
             $sigs = array();
             $thesigs = $dmap[$methName]['signature'];
-            for ($i = 0; $i < sizeof($thesigs); $i++) {
+            for ($i = 0; $i < (is_countable($thesigs) ? sizeof($thesigs) : 0); $i++) {
                 $cursig = array();
                 $inSig = $thesigs[$i];
-                for ($j = 0; $j < sizeof($inSig); $j++) {
+                for ($j = 0; $j < (is_countable($inSig) ? sizeof($inSig) : 0); $j++) {
                     $cursig[] = new XML_RPC_Value($inSig[$j], 'string');
                 }
                 $sigs[] = new XML_RPC_Value($cursig, 'array');
@@ -483,10 +483,10 @@ class XML_RPC_Server
      */
     function verifySignature($in, $sig)
     {
-        for ($i = 0; $i < sizeof($sig); $i++) {
+        for ($i = 0; $i < (is_countable($sig) ? sizeof($sig) : 0); $i++) {
             // check each possible signature in turn
             $cursig = $sig[$i];
-            if (sizeof($cursig) == $in->getNumParams() + 1) {
+            if ((is_countable($cursig) ? sizeof($cursig) : 0) == $in->getNumParams() + 1) {
                 $itsOK = 1;
                 for ($n = 0; $n < $in->getNumParams(); $n++) {
                     $p = $in->getParam($n);
@@ -519,7 +519,7 @@ class XML_RPC_Server
                 $allowed[] = key($val);
             }
             $allowed = array_unique($allowed);
-            $last = count($allowed) - 1;
+            $last = (is_countable($allowed) ? count($allowed) : 0) - 1;
             if ($last > 0) {
                 $allowed[$last] = 'or ' . $allowed[$last];
             }

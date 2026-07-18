@@ -55,7 +55,7 @@ class pofile extends dbTable {
     function tableExists($table) {
         //Get an array of tables
         $ar = $this->listDbTables();
-        $numElements = count($ar);
+        $numElements = (is_countable($ar) ? count($ar) : 0);
         for($counter=0; $counter < $numElements; $counter++) {
            if($ar[$counter] == $table) {
                return TRUE;

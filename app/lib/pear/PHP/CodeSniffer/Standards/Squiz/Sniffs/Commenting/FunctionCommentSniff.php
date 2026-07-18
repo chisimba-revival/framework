@@ -215,7 +215,7 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
 
         // Exactly one blank line before tags.
         $params = $this->commentParser->getTagOrders();
-        if (count($params) > 1) {
+        if ((is_countable($params) ? count($params) : 0) > 1) {
             $newlineSpan = $comment->getNewlineAfter();
             if ($newlineSpan !== 2) {
                 $error = 'There must be exactly one blank line before the tags in function comment';
@@ -272,7 +272,7 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
 
             $this->_tagIndex = $firstTag;
             $index           = array_keys($this->commentParser->getTagOrders(), 'since');
-            if (count($index) > 1) {
+            if ((is_countable($index) ? count($index) : 0) > 1) {
                 $error = 'Only 1 @since tag is allowed in function comment';
                 $this->currentFile->addError($error, $errorPos);
                 return;
@@ -329,7 +329,7 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
             foreach ($sees as $i => $see) {
                 $errorPos = ($commentStart + $see->getLine());
                 $since    = array_keys($tagOrder, 'since');
-                if (count($since) === 1 && $this->_tagIndex !== 0) {
+                if ((is_countable($since) ? count($since) : 0) === 1 && $this->_tagIndex !== 0) {
                     $this->_tagIndex++;
                     if ($index[$i] !== $this->_tagIndex) {
                         $error = 'The order of @see tag is wrong in function comment';
@@ -384,14 +384,14 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
                 $errorPos = ($commentStart + $return->getLine());
                 $content  = trim($return->getRawContent());
 
-                if (count($index) > 1) {
+                if ((is_countable($index) ? count($index) : 0) > 1) {
                     $error = 'Only 1 @return tag is allowed in function comment';
                     $this->currentFile->addError($error, $errorPos);
                     return;
                 }
 
                 $since = array_keys($tagOrder, 'since');
-                if (count($since) === 1 && $this->_tagIndex !== 0) {
+                if ((is_countable($since) ? count($since) : 0) === 1 && $this->_tagIndex !== 0) {
                     $this->_tagIndex++;
                     if ($index[0] !== $this->_tagIndex) {
                         $error = 'The order of @return tag is wrong in function comment';
@@ -477,7 +477,7 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
             }
 
             $since = array_keys($tagOrder, 'since');
-            if (count($since) === 1 && $this->_tagIndex !== 0) {
+            if ((is_countable($since) ? count($since) : 0) === 1 && $this->_tagIndex !== 0) {
                 $this->_tagIndex++;
                 if ($index[$i] !== $this->_tagIndex) {
                     $error = 'The order of @throws tag is wrong in function comment';
@@ -507,9 +507,9 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
 
         if (empty($params) === false) {
 
-            if (substr_count($params[(count($params) - 1)]->getWhitespaceAfter(), "\n") !== 2) {
+            if (substr_count($params[((is_countable($params) ? count($params) : 0) - 1)]->getWhitespaceAfter(), "\n") !== 2) {
                 $error    = 'Last parameter comment requires a blank newline after it';
-                $errorPos = ($params[(count($params) - 1)]->getLine() + $commentStart);
+                $errorPos = ($params[((is_countable($params) ? count($params) : 0) - 1)]->getLine() + $commentStart);
                 $this->currentFile->addError($error, $errorPos);
             }
 
@@ -571,7 +571,7 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
                     if ($typeName !== $suggestedName) {
                         $error = "Expected \"$suggestedName\"; found \"$typeName\" for $paramName at position $pos";
                         $this->currentFile->addError($error, $errorPos);
-                    } else if (count($typeNames) === 1) {
+                    } else if ((is_countable($typeNames) ? count($typeNames) : 0) === 1) {
                         // Check type hint for array and custom type.
                         $suggestedTypeHint = '';
                         if (strpos($suggestedName, 'array') !== false) {
@@ -674,8 +674,8 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sn
         // Report missing comments.
         $diff = array_diff($realNames, $foundParams);
         foreach ($diff as $neededParam) {
-            if (count($params) !== 0) {
-                $errorPos = ($params[(count($params) - 1)]->getLine() + $commentStart);
+            if ((is_countable($params) ? count($params) : 0) !== 0) {
+                $errorPos = ($params[((is_countable($params) ? count($params) : 0) - 1)]->getLine() + $commentStart);
             } else {
                 $errorPos = $commentStart;
             }

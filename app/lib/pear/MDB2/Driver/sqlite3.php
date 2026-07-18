@@ -716,7 +716,7 @@ class MDB2_Driver_sqlite3 extends MDB2_Driver_Common
      */
     function replace($table, $fields)
     {
-        $count = count($fields);
+        $count = (is_countable($fields) ? count($fields) : 0);
         $query = $values = '';
         $keys = $colnum = 0;
         for (reset($fields); $colnum < $count; next($fields), $colnum++) {

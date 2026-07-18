@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 /**
  *
  * Dynamic canvas data access for modules with module-level blocks
@@ -103,7 +104,7 @@ class dbpageblocks extends dbtable
     public function getPageBlocks($pageId, $side)
     {
         $results = $this->getPageBlocksList($pageId, $side);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
            return '';
         } else {
             $str = '';
@@ -159,7 +160,7 @@ class dbpageblocks extends dbtable
 
         $array = array();
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $result)
             {
                 $array[] = $result['block'];
@@ -191,7 +192,7 @@ class dbpageblocks extends dbtable
                 'module' => $module,
                 'pageid' => $pageId,
                 'position' => $this->getLastOrder($pageId, $side)+1,
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 
@@ -209,7 +210,7 @@ class dbpageblocks extends dbtable
         $results = $this->getAll(' WHERE side=\''.$side 
           . '\' AND pageid=\'' .$pageId
           . '\' ORDER BY position DESC LIMIT 1');
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['position'];
@@ -299,7 +300,7 @@ class dbpageblocks extends dbtable
                 . 'AND pageid=\'' . $pageId . '\' '
                 . 'AND position < ' . $position
                 .' ORDER BY position DESC LIMIT 1');
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -325,7 +326,7 @@ class dbpageblocks extends dbtable
         . 'AND position > ' . $position
         .' ORDER BY position DESC LIMIT 1';
         $results = $this->getAll($sql);
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];

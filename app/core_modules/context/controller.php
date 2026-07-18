@@ -141,7 +141,7 @@ class context extends controller {
      * @param $action Action to be taken
      * @return boolean
      */
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
         } else {
@@ -383,7 +383,7 @@ class context extends controller {
         $objContextModules = $this->getObject('dbcontextmodules');
         $objContextModules->deleteModulesForContext($this->contextCode);
 
-        if (is_array($plugins) && count($plugins) > 0) {
+        if (is_array($plugins) && (is_countable($plugins) ? count($plugins) : 0) > 0) {
             foreach ($plugins as $plugin) {
                 $objContextModules->addModule($this->contextCode, $plugin);
             }
@@ -561,7 +561,7 @@ class context extends controller {
 
         $contexts = $this->objContext->getContextStartingWith($letter);
 
-        if (count($contexts) == 0) {
+        if ((is_countable($contexts) ? count($contexts) : 0) == 0) {
 
         } else {
             $objDisplayContext = $this->getObject('displaycontext', 'context');
@@ -580,13 +580,13 @@ class context extends controller {
         $contexts = $objUserContext->getUserContext($this->objUser->userId());
 
         $con = array();
-        if (count($contexts) > 0) {
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
             foreach ($contexts as $context) {
                 $con[] = $this->objContext->getContext($context);
             }
         }
         $contexts = $con;
-        if (count($contexts) == 0) {
+        if ((is_countable($contexts) ? count($contexts) : 0) == 0) {
 
         } else {
             $objDisplayContext = $this->getObject('displaycontext', 'context');
@@ -614,7 +614,7 @@ class context extends controller {
         $objUserContext = $this->getObject('usercontext', 'context');
         $objDisplayContext = $this->getObject('displaycontext', 'context');
         $userContexts = $objUserContext->jsonUserCourses($this->objUser->userId(), $ctstart, $ctlimit);
-        if (count($userContexts) > 0) {
+        if ((is_countable($userContexts) ? count($userContexts) : 0) > 0) {
             echo $objDisplayContext->jsonContextOutput($userContexts);
             exit(0);
         }

@@ -69,7 +69,7 @@ class HTMLPurifier_ChildDef_Table extends HTMLPurifier_ChildDef
                                 // transmutate the first and less entries into
                                 // tbody tags, and then put into content
                                 $collection[$tag_index]->name = 'tbody';
-                                $collection[count($collection)-1]->name = 'tbody';
+                                $collection[(is_countable($collection) ? count($collection) : 0)-1]->name = 'tbody';
                                 $content[] = $collection;
                             }
                             break;

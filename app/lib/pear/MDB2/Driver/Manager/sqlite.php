@@ -270,7 +270,7 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
                        .' FROM '.$fkdef['references']['table']
                        .' WHERE ';
                 $conditions = array();
-                for ($i=0; $i<count($table_fields); $i++) {
+                for ($i=0; $i<(is_countable($table_fields) ? count($table_fields) : 0); $i++) {
                     $conditions[] = $referenced_fields[$i] .' = NEW.'.$table_fields[$i];
                 }
                 $query .= implode(' AND ', $conditions).') IS NULL; END;';
@@ -297,13 +297,13 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
                 $conditions  = array();
                 $new_values  = array();
                 $null_values = array();
-                for ($i=0; $i<count($table_fields); $i++) {
+                for ($i=0; $i<(is_countable($table_fields) ? count($table_fields) : 0); $i++) {
                     $conditions[]  = $table_fields[$i] .' = OLD.'.$referenced_fields[$i];
                     $new_values[]  = $table_fields[$i] .' = NEW.'.$referenced_fields[$i];
                     $null_values[] = $table_fields[$i] .' = NULL';
                 }
                 $conditions2 = array();
-                for ($i=0; $i<count($referenced_fields); $i++) {
+                for ($i=0; $i<(is_countable($referenced_fields) ? count($referenced_fields) : 0); $i++) {
                     $conditions2[]  = 'NEW.'.$referenced_fields[$i] .' <> OLD.'.$referenced_fields[$i];
                 }
                 $restrict_action .= implode(' AND ', $conditions).') IS NOT NULL'
@@ -693,8 +693,8 @@ class MDB2_Driver_Manager_sqlite extends MDB2_Driver_Manager_Common
 
         if (!empty($select_fields) && !empty($data)) {
             $query = 'INSERT INTO '.$db->quoteIdentifier($name_new, true);
-            $query.= '('.implode(', ', array_slice(array_keys($fields), 0, count($select_fields))).')';
-            $query.=' VALUES (?'.str_repeat(', ?', (count($select_fields) - 1)).')';
+            $query.= '('.implode(', ', array_slice(array_keys($fields), 0, (is_countable($select_fields) ? count($select_fields) : 0))).')';
+            $query.=' VALUES (?'.str_repeat(', ?', ((is_countable($select_fields) ? count($select_fields) : 0) - 1)).')';
             $stmt = $db->prepare($query, null, MDB2_PREPARE_MANIP);
             if (MDB2::isError($stmt)) {
                 return $stmt;

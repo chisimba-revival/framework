@@ -457,7 +457,7 @@ class Auth_OpenID_Message {
 
             $parts = explode('.', $key, 2);
 
-            if (count($parts) == 2) {
+            if ((is_countable($parts) ? count($parts) : 0) == 2) {
                 list($prefix, $rest) = $parts;
             } else {
                 $prefix = null;
@@ -511,7 +511,7 @@ class Auth_OpenID_Message {
 
             $parts = explode('.', $rest, 2);
 
-            if (count($parts) == 2) {
+            if ((is_countable($parts) ? count($parts) : 0) == 2) {
                 list($ns_alias, $ns_key) = $parts;
             } else {
                 $ns_alias = Auth_OpenID_NULL_NAMESPACE;
@@ -894,7 +894,7 @@ class Auth_OpenID_Message {
 
         $parts = explode('.', $aliased_key, 2);
 
-        if (count($parts) != 2) {
+        if ((is_countable($parts) ? count($parts) : 0) != 2) {
             $ns = null;
         } else {
             list($alias, $key) = $parts;

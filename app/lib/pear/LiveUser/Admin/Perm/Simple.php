@@ -630,7 +630,7 @@ class LiveUser_Admin_Perm_Simple
 
         // Rewrite filter to only include the provided key, since we cannot
         // rely on joins in delete for all backends
-        if (!isset($filters[$key]) || count($filters) > 1) {
+        if (!isset($filters[$key]) || (is_countable($filters) ? count($filters) : 0) > 1) {
             // Prepare the params for fetching the column provided. It should 
             // return an array with only the keys.
             $params = array(

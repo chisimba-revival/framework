@@ -76,7 +76,7 @@ class dbfiletags extends dbTable
         $results = array();
         
         // Check that item has tags
-        if (count($tags) > 0) {
+        if ((is_countable($tags) ? count($tags) : 0) > 0) {
             // Loop through tags
             foreach ($tags as $tag)
             {
@@ -107,7 +107,7 @@ class dbfiletags extends dbTable
         $results = array();
         
         // Check that item has tags
-        if (count($tags) > 0) {
+        if ((is_countable($tags) ? count($tags) : 0) > 0) {
             // Loop through tags
             foreach ($tags as $tag)
             {
@@ -137,7 +137,7 @@ class dbfiletags extends dbTable
         $alreadyAdded = array();
         
         // Check that user entered tags
-        if (count($tags) > 0) {
+        if ((is_countable($tags) ? count($tags) : 0) > 0) {
             // Loop through each tag
             foreach ($tags as $tag)
             {

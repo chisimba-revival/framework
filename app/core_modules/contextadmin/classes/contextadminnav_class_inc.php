@@ -149,7 +149,7 @@ class contextadminnav extends ChisimbaObject
         
         $available = array();
         
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $title)
             {
                 $letter = substr(strtoupper(trim($title['title'])), 0, 1);
@@ -232,7 +232,7 @@ class contextadminnav extends ChisimbaObject
         
         $available = array();
         
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $title)
             {
                 $letter = substr(strtoupper(trim($title['title'])), 0, 1);

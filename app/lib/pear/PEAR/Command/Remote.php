@@ -184,7 +184,7 @@ parameter.
 
     function doRemoteInfo($command, $options, $params)
     {
-        if (sizeof($params) != 1) {
+        if ((is_countable($params) ? sizeof($params) : 0) != 1) {
             return $this->raiseError("$command expects one param: the remote package name");
         }
         $savechannel = $channel = $this->config->get('default_channel');
@@ -282,7 +282,7 @@ parameter.
             'channel' => $channel
             );
 
-        if (count($available) == 0) {
+        if ((is_countable($available) ? count($available) : 0) == 0) {
             $data = '(no packages available yet)';
         } else {
             foreach ($available as $name => $info) {
@@ -464,7 +464,7 @@ parameter.
             }
 
             PEAR::staticPopErrorHandling();
-            if (count($errors) !== 0) {
+            if ((is_countable($errors) ? count($errors) : 0) !== 0) {
                 // for now, only give first error
                 return PEAR::raiseError($errors[0]);
             }
@@ -609,7 +609,7 @@ parameter.
         }
 
         $errors = $downloader->getErrorMsgs();
-        if (count($errors)) {
+        if ((is_countable($errors) ? count($errors) : 0)) {
             foreach ($errors as $error) {
                 if ($error !== null) {
                     $this->ui->outputData($error);
@@ -645,7 +645,7 @@ parameter.
         $reg = &$this->config->getRegistry();
         foreach ($reg->listChannels() as $channel) {
             $inst = array_flip($reg->listPackages($channel));
-            if (!count($inst)) {
+            if (!(is_countable($inst) ? count($inst) : 0)) {
                 continue;
             }
 
@@ -739,7 +739,7 @@ parameter.
             if (isset($options['channelinfo'])) {
                 if (empty($data['data'])) {
                     unset($data['headline']);
-                    if (count($inst) == 0) {
+                    if ((is_countable($inst) ? count($inst) : 0) == 0) {
                         $data['data'] = '(no packages installed)';
                     } else {
                         $data['data'] = '(no upgrades available)';

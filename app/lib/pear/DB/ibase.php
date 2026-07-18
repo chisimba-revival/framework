@@ -554,7 +554,7 @@ class DB_ibase extends DB_common
         $this->last_parameters = $data;
 
         $types = $this->prepare_types[(int)$stmt];
-        if (count($types) != count($data)) {
+        if ((is_countable($types) ? count($types) : 0) != (is_countable($data) ? count($data) : 0)) {
             $tmp = $this->raiseError(DB_ERROR_MISMATCH);
             return $tmp;
         }

@@ -32,8 +32,8 @@ class Text_Diff_Engine_native {
         array_walk($from_lines, array('Text_Diff', 'trimNewlines'));
         array_walk($to_lines, array('Text_Diff', 'trimNewlines'));
 
-        $n_from = count($from_lines);
-        $n_to = count($to_lines);
+        $n_from = (is_countable($from_lines) ? count($from_lines) : 0);
+        $n_to = (is_countable($to_lines) ? count($to_lines) : 0);
 
         $this->xchanged = $this->ychanged = array();
         $this->xv = $this->yv = array();
@@ -329,9 +329,9 @@ class Text_Diff_Engine_native {
         $i = 0;
         $j = 0;
 
-        assert('count($lines) == count($changed)');
-        $len = count($lines);
-        $other_len = count($other_changed);
+        assert('(is_countable($lines) ? count($lines) : 0) == (is_countable($changed) ? count($changed) : 0)');
+        $len = (is_countable($lines) ? count($lines) : 0);
+        $other_len = (is_countable($other_changed) ? count($other_changed) : 0);
 
         while (1) {
             /* Scan forward to find the beginning of another run of

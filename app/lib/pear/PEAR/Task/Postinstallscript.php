@@ -117,7 +117,7 @@ class PEAR_Task_Postinstallscript extends PEAR_Task_Common
                     unset($methods[$method]);
                 }
             }
-            if (count($methods)) {
+            if ((is_countable($methods) ? count($methods) : 0)) {
                 PEAR::popErrorHandling();
 
                 return array(PEAR_TASK_ERROR_INVALID, 'Post-install script "'.

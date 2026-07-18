@@ -74,7 +74,7 @@ $this->appendArrayVar('headerParams', $copyToClipBoardJS);
 $header->str .= ' ' . $link->show() . ' ';
 
 if ($mode == 'selectfilewindow' || $mode == 'selectimagewindow' || $mode == 'fckimage' || $mode == 'fckflash' || $mode == 'fcklink') {
-    if (count($restrictions) == 0) {
+    if ((is_countable($restrictions) ? count($restrictions) : 0) == 0) {
         $header->str .= ' (<a href="javascript:selectFile();">' . $this->objLanguage->languageText('mod_filemanager_selectfile', 'filemanager', 'Select File') . '</a>) ';
     } else if (in_array(strtolower($file['datatype']), $restrictions)) {
         $header->str .= ' (<a href="javascript:selectFile();">' . $this->objLanguage->languageText('mod_filemanager_selectfile', 'filemanager', 'Select File') . '</a>) ';
@@ -179,7 +179,7 @@ echo $header->show();
 echo '<br /><p><strong>' . $this->objLanguage->languageText('word_description', 'system', 'Description') . ':</strong> <em>' . $file['filedescription'] . '</em></p>';
 echo '<p><strong>' . $this->objLanguage->languageText('word_tags', 'system', 'Tags') . ':</strong> ';
 
-if (count($tags) == 0) {
+if ((is_countable($tags) ? count($tags) : 0) == 0) {
     echo '<em>' . $this->objLanguage->languageText('phrase_notags', 'system', 'no tags') . '</em>';
 } else {
     $comma = '';

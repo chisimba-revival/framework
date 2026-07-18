@@ -206,11 +206,11 @@ class documentconversionapi extends ChisimbaObject
 
         $files = $objScanDoc->scanDirectory($path);
 
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             $filetosend = '0';
             $this->result = 'unable to convert file';
             //return '0';
-        } else if (count($files) == 1) {
+        } else if ((is_countable($files) ? count($files) : 0) == 1) {
             $filetosend = file_get_contents($files[0]);
             $filetosend = '1'.base64_encode($filetosend);
             $this->result = 'converted';
@@ -220,7 +220,7 @@ class documentconversionapi extends ChisimbaObject
         }
 
         // Cleanup - Delete files and remove directory
-        if (count($files) >= 1) {
+        if ((is_countable($files) ? count($files) : 0) >= 1) {
             foreach ($files as $file)
             {
                 @unlink($file);

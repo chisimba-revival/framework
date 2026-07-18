@@ -332,7 +332,7 @@ Free Software Foundation, Inc.,
         // extracts the class declaration tokens
         $tokens = $this->tokens->slice($id, T_CLASS, '{');
 
-        if (count($tokens) >= 3) {
+        if ((is_countable($tokens) ? count($tokens) : 0) >= 3) {
             // a class is found, extracts the class tokens
             $this->classTokens = $this->tokens->slice($id, '{', '}');
             // if the package name is set to its defaults
@@ -370,7 +370,7 @@ Free Software Foundation, Inc.,
         // extracts the constant tokens
         $tokens = $this->tokens->slice($id, T_CONST, ';');
 
-        if (count($tokens) >= 5) {
+        if ((is_countable($tokens) ? count($tokens) : 0) >= 5) {
             // expecting at least 4 tokens, e.g foo = 'foo' ; , extracts the constant tokens
             list(, $constName, $separator, $constValue) = $tokens;
 
@@ -399,7 +399,7 @@ Free Software Foundation, Inc.,
         // extracts the define tokens
         $tokens = $this->tokens->slice($id + 1, '(', ')');
 
-        if (count($tokens) >= 5) {
+        if ((is_countable($tokens) ? count($tokens) : 0) >= 5) {
             // expecting at least 5 tokens, e.g ( 'FOO' , 'foo' ) , extracts the define tokens
             list($openBracket, $defName, $separator, $defValue) = $tokens;
 

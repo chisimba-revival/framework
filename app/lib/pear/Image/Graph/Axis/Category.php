@@ -288,7 +288,7 @@ class Image_Graph_Axis_Category extends Image_Graph_Axis
 
         if (count($this->_labels) == 0) {
             $this->_labels = $newLabels;           
-        } elseif ((is_array($newLabels)) && (count($newLabels) > 0)) {           
+        } elseif ((is_array($newLabels)) && ((is_countable($newLabels) ? count($newLabels) : 0) > 0)) {           
             // get all intersecting labels
             $intersect = array_intersect(array_keys($allLabels), array_keys($this->_labels));
             // traverse all new and find their relative position withing the

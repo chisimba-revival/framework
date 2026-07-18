@@ -130,7 +130,7 @@ class Text_Diff {
         $lines = array();
         foreach ($this->_edits as $edit) {
             if ($edit->orig) {
-                array_splice($lines, count($lines), 0, $edit->orig);
+                array_splice($lines, (is_countable($lines) ? count($lines) : 0), 0, $edit->orig);
             }
         }
         return $lines;
@@ -148,7 +148,7 @@ class Text_Diff {
         $lines = array();
         foreach ($this->_edits as $edit) {
             if ($edit->final) {
-                array_splice($lines, count($lines), 0, $edit->final);
+                array_splice($lines, (is_countable($lines) ? count($lines) : 0), 0, $edit->final);
             }
         }
         return $lines;
@@ -228,8 +228,8 @@ class Text_MappedDiff extends Text_Diff {
         function Text_MappedDiff($from_lines, $to_lines,
                              $mapped_from_lines, $mapped_to_lines)
     {
-        assert(count($from_lines) == count($mapped_from_lines));
-        assert(count($to_lines) == count($mapped_to_lines));
+        assert((is_countable($from_lines) ? count($from_lines) : 0) == (is_countable($mapped_from_lines) ? count($mapped_from_lines) : 0));
+        assert((is_countable($to_lines) ? count($to_lines) : 0) == (is_countable($mapped_to_lines) ? count($mapped_to_lines) : 0));
 
         parent::Text_Diff($mapped_from_lines, $mapped_to_lines);
 
@@ -237,14 +237,14 @@ class Text_MappedDiff extends Text_Diff {
         for ($i = 0; $i < count($this->_edits); $i++) {
             $orig = &$this->_edits[$i]->orig;
             if (is_array($orig)) {
-                $orig = array_slice($from_lines, $xi, count($orig));
-                $xi += count($orig);
+                $orig = array_slice($from_lines, $xi, (is_countable($orig) ? count($orig) : 0));
+                $xi += (is_countable($orig) ? count($orig) : 0);
             }
 
             $final = &$this->_edits[$i]->final;
             if (is_array($final)) {
-                $final = array_slice($to_lines, $yi, count($final));
-                $yi += count($final);
+                $final = array_slice($to_lines, $yi, (is_countable($final) ? count($final) : 0));
+                $yi += (is_countable($final) ? count($final) : 0);
             }
         }
     }

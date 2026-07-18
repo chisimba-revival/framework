@@ -504,8 +504,8 @@ class PEAR_Downloader_Package
 
                     if (!$ret) {
                         $dep['package'] = $dep['name'];
-                        $skip = count($skipnames) ?
-                            $skipnames[count($skipnames) - 1] : '';
+                        $skip = (is_countable($skipnames) ? count($skipnames) : 0) ?
+                            $skipnames[(is_countable($skipnames) ? count($skipnames) : 0) - 1] : '';
                         if ($skip ==
                               $this->_registry->parsedPackageNameToString($dep, true)) {
                             array_pop($skipnames);
@@ -517,7 +517,7 @@ class PEAR_Downloader_Package
                     }
                 }
 
-                if (count($skipnames)) {
+                if ((is_countable($skipnames) ? count($skipnames) : 0)) {
                     if (!isset($options['soft'])) {
                         $this->_downloader->log(1, 'Did not download optional dependencies: ' .
                             implode(', ', $skipnames) .
@@ -755,8 +755,8 @@ class PEAR_Downloader_Package
                                     $this->_registry->parsedPackageNameToString($dep, true) .
                                     '", already installed as version ' . $obj->getVersion());
                             }
-                            $skip = count($skipnames) ?
-                                $skipnames[count($skipnames) - 1] : '';
+                            $skip = (is_countable($skipnames) ? count($skipnames) : 0) ?
+                                $skipnames[(is_countable($skipnames) ? count($skipnames) : 0) - 1] : '';
                             if ($skip ==
                                   $this->_registry->parsedPackageNameToString($dep, true)) {
                                 array_pop($skipnames);
@@ -837,8 +837,8 @@ class PEAR_Downloader_Package
                             '", already installed as version ' . $version);
                     }
 
-                    $skip = count($skipnames) ?
-                        $skipnames[count($skipnames) - 1] : '';
+                    $skip = (is_countable($skipnames) ? count($skipnames) : 0) ?
+                        $skipnames[(is_countable($skipnames) ? count($skipnames) : 0) - 1] : '';
                     if ($skip ==
                           $this->_registry->parsedPackageNameToString($dep, true)) {
                         array_pop($skipnames);
@@ -872,7 +872,7 @@ class PEAR_Downloader_Package
             }
         }
 
-        if (count($skipnames)) {
+        if ((is_countable($skipnames) ? count($skipnames) : 0)) {
             if (!isset($options['soft'])) {
                 $this->_downloader->log(1, 'Did not download dependencies: ' .
                     implode(', ', $skipnames) .
@@ -1262,7 +1262,7 @@ class PEAR_Downloader_Package
         $indices = array();
         foreach ($existing as $package => $groups) {
             foreach ($groups as $group => $dupes) {
-                if (count($dupes) > 1) {
+                if ((is_countable($dupes) ? count($dupes) : 0) > 1) {
                     $indices = $indices + $dupes;
                 }
             }
@@ -1273,7 +1273,7 @@ class PEAR_Downloader_Package
             $errorparams[] = $params[$index];
         }
 
-        return count($errorparams);
+        return (is_countable($errorparams) ? count($errorparams) : 0);
     }
 
     /**
@@ -1408,7 +1408,7 @@ class PEAR_Downloader_Package
         }
 
         PEAR_Downloader_Package::removeDuplicates($params); // strip any unset indices
-        if (count($newparams)) { // add in bundled packages for install
+        if ((is_countable($newparams) ? count($newparams) : 0)) { // add in bundled packages for install
             foreach ($newparams as $i => $unused) {
                 $params[] = &$newparams[$i];
             }
@@ -1458,7 +1458,7 @@ class PEAR_Downloader_Package
             }
         }
 
-        if (count($newparams)) {
+        if ((is_countable($newparams) ? count($newparams) : 0)) {
             foreach ($newparams as $i => $unused) {
                 $params[] = &$newparams[$i];
             }

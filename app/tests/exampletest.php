@@ -15,7 +15,7 @@ class ExampleTest extends PHPUnit2_Framework_TestCase
      *   $fixture = Array();
      *
      *   // Assert that the size of the Array fixture is 0.
-     *   $this->assertEquals(0, sizeof($fixture));
+     *   $this->assertEquals(0, (is_countable($fixture) ? sizeof($fixture) : 0));
      * }
      */
 

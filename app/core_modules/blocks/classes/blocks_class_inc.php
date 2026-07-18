@@ -100,7 +100,7 @@ class blocks extends ChisimbaObject {
     /**
      * Constructor method
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         // Create an instance of the modulesadmin class for checking
         // if a module is registered
         try {

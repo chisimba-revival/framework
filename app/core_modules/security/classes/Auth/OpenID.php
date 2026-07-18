@@ -186,7 +186,7 @@ class Auth_OpenID {
         foreach ($chunks as $chunk) {
             $parts = explode("=", $chunk, 2);
 
-            if (count($parts) != 2) {
+            if ((is_countable($parts) ? count($parts) : 0) != 2) {
                 continue;
             }
 
@@ -271,10 +271,10 @@ class Auth_OpenID {
         $parts = explode('&', $query);
 
         $new_parts = array();
-        for ($i = 0; $i < count($parts); $i++) {
+        for ($i = 0; $i < (is_countable($parts) ? count($parts) : 0); $i++) {
             $pair = explode('=', $parts[$i]);
 
-            if (count($pair) != 2) {
+            if ((is_countable($pair) ? count($pair) : 0) != 2) {
                 continue;
             }
 
@@ -326,7 +326,7 @@ class Auth_OpenID {
      */
     static function appendArgs($url, $args)
     {
-        if (count($args) == 0) {
+        if ((is_countable($args) ? count($args) : 0) == 0) {
             return $url;
         }
 
@@ -491,7 +491,7 @@ class Auth_OpenID {
     {
         $parts = explode("#", $url, 2);
 
-        if (count($parts) == 1) {
+        if ((is_countable($parts) ? count($parts) : 0) == 1) {
             return array($parts[0], "");
         } else {
             return $parts;

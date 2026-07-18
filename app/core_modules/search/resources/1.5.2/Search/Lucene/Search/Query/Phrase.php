@@ -119,7 +119,7 @@ class Zend_Search_Lucene_Search_Query_Phrase extends Zend_Search_Lucene_Search_Q
         }
 
         if (is_array($offsets)) {
-            if (count($this->_terms) != count($offsets)) {
+            if (count($this->_terms) != (is_countable($offsets) ? count($offsets) : 0)) {
                 throw new Zend_Search_Lucene_Exception('terms and offsets arguments must have the same size.');
             }
             $this->_offsets = $offsets;
@@ -343,7 +343,7 @@ class Zend_Search_Lucene_Search_Query_Phrase extends Zend_Search_Lucene_Search_Q
 
         // Walk through the terms to create phrases.
         foreach ($this->_terms as $termId => $term) {
-            $queueSize = count($phraseQueue);
+            $queueSize = (is_countable($phraseQueue) ? count($phraseQueue) : 0);
             $firstPass = true;
 
             // Walk through the term positions.
@@ -361,7 +361,7 @@ class Zend_Search_Lucene_Search_Query_Phrase extends Zend_Search_Lucene_Search_Q
                             continue;
                         }
 
-                        $newPhraseId = count($phraseQueue);
+                        $newPhraseId = (is_countable($phraseQueue) ? count($phraseQueue) : 0);
                         $phraseQueue[$newPhraseId]          = $phraseQueue[$count];
                         $phraseQueue[$newPhraseId][$termId] = $termPosition;
                     }

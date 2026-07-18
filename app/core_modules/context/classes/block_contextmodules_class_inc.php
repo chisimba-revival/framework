@@ -110,7 +110,7 @@ class block_contextmodules extends ChisimbaObject
 
         $modules = $this->objContextModules->getContextModules($this->contextCode);
 
-        if (count($modules) == 0) {
+        if ((is_countable($modules) ? count($modules) : 0) == 0) {
             $str = '<div class="noRecordsMessage">'.$this->objLanguage->code2Txt('mod_context_contexthasnopluginsabs', 'context', array('plugins'=>'plugins'), 'This [-context-] does not have any [-plugins-] enabled').'</div>';
         } else {
             $table = $this->newObject('htmltable', 'htmlelements');
@@ -147,7 +147,7 @@ class block_contextmodules extends ChisimbaObject
             $str = $table->show();
         }
 
-        $str .= '<p align="right">'.$this->objLanguage->code2Txt('mod_context_unusedpluginsabs', 'context', array('plugins'=>'plugins'), 'Unused [-plugins-]').': '.($numModules-count($modules)).'</p>';
+        $str .= '<p align="right">'.$this->objLanguage->code2Txt('mod_context_unusedpluginsabs', 'context', array('plugins'=>'plugins'), 'Unused [-plugins-]').': '.($numModules-(is_countable($modules) ? count($modules) : 0)).'</p>';
         $link = new link($this->uri(array('action'=>'manageplugins')));
         $link->link = $this->objLanguage->code2Txt('mod_context_managepluginsabs', 'context', array('plugins'=>'plugins'), 'Manage [-plugins-]');
         return $str.'<p class="admin_link">'.$link->show().'</p>';

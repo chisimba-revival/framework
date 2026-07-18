@@ -82,7 +82,7 @@ class RDF_Store_MDB extends RDF_Object
         if (MDB::isError($result)) {
             return $result;
         }
-        for ($i=0,$j=count($result);$i<$j;++$i) {
+        for ($i=0,$j=(is_countable($result) ? count($result) : 0);$i<$j;++$i) {
             $models[$i]['modelURI'] = $result[$i][0];
             $models[$i]['baseURI'] = $result[$i][1];
         }

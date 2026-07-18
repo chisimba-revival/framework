@@ -62,9 +62,9 @@ class frames
      if($cols != -1)
         {
         $ret = "<FRAMESET COLS =\"" ;
-        for($i=0 ; $i<sizeof($cols) ; $i++)
+        for($i=0 ; $i<(is_countable($cols) ? sizeof($cols) : 0) ; $i++)
                 {
-                 if($i == sizeof($cols)-1)
+                 if($i == (is_countable($cols) ? sizeof($cols) : 0)-1)
                         echo $cols[$i] ;
                  else
                         echo $cols[$i] . ", " ;
@@ -90,9 +90,9 @@ class frames
      if($rows != -1)
         {
         $row =  "<FRAMESET ROWS =\"" ;
-        for($i=0 ; $i<sizeof($rows) ; $i++)
+        for($i=0 ; $i<(is_countable($rows) ? sizeof($rows) : 0) ; $i++)
                 {
-                 if($i == sizeof($rows)-1)
+                 if($i == (is_countable($rows) ? sizeof($rows) : 0)-1)
                         echo $rows[$i] ;
                  else
                         echo $rows[$i] . ", " ;

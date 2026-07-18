@@ -311,7 +311,7 @@ class Mail_mimeDecode extends PEAR
                     $default_ctype = (strtolower($content_type['value']) === 'multipart/digest') ? 'message/rfc822' : 'text/plain';
 
                     $parts = $this->_boundarySplit($body, $content_type['other']['boundary']);
-                    for ($i = 0; $i < count($parts); $i++) {
+                    for ($i = 0; $i < (is_countable($parts) ? count($parts) : 0); $i++) {
                         list($part_header, $part_body) = $this->_splitBodyHeader($parts[$i]);
                         $part = $this->_decode($part_header, $part_body, $default_ctype);
                         if($part === false)
@@ -475,7 +475,7 @@ class Mail_mimeDecode extends PEAR
                     $parameters[] = $param;
                 }
 
-                for ($i = 0; $i < count($parameters); $i++) {
+                for ($i = 0; $i < (is_countable($parameters) ? count($parameters) : 0); $i++) {
                     $param_name  = trim(substr($parameters[$i], 0, $pos = strpos($parameters[$i], '=')), "'\";\t\\ ");
                     $param_value = trim(str_replace('\;', ';', substr($parameters[$i], $pos + 1)), "'\";\t\\ ");
                     if ($param_value[0] == '"') {
@@ -513,7 +513,7 @@ class Mail_mimeDecode extends PEAR
 
         $tmp = explode('--' . $boundary, $input);
 
-        for ($i = 1; $i < count($tmp) - 1; $i++) {
+        for ($i = 1; $i < (is_countable($tmp) ? count($tmp) : 0) - 1; $i++) {
             $parts[] = $tmp[$i];
         }
 
@@ -638,7 +638,7 @@ class Mail_mimeDecode extends PEAR
 
             $file = '';
             $str = preg_split("/\r?\n/", trim($str));
-            $strlen = count($str);
+            $strlen = (is_countable($str) ? count($str) : 0);
 
             for ($i = 0; $i < $strlen; $i++) {
                 $pos = 1;
@@ -781,7 +781,7 @@ class Mail_mimeDecode extends PEAR
 
             // Multiple headers with this name
             if (is_array($headers[$hdr_name])) {
-                for ($i = 0; $i < count($hdr_value); $i++) {
+                for ($i = 0; $i < (is_countable($hdr_value) ? count($hdr_value) : 0); $i++) {
                     $output .= Mail_mimeDecode::_getXML_helper($hdr_name, $hdr_value[$i], $indent);
                 }
 

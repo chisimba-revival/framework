@@ -197,7 +197,7 @@ class HTMLPurifier_ErrorCollector
             foreach ($current->children as $type => $array) {
                 $context[] = $current;
                 $stack = array_merge($stack, array_reverse($array, true));
-                for ($i = count($array); $i > 0; $i--) {
+                for ($i = (is_countable($array) ? count($array) : 0); $i > 0; $i--) {
                     $context_stack[] = $context;
                 }
             }

@@ -438,17 +438,17 @@ class Image_Graph_Dataset
     function _median($data, $quartile = 'second')
     {
         sort($data);
-        $point = (count($data) - 1) / 2;
+        $point = ((is_countable($data) ? count($data) : 0) - 1) / 2;
 
         if ($quartile == 'first') {
             $lowPoint = 0;
             $highPoint = floor($point);
         } elseif ($quartile == 'third') {
             $lowPoint = round($point);
-            $highPoint = count($data) - 1;
+            $highPoint = (is_countable($data) ? count($data) : 0) - 1;
         } else {
             $lowPoint = 0;
-            $highPoint = count($data) - 1;
+            $highPoint = (is_countable($data) ? count($data) : 0) - 1;
         }
 
         $point = ($lowPoint + $highPoint) / 2;

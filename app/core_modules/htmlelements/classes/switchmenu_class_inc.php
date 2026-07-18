@@ -65,7 +65,7 @@ class switchmenu extends ChisimbaObject
     * Constructor method
     * @access public
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler')
     {
         $this->switchMenuArray = array();
         srand((double)microtime()*1000000);

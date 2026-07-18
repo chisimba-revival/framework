@@ -57,7 +57,7 @@ $objTable->id="lecturerTable";
 $objTable->css_class="sorttable";
 
 $objTable->startRow();
-if ($this->isValid('removeallusers') && count($lecturerDetails) > 0) {
+if ($this->isValid('removeallusers') && (is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->addCell($this->objLanguage->languageText('word_userid'), 100, '', '', 'heading', '');
@@ -66,12 +66,12 @@ $objTable->addCell($this->objLanguage->languageText('word_title'), 30, '', '', '
 $objTable->addCell($this->objLanguage->languageText('phrase_firstName'), '20%', '', '', 'heading', '');
 $objTable->addCell($this->objLanguage->languageText('word_surname'), '20%', '', '', 'heading', '');
 $objTable->addCell($this->objLanguage->languageText('phrase_emailaddress'), '', '', '', 'heading', '');
-if ($this->isValid('removeuser') && count($lecturerDetails) > 0) {
+if ($this->isValid('removeuser') && (is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->endRow();
 
-if (count($lecturerDetails) > 0) {
+if ((is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 0) {
 
     $objTable->row_attributes='onmouseover="this.className=\'tbl_ruler\';" onmouseout="this.className=\'none\'; "';
 
@@ -131,7 +131,7 @@ $buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
 
 $objForm = new form('removelecturers', $this->uri(array('action'=>'removeallusers', 'mode'=>'lecturer')));
 $objForm->addToForm($objTable->show());
-if (count($lecturerDetails) > 1) {
+if ((is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 1) {
     $objForm->addToForm($buttons);
 }
 //echo $objForm->show();
@@ -165,7 +165,7 @@ $objTable->cellspacing = 1;
 $objTable->id="studentTable";
 $objTable->css_class="sorttable";
 $objTable->startRow();
-if ($this->isValid('removeallusers') && count($studentDetails) > 0) {
+if ($this->isValid('removeallusers') && (is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->addCell($this->objLanguage->languageText('word_userid'), 100, '', '', 'heading', '');
@@ -174,12 +174,12 @@ $objTable->addCell($this->objLanguage->languageText('word_title'), 30, '', '', '
 $objTable->addCell($this->objLanguage->languageText('phrase_firstName'), '20%', '', '', 'heading', '');
 $objTable->addCell($this->objLanguage->languageText('word_surname'), '20%', '', '', 'heading', '');
 $objTable->addCell($this->objLanguage->languageText('phrase_emailaddress'), '', '', '', 'heading', '');
-if ($this->isValid('removeuser') && count($studentDetails) > 0) {
+if ($this->isValid('removeuser') && (is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->endRow();
 
-if (count($studentDetails) > 0) {
+if ((is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
 
     $objTable->row_attributes='onmouseover="this.className=\'tbl_ruler\';" onmouseout="this.className=\'none\'; "';
 
@@ -234,7 +234,7 @@ $buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
 
 $objForm = new form('removestudents', $this->uri(array('action'=>'removeallusers', 'mode'=>'student')));
 $objForm->addToForm($objTable->show());
-if (count($studentDetails) > 0) {
+if ((is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
     $objForm->addToForm($buttons);
 }
 //echo $objForm->show();
@@ -267,7 +267,7 @@ $objTable->id="guestsTable";
 $objTable->css_class="sorttable";
 
 $objTable->startRow();
-if ($this->isValid('removeallusers') && count($guestDetails) > 0) {
+if ($this->isValid('removeallusers') && (is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->addCell($this->objLanguage->languageText('word_userid'), 100, '', '', 'heading', '');
@@ -276,12 +276,12 @@ $objTable->addCell($this->objLanguage->languageText('word_title'), 30, '', '', '
 $objTable->addCell($this->objLanguage->languageText('phrase_firstName'), '20%', '', '', 'heading', '');
 $objTable->addCell($this->objLanguage->languageText('word_surname'), '20%', '', '', 'heading', '');
 $objTable->addCell($this->objLanguage->languageText('phrase_emailaddress'), '', '', '', 'heading', '');
-if ($this->isValid('removeuser') && count($guestDetails) > 0) {
+if ($this->isValid('removeuser') && (is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
     $objTable->addCell('', 30, '', '', 'heading', '');
 }
 $objTable->endRow();
 
-if (count($guestDetails) > 0) {
+if ((is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
 
     $objTable->row_attributes='onmouseover="this.className=\'tbl_ruler\';" onmouseout="this.className=\'none\'; "';
 
@@ -336,7 +336,7 @@ $buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
 
 $objForm = new form('removeguests', $this->uri(array('action'=>'removeallusers', 'mode'=>'guest')));
 $objForm->addToForm($objTable->show());
-if (count($guestDetails) > 0) {
+if ((is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
     $objForm->addToForm($buttons);
 }
 //echo $objForm->show();
@@ -393,7 +393,7 @@ if ($this->isValid('addusers')) {
             $label=new label($this->objLanguage->languageText('mod_contextgroups_choosecourse', 'contextgroups'),'input_course');
             $courseDropdown=new dropdown('course');
             $courseDropdown->addOption('all',$this->objLanguage->languageText('mod_contextgroups_allcourses', 'contextgroups'));
-            for($i=0; $i<count($data); $i++){
+            for($i=0; $i<(is_countable($data) ? count($data) : 0); $i++){
           $courseDropdown->addOption($data[$i]['contextcode'], $data[$i]['title']);
         }
         $courseDropdown->setSelected($course);
@@ -403,7 +403,7 @@ if ($this->isValid('addusers')) {
             $groupDropdown->addOption('all','All groups');
             $groups=array("Lecturers","Students","Guest");
 
-                for($i=0; $i<count($groups); $i++){
+                for($i=0; $i<(is_countable($groups) ? count($groups) : 0); $i++){
           $groupDropdown->addOption($groups[$i],$groups[$i]);
         }
 

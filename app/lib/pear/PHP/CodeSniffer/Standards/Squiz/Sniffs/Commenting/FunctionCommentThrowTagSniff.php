@@ -114,8 +114,8 @@ class Squiz_Sniffs_Commenting_FunctionCommentThrowTagSniff extends PHP_CodeSniff
             sort($throwTags);
 
             // @throw tag count matches throw token count.
-            $tokenCount = count($throwTokens);
-            $tagCount   = count($throwTags);
+            $tokenCount = (is_countable($throwTokens) ? count($throwTokens) : 0);
+            $tagCount   = (is_countable($throwTags) ? count($throwTags) : 0);
             if ($tokenCount !== $tagCount) {
                 $tags  = ($tokenCount > 1) ? 'tags' : 'tag';
                 $error = "Expected $tokenCount @throws $tags in function comment; $tagCount found";

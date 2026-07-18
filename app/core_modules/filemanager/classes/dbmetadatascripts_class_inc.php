@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Class to handle interaction with table tbl_files_metadata_scripts
@@ -69,8 +70,8 @@ class dbmetadatascripts extends dbTable
         $infoArray['fileid'] = $fileId;
         $infoArray['geshihighlight'] = $script;
         $infoArray['creatorid'] = $this->objUser->userId();
-        $infoArray['datecreated'] = strftime('%Y-%m-%d', mktime());
-        $infoArray['timecreated'] = strftime('%H:%M:%S', mktime());
+        $infoArray['datecreated'] = strftime('%Y-%m-%d', time());
+        $infoArray['timecreated'] = strftime('%H:%M:%S', time());
         
         return $this->insert($infoArray);
     }

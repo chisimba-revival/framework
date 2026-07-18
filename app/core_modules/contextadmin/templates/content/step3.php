@@ -7,7 +7,7 @@ $this->loadClass('hiddeninput', 'htmlelements');
 $this->loadClass('textarea', 'htmlelements');
 $this->loadClass('checkbox', 'htmlelements');
 if ($mode == 'edit') {
-    $noLO = count($contextLO);
+    $noLO = (is_countable($contextLO) ? count($contextLO) : 0);
 } else {
     $noLO = 1;
 }

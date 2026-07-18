@@ -144,15 +144,15 @@ class Text_Word {
         if(!$fragments[0]) {
             array_shift($fragments);
         }
-        if(!$fragments[count($fragments) - 1]) {
+        if(!$fragments[(is_countable($fragments) ? count($fragments) : 0) - 1]) {
             array_pop($fragments);
         }
 
         // modify our syllable count for special cases
         $this->_numSyllables += $this->_countSpecialSyllables($scratch);
         // now count our syllable
-        if(count($fragments)) {
-            $this->_numSyllables += count($fragments);
+        if((is_countable($fragments) ? count($fragments) : 0)) {
+            $this->_numSyllables += (is_countable($fragments) ? count($fragments) : 0);
         }
         else {
             $this->_numSyllables = 1;

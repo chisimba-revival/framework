@@ -38,7 +38,7 @@ class getid3_gzip {
 		$arr_members = explode("\x1F\x8B\x08", $buffer);
 		while (true) {
 			$is_wrong_members = false;
-			$num_members = intval(count($arr_members));
+			$num_members = intval((is_countable($arr_members) ? count($arr_members) : 0));
 			for ($i = 0; $i < $num_members; $i++) {
 				if (strlen($arr_members[$i]) == 0) {
 					continue;

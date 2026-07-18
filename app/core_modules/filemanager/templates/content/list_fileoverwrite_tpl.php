@@ -11,7 +11,7 @@ if ($result != '') {
     foreach ($results as $item)
     {
         $split = explode('----', $item);
-        if (count($split) >= 2) {
+        if ((is_countable($split) ? count($split) : 0) >= 2) {
             
             switch ($split[1])
             {

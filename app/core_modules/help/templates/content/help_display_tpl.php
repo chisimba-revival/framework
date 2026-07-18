@@ -12,7 +12,7 @@ $heading->str = $helptitle;//.' '.$viewletHelp;
 $content = $heading->show().$helptext;
 
 
-if (count($moduleHelp) > 0) {
+if ((is_countable($moduleHelp) ? count($moduleHelp) : 0) > 0) {
     $content .= '<h5>Related Help for this Module</h5><ul>';
 
     $link = new link();

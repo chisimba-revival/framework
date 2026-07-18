@@ -422,7 +422,7 @@ class manageGroups extends ChisimbaObject
         
         $recs = $this->_objDBContext->getArray($sql);
         
-        if(count($recs) > 0)
+        if((is_countable($recs) ? count($recs) : 0) > 0)
         {
         	 $arrcontextcodes = array();
         	foreach ($recs as $group) {

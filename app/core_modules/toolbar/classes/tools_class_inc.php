@@ -314,7 +314,7 @@ class tools extends ChisimbaObject
             }
         } else {
             // set the link to the default module
-            $this->objLink = new link ( $this->uri ( '', '_default' ) );
+            $this->objLink = new link ( $this->uri ( array(), '_default' ) );
             $this->objLink->link = $home;
             $this->objLink->cssClass = 'homelink';
             $home = $this->objLink->show ();

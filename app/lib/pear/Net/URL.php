@@ -347,7 +347,7 @@ class Net_URL
     {
         $path = explode('/', str_replace('//', '/', $path));
 
-        for ($i=0; $i<count($path); $i++) {
+        for ($i=0; $i<(is_countable($path) ? count($path) : 0); $i++) {
             if ($path[$i] == '.') {
                 unset($path[$i]);
                 $path = array_values($path);

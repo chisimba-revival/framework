@@ -254,7 +254,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
         // fix for bug #6766. Hope this doesn't break anything more 
         // after bug #7961. Forgot that _nbElements was used in
         // _createElements() called in several places... 
-        $this->_nbElements = max($this->_nbElements, count($value));
+        $this->_nbElements = max($this->_nbElements, (is_countable($value) ? count($value) : 0));
         parent::setValue($value);
         $this->_setOptions();
     } // end func setValue
@@ -285,7 +285,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
             // set the onchange attribute for each element except last
             $keys     = array_keys($this->_elements);
             $onChange = array();
-            for ($i = 0; $i < count($keys) - 1; $i++) {
+            for ($i = 0; $i < (is_countable($keys) ? count($keys) : 0) - 1; $i++) {
                 $select =& $this->_elements[$keys[$i]];
                 $onChange[$i] = $select->getAttribute('onchange');
                 $select->updateAttributes(
@@ -432,7 +432,7 @@ JAVASCRIPT;
             $values = array();
             foreach (array_keys($this->_elements) as $key) {
                 if (is_array($v = $this->_elements[$key]->getValue())) {
-                    $values[] = count($v) > 1? $v: $v[0];
+                    $values[] = (is_countable($v) ? count($v) : 0) > 1? $v: $v[0];
                 } else {
                     // XXX: accessing the supposedly private _options array
                     $values[] = $this->_elements[$key]->getMultiple() || empty($this->_elements[$key]->_options[0])?
@@ -450,7 +450,7 @@ JAVASCRIPT;
 
         if (!empty($onChange)) {
             $keys     = array_keys($this->_elements);
-            for ($i = 0; $i < count($keys) - 1; $i++) {
+            for ($i = 0; $i < (is_countable($keys) ? count($keys) : 0) - 1; $i++) {
                 $this->_elements[$keys[$i]]->updateAttributes(array('onchange' => $onChange[$i]));
             }
         }

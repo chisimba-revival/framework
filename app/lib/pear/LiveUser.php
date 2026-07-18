@@ -629,7 +629,7 @@ class LiveUser
     {
         end($confArray);
         $key = key($confArray);
-        $count = count($confArray);
+        $count = (is_countable($confArray) ? count($confArray) : 0);
         $storageName = $classprefix.'Storage_' . $key;
         if (!LiveUser::loadClass($storageName, true)) {
             if ($count <= 1) {
@@ -1440,7 +1440,7 @@ public static function encryptPW($plainPW, $passwordEncryptionMode, $secret)
             LiveUser::cryptRC4($fields, $this->_options['cookie']['secret'], false)
         );
 
-        if (!is_array($serverData) || count($serverData) != 2) {
+        if (!is_array($serverData) || (is_countable($serverData) ? count($serverData) : 0) != 2) {
             $this->deleteRememberCookie();
             $this->stack->push(LIVEUSER_ERROR_COOKIE, 'exception', array(),
                 'Incorrect array structure');

@@ -204,7 +204,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
             if (isset($group['param'])) {
                 if (method_exists($script, 'postProcessPrompts')) {
                     $prompts = $script->postProcessPrompts($group['param'], $group['id']);
-                    if (!is_array($prompts) || count($prompts) != count($group['param'])) {
+                    if (!is_array($prompts) || (is_countable($prompts) ? count($prompts) : 0) != count($group['param'])) {
                         $this->outputData('postinstall', 'Error: post-install script did not ' .
                             'return proper post-processed prompts');
                         $prompts = $group['param'];
@@ -275,7 +275,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
 
             $answers = $this->userDialog('', $prompts, $types, $answers);
             $tried   = true;
-        } while (is_array($answers) && count(array_filter($answers)) != count($prompts));
+        } while (is_array($answers) && count(array_filter($answers)) != (is_countable($prompts) ? count($prompts) : 0));
 
         return $answers;
     }
@@ -290,7 +290,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
         $result      = $defaults;
 
         reset($prompts);
-        if (count($prompts) === 1) {
+        if ((is_countable($prompts) ? count($prompts) : 0) === 1) {
             foreach ($prompts as $key => $prompt) {
                 $type    = $types[$key];
                 $default = @$defaults[$key];
@@ -311,7 +311,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
         while (true) {
             $descLength = max(array_map('strlen', $prompts));
             $descFormat = "%-{$descLength}s";
-            $last       = count($prompts);
+            $last       = (is_countable($prompts) ? count($prompts) : 0);
 
             $i = 0;
             foreach ($prompts as $n => $var) {
@@ -581,7 +581,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
     function _tableRow($columns, $rowparams = array(), $colparams = array())
     {
         $highest = 1;
-        for ($i = 0; $i < count($columns); $i++) {
+        for ($i = 0; $i < (is_countable($columns) ? count($columns) : 0); $i++) {
             $col = &$columns[$i];
             if (isset($colparams[$i]) && !empty($colparams[$i]['wrap'])) {
                 $col = wordwrap($col, $colparams[$i]['wrap']);
@@ -596,7 +596,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
                         $w = $len;
                     }
                 }
-                $lines = count($multiline);
+                $lines = (is_countable($multiline) ? count($multiline) : 0);
             } else {
                 $w = strlen($col);
             }
@@ -617,8 +617,8 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
             }
         }
 
-        if (count($columns) > $this->params['ncols']) {
-            $this->params['ncols'] = count($columns);
+        if ((is_countable($columns) ? count($columns) : 0) > $this->params['ncols']) {
+            $this->params['ncols'] = (is_countable($columns) ? count($columns) : 0);
         }
 
         $new_row = array(
@@ -637,7 +637,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
             $this->_displayHeading($caption);
         }
 
-        if (count($table_data) === 0) {
+        if ((is_countable($table_data) ? count($table_data) : 0) === 0) {
             return;
         }
 
@@ -674,7 +674,7 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
             $this->_displayLine($borderline);
         }
 
-        for ($i = 0; $i < count($table_data); $i++) {
+        for ($i = 0; $i < (is_countable($table_data) ? count($table_data) : 0); $i++) {
             extract($table_data[$i]);
             if (!is_array($rowparams)) {
                 $rowparams = array();
@@ -686,21 +686,21 @@ class PEAR_Frontend_CLI extends PEAR_Frontend
 
             $rowlines = array();
             if ($height > 1) {
-                for ($c = 0; $c < count($data); $c++) {
+                for ($c = 0; $c < (is_countable($data) ? count($data) : 0); $c++) {
                     $rowlines[$c] = preg_split('/(\r?\n|\r)/', $data[$c]);
                     if (count($rowlines[$c]) < $height) {
                         $rowlines[$c] = array_pad($rowlines[$c], $height, '');
                     }
                 }
             } else {
-                for ($c = 0; $c < count($data); $c++) {
+                for ($c = 0; $c < (is_countable($data) ? count($data) : 0); $c++) {
                     $rowlines[$c] = array($data[$c]);
                 }
             }
 
             for ($r = 0; $r < $height; $r++) {
                 $rowtext = '';
-                for ($c = 0; $c < count($data); $c++) {
+                for ($c = 0; $c < (is_countable($data) ? count($data) : 0); $c++) {
                     if (isset($colparams[$c])) {
                         $attribs = array_merge($rowparams, $colparams);
                     } else {

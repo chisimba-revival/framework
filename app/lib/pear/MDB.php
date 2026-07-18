@@ -375,7 +375,7 @@ class MDB
             );
             $dsninfo = array_merge($dsninfo_default, $dsninfo);
             $keys = array_keys($GLOBALS['_MDB_databases']);
-            for ($i=0, $j=count($keys); $i<$j; ++$i) {
+            for ($i=0, $j=(is_countable($keys) ? count($keys) : 0); $i<$j; ++$i) {
                 $tmp_dsn = $GLOBALS['_MDB_databases'][$keys[$i]]->getDSN('array');
                 if ($dsninfo['phptype'] == $tmp_dsn['phptype']
                     && $dsninfo['username'] == $tmp_dsn['username']

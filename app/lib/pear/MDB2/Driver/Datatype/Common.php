@@ -295,8 +295,8 @@ class MDB2_Driver_Datatype_Common extends MDB2_Module_Common
      */
     function _sortResultFieldTypes($columns, $types)
     {
-        $n_cols = count($columns);
-        $n_types = count($types);
+        $n_cols = (is_countable($columns) ? count($columns) : 0);
+        $n_types = (is_countable($types) ? count($types) : 0);
         if ($n_cols > $n_types) {
             for ($i= $n_cols - $n_types; $i >= 0; $i--) {
                 $types[] = null;
@@ -314,7 +314,7 @@ class MDB2_Driver_Datatype_Common extends MDB2_Module_Common
         }
         // if there are left types in the array, fill the null values of the
         // sorted array with them, in order.
-        if (count($types)) {
+        if ((is_countable($types) ? count($types) : 0)) {
             reset($types);
             foreach (array_keys($sorted_types) as $k) {
                 if (null === $sorted_types[$k]) {

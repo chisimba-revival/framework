@@ -33,7 +33,7 @@ function Auth_OpenID_splitNonce($nonce_string)
 {
     // Extract a timestamp from the given nonce string
     $result = preg_match(Auth_OpenID_Nonce_REGEX, $nonce_string, $matches);
-    if ($result != 1 || count($matches) != 8) {
+    if ($result != 1 || (is_countable($matches) ? count($matches) : 0) != 8) {
         return null;
     }
 

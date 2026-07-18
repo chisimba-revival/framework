@@ -311,7 +311,7 @@ class HTMLPurifier_HTMLDefinition extends HTMLPurifier_Definition
             // emit errors
             foreach ($allowed_attributes_mutable as $elattr => $d) {
                 $bits = preg_split('/[.@]/', $elattr, 2);
-                $c = count($bits);
+                $c = (is_countable($bits) ? count($bits) : 0);
                 switch ($c) {
                     case 2:
                         if ($bits[0] !== '*') {

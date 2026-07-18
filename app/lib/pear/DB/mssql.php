@@ -856,7 +856,7 @@ class DB_mssql extends DB_common
             foreach ($res as $val) {
                 $keys = explode(', ', $val['index_keys']);
 
-                if (sizeof($keys) > 1) {
+                if ((is_countable($keys) ? sizeof($keys) : 0) > 1) {
                     foreach ($keys as $key) {
                         $this->_add_flag($flags[$key], 'multiple_key');
                     }

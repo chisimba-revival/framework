@@ -11,7 +11,7 @@ foreach ($results as $result)
 {
     $result = explode('__', $result);
     
-    if (count($result) == 2) {
+    if ((is_countable($result) ? count($result) : 0) == 2) {
         $file = $this->objFiles->getFile($result[0]);
         
         if ($file != FALSE) {
@@ -31,7 +31,7 @@ foreach ($results as $result)
     }
 }
 
-if (count($list) > 0) {
+if ((is_countable($list) ? count($list) : 0) > 0) {
     echo '<ul>';
         foreach ($list as $message)
         {

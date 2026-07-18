@@ -474,7 +474,7 @@ class Net_DNS_Resolver
                     }
                 }
             }
-            if (count($a)) {
+            if ((is_countable($a) ? count($a) : 0)) {
                 $this->nameservers = $a;
             }
         }

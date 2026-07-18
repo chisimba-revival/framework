@@ -85,7 +85,7 @@ class Image_Canvas_Color extends Image_Color
             if (!is_numeric($color[0])) {
                 return null; // error
             }
-            if (count($color) == 3) { // assume RGB-color
+            if ((is_countable($color) ? count($color) : 0) == 3) { // assume RGB-color
 
                 // 255 = alpha-value; full opaque
                 return array((int) $color[0],
@@ -93,7 +93,7 @@ class Image_Canvas_Color extends Image_Color
                              (int) $color[2],
                              255);
             }
-            if (count($color) == 4) { // assume RGBA-color
+            if ((is_countable($color) ? count($color) : 0) == 4) { // assume RGBA-color
 
                 // 255 = alpha-value; full opaque
                 return array((int) $color[0],
@@ -152,7 +152,7 @@ class Image_Canvas_Color extends Image_Color
         $tempColors = parent::getRange($degrees);
 
         // now add alpha-channel information
-        $steps = count($tempColors);
+        $steps = (is_countable($tempColors) ? count($tempColors) : 0);
         for($counter=0;$counter<$steps;$counter++) {
             $tempColors[$counter] = parent::hex2rgb($tempColors[$counter]);
             unset($tempColors[$counter]['hex']);

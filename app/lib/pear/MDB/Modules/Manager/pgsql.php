@@ -130,7 +130,7 @@ class MDB_Manager_pgsql extends MDB_Manager_common
         if (!isset($name) || !strcmp($name, '')) {
             return($db->raiseError(MDB_ERROR_CANNOT_CREATE, NULL, NULL, 'no valid table name specified'));
         }
-        if (count($fields) == 0) {
+        if ((is_countable($fields) ? count($fields) : 0) == 0) {
             return($db->raiseError(MDB_ERROR_CANNOT_CREATE, NULL, NULL, 'no fields specified for table "'.$name.'"'));
         }
         $query_fields = '';
@@ -241,7 +241,7 @@ class MDB_Manager_pgsql extends MDB_Manager_common
     function alterTable(&$db, $name, &$changes, $check)
     {
         if ($check) {
-            for ($change = 0, reset($changes); $change < count($changes); next($changes), $change++) {
+            for ($change = 0, reset($changes); $change < (is_countable($changes) ? count($changes) : 0); next($changes), $change++) {
                 switch (key($changes)) {
                     case 'AddedFields':
                         break;
@@ -262,7 +262,7 @@ class MDB_Manager_pgsql extends MDB_Manager_common
             $query = '';
             if (isSet($changes['AddedFields'])) {
                 $fields = $changes['AddedFields'];
-                for ($field = 0, reset($fields); $field < count($fields); next($fields), $field++) {
+                for ($field = 0, reset($fields); $field < (is_countable($fields) ? count($fields) : 0); next($fields), $field++) {
                     if (MDB::isError($result = $db->query("ALTER TABLE $name ADD ".$fields[key($fields)]['Declaration']))) {
                         return($result);
                     }
@@ -270,7 +270,7 @@ class MDB_Manager_pgsql extends MDB_Manager_common
             }
             if (isSet($changes['RemovedFields'])) {
                 $fields = $changes['RemovedFields'];
-                for ($field = 0, reset($fields); $field < count($fields); next($fields), $field++) {
+                for ($field = 0, reset($fields); $field < (is_countable($fields) ? count($fields) : 0); next($fields), $field++) {
                     if (MDB::isError($result = $db->query("ALTER TABLE $name DROP ".key($fields)))) {
                         return($result);
                     }
@@ -485,7 +485,7 @@ class MDB_Manager_pgsql extends MDB_Manager_common
             $default = substr($columns['adsrc'],1,-1);
         }
         $definition = array();
-        for($field_choices = array(), $datatype = 0; $datatype < count($type); $datatype++) {
+        for($field_choices = array(), $datatype = 0; $datatype < (is_countable($type) ? count($type) : 0); $datatype++) {
             $field_choices[$datatype] = array('type' => $type[$datatype]);
             if(isset($notnull)) {
                 $field_choices[$datatype]['notnull'] = 1;

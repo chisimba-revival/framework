@@ -177,7 +177,7 @@ class Zend_Json_Encoder
      * array string.
      *
      * Arrays are defined as integer-indexed arrays starting at index 0, where
-     * the last index is (count($array) -1); any deviation from that is
+     * the last index is ((is_countable($array) ? count($array) : 0) -1); any deviation from that is
      * considered an associative array, and will be encoded as such.
      *
      * @param $array array
@@ -188,7 +188,7 @@ class Zend_Json_Encoder
         $tmpArray = array();
 
         // Check for associative array
-        if (!empty($array) && (array_keys($array) !== range(0, count($array) - 1))) {
+        if (!empty($array) && (array_keys($array) !== range(0, (is_countable($array) ? count($array) : 0) - 1))) {
             // Associative array
             $result = '{';
             foreach ($array as $key => $value) {
@@ -202,7 +202,7 @@ class Zend_Json_Encoder
         } else {
             // Indexed array
             $result = '[';
-            $length = count($array);
+            $length = (is_countable($array) ? count($array) : 0);
             for ($i = 0; $i < $length; $i++) {
                 $tmpArray[] = $this->_encodeValue($array[$i]);
             }
@@ -315,7 +315,7 @@ class Zend_Json_Encoder
 
             if ('__construct' != $method->getName()) {
                 $parameters  = $method->getParameters();
-                $paramCount  = count($parameters);
+                $paramCount  = (is_countable($parameters) ? count($parameters) : 0);
                 $argsStarted = false;
 
                 $argNames = "var argNames=[";

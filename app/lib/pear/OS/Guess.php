@@ -122,7 +122,7 @@ class OS_Guess
             $uname = php_uname();
         }
         $parts = preg_split('/\s+/', trim($uname));
-        $n = count($parts);
+        $n = (is_countable($parts) ? count($parts) : 0);
 
         $release  = $machine = $cpu = '';
         $sysname  = $parts[0];
@@ -177,7 +177,7 @@ class OS_Guess
 
     function _determineIfPowerpc($cpu, $parts)
     {
-        $n = count($parts);
+        $n = (is_countable($parts) ? count($parts) : 0);
         if ($cpu == 'Macintosh' && $parts[$n - 2] == 'Power') {
             $cpu = 'powerpc';
         }
@@ -356,7 +356,7 @@ class OS_Guess
     function matchSignature($match)
     {
         $fragments = is_array($match) ? $match : explode('-', $match);
-        $n = count($fragments);
+        $n = (is_countable($fragments) ? count($fragments) : 0);
         $matches = 0;
         if ($n > 0) {
             $matches += $this->_matchFragment($fragments[0], $this->sysname);

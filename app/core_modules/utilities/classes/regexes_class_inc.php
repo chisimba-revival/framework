@@ -326,13 +326,13 @@ class regexes extends ChisimbaObject
     // count used keywords
     public function countkeyword($word,$file){
         $x = preg_match_all("/(.*)($word)(.*)/",$file,$patterns);
-        return count($patterns);
+        return (is_countable($patterns) ? count($patterns) : 0);
     }
 
     // retrieve internal site links
     public function get_internal_links($array){
         $result = array();
-        $count = count($array);
+        $count = (is_countable($array) ? count($array) : 0);
         for($i=0;$i<$count;$i++){
             if(!empty($array[$i])){
                 if(strpos($array[$i],"www",0) === FALSE){
@@ -348,7 +348,7 @@ class regexes extends ChisimbaObject
     // retrieve external links
     public function get_external_links($array){
         $result = array();
-        $count = count($array);
+        $count = (is_countable($array) ? count($array) : 0);
         for($i=0;$i<$count;$i++){
             if(!empty($array[$i])){
                 if(strpos($array[$i],"www",0) !== FALSE){

@@ -354,7 +354,7 @@ class HTML_QuickForm_Renderer_Default extends HTML_QuickForm_Renderer
     {
         $separator = $group->_separator;
         if (is_array($separator)) {
-            $count = count($separator);
+            $count = (is_countable($separator) ? count($separator) : 0);
             $html  = '';
             for ($i = 0; $i < count($this->_groupElements); $i++) {
                 $html .= (0 == $i? '': $separator[($i - 1) % $count]) . $this->_groupElements[$i];

@@ -114,7 +114,7 @@ echo ('
                 $error = 'no action selected';
             }
             $warnings = $manager->getWarnings();
-            if(count($warnings) > 0) {
+            if((is_countable($warnings) ? count($warnings) : 0) > 0) {
                 echo('Warnings<br>');
                 if (class_exists('Var_Dump')) {
                     Var_Dump::display($warnings);

@@ -139,7 +139,7 @@ class Squiz_Sniffs_Commenting_VariableCommentSniff extends PHP_CodeSniffer_Stand
 
         // Exactly one blank line before tags.
         $tags = $this->commentParser->getTagOrders();
-        if (count($tags) > 1) {
+        if ((is_countable($tags) ? count($tags) : 0) > 1) {
             $newlineSpan = $comment->getNewlineAfter();
             if ($newlineSpan !== 2) {
                 $error = 'There must be exactly one blank line before the tags in variable comment';
@@ -196,7 +196,7 @@ class Squiz_Sniffs_Commenting_VariableCommentSniff extends PHP_CodeSniffer_Stand
             $errorPos = ($commentStart + $var->getLine());
             $index    = array_keys($this->commentParser->getTagOrders(), 'var');
 
-            if (count($index) > 1) {
+            if ((is_countable($index) ? count($index) : 0) > 1) {
                 $error = 'Only 1 @var tag is allowed in variable comment';
                 $this->currentFile->addError($error, $errorPos);
                 return;
@@ -251,13 +251,13 @@ class Squiz_Sniffs_Commenting_VariableCommentSniff extends PHP_CodeSniffer_Stand
             $index     = array_keys($foundTags, 'since');
             $var       = array_keys($foundTags, 'var');
 
-            if (count($index) > 1) {
+            if ((is_countable($index) ? count($index) : 0) > 1) {
                 $error = 'Only 1 @since tag is allowed in variable comment';
                 $this->currentFile->addError($error, $errorPos);
                 return;
             }
             // Only check order if there is one var tag in variable comment.
-            if (count($var) === 1 && $index[0] !== 2) {
+            if ((is_countable($var) ? count($var) : 0) === 1 && $index[0] !== 2) {
                 $error = 'The order of @since tag is wrong in variable comment';
                 $this->currentFile->addError($error, $errorPos);
             }

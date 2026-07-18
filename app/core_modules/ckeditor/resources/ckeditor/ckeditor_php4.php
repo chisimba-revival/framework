@@ -388,7 +388,7 @@ class CKEditor
 				if (empty($handlers)) {
 					continue;
 				}
-				else if (count($handlers) == 1) {
+				else if ((is_countable($handlers) ? count($handlers) : 0) == 1) {
 					$_config['on'][$eventName] = '@@'.$handlers[0];
 				}
 				else {
@@ -570,7 +570,7 @@ class CKEditor
 			}
 		}
 		$isList = true;
-		for ($i = 0, reset($val); $i < count($val); $i++, next($val))
+		for ($i = 0, reset($val); $i < (is_countable($val) ? count($val) : 0); $i++, next($val))
 		{
 			if (key($val) !== $i)
 			{

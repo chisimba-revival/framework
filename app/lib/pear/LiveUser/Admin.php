@@ -370,7 +370,7 @@ class LiveUser_Admin
                         $match = $this->_authContainers[$key]->getUsers(
                             array('filters' => array('auth_user_id' => $authUserId))
                         );
-                        if (is_array($match) && count($match) > 0) {
+                        if (is_array($match) && (is_countable($match) ? count($match) : 0) > 0) {
                             $authName = $key;
                             break;
                         }

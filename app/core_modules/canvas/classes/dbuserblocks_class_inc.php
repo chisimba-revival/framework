@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 /**
  *
  * Dynamic canvas data access for user-level blocks
@@ -106,7 +107,7 @@ class dbuserblocks extends dbtable
     {
         $results = $this->getUserBlocksList($userId, $side);
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
            return '';
         } else {
 
@@ -161,7 +162,7 @@ class dbuserblocks extends dbtable
     {
         $results = $this->getAll(' WHERE userid=\''.$userId.'\' ');
         $array = array();
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $result)
             {
                 $array[] = $result['block'];
@@ -190,7 +191,7 @@ class dbuserblocks extends dbtable
                 'side' => $side,
                 'module' => $module,
                 'position' => $this->getLastOrder($side, $userId)+1,
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
             ));
     }
 
@@ -208,7 +209,7 @@ class dbuserblocks extends dbtable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' ORDER BY position DESC LIMIT 1');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
             return $results[0]['position'];
@@ -326,7 +327,7 @@ class dbuserblocks extends dbtable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' AND position < '.$position.' ORDER BY position DESC LIMIT 1');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];
@@ -346,7 +347,7 @@ class dbuserblocks extends dbtable
     {
         $results = $this->getAll(' WHERE side=\''.$side.'\' AND userid=\''.$userId.'\' AND position > '.$position.' ORDER BY position LIMIT 1');
 
-        if (count($results) == 0) {
+        if ((is_countable($results) ? count($results) : 0) == 0) {
             return FALSE;
         } else {
             return $results[0];

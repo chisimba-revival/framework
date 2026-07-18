@@ -587,25 +587,56 @@ class engine {
  	 
  	 
         } 
-        // check if admin is part of the admin group now. 
-        $admingrp = $this->luAdmin->perm->getGroups(array('filters' => array('group_define_name' => 'Site Admin'))); 
-        $admingrpId = $admingrp[0]['group_id']; 
-        $params = array('filters' => array('group_id' => $admingrpId)); 
-        $usersGroup = $this->luAdmin->perm->getUsers($params); 
-        if(empty($usersGroup) || $usersGroup == false) { 
-            // change the default admin user to a lu user 
-            $user = $this->luAdmin->auth->getUsers(array('filters' => array('auth_user_id' => '1'))); 
-            if(is_array($user) && array_key_exists(0, $user)) { 
-                $ud = $user[0]; 
-                $userdata = array(); 
-                $userdata['auth_user_id'] = $ud['auth_user_id']; 
-                $userdata['auth_container_name'] = 'database_local'; 
-                $userdata['perm_type'] = 5; 
-                $add = $this->luAdmin->perm->addUser($userdata); 
-                // now add his ass to the admin group 
-                $result = $this->luAdmin->perm->addUserToGroup(array('perm_user_id' => $add, 'group_id' => $admingrpId)); 
-            } 
-        } 
+        // CHISIMBA_IDEMPOTENT_SITE_ADMIN_BOOTSTRAP_PHP82
+        // This legacy 2.x-to-3.x bootstrap used a group-filtered getUsers()
+        // query. Under the PHP 8.2 LiveUser compatibility path that query can
+        // return an empty result even when Admin already exists, causing a new
+        // permission user and Site Admin membership to be inserted on every
+        // request. Resolve the canonical Admin permission user directly and
+        // only create it when no mapping exists at all.
+        $admingrp = $this->luAdmin->perm->getGroups(
+            array('filters' => array('group_define_name' => 'Site Admin'))
+        );
+
+        if (is_array($admingrp) && isset($admingrp[0]['group_id'])) {
+            $admingrpId = $admingrp[0]['group_id'];
+
+            $adminPermUsers = $this->luAdmin->perm->getUsers(
+                array(
+                    'filters' => array(
+                        'auth_user_id' => '1',
+                        'auth_container_name' => 'database_local'
+                    )
+                )
+            );
+
+            if (is_array($adminPermUsers) && isset($adminPermUsers[0]['perm_user_id'])) {
+                $adminPermUserId = $adminPermUsers[0]['perm_user_id'];
+            } else {
+                $user = $this->luAdmin->auth->getUsers(
+                    array('filters' => array('auth_user_id' => '1'))
+                );
+
+                $adminPermUserId = false;
+                if (is_array($user) && isset($user[0]['auth_user_id'])) {
+                    $userdata = array(
+                        'auth_user_id' => $user[0]['auth_user_id'],
+                        'auth_container_name' => 'database_local',
+                        'perm_type' => 5
+                    );
+                    $adminPermUserId = $this->luAdmin->perm->addUser($userdata);
+                }
+            }
+
+            if ($adminPermUserId !== false && $adminPermUserId !== null) {
+                $this->luAdmin->perm->addUserToGroup(
+                    array(
+                        'perm_user_id' => $adminPermUserId,
+                        'group_id' => $admingrpId
+                    )
+                );
+            }
+        }
         /* -- End remove for 2.x -> 3.x series -- */ 
 
         // Set the user agent
@@ -1829,7 +1860,7 @@ class engine {
         if ($params === null) {
             $params = array();
         }
-        if (count ( $params ) > 1) {
+        if ((is_countable($params) ? count($params) : 0) > 1) {
             $params = array_reverse ( $params, TRUE );
         }
         $params ['module'] = $module;

@@ -278,11 +278,11 @@ class Net_URL_Mapper
                 }
             }
 
-            if (count($set) == count($values) &&
-                count($set) <= $path->getMaxKeys()) {
+            if ((is_countable($set) ? count($set) : 0) == (is_countable($values) ? count($values) : 0) &&
+                (is_countable($set) ? count($set) : 0) <= $path->getMaxKeys()) {
 
                 $req = $path->getRequired();
-                if (count(array_intersect(array_keys($set), $req)) != count($req)) {
+                if (count(array_intersect(array_keys($set), $req)) != (is_countable($req) ? count($req) : 0)) {
                     continue;
                 }
                 $gen = $path->generate($set, $qstring, $anchor);

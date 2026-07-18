@@ -320,7 +320,7 @@ class Mail_RFC822 {
     {
         $string = $parts[0];
 
-        for ($i = 0; $i < count($parts); $i++) {
+        for ($i = 0; $i < (is_countable($parts) ? count($parts) : 0); $i++) {
             if ($this->_hasUnclosedQuotes($string)
                 || $this->_hasUnclosedBrackets($string, '<>')
                 || $this->_hasUnclosedBrackets($string, '[]')
@@ -351,9 +351,9 @@ class Mail_RFC822 {
     function _hasUnclosedQuotes($string)
     {
         $string     = explode('"', $string);
-        $string_cnt = count($string);
+        $string_cnt = (is_countable($string) ? count($string) : 0);
 
-        for ($i = 0; $i < (count($string) - 1); $i++)
+        for ($i = 0; $i < ((is_countable($string) ? count($string) : 0) - 1); $i++)
             if (substr($string[$i], -1) == '\\')
                 $string_cnt--;
 
@@ -397,7 +397,7 @@ class Mail_RFC822 {
     function _hasUnclosedBracketsSub($string, &$num, $char)
     {
         $parts = explode($char, $string);
-        for ($i = 0; $i < count($parts); $i++){
+        for ($i = 0; $i < (is_countable($parts) ? count($parts) : 0); $i++){
             if (substr($parts[$i], -1) == '\\' || $this->_hasUnclosedQuotes($parts[$i]))
                 $num--;
             if (isset($parts[$i + 1]))
@@ -458,7 +458,7 @@ class Mail_RFC822 {
         // Check that $addresses is set, if address like this:
         // Groupname:;
         // Then errors were appearing.
-        if (!count($addresses)){
+        if (!(is_countable($addresses) ? count($addresses) : 0)){
             $this->error = 'Empty group.';
             return false;
         }
@@ -471,7 +471,7 @@ class Mail_RFC822 {
         //                         geezer@domain.com
         //                         geezer
         // ... or any other format valid by RFC 822.
-        for ($i = 0; $i < count($addresses); $i++) {
+        for ($i = 0; $i < (is_countable($addresses) ? count($addresses) : 0); $i++) {
             if (!$this->validateMailbox($addresses[$i])) {
                 if (empty($this->error)) {
                     $this->error = 'Validation failed for: ' . $addresses[$i];
@@ -513,7 +513,7 @@ class Mail_RFC822 {
         $parts = preg_split('/[ \\x09]+/', $phrase, -1, PREG_SPLIT_NO_EMPTY);
 
         $phrase_parts = array();
-        while (count($parts) > 0){
+        while ((is_countable($parts) ? count($parts) : 0) > 0){
             $phrase_parts[] = $this->_splitCheck($parts, ' ');
             for ($i = 0; $i < $this->index + 1; $i++)
                 array_shift($parts);
@@ -766,7 +766,7 @@ class Mail_RFC822 {
         // Note the different use of $subdomains and $sub_domains
         $subdomains = explode('.', $domain);
 
-        while (count($subdomains) > 0) {
+        while ((is_countable($subdomains) ? count($subdomains) : 0) > 0) {
             $sub_domains[] = $this->_splitCheck($subdomains, '.');
             for ($i = 0; $i < $this->index + 1; $i++)
                 array_shift($subdomains);
@@ -860,7 +860,7 @@ class Mail_RFC822 {
         $words = array();
 
         // Split the local_part into words.
-        while (count($parts) > 0){
+        while ((is_countable($parts) ? count($parts) : 0) > 0){
             $words[] = $this->_splitCheck($parts, '.');
             for ($i = 0; $i < $this->index + 1; $i++) {
                 array_shift($parts);

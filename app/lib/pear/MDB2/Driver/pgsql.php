@@ -789,7 +789,7 @@ class MDB2_Driver_pgsql extends MDB2_Driver_Common
         if ($matches) {
             $manip = $match[1];
             $from  = $match[2];
-            $what  = (count($matches) == 6) ? $match[5] : $match[3];
+            $what  = ((is_countable($matches) ? count($matches) : 0) == 6) ? $match[5] : $match[3];
             return $manip.' '.$from.' '.$what.' WHERE ctid=(SELECT ctid FROM '.$from.' '.$where.' LIMIT '.$limit.')';
         }
         //return error?
@@ -1031,7 +1031,7 @@ class MDB2_Driver_pgsql extends MDB2_Driver_Common
                 list($table, $field) = explode('_', $sqn, 2);
             }
             $schema_list = $this->queryOne("SELECT array_to_string(current_schemas(false), ',')");
-            if (MDB2::isError($schema_list) || empty($schema_list) || count($schema_list) < 2) {
+            if (MDB2::isError($schema_list) || empty($schema_list) || (is_countable($schema_list) ? count($schema_list) : 0) < 2) {
                 $order_by = ' a.attnum';
                 $schema_clause = ' AND n.nspname=current_schema()';
             } else {

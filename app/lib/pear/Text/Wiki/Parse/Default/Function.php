@@ -81,7 +81,7 @@ class Text_Wiki_Parse_Function extends Text_Wiki_Parse {
             case 'p':
             case 'param':
                 $tmp = explode(',', $val);
-                $k = count($tmp);
+                $k = (is_countable($tmp) ? count($tmp) : 0);
                 if ($k == 1) {
                     $opts['params'][] = array(
                         'type' => $tmp[0],
@@ -112,7 +112,7 @@ class Text_Wiki_Parse_Function extends Text_Wiki_Parse {
             case 't':
             case 'throws':
                 $tmp = explode(',', $val);
-                $k = count($tmp);
+                $k = (is_countable($tmp) ? count($tmp) : 0);
                 if ($k == 1) {
                     $opts['throws'][] = array(
                         'type' => $tmp[0],

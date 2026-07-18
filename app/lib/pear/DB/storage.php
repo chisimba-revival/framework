@@ -202,7 +202,7 @@ class DB_storage extends PEAR
             $primarykey = array($this->_keycolumn);
         }
         settype($newpk, "array");
-        for ($i = 0; $i < sizeof($primarykey); $i++) {
+        for ($i = 0; $i < (is_countable($primarykey) ? sizeof($primarykey) : 0); $i++) {
             $pkvals[] = $this->_dbh->quote($newpk[$i]);
         }
 
@@ -212,7 +212,7 @@ class DB_storage extends PEAR
         if (DB::isError($sth)) {
             return $sth;
         }
-        if (sizeof($newpk) == 1) {
+        if ((is_countable($newpk) ? sizeof($newpk) : 0) == 1) {
             $newpk = $newpk[0];
         }
         $this->setup($newpk);
@@ -248,7 +248,7 @@ class DB_storage extends PEAR
             $keyname = $this->_keycolumn;
             if (is_array($keyname)) {
                 $info .= "(";
-                for ($i = 0; $i < sizeof($keyname); $i++) {
+                for ($i = 0; $i < (is_countable($keyname) ? sizeof($keyname) : 0); $i++) {
                     if ($i > 0) {
                         $info .= ",";
                     }

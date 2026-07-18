@@ -76,7 +76,7 @@ class Squiz_Sniffs_Strings_DoubleQuoteUsageSniff implements PHP_CodeSniffer_Snif
 
         // Work through the following tokens, in case this string is stretched
         // over multiple Lines.
-        $limit = count($tokens);
+        $limit = (is_countable($tokens) ? count($tokens) : 0);
         for ($i = ($stackPtr + 1); $i < $limit; $i++) {
             if ($tokens[$i]['type'] !== 'T_CONSTANT_ENCAPSED_STRING') {
                 break;

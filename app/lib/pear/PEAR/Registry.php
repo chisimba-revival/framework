@@ -1065,7 +1065,7 @@ class PEAR_Registry extends PEAR
         }
 
         $test = $this->_listChannelPackages($channel);
-        if (count($test)) {
+        if ((is_countable($test) ? count($test) : 0)) {
             return false;
         }
 
@@ -1127,12 +1127,12 @@ class PEAR_Registry extends PEAR
             }
 
             $ps = $this->_listPackages($channel);
-            if (!count($ps)) {
+            if (!(is_countable($ps) ? count($ps) : 0)) {
                 return array();
             }
             return array_map(array(&$this, '_packageInfo'),
-                             $ps, array_fill(0, count($ps), null),
-                             array_fill(0, count($ps), $channel));
+                             $ps, array_fill(0, (is_countable($ps) ? count($ps) : 0), null),
+                             array_fill(0, (is_countable($ps) ? count($ps) : 0), $channel));
         }
 
         $fp = $this->_openPackageFile($package, 'r', $channel);
@@ -2002,7 +2002,7 @@ class PEAR_Registry extends PEAR
                 }
             }
         }
-        if (!count($ret)) {
+        if (!(is_countable($ret) ? count($ret) : 0)) {
             return false;
         }
         return $ret;
@@ -2217,7 +2217,7 @@ class PEAR_Registry extends PEAR
                     }
                     $parts = explode('/', $components['path']);
                     $components['host'] = array_shift($parts);
-                    if (count($parts) > 1) {
+                    if ((is_countable($parts) ? count($parts) : 0) > 1) {
                         $components['path'] = array_pop($parts);
                         $components['host'] .= '/' . implode('/', $parts);
                     } else {
@@ -2267,7 +2267,7 @@ class PEAR_Registry extends PEAR
             // check for version
             if (strpos($param['package'], '-')) {
                 $test = explode('-', $param['package']);
-                if (count($test) != 2) {
+                if ((is_countable($test) ? count($test) : 0) != 2) {
                     return PEAR::raiseError('parsePackageName(): only one version/state ' .
                         'delimiter "-" is allowed in "' . $saveparam . '"',
                         'version', null, null, $param);

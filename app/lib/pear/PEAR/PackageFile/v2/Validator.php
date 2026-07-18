@@ -389,11 +389,11 @@ class PEAR_PackageFile_v2_Validator
                 continue;
             }
         }
-        if (!$mismatch && count($optionaltags)) {
+        if (!$mismatch && (is_countable($optionaltags) ? count($optionaltags) : 0)) {
             // don't error out on any optional tags
             $unfoundtags = array_diff($unfoundtags, $optionaltags);
         }
-        if (count($unfoundtags)) {
+        if ((is_countable($unfoundtags) ? count($unfoundtags) : 0)) {
             $this->_invalidTagOrder($unfoundtags, $key, $root);
         } elseif ($key) {
             // unknown tags
@@ -1128,7 +1128,7 @@ class PEAR_PackageFile_v2_Validator
                     $save['name'] = $dirs . '/' . $save['name'];
                 }
                 unset($file['attribs']);
-                if (count($file) && $this->_curState != PEAR_VALIDATE_DOWNLOADING) { // has tasks
+                if ((is_countable($file) ? count($file) : 0) && $this->_curState != PEAR_VALIDATE_DOWNLOADING) { // has tasks
                     foreach ($file as $task => $value) {
                         if ($tagClass = $this->_pf->getTask($task)) {
                             if (!is_array($value) || !isset($value[0])) {
@@ -1880,7 +1880,7 @@ class PEAR_PackageFile_v2_Validator
             }
         }
 /*
-        for ($i = 0; $i < sizeof($tokens); $i++) {
+        for ($i = 0; $i < (is_countable($tokens) ? sizeof($tokens) : 0); $i++) {
             @list($token, $data) = $tokens[$i];
             if (is_string($token)) {
                 var_dump($token);
@@ -1911,7 +1911,7 @@ class PEAR_PackageFile_v2_Validator
         $nodeps = array();
         $inquote = false;
         $interface = false;
-        for ($i = 0; $i < sizeof($tokens); $i++) {
+        for ($i = 0; $i < (is_countable($tokens) ? sizeof($tokens) : 0); $i++) {
             if (is_array($tokens[$i])) {
                 list($token, $data) = $tokens[$i];
             } else {

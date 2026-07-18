@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * User class
@@ -695,7 +696,7 @@ class user extends dbTable {
         } else {
             $sql = "SELECT emailaddress FROM tbl_users WHERE userid='$userId'";
             $rs = $this->getArray($sql);
-            if (count($rs) > 0) {
+            if ((is_countable($rs) ? count($rs) : 0) > 0) {
                 $ret = $rs[0]["emailaddress"];
             } else {
                 $ret = $this->objLanguage->languageText("error_datanotfound", 'security');
@@ -835,7 +836,7 @@ class user extends dbTable {
         }
 
         if ($forceRefresh) {
-            $forceRefresh = '?' . mktime();
+            $forceRefresh = '?' . time();
         }
 
         if ($alt == NULL) {
@@ -870,7 +871,7 @@ class user extends dbTable {
         }
 
         if ($forceRefresh) {
-            $forceRefresh = '?' . mktime();
+            $forceRefresh = '?' . time();
         }
 
         if (file_exists($this->imagePath . $userId . '.png'))

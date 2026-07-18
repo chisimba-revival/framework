@@ -2,7 +2,7 @@
 echo '<h1>'.$this->objLanguage->languageText('phrase_tagcloud', 'filemanager', 'Tag Cloud').'</h1>';
 
 
-if (count($tagCloudItems) > 0) {
+if ((is_countable($tagCloudItems) ? count($tagCloudItems) : 0) > 0) {
     $tags = array();
     foreach ($tagCloudItems as $item)
     {

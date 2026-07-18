@@ -771,7 +771,7 @@ class DB
             $parsed['dbsyntax'] = $str;
         }
 
-        if (!count($dsn)) {
+        if (!(is_countable($dsn) ? count($dsn) : 0)) {
             return $parsed;
         }
 
@@ -911,7 +911,7 @@ class DB
               $dsnArray['port'],
               $dsnArray['database']
         );
-        if (count($dsnArray) > 0) {
+        if ((is_countable($dsnArray) ? count($dsnArray) : 0) > 0) {
             $dsnString .= '?';
             $i = 0;
             foreach ($dsnArray as $key => $value) {

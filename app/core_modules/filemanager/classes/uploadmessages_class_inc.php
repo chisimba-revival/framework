@@ -107,7 +107,7 @@ class uploadmessages extends filemanagerobject
         $successList = '';
         $divider = '';
         
-        if (count($success) > 0) {
+        if ((is_countable($success) ? count($success) : 0) > 0) {
             foreach ($success as $file)
             {
                 $successList .= $divider.$file;
@@ -119,7 +119,7 @@ class uploadmessages extends filemanagerobject
         $overwriteList = '';
         $divider = '';
         
-        if (count($overwrite) > 0) {
+        if ((is_countable($overwrite) ? count($overwrite) : 0) > 0) {
             foreach ($overwrite as $file)
             {
                 $overwriteList .= $divider.$file;
@@ -131,7 +131,7 @@ class uploadmessages extends filemanagerobject
         $errorList = '';
         $divider = '';
         
-        if (count($errors) > 0) {
+        if ((is_countable($errors) ? count($errors) : 0) > 0) {
             foreach ($errors as $file=>$reason)
             {
                 $errorList .= $divider.$file.'__'.$reason;
@@ -286,7 +286,7 @@ class uploadmessages extends filemanagerobject
                 }
             }
             
-            if (count($actualItems) > 0) {
+            if ((is_countable($actualItems) ? count($actualItems) : 0) > 0) {
                 $form = new form('overwriteoptions', $this->uri(array('action'=>'fixtempfiles')));
                 
                 $form->addToForm($table->show());

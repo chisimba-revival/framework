@@ -306,8 +306,8 @@ class getid3_lib
 		}
 		$bytes[] = $number;
 		$binstring = '';
-		for ($i = 0; $i < count($bytes); $i++) {
-			$binstring = (($i == count($bytes) - 1) ? decbin($bytes[$i]) : str_pad(decbin($bytes[$i]), 8, '0', STR_PAD_LEFT)).$binstring;
+		for ($i = 0; $i < (is_countable($bytes) ? count($bytes) : 0); $i++) {
+			$binstring = (($i == (is_countable($bytes) ? count($bytes) : 0) - 1) ? decbin($bytes[$i]) : str_pad(decbin($bytes[$i]), 8, '0', STR_PAD_LEFT)).$binstring;
 		}
 		return $binstring;
 	}

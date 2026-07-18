@@ -240,6 +240,64 @@ class modulecatalogue extends controller {
                     return $this->nextAction ( 'list', array ('cat' => 'Updates', 'message' => $this->objLanguage->languageText ( 'mod_modulecatalogue_installeddeps', 'modulecatalogue' ) ) );
                 case null :
                 case 'list' :
+                    /*
+                     * CHISIMBA_MODULECATALOGUE_CONTROLLER_LOCAL_ALL
+                     *
+                     * The historical "All" category depended on an optional
+                     * remote catalogue service. During restoration that
+                     * service may be absent or unconfigured. In that case the
+                     * module administration screen must still list everything
+                     * installed locally and must not invoke RPC.
+                     *
+                     * Technical debt: restore a configurable repository
+                     * service and make remote catalogue access explicitly
+                     * optional.
+                     */
+                    if (strtolower ( trim ( $activeCat ) ) == 'all') {
+                        $localModuleList = $this->objModFile->getLocalModuleList ();
+                        $localModules = array ();
+
+                        foreach ($localModuleList as $moduleKey => $moduleValue) {
+                            /*
+                             * Older modulefile implementations may return
+                             * either a numeric list of IDs or an associative
+                             * ID => name list. Normalise both forms.
+                             */
+                            if (is_int($moduleKey) || ctype_digit((string) $moduleKey)) {
+                                $moduleId = (string) $moduleValue;
+                                $moduleName = ucfirst($moduleId);
+                            } else {
+                                $moduleId = (string) $moduleKey;
+                                $moduleName = is_scalar($moduleValue)
+                                    ? (string) $moduleValue
+                                    : ucfirst($moduleId);
+                            }
+
+                            if ($moduleId !== '') {
+                                $localModules[$moduleId] = $moduleName;
+                            }
+                        }
+
+                        ksort($localModules, SORT_NATURAL | SORT_FLAG_CASE);
+
+                        /*
+                         * front_tpl.php consumes this session value as search
+                         * results and therefore skips getCategoryList('all'),
+                         * which is the path that invokes the dead repository.
+                         */
+                        $this->setSession('modcatsearchresults', $localModules);
+                        $this->setVar('result', $localModules);
+                        $this->setVar('connected', false);
+
+                        log_debug(
+                            'Module catalogue All category: displaying '
+                            . (is_countable($localModules) ? count($localModules) : 0)
+                            . ' local modules; remote repository skipped.'
+                        );
+
+                        return 'front_tpl.php';
+                    }
+
                     if (strtolower ( $activeCat ) == 'local updates') {
                         $this->setVar ( 'patchArray', $this->objPatch->checkModules () );
                         return 'updates_tpl.php';
@@ -262,7 +320,7 @@ class modulecatalogue extends controller {
                             $skinner = array ();
                         }
                         $skinner = array_filter ( $skinner );
-                        $count = count ( $skinner );
+                        $count = (is_countable($skinner) ? count($skinner) : 0);
                         $this->setVarByRef ( 'skins', $skinner );
                         $t = microtime ( true ) - $s;
                         log_debug ( "Web service discovered $count skins in $t seconds" );
@@ -397,7 +455,7 @@ class modulecatalogue extends controller {
                 case 'batchinstall' :
                     $error = false;
                     $selectedModules = $this->getArrayParam ( 'arrayList' );
-                    if (count ( $selectedModules ) > 0) {
+                    if ((is_countable($selectedModules) ? count($selectedModules) : 0) > 0) {
                         if (! $this->batchRegister ( $selectedModules )) {
                             $error = - 1;
                             if (! $this->output)
@@ -412,7 +470,7 @@ class modulecatalogue extends controller {
                 case 'batchuninstall' :
                     $error = false;
                     $selectedModules = $this->getArrayParam ( 'arrayList' );
-                    if (count ( $selectedModules ) > 0) {
+                    if ((is_countable($selectedModules) ? count($selectedModules) : 0) > 0) {
                         if (! $this->batchDeregister ( $selectedModules )) {
                             $error = - 1;
                             if (! $this->output)
@@ -1102,7 +1160,7 @@ class modulecatalogue extends controller {
                 if ($registerdata) {
                     // Here we get a list of modules that depend on this one
                     $depending = $this->objModule->getDependencies ( $modname );
-                    if (count ( $depending ) > 0) {
+                    if ((is_countable($depending) ? count($depending) : 0) > 0) {
                         foreach ( $depending as $line ) {
                             $result = $this->smartDeregister ( $line );
                             if ($result == FALSE) {

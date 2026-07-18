@@ -103,7 +103,7 @@ class Text_Wiki_Parse_Smiley extends Text_Wiki_Parse {
         $sep1 = ':(?:';
         $sep2 = '';
         foreach ($this->_smileys as $smiley => $def) {
-            for ($i = 1; $i < count($def); $i++) {
+            for ($i = 1; $i < (is_countable($def) ? count($def) : 0); $i++) {
                 if ($i > 1) {
                     $cur = $def[$i];
                     $this->_smileys[$cur] = &$this->_smileys[$smiley];

@@ -185,7 +185,7 @@ class Auth_OpenID_Parse {
             return false;
         }
         // Return the offset of the first match.
-        return $matches[count($matches) - 1][1];
+        return $matches[(is_countable($matches) ? count($matches) : 0) - 1][1];
     }
 
     function headFind()

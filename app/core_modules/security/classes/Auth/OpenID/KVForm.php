@@ -40,10 +40,10 @@ class Auth_OpenID_KVForm {
 
         $values = array();
 
-        for ($lineno = 0; $lineno < count($lines); $lineno++) {
+        for ($lineno = 0; $lineno < (is_countable($lines) ? count($lines) : 0); $lineno++) {
             $line = $lines[$lineno];
             $kv = explode(':', $line, 2);
-            if (count($kv) != 2) {
+            if ((is_countable($kv) ? count($kv) : 0) != 2) {
                 if ($strict) {
                     return false;
                 }

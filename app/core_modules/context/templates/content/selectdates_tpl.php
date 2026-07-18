@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 $this->loadClass("radio", "htmlelements");
 $this->loadClass("fieldset", "htmlelements");
@@ -24,7 +25,7 @@ $userOptLabel = $this->objLanguage->languageText('mod_contextcontent_onlystudent
 $selectModuleLabel = $this->objLanguage->languageText('mod_contextcontent_selectmodule', 'contextcontent', "Select module");
 /* * ** start date & time *** */
 // Set start date of test
-$startField = $objPopupcal->show('startdate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', mktime()));
+$startField = $objPopupcal->show('startdate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', time()));
 $objLabel = new label($startLabel . ':', 'input_start');
 $objTable->startRow();
 $objTable->addCell($objLabel->show());
@@ -36,7 +37,7 @@ $objTable->endRow();
 //));
 // Set closing date of test
 
-$closeField = $objPopupcal->show('enddate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', mktime()));
+$closeField = $objPopupcal->show('enddate', 'yes', 'no', strftime('%Y-%m-%d %H:%M:%S', time()));
 $objLabel = new label($closeLabel . ':', 'input_close');
 /*$objTable->addRow(array(
     $objLabel->show(),

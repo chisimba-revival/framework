@@ -132,7 +132,7 @@ class sysconfig extends controller {
                     $ary = $this->objSysConfig->getProperties($pmodule);
                     //Set the text instructions for the table
                     $this->setVar('step2', $this->objLanguage->languageText("mod_sysconfig_step2",'sysconfig'));
-                    if (count($ary) >=1) {
+                    if ((is_countable($ary) ? count($ary) : 0) >=1) {
                         //Send through the array
                         $this->setVarByRef('ary', $ary);
                     } else {

@@ -238,7 +238,7 @@ class MDB_Manager_oci8 extends MDB_Manager_Common {
     {
         if ($check) {
             for($change = 0, reset($changes);
-                $change < count($changes);
+                $change < (is_countable($changes) ? count($changes) : 0);
                 next($changes), $change++)
             {
                 switch (key($changes)) {
@@ -259,7 +259,7 @@ class MDB_Manager_oci8 extends MDB_Manager_Common {
                 $query = ' DROP (';
                 $fields = $changes['RemovedFields'];
                 for($field = 0, reset($fields);
-                    $field < count($fields);
+                    $field < (is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     if ($field > 0) {
@@ -277,7 +277,7 @@ class MDB_Manager_oci8 extends MDB_Manager_Common {
             if (isset($changes['AddedFields'])) {
                 $fields = $changes['AddedFields'];
                 for($field = 0, reset($fields);
-                    $field < count($fields);
+                    $field < (is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     $query .= ' ADD ('.$fields[key($fields)]['Declaration'].')';
@@ -286,7 +286,7 @@ class MDB_Manager_oci8 extends MDB_Manager_Common {
             if (isset($changes['ChangedFields'])) {
                 $fields = $changes['ChangedFields'];
                 for($field = 0, reset($fields);
-                    $field < count($fields);
+                    $field < (is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     $current_name = key($fields);

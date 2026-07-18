@@ -66,7 +66,7 @@ Builds one or more extensions contained in a package.'
     function doBuild($command, $options, $params)
     {
         require_once 'PEAR/Builder.php';
-        if (sizeof($params) < 1) {
+        if ((is_countable($params) ? sizeof($params) : 0) < 1) {
             $params[0] = 'package.xml';
         }
 

@@ -79,7 +79,7 @@ class LiveUser_Perm_Complex extends LiveUser_Perm_Medium
      */
     function _readImpliedRights($rightIds, $table)
     {
-        if (!is_array($rightIds) || !count($rightIds)) {
+        if (!is_array($rightIds) || !(is_countable($rightIds) ? count($rightIds) : 0)) {
             return null;
         }
 
@@ -89,7 +89,7 @@ class LiveUser_Perm_Complex extends LiveUser_Perm_Medium
         }
 
         $queue = $result;
-        while (count($queue)) {
+        while ((is_countable($queue) ? count($queue) : 0)) {
             $currentRights = reset($queue);
             $currentLevel = key($queue);
             unset($queue[$currentLevel]);
@@ -167,7 +167,7 @@ class LiveUser_Perm_Complex extends LiveUser_Perm_Medium
         $result = parent::readGroups($perm_user_id);
 
         // get all subgroups recursively
-        while (count($result)) {
+        while ((is_countable($result) ? count($result) : 0)) {
             $result = $this->readSubGroups($this->group_ids, $result);
             if (is_array($result)) {
                 $this->group_ids = array_merge($result, $this->group_ids);

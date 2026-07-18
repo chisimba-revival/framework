@@ -66,7 +66,7 @@ class MDB2_Driver_Reverse_sqlite3 extends MDB2_Driver_Reverse_Common
         $lines = explode("\n", $sql);
         foreach ($lines as $k => $line) {
             $pieces = explode('--', $line);
-            if (count($pieces) > 1 && (substr_count($pieces[0], '\'') % 2) == 0) {
+            if ((is_countable($pieces) ? count($pieces) : 0) > 1 && (substr_count($pieces[0], '\'') % 2) == 0) {
                 $lines[$k] = substr($line, 0, strpos($line, '--'));
             }
         }
@@ -90,7 +90,7 @@ class MDB2_Driver_Reverse_sqlite3 extends MDB2_Driver_Reverse_Common
         $column_def = $this->_removeComments($column_def);
         $column_sql = explode(',', $column_def);
         $columns    = array();
-        $count      = count($column_sql);
+        $count      = (is_countable($column_sql) ? count($column_sql) : 0);
         if ($count == 0) {
             return $db->raiseError(MDB2_ERROR_UNSUPPORTED, null, null,
                 'unexpected empty table column definition list', __FUNCTION__);
@@ -310,7 +310,7 @@ class MDB2_Driver_Reverse_sqlite3 extends MDB2_Driver_Reverse_Common
         }
 
         $definition = array();
-        $count = count($column_names);
+        $count = (is_countable($column_names) ? count($column_names) : 0);
         for ($i=0; $i<$count; ++$i) {
             $column_name = strtok($column_names[$i], ' ');
             $collation = strtok(' ');
@@ -497,7 +497,7 @@ class MDB2_Driver_Reverse_sqlite3 extends MDB2_Driver_Reverse_Common
         }
 
         $definition['unique'] = true;
-        $count = count($column_names);
+        $count = (is_countable($column_names) ? count($column_names) : 0);
         for ($i=0; $i<$count; ++$i) {
             $column_name = strtok($column_names[$i]," ");
             $collation = strtok(" ");

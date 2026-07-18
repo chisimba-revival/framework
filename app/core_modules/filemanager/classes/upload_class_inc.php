@@ -192,7 +192,7 @@ class upload extends filemanagerobject {
      * @return array  Results of Upload
      */
     public function uploadFiles($ext = NULL) {
-        if (count($_FILES) == 0) { // Checked that Files were Uploaded
+        if ((is_countable($_FILES) ? count($_FILES) : 0) == 0) { // Checked that Files were Uploaded
             return FALSE;
         } else {
 

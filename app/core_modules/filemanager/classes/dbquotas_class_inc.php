@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Class to handle file quotas
@@ -46,6 +47,13 @@
  * @version   Release: @package_version@
  * @link      http://avoir.uwc.ac.za
  * @see
+ */
+/*
+ * CHISIMBA_PHP82_MKTIME_ZERO_ARGS
+ *
+ * PHP 8 requires at least one argument for time(). This class used
+ * zero-argument time() only to obtain the current Unix timestamp,
+ * so time() is the direct behavioural equivalent.
  */
 class dbquotas extends dbTable {
 
@@ -172,9 +180,9 @@ class dbquotas extends dbTable {
                 'quota' => 0,
                 'quotausage' => $usage,
                 'creatorid' => $creatorid,
-                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time()),
                 'modifierid' => $creatorid,
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime()),
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time()),
         ));
     }
 
@@ -191,7 +199,7 @@ class dbquotas extends dbTable {
         $result = $this->update('path', $path, array(
                 'quotausage'=>$usage,
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 
@@ -212,7 +220,7 @@ class dbquotas extends dbTable {
         $this->objFiles = $this->getObject('dbfile');
         $fileList = $this->objFiles->getPathFiles($folderParts[0], $folderParts[1]);
 
-        if (count($fileList) > 0) {
+        if ((is_countable($fileList) ? count($fileList) : 0) > 0) {
             foreach ($fileList as $file) {
                 $fileSize += $file['filesize'];
             }
@@ -230,7 +238,7 @@ class dbquotas extends dbTable {
     private function checkPath($path) {
         $folderParts = explode('/', $path);
 
-        if (count($folderParts) == 2) {
+        if ((is_countable($folderParts) ? count($folderParts) : 0) == 2) {
             return $path;
         } else if ($folderParts == 1) {
             return FALSE;
@@ -400,7 +408,7 @@ class dbquotas extends dbTable {
         return $this->update('id', $id, array(
                 'usedefault'=> 'Y',
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 
@@ -415,7 +423,7 @@ class dbquotas extends dbTable {
                 'usedefault'=> 'N',
                 'quota'=> $size,
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
         ));
     }
 

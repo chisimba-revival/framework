@@ -228,13 +228,13 @@ class PEAR_PackageFile_v2
                     PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
                     $ret = $dl->download(array($param));
                     PEAR::popErrorHandling();
-                    if (is_array($ret) && count($ret)) {
+                    if (is_array($ret) && (is_countable($ret) ? count($ret) : 0)) {
                         break;
                     }
                 }
                 $dl->config->set('verbose', $verbose);
                 if (is_array($ret)) {
-                    if (count($ret) == 1) {
+                    if ((is_countable($ret) ? count($ret) : 0) == 1) {
                         $pf = $ret[0]->getPackageFile();
                         PEAR::pushErrorHandling(PEAR_ERROR_RETURN);
                         $err = $installer->install($ret[0]);
@@ -336,9 +336,9 @@ class PEAR_PackageFile_v2
         }
         $mymaintainers = $this->getMaintainers();
         $yourmaintainers = $pf1->getMaintainers();
-        for ($i1 = 0; $i1 < count($yourmaintainers); $i1++) {
+        for ($i1 = 0; $i1 < (is_countable($yourmaintainers) ? count($yourmaintainers) : 0); $i1++) {
             $reset = false;
-            for ($i2 = 0; $i2 < count($mymaintainers); $i2++) {
+            for ($i2 = 0; $i2 < (is_countable($mymaintainers) ? count($mymaintainers) : 0); $i2++) {
                 if ($mymaintainers[$i2]['handle'] == $yourmaintainers[$i1]['handle']) {
                     if ($mymaintainers[$i2]['role'] != $yourmaintainers[$i1]['role']) {
                         $this->_differentRole($mymaintainers[$i2]['handle'],
@@ -556,7 +556,7 @@ class PEAR_PackageFile_v2
         foreach ($contents as $file) {
             $atts = $file['attribs'];
             unset($file['attribs']);
-            if (count($file)) {
+            if ((is_countable($file) ? count($file) : 0)) {
                 $taskfiles[$atts['name']] = $file;
             }
         }
@@ -578,7 +578,7 @@ class PEAR_PackageFile_v2
                 }
             }
         }
-        if (count($ret)) {
+        if ((is_countable($ret) ? count($ret) : 0)) {
             return $ret;
         }
         return false;
@@ -603,7 +603,7 @@ class PEAR_PackageFile_v2
         foreach ($contents as $file) {
             $atts = $file['attribs'];
             unset($file['attribs']);
-            if (count($file)) {
+            if ((is_countable($file) ? count($file) : 0)) {
                 $taskfiles[$atts['name']] = $file;
             }
         }
@@ -1744,7 +1744,7 @@ class PEAR_PackageFile_v2
                     }
                 }
             }
-            if (count($ret)) {
+            if ((is_countable($ret) ? count($ret) : 0)) {
                 return $ret;
             }
         }
@@ -2029,13 +2029,13 @@ class PEAR_PackageFile_v2
      */
     function _mergeTag($manip, $contents, $order)
     {
-        if (count($order)) {
+        if ((is_countable($order) ? count($order) : 0)) {
             foreach ($order as $tag => $curorder) {
                 if (!isset($manip[$tag])) {
                     // ensure that the tag is set up
                     $manip = $this->_insertBefore($manip, $curorder, array(), $tag);
                 }
-                if (count($order) > 1) {
+                if ((is_countable($order) ? count($order) : 0) > 1) {
                     $manip[$tag] = $this->_mergeTag($manip[$tag], $contents, array_slice($order, 1));
                     return $manip;
                 }

@@ -268,8 +268,8 @@ class Image_Graph_Tool
             $sumX += $point['X'];
             $sumY += $point['Y'];
         }        
-        $meanX = $sumX / count($data);
-        $meanY = $sumY / count($data);
+        $meanX = $sumX / (is_countable($data) ? count($data) : 0);
+        $meanY = $sumY / (is_countable($data) ? count($data) : 0);
 
         $sumXX = 0;
         $sumYY = 0;

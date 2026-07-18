@@ -182,7 +182,7 @@ class Chisimba_Sniffs_Commenting_ClassCommentSniff implements PHP_CodeSniffer_Sn
 
         // Exactly one blank line before tags.
         $tags = $this->commentParser->getTagOrders();
-        if (count($tags) > 1) {
+        if ((is_countable($tags) ? count($tags) : 0) > 1) {
             $newlineSpan = $comment->getNewlineAfter();
             if ($newlineSpan !== 2) {
                 $error = 'There must be exactly one blank line before the tags in class comment';
@@ -259,7 +259,7 @@ class Chisimba_Sniffs_Commenting_ClassCommentSniff implements PHP_CodeSniffer_Sn
 
         // Make sure there is no duplicate tag.
         $foundIndexes = array_keys($foundTags, 'since');
-        if (count($foundIndexes) > 1) {
+        if ((is_countable($foundIndexes) ? count($foundIndexes) : 0) > 1) {
             $error = 'Only 1 @since tag is allowed in class comment';
             $this->currentFile->addError($error, $errorPos);
         }

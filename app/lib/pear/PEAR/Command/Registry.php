@@ -133,7 +133,7 @@ installed package.'
             }
 
             PEAR::staticPopErrorHandling();
-            if (count($errors)) {
+            if ((is_countable($errors) ? count($errors) : 0)) {
                 // for now, only give first error
                 return PEAR::raiseError($errors[0]);
             }
@@ -141,7 +141,7 @@ installed package.'
             return true;
         }
 
-        if (count($params) === 1) {
+        if ((is_countable($params) ? count($params) : 0) === 1) {
             return $this->doFileList($command, $options, $params);
         }
 
@@ -169,7 +169,7 @@ installed package.'
             $data['headline'] = array('Channel', 'Package', 'Version', 'State');
         }
 
-        if (count($installed) && !isset($data['data'])) {
+        if ((is_countable($installed) ? count($installed) : 0) && !isset($data['data'])) {
             $data['data'] = array();
         }
 
@@ -186,7 +186,7 @@ installed package.'
             $data['data'][] = $packageinfo;
         }
 
-        if (count($installed) === 0) {
+        if ((is_countable($installed) ? count($installed) : 0) === 0) {
             if (!$channelinfo) {
                 $data = '(no packages installed from channel ' . $channel . ')';
             } else {
@@ -230,7 +230,7 @@ installed package.'
             // Adds a blank line after each section
             $data['data'][] = array();
 
-            if (count($packages) === 0) {
+            if ((is_countable($packages) ? count($packages) : 0) === 0) {
                 $data = array(
                     'caption' => 'Installed packages, channel ' . $channel . ':',
                     'border' => true,
@@ -245,7 +245,7 @@ installed package.'
 
     function doFileList($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError('list-files expects 1 parameter');
         }
 
@@ -370,7 +370,7 @@ installed package.'
 
     function doShellTest($command, $options, $params)
     {
-        if (count($params) < 1) {
+        if ((is_countable($params) ? count($params) : 0) < 1) {
             return PEAR::raiseError('ERROR, usage: pear shell-test packagename [[relation] version]');
         }
 
@@ -392,18 +392,18 @@ installed package.'
             }
         }
 
-        if (count($params) === 1) {
+        if ((is_countable($params) ? count($params) : 0) === 1) {
             if (!$reg->packageExists($package, $channel)) {
                 exit(1);
             }
             // "pear shell-test Foo 1.0"
-        } elseif (count($params) === 2) {
+        } elseif ((is_countable($params) ? count($params) : 0) === 2) {
             $v = $reg->packageInfo($package, 'version', $channel);
             if (!$v || !version_compare("$v", "{$params[1]}", "ge")) {
                 exit(1);
             }
             // "pear shell-test Foo ge 1.0"
-        } elseif (count($params) === 3) {
+        } elseif ((is_countable($params) ? count($params) : 0) === 3) {
             $v = $reg->packageInfo($package, 'version', $channel);
             if (!$v || !version_compare("$v", "{$params[2]}", $params[1])) {
                 exit(1);
@@ -417,7 +417,7 @@ installed package.'
 
     function doInfo($command, $options, $params)
     {
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError('pear info expects 1 parameter');
         }
 

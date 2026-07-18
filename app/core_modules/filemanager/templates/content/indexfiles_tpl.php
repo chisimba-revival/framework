@@ -8,7 +8,7 @@ $this->loadClass('link', 'htmlelements');
 
 
 
-if (count($list) > 0) {
+if ((is_countable($list) ? count($list) : 0) > 0) {
     echo '<ul>';
     foreach ($list as $item)
     {

@@ -1,4 +1,5 @@
 <?php
+/* CHISIMBA_PHP8_ZERO_ARG_MKTIME: time() with no arguments is time() on PHP 8. */
 
 /**
  * Access Class.
@@ -152,7 +153,7 @@ class access extends ChisimbaObject {
                 "module" => $this->moduleName,
                 "action" => $action,
                 "contextcode" => $this->objContext->getContextCode(),
-                "createdon" => strftime('%Y-%m-%d %H:%M:%S', mktime())
+                "createdon" => strftime('%Y-%m-%d %H:%M:%S', time())
             );
 
             $this->objLog->log($fields);

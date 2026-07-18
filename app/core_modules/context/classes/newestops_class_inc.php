@@ -167,7 +167,7 @@ class newestops extends ChisimbaObject
         }
         $objTranslatedDate = $this->getObject('translatedatedifference', 'utilities');
         $ret = NULL;
-        if (count($contexts) > 0) {
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
             foreach ($contexts as $context) {
                 $contextCode = $context['contextcode'];
                 $access = $context['access'];

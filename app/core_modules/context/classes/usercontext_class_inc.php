@@ -116,7 +116,7 @@ class usercontext extends ChisimbaObject {
     public function getUserContextsFormatted($userId) {
         $contextCodes = $this->getUserContext ( $userId );
 
-        if (count ( $contextCodes ) == 0) {
+        if ((is_countable($contextCodes) ? count($contextCodes) : 0) == 0) {
             return $this->objLanguage->code2Txt ( 'mod_context_youdonotbelongtocontexts', 'context', NULL, 'You do not belong to any [-contexts-]' );
         } else {
 
@@ -132,7 +132,7 @@ class usercontext extends ChisimbaObject {
                 }
             }
 
-            if (count ( $arr ) == 0) {
+            if ((is_countable($arr) ? count($arr) : 0) == 0) {
                 return $this->objLanguage->code2Txt ( 'mod_context_youdonotbelongtocontexts', 'context', NULL, 'You do not belong to any [-contexts-]' );
             } else {
                 $returnStr = '';

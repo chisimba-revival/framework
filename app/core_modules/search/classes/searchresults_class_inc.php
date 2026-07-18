@@ -78,7 +78,7 @@ class searchresults extends ChisimbaObject
             
         }
         
-        if (is_array($extra) && count($extra) > 0) {
+        if (is_array($extra) && (is_countable($extra) ? count($extra) : 0) > 0) {
             foreach ($extra as $item=>$value)
             {
                 if ($phrase != '') {

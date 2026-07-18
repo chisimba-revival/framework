@@ -85,7 +85,7 @@ class parse4code extends ChisimbaObject
         $results = $result[0];
         
         //var_dump($results);
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             foreach ($results as $result)
             {
                 $txt = str_replace($result, $this->renderText($result), $txt);

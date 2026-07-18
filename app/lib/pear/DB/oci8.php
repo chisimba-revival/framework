@@ -563,7 +563,7 @@ class DB_oci8 extends DB_common
     {
         $tokens   = preg_split('/((?<!\\\)[&?!])/', $query, -1,
                                PREG_SPLIT_DELIM_CAPTURE);
-        $binds    = count($tokens) - 1;
+        $binds    = (is_countable($tokens) ? count($tokens) : 0) - 1;
         $token    = 0;
         $types    = array();
         $newquery = '';
@@ -634,7 +634,7 @@ class DB_oci8 extends DB_common
         $this->_data = $data;
 
         $types = $this->prepare_types[(int)$stmt];
-        if (count($types) != count($data)) {
+        if ((is_countable($types) ? count($types) : 0) != (is_countable($data) ? count($data) : 0)) {
             $tmp = $this->raiseError(DB_ERROR_MISMATCH);
             return $tmp;
         }
@@ -815,7 +815,7 @@ class DB_oci8 extends DB_common
         // Let Oracle return the name of the columns instead of
         // coding a "home" SQL parser
 
-        if (count($params)) {
+        if ((is_countable($params) ? count($params) : 0)) {
             $result = $this->prepare("SELECT * FROM ($query) "
                                      . 'WHERE NULL = NULL');
             $tmp = $this->execute($result, $params);

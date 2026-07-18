@@ -130,7 +130,7 @@ abstract class PHP_CodeSniffer_CommentParser_AbstractDocElement implements PHP_C
         $currElem              = 0;
         $lastElement           = '';
         $lastElementWhitespace = null;
-        $numSubElements        = count($subElements);
+        $numSubElements        = (is_countable($subElements) ? count($subElements) : 0);
 
         foreach ($this->tokens as $token) {
             if (trim($token) === '') {

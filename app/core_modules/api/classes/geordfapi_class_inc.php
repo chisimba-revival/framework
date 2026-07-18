@@ -118,7 +118,7 @@ class geordfapi extends ChisimbaObject
         foreach ($domXPath->query('//@rdf:resource') as $keyDOM) {
             $resources[] = $keyDOM->textContent;
         }
-        $resources = array_slice($resources, 5, sizeof($resources));
+        $resources = array_slice($resources, 5, (is_countable($resources) ? sizeof($resources) : 0));
         
         // Now we match the geoname to the record in the db
         $name = $resources[0];

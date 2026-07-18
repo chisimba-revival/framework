@@ -93,6 +93,9 @@ class groupadmin extends controller {
      * @return string  the template file name.
      */
     function dispatch($action) {
+        // CHISIMBA_GROUPADMIN_CONTROLLER_TRACE
+        error_log('[CHISIMBA CTRL TRACE] dispatch action=' . var_export($action, true)
+            . ' request=' . json_encode($_REQUEST));
         // check that the current user has access to do this stuff.
         $hasAccess = $this->objUser->isContextLecturer();
         $hasAccess |= $this->objUser->isAdmin();
@@ -228,7 +231,17 @@ class groupadmin extends controller {
                 break;
 
             case 'json_getgroupusers':
-                echo $this->objOps->getJsonGroupUsers($this->getParam('groupid'), $this->getParam('start'), $this->getParam('limit'));
+                error_log('[CHISIMBA CTRL TRACE] branch=json_getgroupusers obj=' . get_class($this->objOps));
+                $response = $this->objOps->getJsonGroupUsers(
+                    $this->getParam('groupid'),
+                    $this->getParam('start'),
+                    $this->getParam('limit')
+                );
+                error_log('[CHISIMBA CTRL TRACE] json_getgroupusers response_type=' . gettype($response)
+                    . ' length=' . strlen((string)$response)
+                    . ' prefix=' . substr((string)$response, 0, 300));
+                header('Content-Type: application/json; charset=UTF-8');
+                echo $response;
                 exit(0);
                 break;
 
@@ -243,7 +256,17 @@ class groupadmin extends controller {
                 break;
 
             case 'json_allusers':
-                echo $this->objOps->jsonGetAllUsers($this->getParam('groupid'), $this->getParam('start'), $this->getParam('limit'));
+                error_log('[CHISIMBA CTRL TRACE] branch=json_allusers obj=' . get_class($this->objOps));
+                $response = $this->objOps->jsonGetAllUsers(
+                    $this->getParam('groupid'),
+                    $this->getParam('start'),
+                    $this->getParam('limit')
+                );
+                error_log('[CHISIMBA CTRL TRACE] json_allusers response_type=' . gettype($response)
+                    . ' length=' . strlen((string)$response)
+                    . ' prefix=' . substr((string)$response, 0, 300));
+                header('Content-Type: application/json; charset=UTF-8');
+                echo $response;
                 exit(0);
                 break;
 

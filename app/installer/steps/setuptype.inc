@@ -313,7 +313,7 @@ class SetupTypeAction extends FiveStepAction
 
 
                     //if (!($row[0] > 0)) {
-                    if (count ( $result ) < 40) {
+                    if ((is_countable($result) ? count($result) : 0) < 40) {
 
                         //$this->errors[] = 'Could not find any assets. Please try running the Repair option.';
                         $this->errors [] = 'Some tables are missing. Please try running the Repair Option.';

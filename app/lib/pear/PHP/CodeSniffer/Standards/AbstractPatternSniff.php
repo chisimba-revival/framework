@@ -351,7 +351,7 @@ abstract class PHP_CodeSniffer_Standards_AbstractPatternSniff implements PHP_Cod
         $stackPtr          = $origStackPtr;
         $lastAddedStackPtr = null;
 
-        for ($i = $patternInfo['listen_pos']; $i < count($pattern); $i++) {
+        for ($i = $patternInfo['listen_pos']; $i < (is_countable($pattern) ? count($pattern) : 0); $i++) {
 
             if ($pattern[$i]['type'] === 'token') {
 
@@ -683,7 +683,7 @@ abstract class PHP_CodeSniffer_Standards_AbstractPatternSniff implements PHP_Cod
         $tokens = token_get_all('<?php '.$str.'?>');
 
         // Remove the <?php tag from the front and the end php tag from the back.
-        $tokens = array_slice($tokens, 1, (count($tokens) - 2));
+        $tokens = array_slice($tokens, 1, ((is_countable($tokens) ? count($tokens) : 0) - 2));
 
         foreach ($tokens as &$token) {
             $token = PHP_CodeSniffer::standardiseToken($token);

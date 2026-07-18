@@ -123,7 +123,7 @@ class getID3
 				$DirPieces8 = $DirPieces;
 				
 				$CLIdir = $DirPieces[0].' && cd \\';
-				for ($i = 1; $i < count($DirPieces); $i++) {
+				for ($i = 1; $i < (is_countable($DirPieces) ? count($DirPieces) : 0); $i++) {
 				  if (strpos($DirPieces[$i], ' ') === false) {
 				    $CLIdir .= ' && cd '.$DirPieces[$i];
 				  } else {

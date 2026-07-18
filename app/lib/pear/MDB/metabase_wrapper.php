@@ -197,7 +197,7 @@ function MetabaseQueryAll($database, $query, &$all, $types = '')
 function MetabaseReplace($database, $table, &$fields)
 {
     global $_MDB_databases;
-    for($count = count($fields), reset($fields), $field = 0;
+    for($count = (is_countable($fields) ? count($fields) : 0), reset($fields), $field = 0;
         $field < $count;
         next($fields), $field++)
     {
@@ -1424,7 +1424,7 @@ class metabase_manager_class
             $result = $this->MDB_manager_object->database->getFieldDeclarationList($fields);
         } else {
             for(reset($fields), $i = 0;
-                $field_number < count($fields);
+                $field_number < (is_countable($fields) ? count($fields) : 0);
                 $i++, next($fields))
             {
                 if ($i > 0) {

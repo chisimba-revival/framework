@@ -167,7 +167,7 @@ class HTML_QuickForm_RuleRegistry
         } else {
             $jsValue = "  value = new Array();\n";
             $jsReset = '';
-            for ($i = 0; $i < count($element); $i++) {
+            for ($i = 0; $i < (is_countable($element) ? count($element) : 0); $i++) {
                 list($tmp_value, $tmp_reset) = $this->_getJsValue($element[$i], $element[$i]->getName(), $reset, $i);
                 $jsValue .= "\n" . $tmp_value;
                 $jsReset .= $tmp_reset;
@@ -217,7 +217,7 @@ class HTML_QuickForm_RuleRegistry
         if (is_a($element, 'html_quickform_group')) {
             $value = "  _qfGroups['{$elementName}'] = {";
             $elements =& $element->getElements();
-            for ($i = 0, $count = count($elements); $i < $count; $i++) {
+            for ($i = 0, $count = (is_countable($elements) ? count($elements) : 0); $i < $count; $i++) {
                 $append = ($elements[$i]->getType() == 'select' && $elements[$i]->getMultiple())? '[]': '';
                 $value .= "'" . $element->getElementName($i) . $append . "': true" .
                           ($i < $count - 1? ', ': '');

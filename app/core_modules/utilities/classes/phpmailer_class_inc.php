@@ -502,9 +502,9 @@ class PHPMailer
                 $bad_rcpt[] = $this->bcc[$i][0];
         }
 
-        if(count($bad_rcpt) > 0) // Create error message
+        if((is_countable($bad_rcpt) ? count($bad_rcpt) : 0) > 0) // Create error message
         {
-            for($i = 0; $i < count($bad_rcpt); $i++)
+            for($i = 0; $i < (is_countable($bad_rcpt) ? count($bad_rcpt) : 0); $i++)
             {
                 if($i != 0) { $error .= ", "; }
                 $error .= $bad_rcpt[$i];
@@ -544,7 +544,7 @@ class PHPMailer
         $connection = ($this->smtp->Connected()); 
 
         // Retry while there is no connection
-        while($index < count($hosts) && $connection == FALSE)
+        while($index < (is_countable($hosts) ? count($hosts) : 0) && $connection == FALSE)
         {
             if(strstr($hosts[$index], ":"))
                 list($host, $port) = explode(":", $hosts[$index]);
@@ -632,9 +632,9 @@ class PHPMailer
     function AddrAppend($type, $addr) {
         $addr_str = $type . ": ";
         $addr_str .= $this->AddrFormat($addr[0]);
-        if(count($addr) > 1)
+        if((is_countable($addr) ? count($addr) : 0) > 1)
         {
-            for($i = 1; $i < count($addr); $i++)
+            for($i = 1; $i < (is_countable($addr) ? count($addr) : 0); $i++)
                 $addr_str .= ", " . $this->AddrFormat($addr[$i]);
         }
         $addr_str .= $this->LE;
@@ -675,11 +675,11 @@ class PHPMailer
 
         $line = explode($this->LE, $message);
         $message = "";
-        for ($i=0 ;$i < count($line); $i++)
+        for ($i=0 ;$i < (is_countable($line) ? count($line) : 0); $i++)
         {
           $line_part = explode(" ", $line[$i]);
           $buf = "";
-          for ($e = 0; $e<count($line_part); $e++)
+          for ($e = 0; $e<(is_countable($line_part) ? count($line_part) : 0); $e++)
           {
               $word = $line_part[$e];
               if ($qp_mode and (strlen($word) > $length))

@@ -1706,7 +1706,7 @@ class MDB_Common extends PEAR
         if (!$this->supported['Replace']) {
             return($this->raiseError(MDB_ERROR_UNSUPPORTED, NULL, NULL, 'Replace: replace query is not supported'));
         }
-        $count = count($fields);
+        $count = (is_countable($fields) ? count($fields) : 0);
         for($keys = 0, $condition = $insert = $values = '', reset($fields), $field = 0;
             $field < $count;
             next($fields), $field++)
@@ -2063,7 +2063,7 @@ class MDB_Common extends PEAR
      */
     function executeMultiple($prepared_query, $types = NULL, $params, $param_types = NULL)
     {
-        for($i = 0, $j = count($params); $i < $j; $i++) {
+        for($i = 0, $j = (is_countable($params) ? count($params) : 0); $i < $j; $i++) {
             $result = $this->execute($prepared_query, $types, $params[$i], $param_types);
             if (MDB::isError($result)) {
                 return($result);
@@ -2132,12 +2132,12 @@ class MDB_Common extends PEAR
     function setParamArray($prepared_query, $params, $types = NULL)
     {
         if (is_array($types)) {
-            if (count($params) != count($types)) {
+            if ((is_countable($params) ? count($params) : 0) != (is_countable($types) ? count($types) : 0)) {
                 return $this->raiseError(MDB_ERROR_SYNTAX, NULL, NULL,
-                    'setParamArray: the number of given types ('.count($types).')'
-                    .'is not corresponding to the number of given parameters ('.count($params).')');
+                    'setParamArray: the number of given types ('.(is_countable($types) ? count($types) : 0).')'
+                    .'is not corresponding to the number of given parameters ('.(is_countable($params) ? count($params) : 0).')');
             }
-            for($i = 0, $j = count($params); $i < $j; ++$i) {
+            for($i = 0, $j = (is_countable($params) ? count($params) : 0); $i < $j; ++$i) {
                 switch ($types[$i]) {
                     case 'NULL':
                         $success = $this->setParam($prepared_query, $i + 1, $params[$i][0], 'NULL', 1, '');
@@ -2181,7 +2181,7 @@ class MDB_Common extends PEAR
                 }
             }
         } else {
-            for($i = 0, $j = count($params); $i < $j; ++$i) {
+            for($i = 0, $j = (is_countable($params) ? count($params) : 0); $i < $j; ++$i) {
                 $success = $this->setParam($prepared_query, $i + 1, 'text', $this->getTextValue($params[$i]));
                 if (MDB::isError($success)) {
                     return($success);
@@ -2463,9 +2463,9 @@ class MDB_Common extends PEAR
         if (MDB::isError($columns)) {
             return($columns);
         }
-        if ($columns < count($types)) {
+        if ($columns < (is_countable($types) ? count($types) : 0)) {
             return($this->raiseError(MDB_ERROR_SYNTAX, NULL, NULL,
-                'Set result types: it were specified more result types (' . count($types) . ') than result columns (' . $columns . ')'));
+                'Set result types: it were specified more result types (' . (is_countable($types) ? count($types) : 0) . ') than result columns (' . $columns . ')'));
         }
         $valid_types = array(
             'text'      => MDB_TYPE_TEXT,
@@ -2479,7 +2479,7 @@ class MDB_Common extends PEAR
             'clob'      => MDB_TYPE_CLOB,
             'blob'      => MDB_TYPE_BLOB
         );
-        for($column = 0; $column < count($types); $column++) {
+        for($column = 0; $column < (is_countable($types) ? count($types) : 0); $column++) {
             if (!isset($valid_types[$types[$column]])) {
                 return($this->raiseError(MDB_ERROR_UNSUPPORTED, NULL, NULL,
                     'Set result types: ' . $types[$column] . ' is not a supported column type'));
@@ -3813,7 +3813,7 @@ class MDB_Common extends PEAR
                 } else {
                     $key = array_shift($row);
                 }
-                if (!$force_array && count($row) == 1) {
+                if (!$force_array && (is_countable($row) ? count($row) : 0) == 1) {
                     $row = array_shift($row);
                 }
                 if ($group) {
@@ -3980,7 +3980,7 @@ class MDB_Common extends PEAR
             $type = array($type);
         }
         settype($params, 'array');
-        if (count($params) > 0) {
+        if ((is_countable($params) ? count($params) : 0) > 0) {
             $prepared_query = $this->prepareQuery($query);
             if (MDB::isError($prepared_query)) {
                 return($prepared_query);
@@ -4031,7 +4031,7 @@ class MDB_Common extends PEAR
     function getRow($query, $types = NULL, $params = array(), $param_types = NULL, $fetchmode = MDB_FETCHMODE_DEFAULT)
     {
         settype($params, 'array');
-        if (count($params) > 0) {
+        if ((is_countable($params) ? count($params) : 0) > 0) {
             $prepared_query = $this->prepareQuery($query);
             if (MDB::isError($prepared_query)) {
                 return($prepared_query);
@@ -4086,7 +4086,7 @@ class MDB_Common extends PEAR
             $type = array($type);
         }
         settype($params, 'array');
-        if (count($params) > 0) {
+        if ((is_countable($params) ? count($params) : 0) > 0) {
             $prepared_query = $this->prepareQuery($query);
 
             if (MDB::isError($prepared_query)) {
@@ -4192,7 +4192,7 @@ class MDB_Common extends PEAR
         $fetchmode = MDB_FETCHMODE_ORDERED, $force_array = FALSE, $group = FALSE)
     {
         settype($params, 'array');
-        if (count($params) > 0) {
+        if ((is_countable($params) ? count($params) : 0) > 0) {
             $prepared_query = $this->prepareQuery($query);
 
             if (MDB::isError($prepared_query)) {
@@ -4241,7 +4241,7 @@ class MDB_Common extends PEAR
     function getAll($query, $types = NULL, $params = array(), $param_types = NULL, $fetchmode = MDB_FETCHMODE_DEFAULT)
     {
         settype($params, 'array');
-        if (count($params) > 0) {
+        if ((is_countable($params) ? count($params) : 0) > 0) {
             $prepared_query = $this->prepareQuery($query);
 
             if (MDB::isError($prepared_query)) {

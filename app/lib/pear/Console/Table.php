@@ -454,7 +454,7 @@ class Console_Table
                     // used to take account of bigger array because of already
                     // inserted rows.
                     array_splice($new_data, $i + $inserted, 1, $new_rows);
-                    $inserted += count($new_rows) - 1;
+                    $inserted += (is_countable($new_rows) ? count($new_rows) : 0) - 1;
                 }
             }
 
@@ -570,7 +570,7 @@ class Console_Table
     function _updateRowsCols($rowdata = null)
     {
         // Update max cols
-        $this->_max_cols = max($this->_max_cols, count($rowdata));
+        $this->_max_cols = max($this->_max_cols, (is_countable($rowdata) ? count($rowdata) : 0));
 
         // Update max rows
         ksort($this->_data);
@@ -597,7 +597,7 @@ class Console_Table
      */
     function _calculateCellLengths($row)
     {
-        for ($i = 0; $i < count($row); $i++) {
+        for ($i = 0; $i < (is_countable($row) ? count($row) : 0); $i++) {
             if (!isset($this->_cell_lengths[$i])) {
                 $this->_cell_lengths[$i] = 0;
             }
@@ -624,10 +624,10 @@ class Console_Table
             return;
         }
 
-        for ($i = 0, $c = count($row); $i < $c; ++$i) {
+        for ($i = 0, $c = (is_countable($row) ? count($row) : 0); $i < $c; ++$i) {
             $lines = preg_split('/\r?\n|\r/', $row[$i]);
             $this->_row_heights[$row_number] = max($this->_row_heights[$row_number],
-                                                   count($lines));
+                                                   (is_countable($lines) ? count($lines) : 0));
         }
     }
 

@@ -79,7 +79,7 @@ class Text_Diff_Renderer {
         foreach ($diffs as $i => $edit) {
             if (is_a($edit, 'Text_Diff_Op_copy')) {
                 if (is_array($block)) {
-                    $keep = $i == count($diffs) - 1 ? $ntrail : $nlead + $ntrail;
+                    $keep = $i == (is_countable($diffs) ? count($diffs) : 0) - 1 ? $ntrail : $nlead + $ntrail;
                     if (count($edit->orig) <= $keep) {
                         $block[] = $edit;
                     } else {
@@ -96,9 +96,9 @@ class Text_Diff_Renderer {
                 $context = $edit->orig;
             } else {
                 if (!is_array($block)) {
-                    $context = array_slice($context, count($context) - $nlead);
-                    $x0 = $xi - count($context);
-                    $y0 = $yi - count($context);
+                    $context = array_slice($context, (is_countable($context) ? count($context) : 0) - $nlead);
+                    $x0 = $xi - (is_countable($context) ? count($context) : 0);
+                    $y0 = $yi - (is_countable($context) ? count($context) : 0);
                     $block = array();
                     if ($context) {
                         $block[] = new Text_Diff_Op_copy($context);

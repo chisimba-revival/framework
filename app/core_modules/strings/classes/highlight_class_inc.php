@@ -45,7 +45,7 @@ class highlight extends ChisimbaObject
         }
         
         $kAr = explode(" ", $this->keyword);
-        $elems = count($kAr);
+        $elems = (is_countable($kAr) ? count($kAr) : 0);
         
         //process text array(&$this, 'method_name'), 
         if((isset($this -> keyword)) AND (isset($this -> replacement))) {

@@ -892,12 +892,12 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
                 }
             }
 
-            if (self::$_resultSetLimit != 0  &&  count($hits) >= self::$_resultSetLimit) {
+            if (self::$_resultSetLimit != 0  &&  (is_countable($hits) ? count($hits) : 0) >= self::$_resultSetLimit) {
                 break;
             }
         }
 
-        if (count($hits) == 0) {
+        if ((is_countable($hits) ? count($hits) : 0) == 0) {
             // skip sorting, which may cause a error on empty index
             return array();
         }
@@ -920,7 +920,7 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
             $fieldNames = $this->getFieldNames();
             $sortArgs   = array();
 
-            for ($count = 1; $count < count($argList); $count++) {
+            for ($count = 1; $count < (is_countable($argList) ? count($argList) : 0); $count++) {
                 $fieldName = $argList[$count];
 
                 if (!is_string($fieldName)) {
@@ -948,11 +948,11 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
 
                 $sortArgs[] = $valuesArray;
 
-                if ($count + 1 < count($argList)  &&  is_integer($argList[$count+1])) {
+                if ($count + 1 < (is_countable($argList) ? count($argList) : 0)  &&  is_integer($argList[$count+1])) {
                     $count++;
                     $sortArgs[] = $argList[$count];
 
-                    if ($count + 1 < count($argList)  &&  is_integer($argList[$count+1])) {
+                    if ($count + 1 < (is_countable($argList) ? count($argList) : 0)  &&  is_integer($argList[$count+1])) {
                         $count++;
                         $sortArgs[] = $argList[$count];
                     } else {
@@ -1103,9 +1103,9 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
             $segmentStartDocId += $segmentInfo->count();
         }
 
-        if (count($subResults) == 0) {
+        if ((is_countable($subResults) ? count($subResults) : 0) == 0) {
             return array();
-        } else if (count($subResults) == 0) {
+        } else if ((is_countable($subResults) ? count($subResults) : 0) == 0) {
             // Index is optimized (only one segment)
             // Do not perform array reindexing
             return reset($subResults);
@@ -1137,9 +1137,9 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
             $segmentStartDocId += $segmentInfo->count();
         }
 
-        if (count($subResults) == 0) {
+        if ((is_countable($subResults) ? count($subResults) : 0) == 0) {
             return array();
-        } else if (count($subResults) == 0) {
+        } else if ((is_countable($subResults) ? count($subResults) : 0) == 0) {
             // Index is optimized (only one segment)
             // Do not perform array reindexing
             return reset($subResults);

@@ -200,7 +200,7 @@ class Chisimba_Sniffs_Commenting_FileCommentSniff implements PHP_CodeSniffer_Sni
 
             // Exactly one blank line before tags.
             $tags = $this->commentParser->getTagOrders();
-            if (count($tags) > 1) {
+            if ((is_countable($tags) ? count($tags) : 0) > 1) {
                 $newlineSpan = $comment->getNewlineAfter();
                 if ($newlineSpan !== 2) {
                     $error = 'There must be exactly one blank line before the tags in file comment';
@@ -294,7 +294,7 @@ class Chisimba_Sniffs_Commenting_FileCommentSniff implements PHP_CodeSniffer_Sni
 
             // Make sure there is no duplicate tag.
             $foundIndexes = array_keys($foundTags, $tag);
-            if (count($foundIndexes) > 1) {
+            if ((is_countable($foundIndexes) ? count($foundIndexes) : 0) > 1) {
                 $error = "Only 1 @$tag tag is allowed in file comment";
                 $this->currentFile->addError($error, $errorPos);
             }

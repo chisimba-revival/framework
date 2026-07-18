@@ -1173,8 +1173,8 @@ class getid3_mp3
 				}
 				$nextoffset += $framelength;
 			}
-			if (count($ActualFrameLengthValues) > 0) {
-				$framelength = intval(round(array_sum($ActualFrameLengthValues) / count($ActualFrameLengthValues)));
+			if ((is_countable($ActualFrameLengthValues) ? count($ActualFrameLengthValues) : 0) > 0) {
+				$framelength = intval(round(array_sum($ActualFrameLengthValues) / (is_countable($ActualFrameLengthValues) ? count($ActualFrameLengthValues) : 0)));
 			}
 		}
 		return $framelength;

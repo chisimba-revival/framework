@@ -854,7 +854,7 @@ class DB_sybase extends DB_common
 
                 $keys = explode(', ', trim($val['index_keys']));
 
-                if (sizeof($keys) > 1) {
+                if ((is_countable($keys) ? sizeof($keys) : 0) > 1) {
                     foreach ($keys as $key) {
                         $this->_add_flag($flags[$key], 'multiple_key');
                     }

@@ -145,7 +145,7 @@ var pageNavigation = new Ext.PagingToolbar({
             listeners:{ 	    		
 	    		beforechange: function(ptb, params){	
 	    			userOffset = params.start; 			
-	    			proxyStore.setUrl(baseUri+'?module=groupadmin&action=json_getgroupusers&groupid='+selectedGroupId+'&limit='+params.start+'&offset='+params.start);
+	    			proxyStore.setUrl(baseUri+'?module=groupadmin&action=json_getgroupusers&groupid='+selectedGroupId+'&start='+params.start+'&limit='+params.limit);
 	    		}  
             }
             
@@ -240,9 +240,30 @@ var toolBar = new Ext.Toolbar({
 		                height:350,
 		                closeAction:'hide',
 		                plain: true,						
-		                items: [usersGridPanel]		
-		                
-		            });
+		                items: [usersGridPanel],
+
+                        // CHISIMBA_EXPLICIT_ADD_USERS_BUTTONS
+                        // The legacy toolbar action was easy to miss inside
+                        // the modal window. Make saving explicit and visible.
+                        buttons: [{
+                            text: 'Add selected users',
+                            iconCls: 'silk-add',
+                            handler: function () {
+                                if (!sm3 || sm3.getCount() === 0) {
+                                    Ext.Msg.alert(
+                                        'Add Users',
+                                        'Select at least one user first.'
+                                    );
+                                    return;
+                                }
+                                doAddUsers();
+                            }
+                        }, {
+                            text: 'Close',
+                            handler: function () {
+                                win.hide();
+                            }
+                        }]});
 		        }
 		        win.show(this);
 			userStore.load({params:{start:0, limit:25}});
@@ -591,7 +612,10 @@ function showEditForm(groupid, groupname)
 //this function will be called when 
 //the group is selected in the groups grid
 function loadGroup(nodeId, groupname, grouptitle){
-	//load the subgroups
+	
+	// PHP 8.2 restoration: keep membership mutations on the selected group.
+	selectedGroupId = nodeId;
+//load the subgroups
 	var store = Ext.getCmp('siteadmingrid').getStore();
 	store.baseParams['groupid'] = nodeId;
 
@@ -605,7 +629,10 @@ function loadGroup(nodeId, groupname, grouptitle){
 
 function loadSubgroup1(groupId)
 {
-	proxyStore.setUrl(baseUri+'?module=groupadmin&action=json_getgroupusers&groupid='+groupId);
+	
+	selectedGroupId = groupId;
+	abstractStore.baseParams['groupid'] = groupId;
+proxyStore.setUrl(baseUri+'?module=groupadmin&action=json_getgroupusers&groupid='+groupId);
 	abstractStore.load({params:{start:0, limit:25}});
 }
 

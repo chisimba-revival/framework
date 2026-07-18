@@ -160,7 +160,7 @@ class PEAR_Sniffs_Commenting_ClassCommentSniff extends PEAR_Sniffs_Commenting_Fi
 
         // Exactly one blank line before tags.
         $tags = $this->commentParser->getTagOrders();
-        if (count($tags) > 1) {
+        if ((is_countable($tags) ? count($tags) : 0) > 1) {
             $newlineSpan = $comment->getNewlineAfter();
             if ($newlineSpan !== 2) {
                 $error = 'There must be exactly one blank line before the tags in class comment';

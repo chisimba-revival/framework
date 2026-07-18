@@ -264,7 +264,7 @@ class sidemenu extends ChisimbaObject {
                   // Add new email count if the module is email
                   $kngmail =& $this->getObject('kngmail', 'email');
                   $emails = $kngmail->listMail($this->objUser->userId(), 'new');
-                  $count = count($emails);
+                  $count = (is_countable($emails) ? count($emails) : 0);
                   $name .= ' ('.$count.' ' .$this->objLanguage->languageText('word_new').')';
                   }
                  */
@@ -442,7 +442,7 @@ class sidemenu extends ChisimbaObject {
             }
 
             // No workgroups are available.
-            if (count($workgroups) == 0) {
+            if ((is_countable($workgroups) ? count($workgroups) : 0) == 0) {
                 $str .= $notaMember;
             } else {
                 $workgroupId = $objDBWorkgroup->getWorkgroupId();

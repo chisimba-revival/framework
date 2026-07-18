@@ -186,7 +186,7 @@ and uninstall).
 
     function doConfigGet($command, $options, $params)
     {
-        $args_cnt = is_array($params) ? count($params) : 0;
+        $args_cnt = is_array($params) ? (is_countable($params) ? count($params) : 0) : 0;
         switch ($args_cnt) {
             case 1:
                 $config_key = $params[0];
@@ -221,7 +221,7 @@ and uninstall).
         // $param[1] -> the value for the parameter
         // $param[2] -> the layer
         $failmsg = '';
-        if (count($params) < 2 || count($params) > 3) {
+        if ((is_countable($params) ? count($params) : 0) < 2 || (is_countable($params) ? count($params) : 0) > 3) {
             $failmsg .= "config-set expects 2 or 3 parameters";
             return PEAR::raiseError($failmsg);
         }
@@ -256,7 +256,7 @@ and uninstall).
             return $this->raiseError($msg);
         }
 
-        if (count($params) == 2) {
+        if ((is_countable($params) ? count($params) : 0) == 2) {
             array_push($params, 'user');
             $layer = 'user';
         } else {
@@ -285,7 +285,7 @@ and uninstall).
             $params = $this->config->getKeys();
         }
 
-        $data['caption']  = "Config help" . ((count($params) == 1) ? " for $params[0]" : '');
+        $data['caption']  = "Config help" . (((is_countable($params) ? count($params) : 0) == 1) ? " for $params[0]" : '');
         $data['headline'] = array('Name', 'Type', 'Description');
         $data['border']   = true;
         foreach ($params as $name) {
@@ -304,7 +304,7 @@ and uninstall).
 
     function doConfigCreate($command, $options, $params)
     {
-        if (count($params) != 2) {
+        if ((is_countable($params) ? count($params) : 0) != 2) {
             return PEAR::raiseError('config-create: must have 2 parameters, root path and ' .
                 'filename to save as');
         }

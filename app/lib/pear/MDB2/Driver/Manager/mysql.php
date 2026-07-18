@@ -222,7 +222,7 @@ class MDB2_Driver_Manager_mysql extends MDB2_Driver_Manager_Common
                     $autoincrement = $fieldname;
                 }
             }
-            if ((null !== $autoincrement) && count($pk_fields) > 1) {
+            if ((null !== $autoincrement) && (is_countable($pk_fields) ? count($pk_fields) : 0) > 1) {
                 $options['primary'] = $pk_fields;
             } else {
                 // the PK constraint is on max one field => OK
@@ -1125,13 +1125,13 @@ class MDB2_Driver_Manager_mysql extends MDB2_Driver_Manager_Common
                 $conditions  = array();
                 $new_values  = array();
                 $null_values = array();
-                for ($i=0; $i<count($table_fields); $i++) {
+                for ($i=0; $i<(is_countable($table_fields) ? count($table_fields) : 0); $i++) {
                     $conditions[]  = $table_fields[$i] .' = OLD.'.$referenced_fields[$i];
                     $new_values[]  = $table_fields[$i] .' = NEW.'.$referenced_fields[$i];
                     $null_values[] = $table_fields[$i] .' = NULL';
                 }
                 $conditions2 = array();
-                for ($i=0; $i<count($referenced_fields); $i++) {
+                for ($i=0; $i<(is_countable($referenced_fields) ? count($referenced_fields) : 0); $i++) {
                     $conditions2[]  = 'NEW.'.$referenced_fields[$i] .' <> OLD.'.$referenced_fields[$i];
                 }
 

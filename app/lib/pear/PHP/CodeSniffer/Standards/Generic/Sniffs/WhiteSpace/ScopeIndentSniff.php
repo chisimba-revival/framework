@@ -259,7 +259,7 @@ class Generic_Sniffs_WhiteSpace_ScopeIndentSniff implements PHP_CodeSniffer_Snif
             }
         }
 
-        return ((count($conditionStack) * $this->indent) + 1);
+        return (((is_countable($conditionStack) ? count($conditionStack) : 0) * $this->indent) + 1);
 
     }//end calculateExpectedIndent()
 

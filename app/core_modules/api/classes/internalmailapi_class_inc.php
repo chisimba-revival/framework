@@ -170,7 +170,7 @@ class internalmailapi extends ChisimbaObject
         //var_dump($newList);
         $newArr = "";
         $cnt = 0;
-        $max = count($newList);
+        $max = (is_countable($newList) ? count($newList) : 0);
         foreach($newList as $item)
         {
             $cnt++;

@@ -73,7 +73,7 @@ class Config_Container_PHPConstants extends Config_Container {
         }
         
         $rows = explode("\n", $fileContent);
-        for ($i=0, $max=count($rows); $i<$max; $i++) {
+        for ($i=0, $max=(is_countable($rows) ? count($rows) : 0); $i<$max; $i++) {
             $line = $rows[$i];
     
             //blanks?

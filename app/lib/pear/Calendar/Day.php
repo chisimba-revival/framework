@@ -122,7 +122,7 @@ class Calendar_Day extends Calendar
             $this->children[$i] =
                 new Calendar_Hour($this->year, $this->month, $this->day, $i);
         }
-        if (count($sDates) > 0) {
+        if ((is_countable($sDates) ? count($sDates) : 0) > 0) {
             $this->setSelection($sDates);
         }
         return true;

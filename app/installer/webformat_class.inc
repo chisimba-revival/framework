@@ -58,9 +58,9 @@ function relative_href($from,$to)
 		$split_point++;
 	}
 
-	$href = str_repeat('../', count($from_bits) - $split_point);
+	$href = str_repeat('../', (is_countable($from_bits) ? count($from_bits) : 0) - $split_point);
 	// Forward to the destination
-	for ($i = $split_point - 1, $max = count($to_bits); $i < $max; $i++) {
+	for ($i = $split_point - 1, $max = (is_countable($to_bits) ? count($to_bits) : 0); $i < $max; $i++) {
 		$href .= $to_bits[$i].'/';
 	}
 

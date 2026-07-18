@@ -284,7 +284,7 @@ class PHP_DocBlockGenerator_Type
         if (empty($types)) {
             // no types guessed
             $type = $returnType? 'unknown' : '';
-        } else if (count($types) == 1) {
+        } else if ((is_countable($types) ? count($types) : 0) == 1) {
             // only one type was identified, supposed to be the right one
             $type = current($types);
         } else if (!array_diff($types, array('integer', 'float', 'number'))) {
@@ -507,7 +507,7 @@ class PHP_DocBlockGenerator_Type
             $id++;
         }
 
-        return count($var);
+        return (is_countable($var) ? count($var) : 0);
     }
 
     /**

@@ -84,7 +84,7 @@ class dbblocksdata extends dbTable
         {
             $entry = $this->getArray('SELECT * FROM tbl_module_blocks WHERE blockname = \''.$blockName.'\'');
             
-            if (count($entry) == 0) {
+            if ((is_countable($entry) ? count($entry) : 0) == 0) {
                 return FALSE;
             } else {
                 return $entry['0'];
@@ -102,7 +102,7 @@ class dbblocksdata extends dbTable
         public function getBlocksByModule($owningModule)
         {
             $ret = $this->getArray('SELECT * FROM tbl_module_blocks WHERE moduleid = \''.$owningModule.'\'');
-            if (count($ret) == 0) {
+            if ((is_countable($ret) ? count($ret) : 0) == 0) {
                 return FALSE;
             } else {
                 return $ret;
@@ -120,7 +120,7 @@ class dbblocksdata extends dbTable
         public function getBlocksNameByModule($owningModule)
         {
             $ret = $this->getArray('SELECT blockname,id FROM tbl_module_blocks WHERE moduleid = \''.$owningModule.'\'');
-            if (count($ret) == 0) {
+            if ((is_countable($ret) ? count($ret) : 0) == 0) {
                 return FALSE;
             } else {
                 return $ret;
@@ -138,7 +138,7 @@ class dbblocksdata extends dbTable
         {
             $entry = $this->getArray('SELECT * FROM tbl_module_blocks WHERE blockname = \''.$blockName.'\' AND moduleid = \''.$owningModule.'\'');
 
-            if (count($entry) == 0) {
+            if ((is_countable($entry) ? count($entry) : 0) == 0) {
                 return FALSE;
             } else {
                 return $entry['0'];

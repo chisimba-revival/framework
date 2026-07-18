@@ -133,7 +133,7 @@ class indexdata extends ChisimbaObject
         $document->addField(Zend_Search_Lucene_Field::Keyword('userId', $userId));
         
         // Tags // Check if Array - if yes, convert to string
-        if (is_array($tags) && count($tags) > 0) {
+        if (is_array($tags) && (is_countable($tags) ? count($tags) : 0) > 0) {
             $newTags = '';
             $divider = '';
             foreach ($tags as $tag)

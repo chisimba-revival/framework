@@ -328,7 +328,7 @@ class System
             $args = preg_split('/\s+/', $args, -1, PREG_SPLIT_NO_EMPTY);
         }
 
-        $count_args = count($args);
+        $count_args = (is_countable($args) ? count($args) : 0);
         for ($i = 0; $i < $count_args; $i++) {
             if ($args[$i] == '>') {
                 $mode = 'wb';
@@ -577,7 +577,7 @@ class System
         $patterns = array();
         $depth = 0;
         $do_files = $do_dirs = true;
-        $args_count = count($args);
+        $args_count = (is_countable($args) ? count($args) : 0);
         for ($i = 0; $i < $args_count; $i++) {
             switch ($args[$i]) {
                 case '-type':
@@ -611,11 +611,11 @@ class System
         } else {
             $files = $path['files'];
         }
-        if (count($patterns)) {
+        if ((is_countable($patterns) ? count($patterns) : 0)) {
             $dsq = preg_quote(DIRECTORY_SEPARATOR, '#');
             $pattern = '#(^|'.$dsq.')'.implode('|', $patterns).'($|'.$dsq.')#';
             $ret = array();
-            $files_count = count($files);
+            $files_count = (is_countable($files) ? count($files) : 0);
             for ($i = 0; $i < $files_count; $i++) {
                 // only search in the part of the file below the current directory
                 $filepart = basename($files[$i]);

@@ -30,14 +30,14 @@ $objLayer->addToStr($heading);
 $str = $objLayer->show();
 
 $string = '';
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
     $string = '<ul><li><b>'.$noMatch.'</b></li></ul>';
 } else {
         
     $count = 0;
     
-    $fileIdArray = 'fileId = new Array('.count($files).');';
-    $filenameArray = 'fileName = new Array('.count($files).');';
+    $fileIdArray = 'fileId = new Array('.(is_countable($files) ? count($files) : 0).');';
+    $filenameArray = 'fileName = new Array('.(is_countable($files) ? count($files) : 0).');';
     
     $table = $this->newObject('htmltable', 'htmlelements');
     
@@ -103,7 +103,7 @@ if (count($files) == 0) {
         $count++;
     }
 
-//    if (count($defaultItem) > 0) {
+//    if ((is_countable($defaultItem) ? count($defaultItem) : 0) > 0) {
         //$this->appendArrayVar('bodyOnLoad', "previewFile('".$defaultItem['id']."', '".$defaultItem['count']."');");
 //    }
     

@@ -133,7 +133,7 @@ class MIME_Type {
     {
         $params = array();
         $tmp = explode(';', $type);
-        for ($i = 1; $i < count($tmp); $i++) {
+        for ($i = 1; $i < (is_countable($tmp) ? count($tmp) : 0); $i++) {
             $params[] = trim($tmp[$i]);
         }
         return $params;

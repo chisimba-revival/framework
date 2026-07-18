@@ -483,7 +483,7 @@ class getid3_riff
 											$thisfile_audio['bitrate_mode'] = 'cbr';
 											$thisfile_audio_dataformat      = 'wav';
 											if (isset($thisfile_riff_audio) && is_array($thisfile_riff_audio)) {
-												$streamindex = count($thisfile_riff_audio);
+												$streamindex = (is_countable($thisfile_riff_audio) ? count($thisfile_riff_audio) : 0);
 											}
 
 											$thisfile_riff_audio[$streamindex] = getid3_riff::RIFFparseWAVEFORMATex($strfData);

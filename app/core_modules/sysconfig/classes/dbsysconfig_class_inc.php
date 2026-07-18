@@ -157,7 +157,7 @@ class dbsysconfig extends dbTable
     {
         $where = " WHERE pmodule='$pmodule' ";
         $ar = $this->getAll($where);
-        if (!count($ar) >= 1) {
+        if (!(is_countable($ar) ? count($ar) : 0) >= 1) {
             return false;
         } else {
             foreach ($ar as $line) {
@@ -293,7 +293,7 @@ class dbsysconfig extends dbTable
     {
         $where = " WHERE pmodule='$module' AND pname='$name' ";
         $ar = $this->getAll($where);
-        if (count($ar) > 0) {
+        if ((is_countable($ar) ? count($ar) : 0) > 0) {
             return $ar['0']['id'];
         } else {
             //die($this->objLanguage->languageText("mod_sysconfig_err_keynotexist",'sysconfig'));

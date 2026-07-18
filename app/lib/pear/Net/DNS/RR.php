@@ -79,7 +79,7 @@ class Net_DNS_RR
     {
         if (is_string($rrdata)) {
             $rr = &Net_DNS_RR::new_from_string($rrdata, $update_type);
-        } elseif (count($rrdata) == 7) {
+        } elseif ((is_countable($rrdata) ? count($rrdata) : 0) == 7) {
             list($name, $rrtype, $rrclass, $ttl, $rdlength, $data, $offset) = $rrdata;
             $rr = &Net_DNS_RR::new_from_data($name, $rrtype, $rrclass, $ttl, $rdlength, $data, $offset);
         } else {
@@ -113,7 +113,7 @@ class Net_DNS_RR
         $rr = new Net_DNS_RR('getRR');
         $ttl = 0;
         $parts = preg_split('/[\s]+/', $rrstring);
-        while (count($parts) > 0) {
+        while ((is_countable($parts) ? count($parts) : 0) > 0) {
 			$s = array_shift($parts);
             if (!isset($name)) {
                 $name = preg_replace('~\.+$~', '', $s);

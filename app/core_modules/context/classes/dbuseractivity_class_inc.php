@@ -28,7 +28,7 @@ class dbuseractivity extends dbtable {
             $data = $this->getArray($sql);
             $activity = array();
             $activity['userid'] = $user['auth_user_id'];
-            if (count($data) > 0) {
+            if ((is_countable($data) ? count($data) : 0) > 0) {
                 $activity['accesscount'] = $data[0]['accesscount'];
                 $activity['lastaccess'] = $data[0]['createdon'];
             } else {

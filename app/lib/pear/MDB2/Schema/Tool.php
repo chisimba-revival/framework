@@ -113,7 +113,7 @@ class MDB2_Schema_Tool
     */
     protected function getAction(&$args)
     {
-        if (count($args) == 0) {
+        if ((is_countable($args) ? count($args) : 0) == 0) {
             return 'help';
         }
         $arg = array_shift($args);
@@ -339,7 +339,7 @@ EOH
     */
     protected function getFileOrDsn(&$args)
     {
-        if (count($args) == 0) {
+        if ((is_countable($args) ? count($args) : 0) == 0) {
             throw new MDB2_Schema_Tool_ParameterException(
                 'File or DSN expected'
             );
@@ -438,7 +438,7 @@ EOH
     {
         $dump_what = MDB2_SCHEMA_DUMP_STRUCTURE;
         $arg = '';
-        if (count($args)) {
+        if ((is_countable($args) ? count($args) : 0)) {
             $arg = $args[0];
         }
 

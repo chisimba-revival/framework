@@ -58,7 +58,7 @@ class cssmenu extends ChisimbaObject {
                         $objLink->link = $key . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                         $str.='<li id="'.strtolower($key).'" class="navigation-list">' . $objLink->show() . '<ul class="inner-menu" >' . "\n";
                         $counter = 1;
-                        $numitems = count($item);
+                        $numitems = (is_countable($item) ? count($item) : 0);
                         foreach ($item as $link => $val) {
                                 $this->toolbarIcon->setIcon($link, null, 'icons/modules/');
                                 $this->toolbarIcon->title = $val;

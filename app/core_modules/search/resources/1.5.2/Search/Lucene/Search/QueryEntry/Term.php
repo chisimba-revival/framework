@@ -141,7 +141,7 @@ class Zend_Search_Lucene_Search_QueryEntry_Term extends Zend_Search_Lucene_Searc
                     }
 
                     $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($subPatternL2, $encoding);
-                    if (count($tokens) > 1) {
+                    if ((is_countable($tokens) ? count($tokens) : 0) > 1) {
                         throw new Zend_Search_Lucene_Search_QueryParserException('Wildcard search is supported only for non-multiple word terms');
                     }
 
@@ -160,11 +160,11 @@ class Zend_Search_Lucene_Search_QueryEntry_Term extends Zend_Search_Lucene_Searc
 
         $tokens = Zend_Search_Lucene_Analysis_Analyzer::getDefault()->tokenize($this->_term, $encoding);
 
-        if (count($tokens) == 0) {
+        if ((is_countable($tokens) ? count($tokens) : 0) == 0) {
             return new Zend_Search_Lucene_Search_Query_Insignificant();
         }
 
-        if (count($tokens) == 1  && !$this->_fuzzyQuery) {
+        if ((is_countable($tokens) ? count($tokens) : 0) == 1  && !$this->_fuzzyQuery) {
         	$term  = new Zend_Search_Lucene_Index_Term($tokens[0]->getTermText(), $this->_field);
             $query = new Zend_Search_Lucene_Search_Query_Term($term);
             $query->setBoost($this->_boost);
@@ -172,7 +172,7 @@ class Zend_Search_Lucene_Search_QueryEntry_Term extends Zend_Search_Lucene_Searc
             return $query;
         }
 
-        if (count($tokens) == 1  && $this->_fuzzyQuery) {
+        if ((is_countable($tokens) ? count($tokens) : 0) == 1  && $this->_fuzzyQuery) {
             $term  = new Zend_Search_Lucene_Index_Term($tokens[0]->getTermText(), $this->_field);
             $query = new Zend_Search_Lucene_Search_Query_Fuzzy($term, $this->_similarity);
             $query->setBoost($this->_boost);

@@ -198,7 +198,7 @@ class MDB_Manager_mssql extends MDB_Manager_Common
     {
         if ($check) {
             for ($change = 0, reset($changes);
-                $change < count($changes);
+                $change < (is_countable($changes) ? count($changes) : 0);
                 next($changes), $change++
             ) {
                 switch (key($changes)) {
@@ -231,7 +231,7 @@ class MDB_Manager_mssql extends MDB_Manager_Common
                 $query.= 'ADD ';
                 $fields = $changes['AddedFields'];
                 for ($field = 0, reset($fields);
-                    $field < count($fields);
+                    $field < (is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     if (strcmp($query, '')) {
@@ -262,7 +262,7 @@ class MDB_Manager_mssql extends MDB_Manager_Common
             return($table_names);
         }
         $tables = array();
-        for ($i = 0, $j = count($table_names); $i <$j; ++$i) {
+        for ($i = 0, $j = (is_countable($table_names) ? count($table_names) : 0); $i <$j; ++$i) {
             if (!$this->_isSequenceName($db, $table_names[$i])) {
                 $tables[] = $table_names[$i];
             }
@@ -403,7 +403,7 @@ class MDB_Manager_mssql extends MDB_Manager_Common
             $default = $columns['column_def'];
         }
         $definition = array();
-        for ($field_choices = array(), $datatype = 0; $datatype < count($type); $datatype++) {
+        for ($field_choices = array(), $datatype = 0; $datatype < (is_countable($type) ? count($type) : 0); $datatype++) {
             $field_choices[$datatype] = array('type' => $type[$datatype]);
             if (isset($notnull)) {
                 $field_choices[$datatype]['notnull'] = 1;

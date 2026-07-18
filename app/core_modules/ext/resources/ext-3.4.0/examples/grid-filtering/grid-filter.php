@@ -31,7 +31,7 @@ $qs = '';
 
 // loop through filters sent by client
 if (is_array($filters)) {
-    for ($i=0;$i<count($filters);$i++){
+    for ($i=0;$i<(is_countable($filters) ? count($filters) : 0);$i++){
         $filter = $filters[$i];
 
         // assign filter data (location depends if encoded or not)
@@ -52,7 +52,7 @@ if (is_array($filters)) {
             case 'list' :
                 if (strstr($value,',')){
                     $fi = explode(',',$value);
-                    for ($q=0;$q<count($fi);$q++){
+                    for ($q=0;$q<(is_countable($fi) ? count($fi) : 0);$q++){
                         $fi[$q] = "'".$fi[$q]."'";
                     }
                     $value = implode(',',$fi);

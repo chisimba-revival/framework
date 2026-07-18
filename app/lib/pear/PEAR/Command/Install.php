@@ -623,12 +623,12 @@ Run post-installation scripts in package <package>, if any exist.
 
         // if there are any local package .tgz or remote static url, we can't
         // filter.  The filter only works for abstract packages
-        if (count($abstractpackages) && !isset($options['force'])) {
+        if ((is_countable($abstractpackages) ? count($abstractpackages) : 0) && !isset($options['force'])) {
             // when not being forced, only do necessary upgrades/installs
             if (isset($options['upgrade'])) {
                 $abstractpackages = $this->_filterUptodatePackages($abstractpackages, $command);
             } else {
-                $count = count($abstractpackages);
+                $count = (is_countable($abstractpackages) ? count($abstractpackages) : 0);
                 foreach ($abstractpackages as $i => $package) {
                     if (isset($package['group'])) {
                         // do not filter out install groups
@@ -651,13 +651,13 @@ Run post-installation scripts in package <package>, if any exist.
             }
             $abstractpackages =
                 array_map(array($reg, 'parsedPackageNameToString'), $abstractpackages);
-        } elseif (count($abstractpackages)) {
+        } elseif ((is_countable($abstractpackages) ? count($abstractpackages) : 0)) {
             $abstractpackages =
                 array_map(array($reg, 'parsedPackageNameToString'), $abstractpackages);
         }
 
         $packages = array_merge($abstractpackages, $otherpackages);
-        if (!count($packages)) {
+        if (!(is_countable($packages) ? count($packages) : 0)) {
             $c = '';
             if (isset($options['channel'])){
                 $c .= ' in channel "' . $options['channel'] . '"';
@@ -674,7 +674,7 @@ Run post-installation scripts in package <package>, if any exist.
         }
 
         $errors = $this->downloader->getErrorMsgs();
-        if (count($errors)) {
+        if ((is_countable($errors) ? count($errors) : 0)) {
             $err = array();
             $err['data'] = array();
             foreach ($errors as $error) {
@@ -688,7 +688,7 @@ Run post-installation scripts in package <package>, if any exist.
                 $this->ui->outputData($err);
             }
 
-            if (!count($downloaded)) {
+            if (!(is_countable($downloaded) ? count($downloaded) : 0)) {
                 return $this->raiseError("$command failed");
             }
         }
@@ -767,7 +767,7 @@ Run post-installation scripts in package <package>, if any exist.
                     }
                 }
 
-                if (count($binaries)) {
+                if ((is_countable($binaries) ? count($binaries) : 0)) {
                     foreach ($binaries as $pinfo) {
                         PEAR::staticPushErrorHandling(PEAR_ERROR_RETURN);
                         $ret = $this->enableExtension(array($pinfo[0]), $param->getPackageType());
@@ -867,7 +867,7 @@ Run post-installation scripts in package <package>, if any exist.
             }
         }
 
-        if (count($extrainfo)) {
+        if ((is_countable($extrainfo) ? count($extrainfo) : 0)) {
             foreach ($extrainfo as $info) {
                 $this->ui->outputData($info);
             }
@@ -915,7 +915,7 @@ Run post-installation scripts in package <package>, if any exist.
 
     function doUninstall($command, $options, $params)
     {
-        if (count($params) < 1) {
+        if ((is_countable($params) ? count($params) : 0) < 1) {
             return $this->raiseError("Please supply the package(s) you want to uninstall");
         }
 
@@ -1024,7 +1024,7 @@ Run post-installation scripts in package <package>, if any exist.
                             break;
                         }
                     }
-                    if (count($binaries)) {
+                    if ((is_countable($binaries) ? count($binaries) : 0)) {
                         foreach ($binaries as $pinfo) {
                             PEAR::staticPushErrorHandling(PEAR_ERROR_RETURN);
                             $ret = $this->disableExtension(array($pinfo[0]), $pkg->getPackageType());
@@ -1105,7 +1105,7 @@ Run post-installation scripts in package <package>, if any exist.
         );
         $downloader = &$this->getDownloader($this->ui, $opts, $this->config);
         $reg = &$this->config->getRegistry();
-        if (count($params) < 1) {
+        if ((is_countable($params) ? count($params) : 0) < 1) {
             return $this->raiseError("Please supply the package you want to bundle");
         }
 

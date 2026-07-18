@@ -331,7 +331,7 @@ class DB_odbc extends DB_common
             return null;
         }
         if ($fetchmode !== DB_FETCHMODE_ORDERED) {
-            for ($i = 0; $i < count($arr); $i++) {
+            for ($i = 0; $i < (is_countable($arr) ? count($arr) : 0); $i++) {
                 $colName = @odbc_field_name($result, $i+1);
                 $a[$colName] = $arr[$i];
             }

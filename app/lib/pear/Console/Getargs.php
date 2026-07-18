@@ -604,7 +604,7 @@ class Console_Getargs_Options
             $longArr = explode('|', $long);
             $longname = $longArr[0];
             
-            if (count($longArr) > 1) {
+            if ((is_countable($longArr) ? count($longArr) : 0) > 1) {
                 // The fisrt item in the list is "the option".
                 // The rest are aliases.
                 array_shift($longArr);
@@ -628,7 +628,7 @@ class Console_Getargs_Options
                 // Short names
                 $shortArr = explode('|', $def['short']);
                 $short = $shortArr[0];
-                if (count($shortArr) > 1) {
+                if ((is_countable($shortArr) ? count($shortArr) : 0) > 1) {
                     // The first item is "the option".
                     // The rest are aliases.
                     array_shift($shortArr);

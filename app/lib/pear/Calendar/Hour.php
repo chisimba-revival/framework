@@ -103,7 +103,7 @@ class Calendar_Hour extends Calendar
                 new Calendar_Minute($this->year, $this->month, $this->day,
                            $this->hour, $i);
         }
-        if (count($sDates) > 0) {
+        if ((is_countable($sDates) ? count($sDates) : 0) > 0) {
             $this->setSelection($sDates);
         }
         return true;

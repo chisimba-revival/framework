@@ -72,7 +72,7 @@ class Config_Container_IniFile {
                     // try to split the value if comma found
                     if (strpos($content, '"') === false) {
                         $values = preg_split('/\s*,\s+/', $content);
-                        if (count($values) > 1) {
+                        if ((is_countable($values) ? count($values) : 0) > 1) {
                             foreach ($values as $k => $v) {
                                 $currentSection->createDirective($directive, $v);
                             }

@@ -149,7 +149,7 @@ class ga // extends ChisimbaObject
             $selection[] = array($object, $fitness_function($object));
         }
         usort($selection, array("GA", "worst"));
-        $selection = array_slice($selection, 0, count($selection)-$n);
+        $selection = array_slice($selection, 0, (is_countable($selection) ? count($selection) : 0)-$n);
         $objects = array();
         foreach ($selection as $selected) 
         {

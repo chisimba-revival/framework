@@ -117,11 +117,11 @@ class HTMLPurifier_AttrDef_CSS_BackgroundPosition extends HTMLPurifier_AttrDef
             $ret[] = $keywords['ch'];
             $keywords['cv'] = false; // prevent re-use: center = center center
         }
-        elseif (count($measures))   $ret[] = array_shift($measures);
+        elseif ((is_countable($measures) ? count($measures) : 0))   $ret[] = array_shift($measures);
 
         if     ($keywords['v'])     $ret[] = $keywords['v'];
         elseif ($keywords['cv'])    $ret[] = $keywords['cv'];
-        elseif (count($measures))   $ret[] = array_shift($measures);
+        elseif ((is_countable($measures) ? count($measures) : 0))   $ret[] = array_shift($measures);
 
         if (empty($ret)) return false;
         return implode(' ', $ret);

@@ -362,7 +362,7 @@ class HTMLPurifier_Strategy_MakeWellFormed extends HTMLPurifier_Strategy
             }
 
             // do errors, in REVERSE $j order: a,b,c with </a></b></c>
-            $c = count($skipped_tags);
+            $c = (is_countable($skipped_tags) ? count($skipped_tags) : 0);
             if ($e) {
                 for ($j = $c - 1; $j > 0; $j--) {
                     // notice we exclude $j == 0, i.e. the current ending tag, from

@@ -79,7 +79,7 @@ $leftBlocks = $this->objPLBlocks->getBlocks('left');
 foreach ($leftBlocks as $block) {
     //Check if content block
     $lc_check = explode("_lc", $block["id"]);
-    $lc_checkCount = count($lc_check);
+    $lc_checkCount = (is_countable($lc_check) ? count($lc_check) : 0);
     if ($lc_checkCount == 1) {
         $upLink->link($this->uri(array('action' => 'moveup', 'id' => $block['id'])));
         $upLink->link = $objUpIcon->show();
@@ -146,7 +146,7 @@ $middleBlocks = $this->objPLBlocks->getBlocks('middle');
 foreach ($middleBlocks as $block) {
     //Check if content block
     $mc_check = explode("_mc", $block["id"]);
-    $mc_checkCount = count($mc_check);
+    $mc_checkCount = (is_countable($mc_check) ? count($mc_check) : 0);
     if ($mc_checkCount == 1) {
         $upLink->link($this->uri(array('action' => 'moveup', 'id' => $block['id'])));
         $upLink->link = $objUpIcon->show();
@@ -214,7 +214,7 @@ $rightBlocks = $this->objPLBlocks->getBlocks('right');
 foreach ($rightBlocks as $block) {
     //Check if content block
     $rc_check = explode("_rc", $block["id"]);
-    $rc_checkCount = count($rc_check);
+    $rc_checkCount = (is_countable($rc_check) ? count($rc_check) : 0);
     if ($rc_checkCount == 1) {
         $upLink->link($this->uri(array('action' => 'moveup', 'id' => $block['id'])));
         $upLink->link = $objUpIcon->show();

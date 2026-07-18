@@ -95,7 +95,7 @@ class PHP_CodeSniffer_CommentParser_ParameterElement extends PHP_CodeSniffer_Com
             $matches    = array();
             if (preg_match('/^(\s+)(array\(.*\))(\s+)(\$\S*)(\s+)(.*)/i', $rawContent, $matches) !== 0) {
                 // Process the sub elements correctly for this special case.
-                if (count($matches) === 7) {
+                if ((is_countable($matches) ? count($matches) : 0) === 7) {
                     $this->processSubElement('type', $matches[2], $matches[1]);
                     $this->processSubElement('varName', $matches[4], $matches[3]);
                     $this->processSubElement('comment', $matches[6], $matches[5]);

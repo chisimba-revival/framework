@@ -196,7 +196,7 @@ class PEAR_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sni
 
         // Exactly one blank line before tags.
         $params = $this->commentParser->getTagOrders();
-        if (count($params) > 1) {
+        if ((is_countable($params) ? count($params) : 0) > 1) {
             $newlineSpan = $comment->getNewlineAfter();
             if ($newlineSpan !== 2) {
                 $error = 'There must be exactly one blank line before the tags in function comment';
@@ -298,7 +298,7 @@ class PEAR_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sni
 
         if (empty($params) === false) {
 
-            $lastParm = (count($params) - 1);
+            $lastParm = ((is_countable($params) ? count($params) : 0) - 1);
             if (substr_count($params[$lastParm]->getWhitespaceAfter(), "\n") !== 2) {
                 $error    = 'Last parameter comment requires a blank newline after it';
                 $errorPos = ($params[$lastParm]->getLine() + $commentStart);
@@ -420,8 +420,8 @@ class PEAR_Sniffs_Commenting_FunctionCommentSniff implements PHP_CodeSniffer_Sni
         // Report and missing comments.
         $diff = array_diff($realNames, $foundParams);
         foreach ($diff as $neededParam) {
-            if (count($params) !== 0) {
-                $errorPos = ($params[(count($params) - 1)]->getLine() + $commentStart);
+            if ((is_countable($params) ? count($params) : 0) !== 0) {
+                $errorPos = ($params[((is_countable($params) ? count($params) : 0) - 1)]->getLine() + $commentStart);
             } else {
                 $errorPos = $commentStart;
             }

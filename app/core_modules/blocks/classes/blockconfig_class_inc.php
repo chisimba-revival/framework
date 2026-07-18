@@ -67,7 +67,7 @@ class blockconfig extends ChisimbaObject {
     /**
      * Constructor method for the blockConfig class
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
     }
 
     /**

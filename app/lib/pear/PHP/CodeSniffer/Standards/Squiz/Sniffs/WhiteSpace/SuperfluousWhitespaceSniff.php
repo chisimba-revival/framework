@@ -102,7 +102,7 @@ class Squiz_Sniffs_WhiteSpace_SuperfluousWhitespaceSniff implements PHP_CodeSnif
                 return;
             }
 
-            $numTokens = count($tokens);
+            $numTokens = (is_countable($tokens) ? count($tokens) : 0);
             for ($i = ($stackPtr + 1); $i < $numTokens; $i++) {
                 // If we find something that isn't inline html then there
                 // is more to the file.

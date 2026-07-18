@@ -127,16 +127,16 @@ $this->loadClass('form', 'htmlelements');
 
 // set up heading colspan
     if($mode == 'addsystem'){
-        $colspan = 'colspan="' . (count($arrSystemTypes) + 1) .'"';
+        $colspan = 'colspan="' . ((is_countable($arrSystemTypes) ? count($arrSystemTypes) : 0) + 1) .'"';
     }else{
-        $colspan = 'colspan="' . (count($arrSystemTypes)).'"';
+        $colspan = 'colspan="' . ((is_countable($arrSystemTypes) ? count($arrSystemTypes) : 0)).'"';
     }
 
 // set up heading rowspan
     if($mode == 'addtext'){
-        $rowspan = 'rowspan="' . (count($arrTextItems) + 1).'"';
+        $rowspan = 'rowspan="' . ((is_countable($arrTextItems) ? count($arrTextItems) : 0) + 1).'"';
     }else{
-        $rowspan = 'rowspan="' . (count($arrTextItems)).'"';
+        $rowspan = 'rowspan="' . ((is_countable($arrTextItems) ? count($arrTextItems) : 0)).'"';
     }
 
 // set up table

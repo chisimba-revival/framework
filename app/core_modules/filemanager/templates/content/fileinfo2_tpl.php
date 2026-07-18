@@ -33,7 +33,7 @@ echo '<br /><p><strong>'.$this->objLanguage->languageText('word_description', 's
 
 echo '<p><strong>'.$this->objLanguage->languageText('word_tags', 'system', 'Tags').':</strong> ';
 
-if (count($tags) == 0) {
+if ((is_countable($tags) ? count($tags) : 0) == 0) {
     echo '<em>'.$this->objLanguage->languageText('phrase_notags', 'system', 'no tags').'</em>';
 } else {
     $comma = '';

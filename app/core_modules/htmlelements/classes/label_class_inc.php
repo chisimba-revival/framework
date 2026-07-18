@@ -82,6 +82,19 @@ class label implements ifhtml
      * @return void   
      * @access public 
      */
+        /*
+         * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+         *
+         * PHP 8 no longer treats a method named after the class as a
+         * constructor. Keep the historical constructor intact and
+         * delegate to it from __construct() so existing behaviour and
+         * call sites remain unchanged.
+         */
+        public function __construct($labelValue=null, $forId=null)
+        {
+            $this->label($labelValue, $forId);
+        }
+        
         public function label($labelValue=null, $forId=null)
     {
         $this->labelValue=$labelValue;

@@ -87,7 +87,7 @@ class Structures_Graph_Manipulator_TopologicalSorter {
         $refGenerator = array();
         foreach($nodeKeys as $key) {
             $refGenerator[] = false;
-            $nodes[$key]->setMetadata('topological-sort-visited', $refGenerator[sizeof($refGenerator) - 1]);
+            $nodes[$key]->setMetadata('topological-sort-visited', $refGenerator[(is_countable($refGenerator) ? sizeof($refGenerator) : 0) - 1]);
         }
 
         // Iteratively peel off leaf nodes
@@ -102,14 +102,14 @@ class Structures_Graph_Manipulator_TopologicalSorter {
             }
             // Mark leafs as visited
             $refGenerator[] = $topologicalLevel;
-            for ($i=sizeof($leafNodes) - 1; $i>=0; $i--) {
+            for ($i=(is_countable($leafNodes) ? sizeof($leafNodes) : 0) - 1; $i>=0; $i--) {
                 $visited =& $leafNodes[$i]->getMetadata('topological-sort-visited');
                 $visited = true;
                 $leafNodes[$i]->setMetadata('topological-sort-visited', $visited);
-                $leafNodes[$i]->setMetadata('topological-sort-level', $refGenerator[sizeof($refGenerator) - 1]);
+                $leafNodes[$i]->setMetadata('topological-sort-level', $refGenerator[(is_countable($refGenerator) ? sizeof($refGenerator) : 0) - 1]);
             }
             $topologicalLevel++;
-        } while (sizeof($leafNodes) > 0);
+        } while ((is_countable($leafNodes) ? sizeof($leafNodes) : 0) > 0);
 
         // Cleanup visited marks
         foreach($nodeKeys as $key) $nodes[$key]->unsetMetadata('topological-sort-visited');

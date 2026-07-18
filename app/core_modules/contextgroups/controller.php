@@ -418,7 +418,7 @@ class contextgroups extends controller {
         $lecturers = $this->objGroups->getGroupUsers($gid, array('userid', 'firstName', 'surname', 'title', 'emailAddress', 'country', 'sex', 'staffnumber'), $filter);
 
         $lecturersArray = array();
-        if (count($lecturers) > 0) {
+        if ((is_countable($lecturers) ? count($lecturers) : 0) > 0) {
             foreach ($lecturers as $lecturer) {
                 $lecturersArray[] = $lecturer['userid'];
             }
@@ -427,7 +427,7 @@ class contextgroups extends controller {
         $gid = $this->objGroups->getLeafId(array($contextCode, 'Students'));
         $students = $this->objGroups->getGroupUsers($gid, array('userid', 'firstName', 'surname', 'title', 'emailAddress', 'country', 'sex', 'staffnumber'), $filter);
         $studentsArray = array();
-        if (count($students) > 0) {
+        if ((is_countable($students) ? count($students) : 0) > 0) {
             foreach ($students as $student) {
                 $studentsArray[] = $student['userid'];
             }
@@ -436,7 +436,7 @@ class contextgroups extends controller {
         $gid = $this->objGroups->getLeafId(array($contextCode, 'Guest'));
         $guests = $this->objGroups->getGroupUsers($gid, array('userid', 'firstName', 'surname', 'title', 'emailAddress', 'country', 'sex', 'staffnumber'), $filter);
         $guestsArray = array();
-        if (count($guests) > 0) {
+        if ((is_countable($guests) ? count($guests) : 0) > 0) {
             foreach ($guests as $guest) {
                 $guestsArray[] = $guest['userid'];
             }
@@ -465,7 +465,7 @@ class contextgroups extends controller {
 //            $userIds = $this->getParam('guestId');
 //            $groupId=$this->objGroups->getLeafId(array($this->objContext->getContextCode(), 'Guest'));
 //        }
-//        if(count($userIds) > 0){
+//        if((is_countable($userIds) ? count($userIds) : 0) > 0){
 //            foreach($userIds as $userId){
 //                $pkId = $this->objUser->PKId($userId);
 //                $this->objGroupUsers->deleteGroupUser($groupId, $pkId);

@@ -15,7 +15,7 @@ class Albums {
     function addOrUpdate($data){
         $db = new SQLiteDatabase('sql/imgorg.db');
         $q = $db->query('SELECT * FROM Albums where id = "'.$data->id.'"');
-        if (sizeof($q) == 0) {
+        if ((is_countable($q) ? sizeof($q) : 0) == 0) {
             $res = $db->query('INSERT INTO Albums (text) VALUES ("'.$data->text.'")');
         } else {
             $res = $db->query('UPDATE Albums SET text ="'.$data->text.'" WHERE id = "'.$data->id.'"');

@@ -144,8 +144,8 @@ function Auth_OpenID_urinorm($uri)
     $uri_matches = array();
     preg_match(Auth_OpenID_getURIPattern(), $uri, $uri_matches);
 
-    if (count($uri_matches) < 9) {
-        for ($i = count($uri_matches); $i <= 9; $i++) {
+    if ((is_countable($uri_matches) ? count($uri_matches) : 0) < 9) {
+        for ($i = (is_countable($uri_matches) ? count($uri_matches) : 0); $i <= 9; $i++) {
             $uri_matches[] = '';
         }
     }
@@ -183,13 +183,13 @@ function Auth_OpenID_urinorm($uri)
     $authority_matches = array();
     preg_match(Auth_OpenID_getAuthorityPattern(),
                $authority, $authority_matches);
-    if (count($authority_matches) === 0) {
+    if ((is_countable($authority_matches) ? count($authority_matches) : 0) === 0) {
         // URI does not have a valid authority
         return null;
     }
 
-    if (count($authority_matches) < 4) {
-        for ($i = count($authority_matches); $i <= 4; $i++) {
+    if ((is_countable($authority_matches) ? count($authority_matches) : 0) < 4) {
+        for ($i = (is_countable($authority_matches) ? count($authority_matches) : 0); $i <= 4; $i++) {
             $authority_matches[] = '';
         }
     }

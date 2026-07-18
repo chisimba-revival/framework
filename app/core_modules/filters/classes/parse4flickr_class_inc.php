@@ -213,7 +213,7 @@ class parse4flickr extends ChisimbaObject
         //die ($feed);
         $this->objRss->parseRss($feed);
         $ar = $this->objRss->getRssItems();
-        $total = count($ar);
+        $total = (is_countable($ar) ? count($ar) : 0);
         // Set up the table for output and start the first row
         $ret = "<table>\n";
         $fillCells = $total % $cols;

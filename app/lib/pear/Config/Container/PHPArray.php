@@ -163,7 +163,7 @@ class Config_Container_PHPArray {
                 $attrString = '';
                 $parentString = $this->_getParentString($obj);
                 $attributes = $obj->getAttributes();
-                if ($this->options['useAttr'] && is_array($attributes) && count($attributes) > 0) {
+                if ($this->options['useAttr'] && is_array($attributes) && (is_countable($attributes) ? count($attributes) : 0) > 0) {
                     // Directive with attributes '@' and value '#'
                     $string .= $parentString."['#']";
                     foreach ($attributes as $attr => $val) {
@@ -187,7 +187,7 @@ class Config_Container_PHPArray {
             case 'section':
                 $attrString = '';
                 $attributes = $obj->getAttributes();
-                if ($this->options['useAttr'] && is_array($attributes) && count($attributes) > 0) {
+                if ($this->options['useAttr'] && is_array($attributes) && (is_countable($attributes) ? count($attributes) : 0) > 0) {
                     $parentString = $this->_getParentString($obj);
                     foreach ($attributes as $attr => $val) {
                         $attrString .= $parentString."['@']"

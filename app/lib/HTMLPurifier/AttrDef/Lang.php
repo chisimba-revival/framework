@@ -13,7 +13,7 @@ class HTMLPurifier_AttrDef_Lang extends HTMLPurifier_AttrDef
         if (!$string) return false;
 
         $subtags = explode('-', $string);
-        $num_subtags = count($subtags);
+        $num_subtags = (is_countable($subtags) ? count($subtags) : 0);
 
         if ($num_subtags == 0) return false; // sanity check
 

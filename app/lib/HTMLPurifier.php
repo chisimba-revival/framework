@@ -163,7 +163,7 @@ class HTMLPurifier
         $filters = array_merge($filters, $this->filters);
         // maybe prepare(), but later
 
-        for ($i = 0, $filter_size = count($filters); $i < $filter_size; $i++) {
+        for ($i = 0, $filter_size = (is_countable($filters) ? count($filters) : 0); $i < $filter_size; $i++) {
             $html = $filters[$i]->preFilter($html, $config, $context);
         }
 

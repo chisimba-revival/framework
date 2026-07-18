@@ -10,7 +10,7 @@ $this->appendArrayVar('headerParams', $this->getJavascriptFile('selectall.js', '
 
 echo '<h1>'.$this->objLanguage->languageText('mod_filemanager_fileswithtag', 'filemanager', 'Files with tag').': '.$tag.'</h1>';
 
-if (count($files) > 0) {
+if ((is_countable($files) ? count($files) : 0) > 0) {
     $form = new form('deletefiles', $this->uri(array('action'=>'multidelete')));
     $form->addToForm($table);
 

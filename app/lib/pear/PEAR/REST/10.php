@@ -327,7 +327,7 @@ class PEAR_REST_10
                 $compatible[] = $comp;
             }
 
-            if (count($compatible) == 1) {
+            if ((is_countable($compatible) ? count($compatible) : 0) == 1) {
                 $compatible = $compatible[0];
             }
 

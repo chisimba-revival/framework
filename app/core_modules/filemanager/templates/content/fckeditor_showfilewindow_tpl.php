@@ -31,15 +31,15 @@ $this->loadClass('hiddeninput', 'htmlelements');
 
 echo '<h1>List of Files</h1>';
 
-if (count($files) == 0) {
+if ((is_countable($files) ? count($files) : 0) == 0) {
     echo ' '.$this->objLanguage->languageText('mod_filemanager_nomatch', 'filemanager', 'No files matching criteria found');
 } else {
         
     $count = 0;
     
-    $fileIdArray = 'fileId = new Array('.count($files).');';
-    $filenameArray = 'fileName = new Array('.count($files).');';
-    $filelinkArray = 'fileLink = new Array('.count($files).');';
+    $fileIdArray = 'fileId = new Array('.(is_countable($files) ? count($files) : 0).');';
+    $filenameArray = 'fileName = new Array('.(is_countable($files) ? count($files) : 0).');';
+    $filelinkArray = 'fileLink = new Array('.(is_countable($files) ? count($files) : 0).');';
     
     $table = $this->newObject('htmltable', 'htmlelements');
     
@@ -80,7 +80,7 @@ if (count($files) == 0) {
     }
     echo $table->show();
     
-    if (count($defaultItem) > 0) {
+    if ((is_countable($defaultItem) ? count($defaultItem) : 0) > 0) {
         $this->appendArrayVar('bodyOnLoad', "previewFile('".$defaultItem['id']."', '".$defaultItem['count']."');");
     }
     

@@ -152,7 +152,7 @@ class useradmin_model extends dbtable
             $sql.=" WHERE logins='0' AND creationdate<'$sixMonthsAgo' ORDER BY creationdate";
         }
         $results=$this->getArray($sql);
-        $count = count($results);
+        $count = (is_countable($results) ? count($results) : 0);
         for ($i=0;$i<$count;$i++) {
              $keys = array_keys($results[$i]);
              foreach ($keys as $key) {

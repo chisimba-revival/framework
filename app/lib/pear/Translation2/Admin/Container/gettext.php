@@ -142,7 +142,7 @@ class Translation2_Admin_Container_gettext extends Translation2_Container_gettex
 
         $langs = array_intersect(array_keys($strings), $this->getLangs('ids'));
 
-        if (!count($langs)) {
+        if (!(is_countable($langs) ? count($langs) : 0)) {
             return true; // really?
         }
 

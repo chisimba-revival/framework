@@ -58,7 +58,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
         // Loop initialization
 
         // stack that contains the indexes of all parents,
-        // $stack[count($stack)-1] being the current parent
+        // $stack[(is_countable($stack) ? count($stack) : 0)-1] being the current parent
         $stack = array();
 
         // stack that contains all elements that are excluded
@@ -77,7 +77,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
 
         // iterate through all start nodes. Determining the start node
         // is complicated so it has been omitted from the loop construct
-        for ($i = 0, $size = count($tokens) ; $i < $size; ) {
+        for ($i = 0, $size = (is_countable($tokens) ? count($tokens) : 0) ; $i < $size; ) {
 
             //################################################################//
             // Gather information on children
@@ -111,7 +111,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
             // Gather information on parent
 
             // calculate parent information
-            if ($count = count($stack)) {
+            if ($count = (is_countable($stack) ? count($stack) : 0)) {
                 $parent_index = $stack[$count-1];
                 $parent_name  = $tokens[$parent_index]->name;
                 if ($parent_index == 0) {
@@ -262,7 +262,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
 
                 // update size
                 $size -= $length;
-                $size += count($result);
+                $size += (is_countable($result) ? count($result) : 0);
 
                 // register start token as a parental node start
                 $stack[] = $i;
@@ -283,7 +283,7 @@ class HTMLPurifier_Strategy_FixNesting extends HTMLPurifier_Strategy
 
             // Test if the token indeed is a start tag, if not, move forward
             // and test again.
-            $size = count($tokens);
+            $size = (is_countable($tokens) ? count($tokens) : 0);
             while ($i < $size and !$tokens[$i] instanceof HTMLPurifier_Token_Start) {
                 if ($tokens[$i] instanceof HTMLPurifier_Token_End) {
                     // pop a token index off the stack if we ended a node

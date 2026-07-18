@@ -87,6 +87,19 @@ class checkbox  extends abhtmlbase implements ifhtml
    * @param string $label The text of the accompanying label
    * @param bool $ischecked whether or not the box is checkedd by default
    */
+    /*
+     * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+     *
+     * PHP 8 no longer treats a method named after the class as a
+     * constructor. Keep the historical constructor intact and
+     * delegate to it from __construct() so existing behaviour and
+     * call sites remain unchanged.
+     */
+    public function __construct($name,$label=NULL,$ischecked=false)
+    {
+        $this->checkbox($name, $label, $ischecked);
+    }
+    
     public function checkbox($name,$label=NULL,$ischecked=false){
       $this->name=$name;
     $this->ischecked=$ischecked;

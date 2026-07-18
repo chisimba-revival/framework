@@ -420,7 +420,7 @@ class XML_Util
             if ($sort) {
                 ksort($attributes);
             }
-            if (!$multiline || count($attributes) == 1) {
+            if (!$multiline || (is_countable($attributes) ? count($attributes) : 0) == 1) {
                 foreach ($attributes as $key => $value) {
                     if ($entities != XML_UTIL_ENTITIES_NONE) {
                         if ($entities === XML_UTIL_CDATA_SECTION) {

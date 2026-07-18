@@ -100,7 +100,7 @@ function Auth_Yadis_XRIAppendArgs($url, $args)
     // OpenID's appendArgs, but with special seasoning for XRI
     // queries.
 
-    if (count($args) == 0) {
+    if ((is_countable($args) ? count($args) : 0) == 0) {
         return $url;
     }
 
@@ -204,7 +204,7 @@ function Auth_Yadis_getCanonicalID($iname, $xrds)
 
     $childID = $canonicalID;
 
-    for ($i = 1; $i < count($xrd_list); $i++) {
+    for ($i = 1; $i < (is_countable($xrd_list) ? count($xrd_list) : 0); $i++) {
         $xrd = $xrd_list[$i];
 
         $parent_sought = substr($childID, 0, strrpos($childID, '!'));

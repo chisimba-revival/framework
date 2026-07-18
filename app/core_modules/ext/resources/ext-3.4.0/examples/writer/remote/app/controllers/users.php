@@ -91,7 +91,7 @@ class Users extends ApplicationController {
                 }
             }
             $res->success = true;
-            $res->message = 'Destroyed ' . count($destroyed) . ' records';
+            $res->message = 'Destroyed ' . (is_countable($destroyed) ? count($destroyed) : 0) . ' records';
         } else {
             if ($rec = User::destroy($this->params)) {
                 $res->message = "Destroyed User";

@@ -76,7 +76,10 @@ class CompleteAction extends StepAction
         $ajaxRegisterLink = 'http://'.str_replace('//','/',$_SESSION['site_server_url'].'/'.$_SESSION['site_url'].'/').'index.php';
         //$ajaxRegisterLinkParams = 'module=modulecatalogue&action=firsttimeregistration&sysType='.$_SESSION['SysType'].'&ajax=true'; //str_replace(' ','%20',);
         $ajaxRegisterLinkParams = "{ module: \'modulecatalogue\', action: \'firsttimeregistration\', sysType: \'".$_SESSION['SysType']."\', ajax: \'true\' }"; //urlencode()
-        $ajaxLoginLink = 'http://'.str_replace('//','/',$_SESSION['site_server_url'].'/'.$_SESSION['site_url'].'/').'index.php?module=security&action=login&username=admin&password=a&mod=modulecatalogue';
+        // Do not place credentials in the URL. The installer now sends the
+        // administrator to the normal login page, where authentication occurs
+        // through the standard POST-based login form.
+        $ajaxLoginLink = 'http://'.str_replace('//','/',$_SESSION['site_server_url'].'/'.$_SESSION['site_url'].'/').'index.php';
 
         $tpl->set('login_url', $registerLink);
         // Pass variables for AJAX installer to template

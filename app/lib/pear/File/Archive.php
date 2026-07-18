@@ -40,7 +40,7 @@ require_once "PEAR.php";
 function File_Archive_cleanCache($file, $group)
 {
     $file = split('_', $file);
-    if (count($file) != 3) {
+    if ((is_countable($file) ? count($file) : 0) != 3) {
         return false; //not a File_Archive file, keep it
     }
 

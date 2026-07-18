@@ -393,7 +393,7 @@ class PEAR_PackageFile_Generator_v1
     function _formatDir($dirs, $indent = '', $curdir = '')
     {
         $ret = '';
-        if (!count($dirs)) {
+        if (!(is_countable($dirs) ? count($dirs) : 0)) {
             return '';
         }
         if (isset($dirs['dirs'])) {
@@ -830,7 +830,7 @@ class PEAR_PackageFile_Generator_v1
                 foreach ($repl as $replace ) {
                     $file['tasks:replace'][] = array('attribs' => $replace);
                 }
-                if (count($repl) == 1) {
+                if ((is_countable($repl) ? count($repl) : 0) == 1) {
                     $file['tasks:replace'] = $file['tasks:replace'][0];
                 }
             }
@@ -917,12 +917,12 @@ class PEAR_PackageFile_Generator_v1
                         if (isset($oses[substr($os, 1)])) {
                             continue;
                         }
-                        $oses[substr($os, 1)] = count($oses);
+                        $oses[substr($os, 1)] = (is_countable($oses) ? count($oses) : 0);
                     } else {
                         if (isset($oses[$os])) {
                             continue;
                         }
-                        $oses[$os] = count($oses);
+                        $oses[$os] = (is_countable($oses) ? count($oses) : 0);
                     }
                 }
                 //- create a release for each platform encountered and fill with
@@ -1026,16 +1026,16 @@ class PEAR_PackageFile_Generator_v1
                         unset($release[$releaseNum]['filelist']['ignore']);
                     }
                 }
-                if (count($generic) || count($genericIgnore)) {
-                    $release[count($oses)] = array();
-                    if (count($generic)) {
+                if ((is_countable($generic) ? count($generic) : 0) || (is_countable($genericIgnore) ? count($genericIgnore) : 0)) {
+                    $release[(is_countable($oses) ? count($oses) : 0)] = array();
+                    if ((is_countable($generic) ? count($generic) : 0)) {
                         foreach ($generic as $file) {
                             if (isset($package['install-as'][$file])) {
                                 $installas = $package['install-as'][$file];
                             } else {
                                 $installas = $file;
                             }
-                            $release[count($oses)]['filelist']['install'][] =
+                            $release[(is_countable($oses) ? count($oses) : 0)]['filelist']['install'][] =
                                 array(
                                     'attribs' => array(
                                         'name' => $file,
@@ -1044,9 +1044,9 @@ class PEAR_PackageFile_Generator_v1
                                 );
                         }
                     }
-                    if (count($genericIgnore)) {
+                    if ((is_countable($genericIgnore) ? count($genericIgnore) : 0)) {
                         foreach ($genericIgnore as $file) {
-                            $release[count($oses)]['filelist']['ignore'][] =
+                            $release[(is_countable($oses) ? count($oses) : 0)]['filelist']['ignore'][] =
                                 array(
                                     'attribs' => array(
                                         'name' => $file,
@@ -1068,7 +1068,7 @@ class PEAR_PackageFile_Generator_v1
                             $release[$i]['filelist']['ignore'][0];
                     }
                 }
-                if (count($release) == 1) {
+                if ((is_countable($release) ? count($release) : 0) == 1) {
                     $release = $release[0];
                 }
             } else {
@@ -1162,26 +1162,26 @@ class PEAR_PackageFile_Generator_v1
                 continue;
             }
             if (isset($dep['min'])) {
-                $min[$dep['min']] = count($min);
+                $min[$dep['min']] = (is_countable($min) ? count($min) : 0);
             }
             if (isset($dep['max'])) {
-                $max[$dep['max']] = count($max);
+                $max[$dep['max']] = (is_countable($max) ? count($max) : 0);
             }
         }
-        if (count($min) > 0) {
+        if ((is_countable($min) ? count($min) : 0) > 0) {
             uksort($min, 'version_compare');
         }
-        if (count($max) > 0) {
+        if ((is_countable($max) ? count($max) : 0) > 0) {
             uksort($max, 'version_compare');
         }
-        if (count($min)) {
+        if ((is_countable($min) ? count($min) : 0)) {
             // get the highest minimum
             $a = array_flip($min);
             $min = array_pop($a);
         } else {
             $min = false;
         }
-        if (count($max)) {
+        if ((is_countable($max) ? count($max) : 0)) {
             // get the lowest maximum
             $a = array_flip($max);
             $max = array_shift($a);
@@ -1201,7 +1201,7 @@ class PEAR_PackageFile_Generator_v1
             }
             $exclude[] = $dep['exclude'];
         }
-        if (count($exclude)) {
+        if ((is_countable($exclude) ? count($exclude) : 0)) {
             $php['exclude'] = $exclude;
         }
         return $php;
@@ -1236,26 +1236,26 @@ class PEAR_PackageFile_Generator_v1
                     $php['conflicts'] = 'yes';
                 }
                 if (isset($dep['min'])) {
-                    $min[$dep['min']] = count($min);
+                    $min[$dep['min']] = (is_countable($min) ? count($min) : 0);
                 }
                 if (isset($dep['max'])) {
-                    $max[$dep['max']] = count($max);
+                    $max[$dep['max']] = (is_countable($max) ? count($max) : 0);
                 }
             }
-            if (count($min) > 0) {
+            if ((is_countable($min) ? count($min) : 0) > 0) {
                 uksort($min, 'version_compare');
             }
-            if (count($max) > 0) {
+            if ((is_countable($max) ? count($max) : 0) > 0) {
                 uksort($max, 'version_compare');
             }
-            if (count($min)) {
+            if ((is_countable($min) ? count($min) : 0)) {
                 // get the highest minimum
                 $a = array_flip($min);
                 $min = array_pop($a);
             } else {
                 $min = false;
             }
-            if (count($max)) {
+            if ((is_countable($max) ? count($max) : 0)) {
                 // get the lowest maximum
                 $a = array_flip($max);
                 $max = array_shift($a);
@@ -1275,7 +1275,7 @@ class PEAR_PackageFile_Generator_v1
                 }
                 $exclude[] = $dep['exclude'];
             }
-            if (count($exclude)) {
+            if ((is_countable($exclude) ? count($exclude) : 0)) {
                 $php['exclude'] = $exclude;
             }
             $ret[] = $php;

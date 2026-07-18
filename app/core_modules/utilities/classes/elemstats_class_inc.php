@@ -71,7 +71,7 @@ class elemstats extends controller {
     */
     function calc_basic_stats($arr=array())
     {
-        $this->n = count($arr);
+        $this->n = (is_countable($arr) ? count($arr) : 0);
         $sum=0;
         for ($current_sample = 0; $this->n > $current_sample; ++$current_sample) {
             $sum = $sum + $arr[$current_sample];

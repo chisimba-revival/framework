@@ -44,7 +44,7 @@ foreach ($nodes as $node) {
 // Parse Images
 $images_array = extract_tags($string, 'img');
 $images = array();
-for ($i = 0; $i <= sizeof($images_array); $i++) {
+for ($i = 0; $i <= (is_countable($images_array) ? sizeof($images_array) : 0); $i++) {
         $img = trim(@$images_array[$i]['attributes']['src']);
         $width = preg_replace("/[^0-9.]/", '', $images_array[$i]['attributes']['width']);
         $height = preg_replace("/[^0-9.]/", '', $images_array[$i]['attributes']['height']);

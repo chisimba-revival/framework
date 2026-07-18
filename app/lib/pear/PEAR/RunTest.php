@@ -349,7 +349,7 @@ class PEAR_RunTest
 
         // Check if test should be skipped.
         $res  = $this->_runSkipIf($section_text, $temp_skipif, $tested, $ini_settings);
-        if ($res == 'SKIPPED' || count($res) != 2) {
+        if ($res == 'SKIPPED' || (is_countable($res) ? count($res) : 0) != 2) {
             return $res;
         }
         $info = $res['info'];
@@ -372,7 +372,7 @@ class PEAR_RunTest
 
             // Workaround for http://pear.php.net/bugs/bug.php?id=17292
             $lines             = explode("\n", $section_text['FILE']);
-            $numLines          = count($lines);
+            $numLines          = (is_countable($lines) ? count($lines) : 0);
             $namespace         = '';
             $coverage_shutdown = 'coverage_shutdown';
 
@@ -905,7 +905,7 @@ $text
                        "-----------------------------20896060251896012921717172737\n";
             foreach ($upload_files as $fileinfo) {
                 $fileinfo = explode('=', $fileinfo);
-                if (count($fileinfo) != 2) {
+                if ((is_countable($fileinfo) ? count($fileinfo) : 0) != 2) {
                     return PEAR::raiseError("Invalid UPLOAD section in test file: $file");
                 }
                 if (!realpath(dirname($file) . '/' . $fileinfo[1])) {
@@ -926,7 +926,7 @@ $text
                 $post = explode('&', $post);
                 foreach ($post as $i => $post_info) {
                     $post_info = explode('=', $post_info);
-                    if (count($post_info) != 2) {
+                    if ((is_countable($post_info) ? count($post_info) : 0) != 2) {
                         return PEAR::raiseError("Invalid POST data in test file: $file");
                     }
                     $post_info[0] = rawurldecode($post_info[0]);

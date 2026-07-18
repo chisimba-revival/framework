@@ -713,7 +713,7 @@ class PEAR_PackageFile_v2_rw extends PEAR_PackageFile_v2
             $dep['max'] = $max;
         }
         if ($exclude) {
-            if (count($exclude) == 1) {
+            if ((is_countable($exclude) ? count($exclude) : 0) == 1) {
                 $exclude = $exclude[0];
             }
             $dep['exclude'] = $exclude;
@@ -755,7 +755,7 @@ class PEAR_PackageFile_v2_rw extends PEAR_PackageFile_v2
             $dep['recommended'] = $recommended;
         }
         if ($exclude) {
-            if (count($exclude) == 1) {
+            if ((is_countable($exclude) ? count($exclude) : 0) == 1) {
                 $exclude = $exclude[0];
             }
             $dep['exclude'] = $exclude;
@@ -880,7 +880,7 @@ class PEAR_PackageFile_v2_rw extends PEAR_PackageFile_v2
             $dep['recommended'] = $recommended;
         }
         if ($exclude) {
-            if (is_array($exclude) && count($exclude) == 1) {
+            if (is_array($exclude) && (is_countable($exclude) ? count($exclude) : 0) == 1) {
                 $exclude = $exclude[0];
             }
             $dep['exclude'] = $exclude;
@@ -1395,7 +1395,7 @@ class PEAR_PackageFile_v2_rw extends PEAR_PackageFile_v2
         }
         $dep = array('min' => $min, 'max' => $max);
         if ($exclude) {
-            if (is_array($exclude) && count($exclude) == 1) {
+            if (is_array($exclude) && (is_countable($exclude) ? count($exclude) : 0) == 1) {
                 $exclude = $exclude[0];
             }
             $dep['exclude'] = $exclude;

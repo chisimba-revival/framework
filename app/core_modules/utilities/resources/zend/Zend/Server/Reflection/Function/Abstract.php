@@ -207,7 +207,7 @@ abstract class Zend_Server_Reflection_Function_Abstract
         $this->_returnDesc     = $returnDesc;
         $this->_paramDesc      = $paramDesc;
         $this->_sigParams      = $paramTypes;
-        $this->_sigParamsDepth = count($paramTypes);
+        $this->_sigParamsDepth = (is_countable($paramTypes) ? count($paramTypes) : 0);
         $signatureTrees        = $this->_buildTree();
         $signatures            = array();
 
@@ -320,8 +320,8 @@ abstract class Zend_Server_Reflection_Function_Abstract
             $paramTypesTmp = array_fill(0, $paramCount, 'mixed');
         } elseif (!isset($paramTypesTmp)) {
             $paramTypesTmp = array();
-        } elseif (count($paramTypesTmp) < $paramCount) {
-            $start = $paramCount - count($paramTypesTmp);
+        } elseif ((is_countable($paramTypesTmp) ? count($paramTypesTmp) : 0) < $paramCount) {
+            $start = $paramCount - (is_countable($paramTypesTmp) ? count($paramTypesTmp) : 0);
             for ($i = $start; $i < $paramCount; ++$i) {
                 $paramTypesTmp[$i] = 'mixed';
             }
@@ -332,14 +332,14 @@ abstract class Zend_Server_Reflection_Function_Abstract
             $paramDesc = array_fill(0, $paramCount, '');
         } elseif (!isset($paramDesc)) {
             $paramDesc = array();
-        } elseif (count($paramDesc) < $paramCount) {
-            $start = $paramCount - count($paramDesc);
+        } elseif ((is_countable($paramDesc) ? count($paramDesc) : 0) < $paramCount) {
+            $start = $paramCount - (is_countable($paramDesc) ? count($paramDesc) : 0);
             for ($i = $start; $i < $paramCount; ++$i) {
                 $paramDesc[$i] = '';
             }
         }
 
-        if (count($paramTypesTmp) != $paramCount) {
+        if ((is_countable($paramTypesTmp) ? count($paramTypesTmp) : 0) != $paramCount) {
             throw new Zend_Server_Reflection_Exception(
                'Variable number of arguments is not supported for services (except optional parameters). '
              . 'Number of function arguments must currespond to actual number of arguments described in a docblock.');

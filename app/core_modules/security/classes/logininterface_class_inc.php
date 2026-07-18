@@ -334,7 +334,7 @@ class loginInterface extends ChisimbaObject {
             $fullname = $twitterInfo->name;
             $name = explode(" ", $fullname);
             $surname = '';
-            if (count($name) > 1) {
+            if ((is_countable($name) ? count($name) : 0) > 1) {
                 $surname = $name[1];
             }
 

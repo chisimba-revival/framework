@@ -278,7 +278,7 @@ class languageConfig extends ChisimbaObject {
             $parsed['phptype'] = $str;
         }
 
-        if (!count($dsn)) {
+        if (!(is_countable($dsn) ? count($dsn) : 0)) {
             return $parsed;
         }
         // Get (if found): username and password

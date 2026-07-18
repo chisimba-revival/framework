@@ -7,7 +7,7 @@ class Images {
         $qry = 'select i.filename as filename, i.url as url, i.id as id from Images i';
         $where = array();
         if ($tags) {
-            for ($i = 0;$i < sizeof($tags);$i++) {
+            for ($i = 0;$i < (is_countable($tags) ? sizeof($tags) : 0);$i++) {
                 $qry .= ' INNER JOIN Images_Tags it'.$i.' ON i.id = it'.$i.'.image_id';
                 array_push($where,' it'.$i.'.tag_id = "'.$tags[$i].'"');
             }
@@ -43,7 +43,7 @@ class Images {
         $images = $data->images;
         $album = $data->album;
         $db = new SQLiteDatabase("sql/imgorg.db");
-        for ($i = 0;$i < sizeof($images);$i++) {
+        for ($i = 0;$i < (is_countable($images) ? sizeof($images) : 0);$i++) {
 //            $db->queryExec('INSERT INTO Albums_Images (image_id, album_id) VALUES ("'.$images[$i].'","'.$album.'")');
             $db->queryExec('UPDATE Images SET album_id = "'.$album.'" WHERE id ="'.$images[$i].'"');
         }
@@ -60,7 +60,7 @@ class Images {
             $q = $db->query('SELECT id FROM Tags WHERE text = "'.$tag.'"');
             $tag = $q->fetchObject()->id;
         }
-        for ($i = 0;$i < sizeof($images);$i++) {
+        for ($i = 0;$i < (is_countable($images) ? sizeof($images) : 0);$i++) {
             $db->queryExec('INSERT INTO Images_Tags (image_id, tag_id) VALUES ("'.$images[$i].'","'.$tag.'")');
         }
         return array('success' => true, 'images' => $images, 'tag' => $tag);
@@ -84,7 +84,7 @@ class Images {
     function remove($data) {
         $db = new SQLiteDatabase("sql/imgorg.db");
         $images = $data->images;
-        for ($i = 0;$i < sizeof($images);$i++) {
+        for ($i = 0;$i < (is_countable($images) ? sizeof($images) : 0);$i++) {
             $res = $db->query('SELECT url FROM Images where id ="'.$images[$i].'"');
             $url = $res->fetchObject()->url;
             unlink('../'.$url);

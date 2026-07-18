@@ -35,7 +35,7 @@ class strlayout extends ChisimbaObject
         $tmpstr = explode(" ", $str);
         $i = 0;
         for($j = 0; $j < $cols; $j++) {
-            while ($i <= sizeof($tmpstr)) {
+            while ($i <= (is_countable($tmpstr) ? sizeof($tmpstr) : 0)) {
                 if (strlen($col[$j]) < $size) {
                     $col[$j] .= $tmpstr[$i] . " ";
                     $i++;

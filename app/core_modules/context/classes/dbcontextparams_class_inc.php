@@ -102,7 +102,7 @@ class dbcontextparams extends dbTable {
      */
     public function getParamValue($contextCode, $param) {
         $line = $this->getAll ( "WHERE contextcode = '" . $contextCode . "'  AND param = '" . $param . "'" );
-        if (count ( $line ) > 0) {
+        if ((is_countable($line) ? count($line) : 0) > 0) {
             return $line [0] ['value'];
         } else {
             return FALSE;

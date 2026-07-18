@@ -133,7 +133,7 @@ class Auth_OpenID_TrustRoot {
 
         $host = strtolower($parts['host']);
         $hostparts = explode('*', $host);
-        switch (count($hostparts)) {
+        switch ((is_countable($hostparts) ? count($hostparts) : 0)) {
         case 1:
             $parts['wildcard'] = false;
             break;
@@ -217,7 +217,7 @@ class Auth_OpenID_TrustRoot {
             array_shift($host_parts);
         }
 
-        if ($host_parts && !$host_parts[count($host_parts) - 1]) {
+        if ($host_parts && !$host_parts[(is_countable($host_parts) ? count($host_parts) : 0) - 1]) {
             array_pop($host_parts);
         }
 
@@ -238,7 +238,7 @@ class Auth_OpenID_TrustRoot {
         }
         $tld = $matches[1];
 
-        if (count($host_parts) == 1) {
+        if ((is_countable($host_parts) ? count($host_parts) : 0) == 1) {
             return false;
         }
 
@@ -246,9 +246,9 @@ class Auth_OpenID_TrustRoot {
             // It's a 2-letter tld with a short second to last segment
             // so there needs to be more than two segments specified
             // (e.g. *.co.uk is insane)
-            $second_level = $host_parts[count($host_parts) - 2];
+            $second_level = $host_parts[(is_countable($host_parts) ? count($host_parts) : 0) - 2];
             if (strlen($tld) == 2 && strlen($second_level) <= 3) {
-                return count($host_parts) > 2;
+                return (is_countable($host_parts) ? count($host_parts) : 0) > 2;
             }
         }
 

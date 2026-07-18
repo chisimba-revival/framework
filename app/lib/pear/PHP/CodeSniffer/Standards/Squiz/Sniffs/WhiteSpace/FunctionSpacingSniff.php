@@ -74,7 +74,7 @@ class Squiz_Sniffs_WhiteSpace_FunctionSpacingSniff implements PHP_CodeSniffer_Sn
         }
 
         // There needs to be 2 blank lines after the closer.
-        $numTokens     = count($tokens);
+        $numTokens     = (is_countable($tokens) ? count($tokens) : 0);
         $nextLineToken = null;
         for ($i = $closer; $i < $numTokens; $i++) {
             if (strpos($tokens[$i]['content'], "\n") === false) {

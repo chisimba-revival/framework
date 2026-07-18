@@ -150,7 +150,7 @@ class indexfileprocessor extends ChisimbaObject
      */
     private function processFolderResults($folders)
     {
-        if (count($folders) > 0) {
+        if ((is_countable($folders) ? count($folders) : 0) > 0) {
             foreach ($folders as $folder)
             {
                 $this->objFolders->indexFolder($folder);
@@ -177,7 +177,7 @@ class indexfileprocessor extends ChisimbaObject
         
         $list = array();
         
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             foreach ($files as $file)
             {
                 $list[] = $file['path'];
@@ -207,7 +207,7 @@ class indexfileprocessor extends ChisimbaObject
         $indexedFiles = array();
         $userFiles = $this->generateFilesArray($id, $type);
         
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
             foreach ($files as $file)
             {
                 preg_match('/(?<=usrfiles(\\\|\/)).*/', $file, $regs);

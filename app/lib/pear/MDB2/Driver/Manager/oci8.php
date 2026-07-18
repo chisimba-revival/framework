@@ -1122,7 +1122,7 @@ END;
                 $conditions  = array();
                 $new_values  = array();
                 $null_values = array();
-                for ($i=0; $i<count($table_fields); $i++) {
+                for ($i=0; $i<(is_countable($table_fields) ? count($table_fields) : 0); $i++) {
                     $conditions[]  = $table_fields[$i] .' = :OLD.'.$referenced_fields[$i];
                     $new_values[]  = $table_fields[$i] .' = :NEW.'.$referenced_fields[$i];
                     $null_values[] = $table_fields[$i] .' = NULL';

@@ -133,7 +133,7 @@ class textstats extends ChisimbaObject {
         if (!$arr) {
             $arr=$this->sentences_arr;
         }
-        $numElements=count($arr);
+        $numElements=(is_countable($arr) ? count($arr) : 0);
         $arr_wrds=array();
         //Loop through the array and make an array of word counts
         for ($counter=0; $counter < $numElements; $counter++) {

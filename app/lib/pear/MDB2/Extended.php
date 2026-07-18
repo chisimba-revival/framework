@@ -228,7 +228,7 @@ class MDB2_Extended extends MDB2_Module_Common
                 'Insert requires table fields', __FUNCTION__);
             }
             $cols = implode(', ', $table_fields);
-            $values = '?'.str_repeat(', ?', (count($table_fields) - 1));
+            $values = '?'.str_repeat(', ?', ((is_countable($table_fields) ? count($table_fields) : 0) - 1));
             return 'INSERT INTO '.$table.' ('.$cols.') VALUES ('.$values.')';
             break;
         case MDB2_AUTOQUERY_UPDATE:
@@ -648,7 +648,7 @@ class MDB2_Extended extends MDB2_Module_Common
         if (MDB2::isError($stmt)) {
             return $stmt;
         }
-        for ($i = 0, $j = count($params); $i < $j; $i++) {
+        for ($i = 0, $j = (is_countable($params) ? count($params) : 0); $i < $j; $i++) {
             $result = $stmt->execute($params[$i]);
             if (MDB2::isError($result)) {
                 return $result;

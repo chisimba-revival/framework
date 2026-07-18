@@ -87,7 +87,7 @@ if ($argc > 1) {
         } else {
             $intersect = array_intersect($possibleMethods, $inputMethods);
         }
-        if (count($intersect) > 0) {
+        if ((is_countable($intersect) ? count($intersect) : 0) > 0) {
             $testmethods[$testcase] = array_flip($intersect);
         }
     }

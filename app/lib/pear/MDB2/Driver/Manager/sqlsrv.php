@@ -1389,7 +1389,7 @@ class MDB2_Driver_Manager_sqlsrv extends MDB2_Driver_Manager_Common
         //deals with NULL values and UNIQUE indexes, this solution is only available in SQL Server 2008
         //https://connect.microsoft.com/SQLServer/feedback/ViewFeedback.aspx?FeedbackID=299229
         if (!empty($definition['unique']) && empty($definition['primary'])) {
-            for($i=0;$i<count($fields);$i++) $fields[$i] .= ' is NOT NULL';
+            for($i=0;$i<(is_countable($fields) ? count($fields) : 0);$i++) $fields[$i] .= ' is NOT NULL';
             $query .= ' WHERE '. implode(' AND ', $fields);
         }
         if (!empty($definition['foreign'])) {

@@ -98,5 +98,5 @@ $dbarray[] = $mysql;
 #$dbarray[] = $ibase;
 
 // you may need to uncomment the line and modify the multiplier as you see fit
-#set_time_limit(60*count($dbarray));
+#set_time_limit(60*(is_countable($dbarray) ? count($dbarray) : 0));
 ?>

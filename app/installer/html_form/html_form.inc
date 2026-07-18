@@ -535,7 +535,7 @@ function commit_file_upload($name, $dest, $overwrite=false, $max_size=0, $restri
 {
 	$info = get_file_upload_info($name);
 	if ($info === false) return false;
-	if (!count($info))   return '';
+	if (!(is_countable($info) ? count($info) : 0))   return '';
 
 	$nice_name = str_replace('_', ' ', $name);
 
@@ -547,7 +547,7 @@ function commit_file_upload($name, $dest, $overwrite=false, $max_size=0, $restri
 	//// if we get this far the file on the server OK ////
 
 	// Are we worried about the extension ?
-	if (count($extensions)) {
+	if ((is_countable($extensions) ? count($extensions) : 0)) {
 		$exts = Array();
 		foreach ($extensions as $v) {
 			$exts[] = strtolower($v);
@@ -638,7 +638,7 @@ function get_type_codes_string($type_codes)
 		}//end switch
 	}//end foreach
 
-	if (count($all_type_codes) == 1) {
+	if ((is_countable($all_type_codes) ? count($all_type_codes) : 0) == 1) {
 		$type_codes = implode('', $all_type_codes).'|';
 	} else {
 		$type_codes = implode('|', $all_type_codes);
@@ -746,7 +746,7 @@ function multiple_asset_finder($name, $assetids=Array(), $type_codes=Array(), $m
 	}
 
 	if (SQ_IN_BACKEND) {
-		$index = count($assetids);
+		$index = (is_countable($assetids) ? count($assetids) : 0);
 		asset_finder($name.'['.$index.']', 0, $type_codes, $map_frame, $new_window, $done_fn, Array('clear'));
 		$index++;
 
@@ -1028,7 +1028,7 @@ function structured_drop_down($name, $root_id, $type_codes, $selected=Array(), $
 	$asset_info = $GLOBALS['SQ_SYSTEM']->am->getAssetInfo($asset_info_ids);
 
 	// check if we have statuses we want to filter out
-	if (!empty($statuses) && count($statuses) < 9) {
+	if (!empty($statuses) && (is_countable($statuses) ? count($statuses) : 0) < 9) {
 		foreach ($child_links as $treeid => $data) {
 			if (!in_array($asset_info[$data['assetid']]['status'], $statuses)) {
 				unset($child_links[$treeid]);

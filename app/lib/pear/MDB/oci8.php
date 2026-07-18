@@ -534,7 +534,7 @@ class MDB_oci8 extends MDB_Common {
             }
         }
         for(reset($descriptors), $descriptor = 0;
-            $descriptor < count($descriptors);
+            $descriptor < (is_countable($descriptors) ? count($descriptors) : 0);
             $descriptor++, next($descriptors))
         {
             @OCIFreeDesc($descriptors[key($descriptors)]);

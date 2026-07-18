@@ -302,7 +302,7 @@ class PEAR_PHPTest
     {
         $this->assertNoErrors($message, debug_backtrace());
         if (isset($control[0])) {
-            if (!isset($test[0]) || (count($control) != count($test))) {
+            if (!isset($test[0]) || ((is_countable($control) ? count($control) : 0) != (is_countable($test) ? count($test) : 0))) {
                 echo "Invalid packageInfo\n";
                 $ret = $this->assertEquals($control, $test, $message);
             }

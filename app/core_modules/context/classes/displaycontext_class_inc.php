@@ -173,7 +173,7 @@ class displaycontext extends ChisimbaObject {
           . $context ['contextcode'] . '</p>';
 
         $lecturers = $this->objUserContext->getContextLecturers($context ['contextcode']);
-        if (count($lecturers) > 0) {
+        if ((is_countable($lecturers) ? count($lecturers) : 0) > 0) {
             $str .= '<p><strong>' . ucwords($this->objLanguage->code2Txt('word_lecturers', 'system', NULL, '[-authors-]')) . '</strong>: ';
             $divider = '';
 
@@ -296,7 +296,7 @@ class displaycontext extends ChisimbaObject {
         $courseInfoArray['title'] = $context ['title'] . $studentCount;
         $courseInfoArray['status'] = "none";
         $lecturers = $this->objUserContext->getContextLecturers($context ['contextcode']);
-        if (count($lecturers) > 0) {
+        if ((is_countable($lecturers) ? count($lecturers) : 0) > 0) {
             $str = "";
             $courseInfoArray['lecturertitle'] = ucwords($this->objLanguage->code2Txt('word_lecturers', 'system', NULL, '[-authors-]'));
             $divider = '';
@@ -347,7 +347,7 @@ class displaycontext extends ChisimbaObject {
     public function jsonContextOutput($userContexts) {
         $objUserContext = $this->getObject('usercontext', 'context');
         $countUserContexts = $objUserContext->getUserContext($this->objUser->userId());
-        //$activityCount = ( count ( $countUserContexts ) );
+        //$activityCount = ( (is_countable($countUserContexts) ? count($countUserContexts) : 0) );
         $str = '{"contextcount":"' . $activityCount . '","usercontexts":[';
         $contextArray = array();
         foreach ($userContexts as $userContext) {
@@ -358,7 +358,7 @@ class displaycontext extends ChisimbaObject {
             }
         }
 
-        $activityCount = ( count($contextArray));
+        $activityCount = ( (is_countable($contextArray) ? count($contextArray) : 0));
         return json_encode(array('contextcount' => $activityCount, 'usercourses' => $contextArray));
     }
 

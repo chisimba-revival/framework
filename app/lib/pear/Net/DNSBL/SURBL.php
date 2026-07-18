@@ -148,13 +148,13 @@ class Net_DNSBL_SURBL extends Net_DNSBL {
             $host = $this->reverseIp($host);
         } else {
             $host_elements = explode('.', $host);
-            while (count($host_elements) > 3) {
+            while ((is_countable($host_elements) ? count($host_elements) : 0) > 3) {
                 array_shift($host_elements);
             } // while
             $host_3_elements = implode('.', $host_elements);
             
             $host_elements = explode('.', $host);
-            while (count($host_elements) > 2) {
+            while ((is_countable($host_elements) ? count($host_elements) : 0) > 2) {
                 array_shift($host_elements);
             } // while
             $host_2_elements = implode('.', $host_elements);

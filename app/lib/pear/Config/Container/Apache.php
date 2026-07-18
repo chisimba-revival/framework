@@ -78,26 +78,26 @@ class Config_Container_Apache {
             }
             if (preg_match('/^\s*#+\s*(.*?)\s*$/', $line, $match)) {
                 // a comment
-                $currentSection =& $sections[count($sections)-1];
+                $currentSection =& $sections[(is_countable($sections) ? count($sections) : 0)-1];
                 $currentSection->createComment($match[1]);
             } elseif (trim($line) == '') {
                 // a blank line
-                $currentSection =& $sections[count($sections)-1];
+                $currentSection =& $sections[(is_countable($sections) ? count($sections) : 0)-1];
                 $currentSection->createBlank();
             } elseif (preg_match('/^\s*(\w+)(?:\s+(.*?)|)\s*$/', $line, $match)) {
                 // a directive
-                $currentSection =& $sections[count($sections)-1];
+                $currentSection =& $sections[(is_countable($sections) ? count($sections) : 0)-1];
                 $currentSection->createDirective($match[1], $match[2]);
             } elseif (preg_match('/^\s*<(\w+)(?:\s+([^>]*)|\s*)>\s*$/', $line, $match)) {
                 // a section opening
                 if (!isset($match[2]))
                     $match[2] = '';
-                $currentSection =& $sections[count($sections)-1];
+                $currentSection =& $sections[(is_countable($sections) ? count($sections) : 0)-1];
                 $attributes = explode(' ', $match[2]);
                 $sections[] =& $currentSection->createSection($match[1], $attributes);
             } elseif (preg_match('/^\s*<\/(\w+)\s*>\s*$/', $line, $match)) {
                 // a section closing
-                $currentSection =& $sections[count($sections)-1];
+                $currentSection =& $sections[(is_countable($sections) ? count($sections) : 0)-1];
                 if ($currentSection->name != $match[1]) {
                     return PEAR::raiseError("Section not closed in '$datasrc' at line $n.", null, PEAR_ERROR_RETURN);
                 }

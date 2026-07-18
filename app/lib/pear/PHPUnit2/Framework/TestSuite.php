@@ -340,7 +340,7 @@ class PHPUnit2_Framework_TestSuite implements PHPUnit2_Framework_Test {
         if ($constructor !== NULL) {
             $parameters = $constructor->getParameters();
 
-            if (sizeof($parameters) == 0) {
+            if ((is_countable($parameters) ? sizeof($parameters) : 0) == 0) {
                 $test = $theClass->newInstance();
 
                 if ($test instanceof PHPUnit2_Framework_TestCase) {
@@ -348,7 +348,7 @@ class PHPUnit2_Framework_TestSuite implements PHPUnit2_Framework_Test {
                 }
             }
 
-            else if (sizeof($parameters) == 1 &&
+            else if ((is_countable($parameters) ? sizeof($parameters) : 0) == 1 &&
                      $parameters[0]->getClass() === NULL) {
                 $test = $theClass->newInstance($name);
             }

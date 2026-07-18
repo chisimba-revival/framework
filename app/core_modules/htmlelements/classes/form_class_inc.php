@@ -154,9 +154,21 @@ class form implements ifhtml
      */
 
     /**
-     * Form contructor
+     * PHP 8 constructor wrapper for the legacy form() constructor.
+     *
+     * The class-name constructor is no longer invoked automatically on PHP 8.
+     * Keep form() for backward compatibility and delegate modern construction
+     * to it so existing new form($name, $action) calls continue to work.
      */
-        public function form($name = null, $action = null)
+    public function __construct($name = null, $action = null)
+    {
+        $this->form($name, $action);
+    }
+
+    /**
+     * Legacy class-name constructor retained for backward compatibility.
+     */
+    public function form($name = null, $action = null)
     {
         // set the name
         $this->name = $name;

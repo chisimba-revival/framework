@@ -932,7 +932,7 @@ class DB_common extends PEAR
      */
     function buildManipSQL($table, $table_fields, $mode, $where = false)
     {
-        if (count($table_fields) == 0) {
+        if ((is_countable($table_fields) ? count($table_fields) : 0) == 0) {
             return $this->raiseError(DB_ERROR_NEED_MORE_DATA);
         }
         $first = true;
@@ -1044,7 +1044,7 @@ class DB_common extends PEAR
         $data = (array)$data;
         $this->last_parameters = $data;
 
-        if (count($this->prepare_types[$stmt]) != count($data)) {
+        if (count($this->prepare_types[$stmt]) != (is_countable($data) ? count($data) : 0)) {
             $this->last_query = $this->prepared_queries[$stmt];
             return $this->raiseError(DB_ERROR_MISMATCH);
         }
@@ -1203,7 +1203,7 @@ class DB_common extends PEAR
      */
     function &query($query, $params = array())
     {
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1278,7 +1278,7 @@ class DB_common extends PEAR
     {
         $params = (array)$params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1342,7 +1342,7 @@ class DB_common extends PEAR
             }
         }
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1391,7 +1391,7 @@ class DB_common extends PEAR
     function &getCol($query, $col = 0, $params = array())
     {
         $params = (array)$params;
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {
@@ -1523,7 +1523,7 @@ class DB_common extends PEAR
                        $fetchmode = DB_FETCHMODE_DEFAULT, $group = false)
     {
         $params = (array)$params;
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {
@@ -1650,7 +1650,7 @@ class DB_common extends PEAR
             }
         }
 
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {

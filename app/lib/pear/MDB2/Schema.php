@@ -499,7 +499,7 @@ class MDB2_Schema extends PEAR
 
                 $table_definition['fields'][$field_name] = $definition[0];
 
-                $field_choices = count($definition);
+                $field_choices = (is_countable($definition) ? count($definition) : 0);
                 if ($field_choices > 1) {
                     $warning = "There are $field_choices type choices in the table $table_name field $field_name (#1 is the default): ";
 

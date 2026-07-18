@@ -193,7 +193,7 @@ class MDB2_Bugs_TestCase extends MDB2_TestCase {
         $result = $stmt->execute(array_values($data));
 
         $row = $this->db->queryRow('SELECT a.user_id, b.user_id FROM users a, users b where a.user_id = b.user_id', array('integer', 'integer'), MDB2_FETCHMODE_ORDERED);
-        $this->assertEquals(2, count($row), "Columns with the same name get overwritten in ordered mode");
+        $this->assertEquals(2, (is_countable($row) ? count($row) : 0), "Columns with the same name get overwritten in ordered mode");
 
         $stmt->free();
     }

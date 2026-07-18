@@ -238,7 +238,7 @@ class dbfolder extends dbTable {
         $refArray[$baseFolder] = & $allFilesNode;
         $folders = $this->getFolders($folderType, $id);
 
-        if (count($folders) > 0) {
+        if ((is_countable($folders) ? count($folders) : 0) > 0) {
             foreach ($folders as $folder) {
                 //TODO: make this a reusable function
                 $nmbrOfFiles = count($objFile->getFolderFiles($folder['folderpath']));
@@ -541,11 +541,11 @@ class dbfolder extends dbTable {
         $breadcrumbs = array();
         $breadcrumbs[] = array('link' => $href, 'title' => $title);
 
-        if (count($parts) > 2) {
+        if ((is_countable($parts) ? count($parts) : 0) > 2) {
 
             $current = $parts[0] . '/' . $parts[1];
 
-            for ($i = 2; $i <= (count($parts) - 1); $i++) {
+            for ($i = 2; $i <= ((is_countable($parts) ? count($parts) : 0) - 1); $i++) {
                 $current .= '/' . $parts[$i];
                 $folderId = $this->getFolderId($current);
 
@@ -569,7 +569,7 @@ class dbfolder extends dbTable {
             }
         } else {
 
-            $numBreadCrumbs = count($breadcrumbs);
+            $numBreadCrumbs = (is_countable($breadcrumbs) ? count($breadcrumbs) : 0);
             $counter = 1;
 
             foreach ($breadcrumbs as $breadcrumb) {
@@ -614,7 +614,7 @@ class dbfolder extends dbTable {
 
         $items = explode('/', $remainderPath);
 
-        $itemCount = count($items);
+        $itemCount = (is_countable($items) ? count($items) : 0);
 
         if ($itemCount > 0) {
             $counter = 1;
@@ -658,7 +658,7 @@ class dbfolder extends dbTable {
             $folders = $this->getAllFolders('context', $this->contextCode, $this->objUser->userId());
             $refArray['/context/' . $this->contextCode] = & $allFilesNode;
         }
-        if (count($folders) > 0) {
+        if ((is_countable($folders) ? count($folders) : 0) > 0) {
             foreach ($folders as $folder) {
                 $node = new treenode(array('text' => basename($folder['folderpath']), 'link' => $folder['id']));
 

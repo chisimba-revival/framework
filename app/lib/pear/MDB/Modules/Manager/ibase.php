@@ -110,7 +110,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
     function checkSupportedChanges(&$db, &$changes)
     {
         for($change=0, reset($changes);
-            $change<count($changes);
+            $change<(is_countable($changes) ? count($changes) : 0);
             next($changes), $change++)
         {
             switch(key($changes)) {
@@ -240,7 +240,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
     {
         if($check) {
             for($change=0, reset($changes);
-                $change<count($changes);
+                $change<(is_countable($changes) ? count($changes) : 0);
                 next($changes), $change++)
             {
                 switch(key($changes)) {
@@ -251,7 +251,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
                     case "ChangedFields":
                         $fields = $changes['ChangedFields'];
                         for($field=0, reset($fields);
-                            $field<count($fields);
+                            $field<(is_countable($fields) ? count($fields) : 0);
                             next($fields), $field++)
                         {
                             if(MDB::isError($err = $this->checkSupportedChanges($fields[Key($fields)]))) {
@@ -269,7 +269,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
             $query = '';
             if(isset($changes['AddedFields'])) {
                 $fields = $changes['AddedFields'];
-                for($field=0, reset($fields); $field<count($fields); next($fields), $field++) {
+                for($field=0, reset($fields); $field<(is_countable($fields) ? count($fields) : 0); next($fields), $field++) {
                     if(strcmp($query, "")) {
                         $query .= ', ';
                     }
@@ -278,7 +278,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
             }
             if(isset($changes['RemovedFields'])) {
                 $fields = $changes['RemovedFields'];
-                for($field=0, reset($fields); $field<count($fields); next($fields), $field++) {
+                for($field=0, reset($fields); $field<(is_countable($fields) ? count($fields) : 0); next($fields), $field++) {
                     if(strcmp($query, "")) {
                         $query .= ', ';
                     }
@@ -287,7 +287,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
             }
             if(isset($changes['RenamedFields'])) {
                 $fields = $changes['RenamedFields'];
-                for($field=0, reset($fields); $field<count($fields); next($fields), $field++) {
+                for($field=0, reset($fields); $field<(is_countable($fields) ? count($fields) : 0); next($fields), $field++) {
                     if(strcmp($query, "")) {
                         $query .= ', ';
                     }
@@ -296,7 +296,7 @@ class MDB_Manager_ibase extends MDB_Manager_common
             }
             if(isset($changes['ChangedFields'])) {
                 $fields = $changes['ChangedFields'];
-                for($field=0, reset($fields); $field<count($fields); next($fields), $field++) {
+                for($field=0, reset($fields); $field<(is_countable($fields) ? count($fields) : 0); next($fields), $field++) {
                     $field_name = key($fields);
                     if(MDB::isError($err = $this->CheckSupportedChanges($fields[Key($fields)]))) {
                         return($err);

@@ -70,6 +70,19 @@ class hiddeninput extends abhtmlbase implements ifhtml
     * @param string $name  optional :sets the name of the hidden form input
     * @param string $value optional :sets the value of the hidden form input
     */
+        /*
+         * CHISIMBA_PHP8_CONSTRUCTOR_BRIDGE
+         *
+         * PHP 8 no longer treats a method named after the class as a
+         * constructor. Keep the historical constructor intact and
+         * delegate to it from __construct() so existing behaviour and
+         * call sites remain unchanged.
+         */
+        public function __construct($name = null, $value = null)
+        {
+            $this->hiddeninput($name, $value);
+        }
+        
         public function hiddeninput($name = null, $value = null)
     {
         $this->name = $name;

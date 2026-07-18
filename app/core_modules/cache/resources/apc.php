@@ -1109,8 +1109,8 @@ EOB;
 		</tbody></table>
 EOB;
 
-	if ($list && $i < count($list)) {
-		echo "<a href=\"$MY_SELF&OB=",$MYREQUEST['OB'],"&COUNT=0\"><i>",count($list)-$i,' more available...</i></a>';
+	if ($list && $i < (is_countable($list) ? count($list) : 0)) {
+		echo "<a href=\"$MY_SELF&OB=",$MYREQUEST['OB'],"&COUNT=0\"><i>",(is_countable($list) ? count($list) : 0)-$i,' more available...</i></a>';
 	}
 
 	echo <<< EOB
@@ -1236,8 +1236,8 @@ EOB;
 		</tbody></table>
 EOB;
 
-	if ($list && $i < count($list)) {
-		echo "<a href=\"$MY_SELF&OB=",$MYREQUEST['OB'],"&COUNT=0\"><i>",count($list)-$i,' more available...</i></a>';
+	if ($list && $i < (is_countable($list) ? count($list) : 0)) {
+		echo "<a href=\"$MY_SELF&OB=",$MYREQUEST['OB'],"&COUNT=0\"><i>",(is_countable($list) ? count($list) : 0)-$i,' more available...</i></a>';
 	}
 
 	echo <<< EOB

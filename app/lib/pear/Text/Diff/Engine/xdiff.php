@@ -21,7 +21,7 @@ class Text_Diff_Engine_xdiff {
         $to_string = implode("\n", $to_lines);
 
         /* Diff the two strings and convert the result to an array. */
-        $diff = xdiff_string_diff($from_string, $to_string, count($to_lines));
+        $diff = xdiff_string_diff($from_string, $to_string, (is_countable($to_lines) ? count($to_lines) : 0));
         $diff = explode("\n", $diff);
 
         /* Walk through the diff one line at a time.  We build the $edits

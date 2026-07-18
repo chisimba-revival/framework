@@ -51,7 +51,7 @@ class cache extends controller
 				}
 				$handle = fopen($filename, "r");
 				while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-					$num = count($data);
+					$num = (is_countable($data) ? count($data) : 0);
 					//echo $num;
 					for ($c=0; $c < $num; $c++) {
 						$cache[] = array('ip' => $data[0], 'port' => $data[1]);

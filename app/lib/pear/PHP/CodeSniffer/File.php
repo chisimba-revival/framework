@@ -465,7 +465,7 @@ class PHP_CodeSniffer_File
         $tokens   = token_get_all($contents);
 
         $newStackPtr = 0;
-        $numTokens   = count($tokens);
+        $numTokens   = (is_countable($tokens) ? count($tokens) : 0);
         for ($stackPtr = 0; $stackPtr < $numTokens; $stackPtr++) {
             $token = $tokens[$stackPtr];
 
@@ -494,7 +494,7 @@ class PHP_CodeSniffer_File
                 // Convert each line within the double quoted string to a
                 // new token, so it conforms with other multiple line tokens.
                 $tokenLines = explode("\n", $tokenContent);
-                $numLines   = count($tokenLines);
+                $numLines   = (is_countable($tokenLines) ? count($tokenLines) : 0);
                 $newToken   = array();
 
                 for ($j = 0; $j < $numLines; $j++) {
@@ -522,7 +522,7 @@ class PHP_CodeSniffer_File
             // to asertain where errors occur on a line.
             if (is_array($token) === true && strpos($token[1], "\n") !== false) {
                 $tokenLines = explode("\n", $token[1]);
-                $numLines   = count($tokenLines);
+                $numLines   = (is_countable($tokenLines) ? count($tokenLines) : 0);
 
                 for ($i = 0; $i < $numLines; $i++) {
                     $newToken['content'] = $tokenLines[$i];
@@ -548,7 +548,7 @@ class PHP_CodeSniffer_File
                 // T_ARRAY_HINT.
                 if ($newToken['code'] === T_ARRAY) {
                     // Recalculate number of tokens.
-                    $numTokens = count($tokens);
+                    $numTokens = (is_countable($tokens) ? count($tokens) : 0);
                     for ($i = $stackPtr; $i < $numTokens; $i++) {
                         if (is_array($tokens[$i]) === false) {
                             if ($tokens[$i] === '(') {
@@ -765,7 +765,7 @@ class PHP_CodeSniffer_File
                 $openers[] = $i;
             } else if ($this->_tokens[$i]['code'] === T_CLOSE_PARENTHESIS) {
                 // Did we set an owner for this set of parenthesis?
-                $hasOwner = (empty($openers) === false && count($openers) === count($owners));
+                $hasOwner = (empty($openers) === false && (is_countable($openers) ? count($openers) : 0) === (is_countable($owners) ? count($owners) : 0));
 
                 if (empty($openers) === false) {
                     $opener                                       = array_pop($openers);

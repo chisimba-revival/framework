@@ -345,7 +345,7 @@ class tigraNode extends ChisimbaObject
             $this->row_attributes=$row_attributes;
         }
         // The number of cols in the content array
-        $cols = count($content);
+        $cols = (is_countable($content) ? count($content) : 0);
         $this->tr_start = "<tr";
         if ($trClass) {
             $this->tr_start .= " class=\"" . $trClass . "\"";
@@ -397,7 +397,7 @@ class tigraNode extends ChisimbaObject
             $this->row_attributes=$row_attributes;
         }
         // The number of cols in the content array
-        $cols = count($content);
+        $cols = (is_countable($content) ? count($content) : 0);
         $this->tr_start = "<thead";
         if ($trClass) {
             $this->tr_start .= " class=\"" . $trClass . "\"";

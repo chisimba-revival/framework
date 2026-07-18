@@ -307,7 +307,7 @@ class parse4smileys extends ChisimbaObject {
         $regex = "";
         $counter = 0;
         $isend = '';
-        if (count($graph) == 0) {
+        if ((is_countable($graph) ? count($graph) : 0) == 0) {
             return "";
         }
         foreach ($graph as $character=>$value) {

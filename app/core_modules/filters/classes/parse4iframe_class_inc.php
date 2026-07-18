@@ -83,7 +83,7 @@ class parse4iframe extends ChisimbaObject
                 $arParams = explode("|", $extracted);
                 $url = $arParams['0'];
                 $width = $arParams['1'];
-                if (count($arParams) >= 2) {
+                if ((is_countable($arParams) ? count($arParams) : 0) >= 2) {
                     $height = $arParams['2'];
                 } else {
                     $height = "500";

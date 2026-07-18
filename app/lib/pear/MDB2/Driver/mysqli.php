@@ -632,7 +632,7 @@ class MDB2_Driver_mysqli extends MDB2_Driver_Common
             }
         }
         $collation = null;
-        if (is_array($charset) && 2 == count($charset)) {
+        if (is_array($charset) && 2 == (is_countable($charset) ? count($charset) : 0)) {
             $collation = array_pop($charset);
             $charset   = array_pop($charset);
         }
@@ -1147,7 +1147,7 @@ class MDB2_Driver_mysqli extends MDB2_Driver_Common
                     $positions[$p_position] = $parameter;
                     $query = substr_replace($query, '?', $position, strlen($parameter)+1);
                 } else {
-                    $positions[$p_position] = count($positions);
+                    $positions[$p_position] = (is_countable($positions) ? count($positions) : 0);
                 }
                 $position = $p_position + 1;
             } else {
@@ -1251,7 +1251,7 @@ class MDB2_Driver_mysqli extends MDB2_Driver_Common
      */
     function replace($table, $fields)
     {
-        $count = count($fields);
+        $count = (is_countable($fields) ? count($fields) : 0);
         $query = $values = '';
         $keys = $colnum = 0;
         for (reset($fields); $colnum < $count; next($fields), $colnum++) {

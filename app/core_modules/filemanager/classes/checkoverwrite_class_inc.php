@@ -91,7 +91,7 @@ class checkoverwrite extends ChisimbaObject
         
         $numTempFiles = $this->objFile->getTemporaryFiles($userId);
         
-        return count($numTempFiles);
+        return (is_countable($numTempFiles) ? count($numTempFiles) : 0);
     }
     
     /**

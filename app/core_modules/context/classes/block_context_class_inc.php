@@ -98,7 +98,7 @@ class block_context extends ChisimbaObject
         try {
         $objContext = $this->getObject('dbcontext', 'context');
         $courses = $objContext->getListOfPublicContext();
-        if (count($courses)==0) {
+        if ((is_countable($courses) ? count($courses) : 0)==0) {
             $msg = $this->objLanguage->code2Txt('mod_context_nocontexts','context');
             return "<span class='noRecordsMessage'>$msg</span>";
             

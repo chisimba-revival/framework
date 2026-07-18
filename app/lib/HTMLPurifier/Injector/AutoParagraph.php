@@ -214,7 +214,7 @@ class HTMLPurifier_Injector_AutoParagraph extends HTMLPurifier_Injector
         $needs_start = false;
         $needs_end   = false;
 
-        $c = count($raw_paragraphs);
+        $c = (is_countable($raw_paragraphs) ? count($raw_paragraphs) : 0);
         if ($c == 1) {
             // There were no double-newlines, abort quickly. In theory this
             // should never happen.

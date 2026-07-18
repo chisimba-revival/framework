@@ -368,7 +368,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
         $subqueries = array();
         foreach ($conjuctions as  $conjuction) {
             // Check, if it's a one term conjuction
-            if (count($conjuction) == 1) {
+            if ((is_countable($conjuction) ? count($conjuction) : 0) == 1) {
                 $subqueries[] = $conjuction[0][0]->getQuery($this->_encoding);
             } else {
                 $subquery = new Zend_Search_Lucene_Search_Query_Boolean();
@@ -381,11 +381,11 @@ class Zend_Search_Lucene_Search_QueryParserContext
             }
         }
 
-        if (count($subqueries) == 0) {
+        if ((is_countable($subqueries) ? count($subqueries) : 0) == 0) {
             return new Zend_Search_Lucene_Search_Query_Insignificant();
         }
 
-        if (count($subqueries) == 1) {
+        if ((is_countable($subqueries) ? count($subqueries) : 0) == 1) {
             return $subqueries[0];
         }
 

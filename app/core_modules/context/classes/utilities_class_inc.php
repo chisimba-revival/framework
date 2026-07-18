@@ -72,7 +72,7 @@ class utilities extends ChisimbaObject {
     /**
      * Constructor method to define the table
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorHandler') {
         $this->objDBContext = $this->getObject('dbcontext', 'context');
         $this->objLink = $this->getObject('link', 'htmlelements');
         $this->objIcon = $this->getObject('geticon', 'htmlelements');
@@ -540,7 +540,7 @@ function getContexts()
     public function formatUserContext($username) {
         $this->objUserContext = $this->getObject('usercontext', 'context');
         $contexts = $this->objUserContext->getUserContext($this->objUser->getUserId($username));
-        if (count($contexts) > 0) {
+        if ((is_countable($contexts) ? count($contexts) : 0) > 0) {
             $str = "";
             $objDisplayContext = $this->getObject('displaycontext', 'context');
             foreach ($contexts as $contextCode) {
@@ -573,7 +573,7 @@ function getContexts()
         $objTable = $this->getObject('htmltable', 'htmlelements');
 
         $contexts = $this->objDBContext->getAll("ORDER BY updated DESC");
-        if (count($contexts) > 1) {
+        if ((is_countable($contexts) ? count($contexts) : 0) > 1) {
             $str = '<table><tr class="header"><td>Title</td><td>Code</td><td>Creator</td><<td>Lat Updated</td>/t>&nbsp;</td></tr>';
             $str = '<table cellspacing="1" class="tablesorter">
 						<thead>
@@ -650,7 +650,7 @@ function getContexts()
 
         $sql = "SELECT * FROM tbl_context WHERE title LIKE '" . $filter . "' ORDER BY title ASC limit " . $offset . ", " . $limit;
         $contexts = $this->objDBContext->getArray($sql);
-        $nocontexts = count($contexts);
+        $nocontexts = (is_countable($contexts) ? count($contexts) : 0);
         $courses = array();
         $this->objUserContext = $this->getObject('usercontext', 'context');
         if ($nocontexts > 0) {
@@ -826,7 +826,7 @@ function getContexts()
 
         $allCount = $all[0]['cnt'];
 
-        $contextCount = count($contexts);
+        $contextCount = (is_countable($contexts) ? count($contexts) : 0);
         $courses = array();
 
         if ($contextCount > 0) {

@@ -296,8 +296,8 @@ used for automated conversion or learning the format.
             $this->output .= "Warning: $w\n";
         }
         $this->output .= sprintf('Validation: %d error(s), %d warning(s)'."\n",
-                                       sizeof($err), sizeof($warn));
-        if ($strict && count($err) > 0) {
+                                       (is_countable($err) ? sizeof($err) : 0), (is_countable($warn) ? sizeof($warn) : 0));
+        if ($strict && (is_countable($err) ? count($err) : 0) > 0) {
             $this->output .= "Fix these errors and try again.";
             return false;
         }
@@ -359,7 +359,7 @@ used for automated conversion or learning the format.
     function doPackageValidate($command, $options, $params)
     {
         $this->output = '';
-        if (count($params) < 1) {
+        if ((is_countable($params) ? count($params) : 0) < 1) {
             $params[0] = 'package.xml';
         }
 
@@ -413,7 +413,7 @@ used for automated conversion or learning the format.
     {
         $this->output = '';
         $_cmd = $command;
-        if (count($params) < 1) {
+        if ((is_countable($params) ? count($params) : 0) < 1) {
             $help = $this->getHelp($command);
             return $this->raiseError("$command: missing parameter: $help[0]");
         }
@@ -527,7 +527,7 @@ used for automated conversion or learning the format.
         }
 
         array_shift($params);
-        if (count($params)) {
+        if ((is_countable($params) ? count($params) : 0)) {
             // add in additional files to be tagged (package files and such)
             $files = array_merge($files, $params);
         }
@@ -628,7 +628,7 @@ used for automated conversion or learning the format.
     {
         $this->output = '';
         $_cmd = $command;
-        if (count($params) < 1) {
+        if ((is_countable($params) ? count($params) : 0) < 1) {
             $help = $this->getHelp($command);
             return $this->raiseError("$command: missing parameter: $help[0]");
         }
@@ -680,7 +680,7 @@ used for automated conversion or learning the format.
 
         $command .= ' ' . $cvstag . ' ' . escapeshellarg($params[0]);
         array_shift($params);
-        if (count($params)) {
+        if ((is_countable($params) ? count($params) : 0)) {
             // add in additional files to be tagged
             $files = array_merge($files, $params);
         }
@@ -714,7 +714,7 @@ used for automated conversion or learning the format.
     function doCvsDiff($command, $options, $params)
     {
         $this->output = '';
-        if (sizeof($params) < 1) {
+        if ((is_countable($params) ? sizeof($params) : 0) < 1) {
             $help = $this->getHelp($command);
             return $this->raiseError("$command: missing parameter: $help[0]");
         }
@@ -805,7 +805,7 @@ used for automated conversion or learning the format.
     function doPackageDependencies($command, $options, $params)
     {
         // $params[0] -> the PEAR package to list its information
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError("bad parameter(s), try \"help $command\"");
         }
 
@@ -952,7 +952,7 @@ used for automated conversion or learning the format.
     {
         // should move most of this code into PEAR_Packager
         // so it'll be easy to implement "pear package --sign"
-        if (count($params) !== 1) {
+        if ((is_countable($params) ? count($params) : 0) !== 1) {
             return $this->raiseError("bad parameter(s), try \"help $command\"");
         }
 

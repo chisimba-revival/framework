@@ -78,9 +78,9 @@ class Chisimba_Sniffs_Commenting_BlockCommentSniff implements PHP_CodeSniffer_Sn
             $commentLines[] = $nextComment;
         }
 
-        if (count($commentLines) <= 2) {
+        if ((is_countable($commentLines) ? count($commentLines) : 0) <= 2) {
             // Small comment. Can't be right.
-            if (count($commentLines) === 1) {
+            if ((is_countable($commentLines) ? count($commentLines) : 0) === 1) {
                 $error = 'Single line block comment not allowed; use inline ("// text") comment instead';
                 $phpcsFile->addError($error, $stackPtr);
                 return;
@@ -124,7 +124,7 @@ class Chisimba_Sniffs_Commenting_BlockCommentSniff implements PHP_CodeSniffer_Sn
         foreach ($commentLines as $line) {
             $leadingSpace = (strlen($tokens[$line]['content']) - strlen(ltrim($tokens[$line]['content'])));
             // First and last lines (comment opener and closer) are handled seperately.
-            if ($line === $commentLines[(count($commentLines) - 1)] || $line === $commentLines[0]) {
+            if ($line === $commentLines[((is_countable($commentLines) ? count($commentLines) : 0) - 1)] || $line === $commentLines[0]) {
                 continue;
             }
 
@@ -147,7 +147,7 @@ class Chisimba_Sniffs_Commenting_BlockCommentSniff implements PHP_CodeSniffer_Sn
         }//end foreach
 
         // Finally, test the last line is correct.
-        $lastIndex = (count($commentLines) - 1);
+        $lastIndex = ((is_countable($commentLines) ? count($commentLines) : 0) - 1);
         if (trim($tokens[$commentLines[$lastIndex]]['content']) !== '*/') {
             $error = 'Comment closer must be on a new line';
             $phpcsFile->addError($error, $commentLines[$lastIndex]);

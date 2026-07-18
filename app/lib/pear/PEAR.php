@@ -471,7 +471,7 @@ class PEAR
     function delExpect($error_code)
     {
         $deleted = false;
-        if ((is_array($error_code) && (0 != count($error_code)))) {
+        if ((is_array($error_code) && (0 != (is_countable($error_code) ? count($error_code) : 0)))) {
             // $error_code is a non-empty array here; we walk through it trying
             // to unset all values
             foreach ($error_code as $key => $error) {
@@ -657,7 +657,7 @@ class PEAR
         $setmode     = &$GLOBALS['_PEAR_default_error_mode'];
         $setoptions  = &$GLOBALS['_PEAR_default_error_options'];
         array_pop($stack);
-        list($mode, $options) = $stack[sizeof($stack) - 1];
+        list($mode, $options) = $stack[(is_countable($stack) ? sizeof($stack) : 0) - 1];
         array_pop($stack);
         switch ($mode) {
             case PEAR_ERROR_EXCEPTION:
@@ -731,7 +731,7 @@ class PEAR
     {
         $stack = &$GLOBALS['_PEAR_error_handler_stack'];
         array_pop($stack);
-        list($mode, $options) = $stack[sizeof($stack) - 1];
+        list($mode, $options) = $stack[(is_countable($stack) ? sizeof($stack) : 0) - 1];
         array_pop($stack);
         if ($object !== null) {
             $object->setErrorHandling($mode, $options);
@@ -804,7 +804,7 @@ function _PEAR_call_destructors()
 {
     global $_PEAR_destructor_object_list;
     if (is_array($_PEAR_destructor_object_list) &&
-        sizeof($_PEAR_destructor_object_list))
+        (is_countable($_PEAR_destructor_object_list) ? sizeof($_PEAR_destructor_object_list) : 0))
     {
         reset($_PEAR_destructor_object_list);
 

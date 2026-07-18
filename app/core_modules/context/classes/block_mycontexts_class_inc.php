@@ -103,7 +103,7 @@ class block_mycontexts extends ChisimbaObject
         // Get all user contents
         $contexts = $this->objUserContext->getUserContext($this->objUser->userId());
         
-        if (count($contexts) == 0) {
+        if ((is_countable($contexts) ? count($contexts) : 0) == 0) {
             return $this->objLanguage->code2Txt('mod_context_youdonotbelongtocontexts', 'context', NULL, 'You do not belong to any [-contexts-]');
         } else {
         
@@ -130,7 +130,7 @@ class block_mycontexts extends ChisimbaObject
         		
         		
             }
-            if(count($contextArray) < 1){
+            if((is_countable($contextArray) ? count($contextArray) : 0) < 1){
             	 return $this->objLanguage->code2Txt('mod_context_youdonotbelongtocontexts', 'context', NULL, 'You do not belong to any [-contexts-]');
             }
             

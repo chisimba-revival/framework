@@ -132,7 +132,7 @@ class PEAR_XMLParser
             'aggregKeys'   => array()
        );
 
-        if (count($attribs) > 0) {
+        if ((is_countable($attribs) ? count($attribs) : 0) > 0) {
             $val['children'] = array();
             $val['type'] = 'array';
             $val['children']['attribs'] = $attribs;

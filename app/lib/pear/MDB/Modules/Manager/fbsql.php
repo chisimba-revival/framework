@@ -149,7 +149,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
         if (!isset($name) || !strcmp($name, '')) {
             return($db->raiseError(MDB_ERROR_CANNOT_CREATE, NULL, NULL, 'no valid table name specified'));
         }
-        if (count($fields) == 0) {
+        if ((is_countable($fields) ? count($fields) : 0) == 0) {
             return($db->raiseError(MDB_ERROR_CANNOT_CREATE, NULL, NULL, 'no fields specified for table "'.$name.'"'));
         }
         if (MDB::isError($query_fields = $db->getFieldDeclarationList($fields))) {
@@ -280,7 +280,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
     {
         if ($check) {
             for($change = 0,reset($changes);
-                $change < count($changes);
+                $change < (is_countable($changes) ? count($changes) : 0);
                 next($changes), $change++)
             {
                 switch(key($changes)) {
@@ -301,7 +301,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
             if (isset($changes['AddedFields'])) {
                 $fields = $changes['AddedFields'];
                 for($field = 0, reset($fields);
-                    $field<count($fields);
+                    $field<(is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     if (strcmp($query, '')) {
@@ -313,7 +313,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
             if (isset($changes['RemovedFields'])) {
                 $fields = $changes['RemovedFields'];
                 for($field = 0,reset($fields);
-                    $field<count($fields);
+                    $field<(is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     if (strcmp($query, '')) {
@@ -326,7 +326,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
             if (isset($changes['RenamedFields'])) {
                 $fields = $changes['RenamedFields'];
                 for($field = 0,reset($fields);
-                    $field<count($fields);
+                    $field<(is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     $renamed_fields[$fields[key($fields)]['name']] = key($fields);
@@ -335,7 +335,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
             if (isset($changes['ChangedFields'])) {
                 $fields = $changes['ChangedFields'];
                 for($field = 0,reset($fields);
-                    $field<count($fields);
+                    $field<(is_countable($fields) ? count($fields) : 0);
                     next($fields), $field++)
                 {
                     if (strcmp($query, '')) {
@@ -350,10 +350,10 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
                     $query .= "CHANGE $field_name ".$fields[key($fields)]['Declaration'];
                 }
             }
-            if (count($renamed_fields))
+            if ((is_countable($renamed_fields) ? count($renamed_fields) : 0))
             {
                 for($field = 0,reset($renamed_fields);
-                    $field<count($renamed_fields);
+                    $field<(is_countable($renamed_fields) ? count($renamed_fields) : 0);
                     next($renamed_fields), $field++)
                 {
                     if (strcmp($query, '')) {
@@ -421,7 +421,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
         if(MDB::isError($table_names)) {
             return($table_names);
         }
-        for($i = 0, $j = count($table_names), $tables = array(); $i < $j; ++$i)
+        for($i = 0, $j = (is_countable($table_names) ? count($table_names) : 0), $tables = array(); $i < $j; ++$i)
         {
             if (!$this->_isSequenceName($db, $table_names[$i]))
                 $tables[] = $table_names[$i];
@@ -604,7 +604,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
                     $default = $row[$columns['default']];
                 }
                 $definition = array();
-                for($field_choices = array(), $datatype = 0; $datatype < count($type); $datatype++) {
+                for($field_choices = array(), $datatype = 0; $datatype < (is_countable($type) ? count($type) : 0); $datatype++) {
                     $field_choices[$datatype] = array('type' => $type[$datatype]);
                     if(isset($notnull)) {
                         $field_choices[$datatype]['notnull'] = 1;
@@ -757,7 +757,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
             return($result);
         }
         $indexes_all = $db->fetchCol($result, 'Key_name');
-        for($found = $indexes = array(), $index = 0, $indexes_all_cnt = count($indexes_all);
+        for($found = $indexes = array(), $index = 0, $indexes_all_cnt = (is_countable($indexes_all) ? count($indexes_all) : 0);
             $index < $indexes_all_cnt;
             $index++)
         {
@@ -885,7 +885,7 @@ class MDB_Manager_fbsql extends MDB_Manager_Common
         if(MDB::isError($table_names)) {
             return($table_names);
         }
-        for($i = 0, $j = count($table_names), $sequences = array(); $i < $j; ++$i)
+        for($i = 0, $j = (is_countable($table_names) ? count($table_names) : 0), $sequences = array(); $i < $j; ++$i)
         {
             if ($sqn = $this->_isSequenceName($db, $table_names[$i]))
                 $sequences[] = $sqn;

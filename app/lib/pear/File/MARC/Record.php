@@ -283,7 +283,7 @@ class File_MARC_Record
          */
         $base_address
             = File_MARC::LEADER_LEN +    // better be 24
-                (count($directory) * File_MARC::DIRECTORY_ENTRY_LEN) +
+                ((is_countable($directory) ? count($directory) : 0) * File_MARC::DIRECTORY_ENTRY_LEN) +
                                 // all the directory entries
                 1;              // end-of-field marker
 

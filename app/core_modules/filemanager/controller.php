@@ -725,7 +725,7 @@ class filemanager extends controller {
         }
 
         // Check if no files were provided
-        if (count($results) == 1 && array_key_exists('nofileprovided', $results)) {
+        if ((is_countable($results) ? count($results) : 0) == 1 && array_key_exists('nofileprovided', $results)) {
             return $this->nextAction('uploadresults', array('error' => 'nofilesprovided'));
         }
         $overwrite = $this->objUploadMessages->processOverwriteMessages();
@@ -854,7 +854,7 @@ class filemanager extends controller {
         $result = '';
         $divider = '';
 
-        if (count($resultInfo) > 0) {
+        if ((is_countable($resultInfo) ? count($resultInfo) : 0) > 0) {
             foreach ($resultInfo as $item => $action) {
                 $result .= $divider . $item . '__' . $action;
                 $divider = '____';
@@ -1180,7 +1180,7 @@ class filemanager extends controller {
         $folder = $this->getParam('parentfolder');
         $origFolder = $this->getParam('folder');
 
-        if (count($files) > 0) {
+        if ((is_countable($files) ? count($files) : 0) > 0) {
 
             foreach ($files as $file) {
                 $this->objSymlinks->addSymlink($file, $folder);
@@ -1349,7 +1349,7 @@ class filemanager extends controller {
         $files = $this->objFileTags->getFilesWithTag($this->objUser->userId(), $tag);
         $this->setVarByRef('files', $files);
 
-        if (count($files) == 0) {
+        if ((is_countable($files) ? count($files) : 0) == 0) {
             return $this->nextAction('tagcloud', array('error' => 'nofileswithtag', 'tag' => $tag));
         }
 

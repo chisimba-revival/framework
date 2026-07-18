@@ -218,7 +218,7 @@ class File_Gettext
     function fromArray($array)
     {
     	if (!array_key_exists('strings', $array)) {
-    	    if (count($array) != 2) {
+    	    if ((is_countable($array) ? count($array) : 0) != 2) {
                 return false;
     	    } else {
     	        list($this->meta, $this->strings) = $array;

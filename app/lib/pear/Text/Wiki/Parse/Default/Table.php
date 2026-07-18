@@ -114,7 +114,7 @@ class Text_Wiki_Parse_Table extends Text_Wiki_Parse {
             $cell = explode("||", $row);
             
             // get the number of cells (columns) in this row
-            $last = count($cell) - 1;
+            $last = (is_countable($cell) ? count($cell) : 0) - 1;
             
             // is this more than the current column count?
             // (we decrease by 1 because we never use cell zero)

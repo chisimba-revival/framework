@@ -314,7 +314,7 @@ class LoremIpsumGenerator {
 	{
 		$wordsPer = $this->wordsPerParagraph;
 		$sentenceAvg = $this->wordsPerSentence;
-		$total = count($sentences);
+		$total = (is_countable($sentences) ? count($sentences) : 0);
 		
 		$paragraphs = array();
 		$pCount = 0;
@@ -324,7 +324,7 @@ class LoremIpsumGenerator {
 		for($i = 0; $i < $total; $i++)
 		{
 			$s = $sentences[$i];
-			$currCount += count($s);
+			$currCount += (is_countable($s) ? count($s) : 0);
 			$curr[] = $s;
 			if($currCount >= ($wordsPer - round($sentenceAvg / 2.00)) || $i == $total - 1)
 			{
@@ -376,7 +376,7 @@ class LoremIpsumGenerator {
 	private function punctuate(& $sentence)
 	{
                 
-		$count = count($sentence);
+		$count = (is_countable($sentence) ? count($sentence) : 0);
 		$sentence[$count - 1] = $sentence[$count - 1] . '.';
 		
 		if($count < 4)

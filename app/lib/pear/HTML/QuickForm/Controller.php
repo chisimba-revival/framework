@@ -403,7 +403,7 @@ class HTML_QuickForm_Controller
     function _setDefaultsOrConstants(&$values, $newValues, $filter = null)
     {
         if (isset($filter)) {
-            if (is_array($filter) && (2 != count($filter) || !is_callable($filter))) {
+            if (is_array($filter) && (2 != (is_countable($filter) ? count($filter) : 0) || !is_callable($filter))) {
                 foreach ($filter as $val) {
                     if (!is_callable($val)) {
                         return PEAR::raiseError(null, QUICKFORM_INVALID_FILTER, null, E_USER_WARNING, "Callback function does not exist in QuickForm_Controller::_setDefaultsOrConstants()", 'HTML_QuickForm_Error', true);

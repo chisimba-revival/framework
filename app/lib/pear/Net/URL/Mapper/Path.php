@@ -319,7 +319,7 @@ class Net_URL_Mapper_Path
             if (preg_match($yy_global_pattern, substr($this->path, $this->N), $yymatches)) {
                 $yysubmatches = $yymatches;
                 $yymatches = array_filter($yymatches, 'strlen'); // remove empty sub-patterns
-                if (!count($yymatches)) {
+                if (!(is_countable($yymatches) ? count($yymatches) : 0)) {
                     throw new Exception('Error: lexing failed because a rule matched' .
                         'an empty string.  Input "' . substr($this->path,
                         $this->N, 5) . '... state START');

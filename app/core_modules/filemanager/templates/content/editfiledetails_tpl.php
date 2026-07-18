@@ -31,7 +31,7 @@ $table->addCell($label->show());
 $keywords = new textarea('keywords');
 
 $keywordsList = '';
-if (count($tags) > 0) {
+if ((is_countable($tags) ? count($tags) : 0) > 0) {
     $comma = '';
     foreach ($tags as $tag)
     {

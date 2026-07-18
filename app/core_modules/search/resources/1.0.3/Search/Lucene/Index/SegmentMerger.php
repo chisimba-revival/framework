@@ -254,7 +254,7 @@ class Zend_Search_Lucene_Index_SegmentMerger
                 ksort($termDocs, SORT_NUMERIC);
 
                 // Add term if it's contained in any document
-                if (count($termDocs) > 0) {
+                if ((is_countable($termDocs) ? count($termDocs) : 0) > 0) {
                     $this->_writer->addTerm($segmentInfo->currentTerm(), $termDocs);
                 }
                 $termDocs = array();

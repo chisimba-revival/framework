@@ -131,19 +131,19 @@ class previewfolder extends filemanagerobject {
             $objTable->addHeaderCell('&nbsp;', '30');
         }
         // Set Restriction as empty if it is none
-        if (count($restriction) == 1 && $restriction[0] == '') {
+        if ((is_countable($restriction) ? count($restriction) : 0) == 1 && $restriction[0] == '') {
             $restriction = array();
         }
         $objTable->endHeaderRow();
         $hidden = 0;
 
-        if (count($subFolders) == 0 && count($files) == 0 && count($symlinks) == 0) {
+        if ((is_countable($subFolders) ? count($subFolders) : 0) == 0 && (is_countable($files) ? count($files) : 0) == 0 && (is_countable($symlinks) ? count($symlinks) : 0) == 0) {
             $objTable->startRow();
             $objTable->addCell('<em>' . $this->objLanguage->languageText('mod_filemanager_nofilesorfolders', 'filemanager', 'No files or folders found') . '</em>', NULL, NULL, NULL, 'noRecordsMessage', 'colspan="5"');
             $objTable->endRow();
         } else {
 
-            if (count($subFolders) > 0) {
+            if ((is_countable($subFolders) ? count($subFolders) : 0) > 0) {
                 $folderIcon = $this->objFileIcons->getExtensionIcon('folder');
 
                 foreach ($subFolders as $folder) {
@@ -252,7 +252,7 @@ class previewfolder extends filemanagerobject {
             if (is_array($symlinks)) {
                 $files = array_merge($files, $symlinks);
             }
-            if (count($files) > 0) {
+            if ((is_countable($files) ? count($files) : 0) > 0) {
                 //var_dump($files);
                 $fileSize = new formatfilesize();
 
@@ -278,7 +278,7 @@ class previewfolder extends filemanagerobject {
                     if (!$showFile) {
                         continue;
                     }
-                    if (count($restriction) > 0) {
+                    if ((is_countable($restriction) ? count($restriction) : 0) > 0) {
                         if (!in_array(strtolower($file['datatype']), $restriction)) {
                             $objTable->startRow('hidefile');
                             $hidden++;
@@ -501,7 +501,7 @@ class previewfolder extends filemanagerobject {
             }
         }
 
-        if ($hidden > 0 && count($restriction) > 0) {
+        if ($hidden > 0 && (is_countable($restriction) ? count($restriction) : 0) > 0) {
             $str = '';
             if ($this->viewType == strtolower('thumbnails')) {
                 $str .= '<style type="text/css">

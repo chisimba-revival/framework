@@ -478,7 +478,7 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
                         ImageFilledPolygon(
                             $this->_tileImage,
                             $polygon,
-                            count($polygon) / 2,
+                            (is_countable($polygon) ? count($polygon) : 0) / 2,
                             $color
                         );
                         break;
@@ -512,7 +512,7 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
                         ImageFilledPolygon(
                             $this->_tileImage,
                             $polygon,
-                            count($polygon) / 2,
+                            (is_countable($polygon) ? count($polygon) : 0) / 2,
                             $color
                         );
                         break;
@@ -826,7 +826,7 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
         if (isset($shape)) {
             // output the shape
             if (($fill = $this->_getFillStyle($params['color'])) !== false) {
-                ImageFilledPolygon($this->_canvas, $shape, count($shape)/2, $fill);
+                ImageFilledPolygon($this->_canvas, $shape, (is_countable($shape) ? count($shape) : 0)/2, $fill);
             }
         }
         parent::drawEnd($params);
@@ -996,7 +996,7 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
         if ((isset($polygon)) && (is_array($polygon))) {
             if ($connectEnds) {
                 if (($fill = $this->_getFillStyle($fillColor, $low['X'], $low['Y'], $high['X'], $high['Y'])) !== false) {
-                    ImageFilledPolygon($this->_canvas, $polygon, count($polygon)/2, $fill);
+                    ImageFilledPolygon($this->_canvas, $polygon, (is_countable($polygon) ? count($polygon) : 0)/2, $fill);
                 }
                 if ($this->_antialias === 'driver') {
                     $pfirst = $p0 = false; 
@@ -1015,7 +1015,7 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
                     
                     $this->_antialiasedLine($p0['X'], $p0['Y'], $pfirst['X'], $pfirst['Y'], $lineColor);
                 } elseif (($line = $this->_getLineStyle($lineColor)) !== false) {
-                    ImagePolygon($this->_canvas, $polygon, count($polygon)/2, $line);
+                    ImagePolygon($this->_canvas, $polygon, (is_countable($polygon) ? count($polygon) : 0)/2, $line);
                 }
             } else {
                 $prev_point = false;
@@ -1205,11 +1205,11 @@ class Image_Canvas_GD extends Image_Canvas_WithMap
         }
 
         if (($fill = $this->_getFillStyle($fillColor, $x - $rx - 1, $y - $ry - 1, $x + $rx + 1, $y + $ry + 1)) !== false) {
-            ImageFilledPolygon($this->_canvas, $polygon, count($polygon) / 2, $fill);
+            ImageFilledPolygon($this->_canvas, $polygon, (is_countable($polygon) ? count($polygon) : 0) / 2, $fill);
         }
 
         if (($line = $this->_getLineStyle($lineColor)) !== false) {
-            ImagePolygon($this->_canvas, $polygon, count($polygon) / 2, $line);
+            ImagePolygon($this->_canvas, $polygon, (is_countable($polygon) ? count($polygon) : 0) / 2, $line);
         }
 
         parent::pieSlice($params);

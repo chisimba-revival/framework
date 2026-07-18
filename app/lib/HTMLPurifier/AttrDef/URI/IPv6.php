@@ -45,7 +45,7 @@ class HTMLPurifier_AttrDef_URI_IPv6 extends HTMLPurifier_AttrDef_URI_IPv4
 
         //      compression check
         $aIP = explode('::', $aIP);
-        $c = count($aIP);
+        $c = (is_countable($aIP) ? count($aIP) : 0);
         if ($c > 2)
         {
                 return false;
@@ -56,17 +56,17 @@ class HTMLPurifier_AttrDef_URI_IPv6 extends HTMLPurifier_AttrDef_URI_IPv4
                 $first = explode(':', $first);
                 $second = explode(':', $second);
 
-                if (count($first) + count($second) > 8)
+                if ((is_countable($first) ? count($first) : 0) + (is_countable($second) ? count($second) : 0) > 8)
                 {
                         return false;
                 }
 
-                while(count($first) < 8)
+                while((is_countable($first) ? count($first) : 0) < 8)
                 {
                         array_push($first, '0');
                 }
 
-                array_splice($first, 8 - count($second), 8, $second);
+                array_splice($first, 8 - (is_countable($second) ? count($second) : 0), 8, $second);
                 $aIP = $first;
                 unset($first,$second);
         }
@@ -74,7 +74,7 @@ class HTMLPurifier_AttrDef_URI_IPv6 extends HTMLPurifier_AttrDef_URI_IPv4
         {
                 $aIP = explode(':', $aIP[0]);
         }
-        $c = count($aIP);
+        $c = (is_countable($aIP) ? count($aIP) : 0);
 
         if ($c != 8)
         {

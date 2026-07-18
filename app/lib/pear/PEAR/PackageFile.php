@@ -327,7 +327,7 @@ class PEAR_PackageFile
             return $ret;
         }
 
-        if (!count($content) && !@is_file($file)) {
+        if (!(is_countable($content) ? count($content) : 0) && !@is_file($file)) {
             $ret = PEAR::raiseError("could not open file \"$file\"");
             return $ret;
         }

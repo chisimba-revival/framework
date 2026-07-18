@@ -263,7 +263,7 @@ class Config_Container {
         }
 
         $itemsArr = array();
-        $fieldsToMatch = count($testFields);
+        $fieldsToMatch = (is_countable($testFields) ? count($testFields) : 0);
         for ($i = 0, $count = count($this->children); $i < $count; $i++) {
             $match = 0;
             reset($testFields);
@@ -274,7 +274,7 @@ class Config_Container {
                     }
                 } else {
                     // Look for attributes in array
-                    $attrToMatch = count($attributes);
+                    $attrToMatch = (is_countable($attributes) ? count($attributes) : 0);
                     $attrMatch = 0;
                     foreach ($attributes as $key => $value) {
                         if (isset($this->children[$i]->attributes[$key]) &&
@@ -299,7 +299,7 @@ class Config_Container {
                 return $return;
             }
         } else {
-            if ($count = count($itemsArr)) {
+            if ($count = (is_countable($itemsArr) ? count($itemsArr) : 0)) {
                 return $itemsArr[$count-1];
             } else {
                 $return = false;
@@ -466,7 +466,7 @@ class Config_Container {
         if (is_object($this->parent)) {
             // This will be optimized with Zend Engine 2
             $pchildren =& $this->parent->children;
-            for ($i = 0, $count = count($pchildren); $i < $count; $i++) {
+            for ($i = 0, $count = (is_countable($pchildren) ? count($pchildren) : 0); $i < $count; $i++) {
                 if ($pchildren[$i]->_id == $this->_id) {
                     return $i;
                 }
@@ -485,7 +485,7 @@ class Config_Container {
     {
         if (is_object($this->parent)) {
             $pchildren =& $this->parent->children;
-            for ($i = 0, $count = count($pchildren); $i < $count; $i++) {
+            for ($i = 0, $count = (is_countable($pchildren) ? count($pchildren) : 0); $i < $count; $i++) {
                 if ($pchildren[$i]->name == $this->name) {
                     if ($byType == true) {
                         if ($pchildren[$i]->type == $this->type) {
@@ -496,7 +496,7 @@ class Config_Container {
                     }
                 }
             }
-            for ($i = 0, $count = count($obj); $i < $count; $i++) {
+            for ($i = 0, $count = (is_countable($obj) ? count($obj) : 0); $i < $count; $i++) {
                 if ($obj[$i]->_id == $this->_id) {
                     return $i;
                 }

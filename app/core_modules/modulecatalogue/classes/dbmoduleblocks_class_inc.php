@@ -135,7 +135,7 @@ class dbmoduleblocks extends dbTable
         
         $filterStr = '';
         
-        if (count($filter) > 0) {
+        if ((is_countable($filter) ? count($filter) : 0) > 0) {
             
             $filterStr = 'WHERE';
             $divider = '';
@@ -163,7 +163,7 @@ class dbmoduleblocks extends dbTable
     {
         $arrData = array('moduleid'=>$moduleid, 'blockname'=>$blockName, 'blockwidth'=>$width, 'blocktype'=>$type);
         $exists = $this->getAll(" WHERE moduleid = '$moduleid' AND blockname = '$blockName' AND blockwidth = '$width' AND blocktype='$type'");
-        if (count($exists) < 1) {
+        if ((is_countable($exists) ? count($exists) : 0) < 1) {
             
             $this->insert($arrData);
         }

@@ -19,7 +19,7 @@ class HTMLPurifier_URIScheme_data extends HTMLPurifier_URIScheme {
         $is_base64 = false;
         $charset = null;
         $content_type = null;
-        if (count($result) == 2) {
+        if ((is_countable($result) ? count($result) : 0) == 2) {
             list($metadata, $data) = $result;
             // do some legwork on the metadata
             $metas = explode(';', $metadata);

@@ -173,7 +173,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
                 unset($signs[$id]);
             }
         }
-        if (count($subqueries) == 0) {
+        if ((is_countable($subqueries) ? count($subqueries) : 0) == 0) {
             // Boolean query doesn't has non-insignificant subqueries
             return new Zend_Search_Lucene_Search_Query_Insignificant();
         }
@@ -206,7 +206,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
         }
 
         // Check, if reduced subqueries list is empty
-        if (count($subqueries) == 0) {
+        if ((is_countable($subqueries) ? count($subqueries) : 0) == 0) {
             return new Zend_Search_Lucene_Search_Query_Empty();
         }
 
@@ -224,7 +224,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
 
 
         // Check, if reduced subqueries list has only one entry
-        if (count($subqueries) == 1) {
+        if ((is_countable($subqueries) ? count($subqueries) : 0) == 1) {
             // It's a query with only one required or optional clause
             // (it's already checked, that it's not a prohibited clause)
 
@@ -345,14 +345,14 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
 
 
         // Check, if there are no decomposed subqueries
-        if (count($terms) == 0 ) {
+        if ((is_countable($terms) ? count($terms) : 0) == 0 ) {
             // return prepared candidate
             return $optimizedQuery;
         }
 
 
         // Check, if all subqueries have been decomposed and all terms has the same boost factor
-        if (count($subqueries) == 0  &&  count(array_unique($boostFactors)) == 1) {
+        if ((is_countable($subqueries) ? count($subqueries) : 0) == 0  &&  count(array_unique($boostFactors)) == 1) {
             $optimizedQuery = new Zend_Search_Lucene_Search_Query_MultiTerm($terms, $tsigns);
             $optimizedQuery->setBoost(reset($boostFactors)*$this->getBoost());
 
@@ -375,7 +375,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             }
         }
 
-        if (count($terms) == 1) {
+        if ((is_countable($terms) ? count($terms) : 0) == 1) {
             $clause = new Zend_Search_Lucene_Search_Query_Term(reset($terms));
             $clause->setBoost(reset($boostFactors));
 
@@ -384,7 +384,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
 
             // Clear terms list
             $terms = array();
-        } else if (count($terms) > 1  &&  count(array_unique($boostFactors)) == 1) {
+        } else if ((is_countable($terms) ? count($terms) : 0) > 1  &&  count(array_unique($boostFactors)) == 1) {
             $clause = new Zend_Search_Lucene_Search_Query_MultiTerm($terms, $tsigns);
             $clause->setBoost(reset($boostFactors));
 
@@ -396,14 +396,14 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
             $terms = array();
         }
 
-        if (count($prohibitedTerms) == 1) {
+        if ((is_countable($prohibitedTerms) ? count($prohibitedTerms) : 0) == 1) {
             // (boost factors are not significant for prohibited clauses)
             $subqueries[] = new Zend_Search_Lucene_Search_Query_Term(reset($prohibitedTerms));
             $signs[]      = false;
 
             // Clear prohibited terms list
             $prohibitedTerms = array();
-        } else if (count($prohibitedTerms) > 1) {
+        } else if ((is_countable($prohibitedTerms) ? count($prohibitedTerms) : 0) > 1) {
             // prepare signs array
             $prohibitedSigns = array();
             foreach ($prohibitedTerms as $id => $term) {
@@ -424,7 +424,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
 
         // Check, that all terms are processed
         // Replace candidate for optimized query
-        if (count($terms) == 0  &&  count($prohibitedTerms) == 0) {
+        if ((is_countable($terms) ? count($terms) : 0) == 0  &&  (is_countable($prohibitedTerms) ? count($prohibitedTerms) : 0) == 0) {
             $optimizedQuery = new Zend_Search_Lucene_Search_Query_Boolean($subqueries, $signs);
             $optimizedQuery->setBoost($this->getBoost());
         }
@@ -575,7 +575,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
                 $required = $updatedVector;
             }
 
-            if (count($required) == 0) {
+            if ((is_countable($required) ? count($required) : 0) == 0) {
                 // Empty result set, we don't need to check other terms
                 break;
             }

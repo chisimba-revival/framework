@@ -286,7 +286,7 @@ class useradmin_model2 extends dbtable
             $whereArray[] = ' isactive=\'1\'';
         }
 
-        if (count($whereArray) == 0) {
+        if ((is_countable($whereArray) ? count($whereArray) : 0) == 0) {
             $where = '';
         } else {
             $and = '';
@@ -406,7 +406,7 @@ class useradmin_model2 extends dbtable
     {
         $result = $this->getAll(" WHERE username='$username' AND emailaddress='$email' ");
 
-        if (count($result) == 0) {
+        if ((is_countable($result) ? count($result) : 0) == 0) {
             return FALSE;
         } else {
             return $result[0];
@@ -641,7 +641,7 @@ IP Address of Request: '.$_SERVER['REMOTE_ADDR'];
     */
     public function batchProcessOption($users, $option)
     {
-        if (is_array($users) && count($users) > 0) {
+        if (is_array($users) && (is_countable($users) ? count($users) : 0) > 0) {
             switch ($option)
             {
                 case 'active': $function = 'setUserAsActive'; break;

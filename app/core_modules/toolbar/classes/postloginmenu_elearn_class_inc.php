@@ -83,7 +83,7 @@ class postloginmenu_elearn extends ChisimbaObject
         $str .= $objBlock->showBlock('mycontexts', 'context', NULL, 20, TRUE, FALSE);
         
         // If menu items exist
-        if (count($options) > 0) {
+        if ((is_countable($options) ? count($options) : 0) > 0) {
             
             // Prepare items - will be sorted alphabetically
             $menuItems = array();

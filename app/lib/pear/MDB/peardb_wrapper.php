@@ -382,7 +382,7 @@ class MDB_PEAR_PROXY
 
     function buildManipSQL($table, $table_fields, $mode, $where = false)
     {
-        if (count($table_fields) == 0) {
+        if ((is_countable($table_fields) ? count($table_fields) : 0) == 0) {
             $this->raiseError(DB_ERROR_NEED_MORE_DATA);
         }
         $first = true;
@@ -439,7 +439,7 @@ class MDB_PEAR_PROXY
     }
 
     function &query($query, $params = array()) {
-        if (sizeof($params) > 0) {
+        if ((is_countable($params) ? sizeof($params) : 0) > 0) {
             $sth = $this->MDB_object->prepare($query);
             if (MDB::isError($sth)) {
                 return($sth);

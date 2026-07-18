@@ -677,7 +677,7 @@ class flexigrid extends ChisimbaObject
                     $data = is_numeric($data) ? $data : "'$data'";
                 }
                 $script .= "$key: $data";
-                if ($ii != count($column))
+                if ($ii != (is_countable($column) ? count($column) : 0))
                 {
                     $script .= ",";
                 }
@@ -704,7 +704,7 @@ class flexigrid extends ChisimbaObject
                     $data = "'$data'";
                 }
                 $script .= "$key: $data";
-                if ($ii != count($button))
+                if ($ii != (is_countable($button) ? count($button) : 0))
                 {
                     $script .= ",";
                 }
@@ -742,7 +742,7 @@ class flexigrid extends ChisimbaObject
                     $data = "'$data'";
                 }
                 $script .= "$key: $data";
-                if ($ii != count($searchitem))
+                if ($ii != (is_countable($searchitem) ? count($searchitem) : 0))
                 {
                     $script .= ",";
                 }
