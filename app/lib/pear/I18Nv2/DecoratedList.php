@@ -46,6 +46,18 @@ class I18Nv2_DecoratedList
      * @access  public
      * @param   object  $list   I18Nv2_DecoratedList or I18Nv2_CommonList
      */
+    /**
+     * PHP 8 constructor bridge.
+     *
+     * @param object $list Decorated or common list
+     * @return void
+     */
+    function __construct(&$list)
+    {
+        $this->I18Nv2_DecoratedList($list);
+    }
+
+
         function I18Nv2_DecoratedList(&$list)
     {
         if (is_a($list, 'I18Nv2_CommonList') ||

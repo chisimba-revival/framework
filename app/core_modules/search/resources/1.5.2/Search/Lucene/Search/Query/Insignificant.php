@@ -77,7 +77,7 @@ class Zend_Search_Lucene_Search_Query_Insignificant extends Zend_Search_Lucene_S
      *
      * @param Zend_Search_Lucene_Interface $reader
      */
-    public function execute(Zend_Search_Lucene_Interface $reader)
+    public function execute(Zend_Search_Lucene_Interface $reader, $docsFilter = null)
     {
         // Do nothing
     }

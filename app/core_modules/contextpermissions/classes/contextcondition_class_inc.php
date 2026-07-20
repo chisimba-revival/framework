@@ -109,7 +109,7 @@ class contextCondition extends condition
      * @author Jonathan Abrahams
      * @return nothing
      */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->_objGroupAdmin = $this->getObject('groupadminmodel','groupadmin');
         $this->_objUser = $this->getObject('user','security');

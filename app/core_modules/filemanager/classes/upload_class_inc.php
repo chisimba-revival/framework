@@ -83,7 +83,7 @@ class upload extends filemanagerobject {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         $this->name = 'fileupload';
         $this->formaction = $this->uri(array('action' => 'upload'));
 

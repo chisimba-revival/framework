@@ -111,7 +111,7 @@ class dbRuleCondition extends dbTable {
      * @param  string     ruleId
      * @return true|false Return true if successfull, otherwise false.
      */
-    function delete( $value, $deleteKey = 'ruleid' )
+    function delete($value, $deleteKey = 'ruleid', $tablename = '')
     {
         return parent::delete( $deleteKey, $value );
     }

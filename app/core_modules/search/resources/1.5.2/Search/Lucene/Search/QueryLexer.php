@@ -101,7 +101,7 @@ class Zend_Search_Lucene_Search_QueryLexer extends Zend_Search_Lucene_FSM
      */
     private $_currentLexeme;
 
-    public function __construct()
+    public function __construct($states = array(), $inputAphabet = array(), $rules = array())
     {
         parent::__construct( array(self::ST_WHITE_SPACE,
                                    self::ST_SYNT_LEXEME,

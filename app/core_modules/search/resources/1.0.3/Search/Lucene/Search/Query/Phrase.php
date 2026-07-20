@@ -408,7 +408,7 @@ class Zend_Search_Lucene_Search_Query_Phrase extends Zend_Search_Lucene_Search_Q
      *
      * @param Zend_Search_Lucene_Interface $reader
      */
-    public function execute(Zend_Search_Lucene_Interface $reader)
+    public function execute(Zend_Search_Lucene_Interface $reader, $docsFilter = null)
     {
         $this->_resVector = null;
 

@@ -87,7 +87,7 @@ class Image_Graph_Axis_Logarithmic extends Image_Graph_Axis
      *
      * @param double $minimum The minumum value to use on the axis
      */
-    function forceMinimum($minimum)
+    function forceMinimum($minimum, $userEnforce = true)
     {
         parent::forceMinimum(0);
     }

@@ -12,7 +12,7 @@
 class HTMLPurifier_AttrDef_CSS_URI extends HTMLPurifier_AttrDef_URI
 {
 
-    public function __construct() {
+    public function __construct($embeds_resource = false) {
         parent::__construct(true); // always embedded
     }
 

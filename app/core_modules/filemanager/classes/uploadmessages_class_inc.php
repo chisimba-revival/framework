@@ -54,7 +54,7 @@ class uploadmessages extends filemanagerobject
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->objFiles = $this->getObject('dbfile');
         $this->objCleanUrl = $this->getObject('cleanurl');

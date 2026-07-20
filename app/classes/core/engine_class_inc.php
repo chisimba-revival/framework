@@ -1819,6 +1819,18 @@ class engine {
      * @returns string $uri the URL
      */
     public function uri($params = array(), $module = '', $mode = '', $omitServerName = FALSE, $javascriptCompatibility = FALSE, $Strict = FALSE, $https = FALSE) {
+        /*
+         * CHISIMBA_PHP82_URI_NORMALISE_LEGACY_PARAMS
+         *
+         * Legacy Chisimba modules commonly call uri('', 'module') when
+         * they have no query parameters. PHP 8.2 no longer permits
+         * array-offset access on that string. Preserve the historic API
+         * by normalising non-array values before URI construction.
+         */
+        if (!is_array($params)) {
+            $params = array();
+        }
+
         if (! empty ( $action )) {
             $params ['action'] = $action;
         }
@@ -1857,7 +1869,13 @@ class engine {
             throw new customException ( "Incorrect URI mode in Engine::uri" );
         }
         // POSTLOGIN_MENU_NULL_COUNT_PHP82
-        if ($params === null) {
+        // CHISIMBA_PHP82_URI_ARRAY_NORMALISATION
+        //
+        // Legacy callers frequently pass an empty string when there are no
+        // URI parameters, for example uri('', 'forum'). PHP 8.2 does not
+        // allow array-offset access on a string, so normalise every
+        // non-array value here rather than only handling null.
+        if (!is_array($params)) {
             $params = array();
         }
         if ((is_countable($params) ? count($params) : 0) > 1) {

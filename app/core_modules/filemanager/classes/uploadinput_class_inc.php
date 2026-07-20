@@ -91,7 +91,7 @@ class uploadinput extends filemanagerobject {
     /**
      * Constructor
      */
-    public function init() {
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
         $this->name = 'fileupload';
         $this->loadClass('textinput', 'htmlelements');
         $this->loadClass('hiddeninput', 'htmlelements');

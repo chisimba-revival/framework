@@ -129,7 +129,7 @@ class Zend_Search_Lucene_Search_Query_Term extends Zend_Search_Lucene_Search_Que
      *
      * @param Zend_Search_Lucene_Interface $reader
      */
-    public function execute(Zend_Search_Lucene_Interface $reader)
+    public function execute(Zend_Search_Lucene_Interface $reader, $docsFilter = null)
     {
         $this->_docVector = array_flip($reader->termDocs($this->_term));
         $this->_termFreqs = $reader->termFreqs($this->_term);

@@ -179,7 +179,21 @@ class LiveUser_Admin_Storage_SQL extends LiveUser_Admin_Storage
             $values[] = $value_quoted;
         }
 
-        $result = $this->exec($this->createInsert($table, $fields, $values));
+        
+        $query = $this->createInsert($table, $fields, $values);
+        error_log("=== LiveUser SQL insert ===");
+        error_log("logical_table=" . $table);
+        error_log("physical_table=" . $this->prefix . $this->alias[$table]);
+        error_log("query=" . $query);
+
+        $result = $this->exec($query);
+
+        error_log("exec_result_type=" . gettype($result));
+        error_log("exec_result=" . print_r($result, true));
+        if ($result === false && isset($this->stack)) {
+            error_log("storage_stack=" . print_r($this->stack, true));
+        }
+
         if ($result === false) {
             return false;
         }

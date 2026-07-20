@@ -88,7 +88,7 @@ class multifileselect extends filemanagerobject
     /**
     * Constructor
     */
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->name = 'fileselect';
         $this->restrictFileList = array();

@@ -677,7 +677,7 @@ class Zend_Search_Lucene_Search_Query_Boolean extends Zend_Search_Lucene_Search_
      *
      * @param Zend_Search_Lucene_Interface $reader
      */
-    public function execute(Zend_Search_Lucene_Interface $reader)
+    public function execute(Zend_Search_Lucene_Interface $reader, $docsFilter = null)
     {
         // Initialize weight if it's not done yet
         $this->_initWeight($reader);

@@ -55,7 +55,7 @@ class conditionType extends decisionTableBase
      * @return void  
      * @access public
      */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_decisiontable_conditiontype');
 
@@ -72,7 +72,7 @@ class conditionType extends decisionTableBase
      * @see     condition::test()
      * @see     condition::evaluate()
      */
-    function create($name, $className, $moduleName )
+    function create($name, $className = null, $moduleName = null)
     {
         // Disable insert / Retrieve
         $tmp = $this->enableAutoInsertRetrieveId;
@@ -137,7 +137,7 @@ class conditionType extends decisionTableBase
      * @return  condition Returns this condition object, and retrieves the parameters from the database.
      * @version V0.1
      */
-    function update( )
+    function update($pkfield = null, $pkvalue = null, $fields = null, $tablename = '')
     {
         // Package condition properties.
         $conditionType = array();

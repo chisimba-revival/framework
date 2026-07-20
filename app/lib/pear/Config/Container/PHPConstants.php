@@ -112,7 +112,7 @@ class Config_Container_PHPConstants extends Config_Container {
     * @access   public
     * @return   string
     */
-     function toString(&$obj)
+     function toString(&$obj, $options = array())
      {
          $string = '';
 
@@ -163,7 +163,7 @@ class Config_Container_PHPConstants extends Config_Container {
     * @access public
     * @return string
     */
-    function writeDatasrc($datasrc, &$obj)
+    function writeDatasrc($datasrc, &$obj, $options = array())
     {
         $fp = @fopen($datasrc, 'w');
         if ($fp) {

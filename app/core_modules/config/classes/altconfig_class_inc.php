@@ -118,7 +118,7 @@ class altconfig extends ChisimbaObject {
      * @access public
      * @throws customException Exception description (if any) ...
      */
-    public function __construct() {
+    public function __construct($objEngine = null, $moduleName = null) {
         // instantiate object
         $mepath = $_SERVER["SCRIPT_FILENAME"];
         $mepath = str_replace('index.php', '', $mepath);

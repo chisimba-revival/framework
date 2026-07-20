@@ -95,7 +95,7 @@ class decisionTableBase extends dbTable
      * @author Jonathan Abrahams
      * @return nothing
      */
-    function init($tableName)
+    function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
         parent::init($tableName);
         //$this->upgradeTable(); -still uses old sql - wont work
@@ -193,7 +193,7 @@ class decisionTableBase extends dbTable
      * Method to insert the object into the database
      * @return the uniqueId|NULL
      */
-    function insert( )
+    function insert($fields = null, $tablename = '')
     {
         @assert( $this->_name <> '' ); // Must check, otherwise inserts nulls
         
@@ -227,7 +227,7 @@ class decisionTableBase extends dbTable
      * @param  string     Delete object by name( optional )
      * @return true|false Return true if successfull, otherwise false.
      */
-    function delete( $name = NULL )
+    function delete( $name = NULL, $pkvalue = null, $tablename = '')
     {
         // Delete by name
         $delObject = $name ? $this->create( $name ) : $this;

@@ -88,7 +88,7 @@ class condition extends decisionTableBase
      * @return void  
      * @access public
      */
-    function init()
+    function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         // Store the class type.
         parent::init('tbl_decisiontable_condition');
@@ -182,7 +182,7 @@ class condition extends decisionTableBase
      * @return  condition Returns this condition object, and retrieves the parameters from the database.
      * @version V0.1
      */
-    function update( $params )
+    function update( $params, $pkvalue = null, $fields = null, $tablename = '')
     {
         // Set dbData and unPack params
         $this->setProperties( $params );
@@ -305,7 +305,7 @@ class condition extends decisionTableBase
      * @param  string     Delete object by name( optional )
      * @return true|false Return true if successfull, otherwise false.
      */
-    function delete( $name = NULL )
+    function delete( $name = NULL, $pkvalue = null, $tablename = '')
     {
         // Delete by name
         $delObject = $name ? $this->create( $name ) : $this;

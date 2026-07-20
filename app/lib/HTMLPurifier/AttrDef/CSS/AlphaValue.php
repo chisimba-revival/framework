@@ -3,7 +3,7 @@
 class HTMLPurifier_AttrDef_CSS_AlphaValue extends HTMLPurifier_AttrDef_CSS_Number
 {
 
-    public function __construct() {
+    public function __construct($non_negative = false) {
         parent::__construct(false); // opacity is non-negative, but we will clamp it
     }
 

@@ -202,7 +202,7 @@ class Zend_Search_Lucene_Search_QueryParser extends Zend_Search_Lucene_FSM
     /**
      * Parser constructor
      */
-    public function __construct()
+    public function __construct($states = array(), $inputAphabet = array(), $rules = array())
     {
         parent::__construct(array(self::ST_COMMON_QUERY_ELEMENT,
                                   self::ST_CLOSEDINT_RQ_START,

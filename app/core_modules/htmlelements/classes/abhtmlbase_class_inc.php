@@ -118,7 +118,7 @@ abstract class abhtmlbase extends ChisimbaObject
     /**
     * Constructor
     */
-    public function __construct($name)
+    public function __construct($name, $moduleName = null)
     {
         //set the name of the element
         $this->name=$name;

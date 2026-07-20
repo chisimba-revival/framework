@@ -97,7 +97,7 @@ class decisionTableAggregate extends decisionTableBase
      * @param  string 
      * @return nothing
      */
-    public function init($tableName)
+    public function init($tableName, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
         parent::init($tableName);
 

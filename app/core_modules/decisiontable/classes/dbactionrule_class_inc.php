@@ -111,7 +111,7 @@ class dbActionRule extends dbTable {
      * @param  string     actionId
      * @return true|false Return true if successfull, otherwise false.
      */
-    function delete( $value, $deleteKey = 'actionid' )
+    function delete($value, $deleteKey = 'actionid', $tablename = '')
     {
         return parent::delete( $deleteKey, $value );
     }

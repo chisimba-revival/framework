@@ -100,7 +100,7 @@ class radio extends abhtmlbase implements ifhtml
          * delegate to it from __construct() so existing behaviour and
          * call sites remain unchanged.
          */
-        public function __construct($name)
+        public function __construct($name, $moduleName = null)
         {
             $this->radio($name);
         }

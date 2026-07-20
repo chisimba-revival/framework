@@ -125,7 +125,7 @@ class I18Nv2
      * @param   int     $prior  if 0, the current otherwise n prior to current
      * @param   bool    $part   true|all|0=locale|1=language|2=syslocale
      */
-    function lastLocale($prior = 0, $part = 0)
+    static function lastLocale($prior = 0, $part = 0)
     {
         $last = I18Nv2::getStaticProperty('last');
         if (!isset($last)) {

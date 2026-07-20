@@ -542,7 +542,7 @@ class Zend_Search_Lucene_Search_Query_MultiTerm extends Zend_Search_Lucene_Searc
      *
      * @param Zend_Search_Lucene_Interface $reader
      */
-    public function execute(Zend_Search_Lucene_Interface $reader)
+    public function execute(Zend_Search_Lucene_Interface $reader, $docsFilter = null)
     {
         if ($this->_signs === null) {
             $this->_calculateConjunctionResult($reader);

@@ -60,7 +60,7 @@ require_once("ifhtml_class_inc.php");
 class link extends abhtmlbase implements ifhtml
 {
     // LINK_CONSTRUCTOR_BRIDGE_PHP82
-    public function __construct($href=null)
+    public function __construct($href=null, $moduleName = null)
     {
         $this->link($href);
     }

@@ -64,6 +64,17 @@ class I18Nv2_CommonList
      * @param   string  $language
      * @param   string  $encoding
      */
+    /**
+     * PHP 8 constructor bridge.
+     *
+     * @return void
+     */
+    function __construct($language = null, $encoding = null)
+    {
+        $this->I18Nv2_CommonList($language, $encoding);
+    }
+
+
         function I18Nv2_CommonList($language = null, $encoding = null)
     {
         if (!$this->setLanguage($language)) {
