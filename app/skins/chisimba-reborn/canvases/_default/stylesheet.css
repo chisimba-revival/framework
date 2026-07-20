@@ -1,0 +1,269 @@
+/**
+ * Chisimba Reborn default canvas.
+ *
+ * The default canvas supplies the initial contextual arrangement while the
+ * enclosing Chisimba Reborn skin supplies the rendering system and identity.
+ */
+
+#Canvas_Content_Body {
+    display: grid;
+    grid-template-areas:
+        "main supplementary-top"
+        "main supplementary-bottom";
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(17rem, 24rem);
+    gap: var(--chisimba-layout-gap);
+    align-items: start;
+}
+
+#Canvas_Content_Body_Region2 {
+    grid-area: main;
+    min-width: 0;
+    padding: var(--chisimba-region-padding);
+    background: var(--chisimba-surface);
+    border: 1px solid var(--chisimba-border);
+    border-top: 0.35rem solid var(--chisimba-primary);
+    border-radius: var(--chisimba-region-radius);
+    box-shadow: var(--chisimba-shadow);
+}
+
+#Canvas_Content_Body_Region3 {
+    grid-area: supplementary-top;
+}
+
+#Canvas_Content_Body_Region1 {
+    grid-area: supplementary-bottom;
+}
+
+#Canvas_Content_Body_Region1,
+#Canvas_Content_Body_Region3 {
+    min-width: 0;
+    padding: var(--chisimba-region-padding);
+    background: var(--chisimba-surface-muted);
+    border: 1px solid var(--chisimba-border);
+    border-top: 0.3rem solid var(--chisimba-grey-blue);
+    border-radius: var(--chisimba-region-radius);
+}
+
+#Canvas_Content_Body img,
+#Canvas_Content_Body video,
+#Canvas_Content_Body iframe,
+#Canvas_Content_Body table,
+#Canvas_Content_Body input,
+#Canvas_Content_Body select,
+#Canvas_Content_Body textarea {
+    max-width: 100%;
+}
+
+@media (max-width: 60rem) {
+    #Canvas_Content_Body {
+        grid-template-areas:
+            "main"
+            "supplementary-top"
+            "supplementary-bottom";
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Chisimba Reborn: keep supplementary block stacks aligned to the top. */
+#Canvas_Content_Body_Region1,
+#Canvas_Content_Body_Region3 {
+    align-self: start;
+    align-content: start;
+}
+
+/* BEGIN CHISIMBA-REBORN SUPPLEMENTARY REGION TOP ALIGNMENT
+ *
+ * The canvas grid stretches columns to the height of the tallest region.
+ * These regions must therefore explicitly stack their blocks from the top.
+ */
+#Canvas_Content_Body_Region1,
+#Canvas_Content_Body_Region3 {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    align-content: flex-start;
+    align-self: stretch;
+}
+
+#Canvas_Content_Body_Region1 > *,
+#Canvas_Content_Body_Region3 > * {
+    flex: 0 0 auto;
+}
+/* END CHISIMBA-REBORN SUPPLEMENTARY REGION TOP ALIGNMENT */
+
+
+/* BEGIN CHISIMBA-REBORN REGION TOP-ALIGNMENT FINAL
+ *
+ * Chisimba's legacy equal-height helper may write explicit heights to the
+ * three regions. Modern CSS Grid does not require that treatment. These rules
+ * keep main and supplementary content aligned to the top regardless of the
+ * height of neighbouring columns.
+ */
+
+#Canvas_Content_Body {
+    align-items: start !important;
+    align-content: start !important;
+}
+
+#Canvas_Content_Body_Region1,
+#Canvas_Content_Body_Region2,
+#Canvas_Content_Body_Region3 {
+    align-self: start !important;
+    justify-self: stretch !important;
+    vertical-align: top !important;
+    min-height: 0 !important;
+}
+
+#Canvas_Content_Body_Region1,
+#Canvas_Content_Body_Region3 {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+#Canvas_Content_Body_Region1 > :first-child,
+#Canvas_Content_Body_Region3 > :first-child,
+#Canvas_Content_Body_Region1 > :first-child > :first-child,
+#Canvas_Content_Body_Region3 > :first-child > :first-child {
+    margin-top: 0 !important;
+}
+
+#Canvas_Content_Body_Region1 .featurebox:first-child,
+#Canvas_Content_Body_Region3 .featurebox:first-child,
+#Canvas_Content_Body_Region1 .contentfeaturebox:first-child,
+#Canvas_Content_Body_Region3 .contentfeaturebox:first-child {
+    margin-top: 0 !important;
+}
+
+/* END CHISIMBA-REBORN REGION TOP-ALIGNMENT FINAL */
+
+
+/* BEGIN CHISIMBA-REBORN LAYOUT-WRAPPER GRID
+ *
+ * The csslayout engine commonly returns a #onecolumn, #twocolumn or
+ * #threecolumn wrapper as the direct child of #Canvas_Content_Body.
+ *
+ * Make that framework wrapper the grid. This is more deterministic than
+ * display:contents and preserves the existing PHP layout architecture.
+ *
+ * Default supplementary order:
+ *   Region1 = upper controls/actions
+ *   Region3 = lower supplementary information
+ */
+
+#Canvas_Content_Body {
+    display: block;
+    min-width: 0;
+}
+
+#Canvas_Content_Body > #onecolumn,
+#Canvas_Content_Body > #twocolumn,
+#Canvas_Content_Body > #threecolumn,
+#Canvas_Content_Body > .onecolumn,
+#Canvas_Content_Body > .twocolumn,
+#Canvas_Content_Body > .threecolumn {
+    align-content: start;
+    align-items: start;
+    display: grid !important;
+    float: none !important;
+    gap: var(--chisimba-layout-gap);
+    grid-template-areas:
+        "main supplementary-top"
+        "main supplementary-bottom";
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(17rem, 24rem);
+    height: auto !important;
+    margin: 0 !important;
+    max-width: none !important;
+    min-width: 0;
+    padding: 0;
+    position: static !important;
+    width: 100% !important;
+}
+
+/*
+ * Also support modules that emit the region elements directly without one of
+ * the standard csslayout wrappers.
+ */
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region1),
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region2),
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region3) {
+    align-content: start;
+    align-items: start;
+    display: grid;
+    gap: var(--chisimba-layout-gap);
+    grid-template-areas:
+        "main supplementary-top"
+        "main supplementary-bottom";
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(17rem, 24rem);
+}
+
+#Canvas_Content_Body_Region2 {
+    align-self: start !important;
+    clear: none !important;
+    float: none !important;
+    grid-area: main;
+    height: auto !important;
+    margin: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    min-width: 0;
+    position: static !important;
+    width: auto !important;
+}
+
+#Canvas_Content_Body_Region1 {
+    align-self: start !important;
+    clear: none !important;
+    float: none !important;
+    grid-area: supplementary-top;
+    height: auto !important;
+    margin: 0 !important;
+    max-height: none !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    min-width: 0;
+    position: static !important;
+    width: auto !important;
+}
+
+#Canvas_Content_Body_Region3 {
+    align-self: start !important;
+    clear: none !important;
+    float: none !important;
+    grid-area: supplementary-bottom;
+    height: auto !important;
+    margin: 0 !important;
+    max-height: none !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    min-width: 0;
+    position: static !important;
+    width: auto !important;
+}
+
+@media (max-width: 60rem) {
+    #Canvas_Content_Body > #onecolumn,
+    #Canvas_Content_Body > #twocolumn,
+    #Canvas_Content_Body > #threecolumn,
+    #Canvas_Content_Body > .onecolumn,
+    #Canvas_Content_Body > .twocolumn,
+    #Canvas_Content_Body > .threecolumn,
+    #Canvas_Content_Body:has(> #Canvas_Content_Body_Region1),
+    #Canvas_Content_Body:has(> #Canvas_Content_Body_Region2),
+    #Canvas_Content_Body:has(> #Canvas_Content_Body_Region3) {
+        grid-template-areas:
+            "main"
+            "supplementary-top"
+            "supplementary-bottom";
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* END CHISIMBA-REBORN LAYOUT-WRAPPER GRID */
