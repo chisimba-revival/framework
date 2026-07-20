@@ -356,3 +356,266 @@
     }
 }
 /* END CHISIMBA-REBORN: PRELOGIN CONTENT-CONTAINMENT FIX */
+
+/* BEGIN CHISIMBA-REBORN: COMPONENT-AWARE REGION SURFACES
+ *
+ * Canvas regions are structural layout containers. They should not create a
+ * second visible card around content that already renders as a complete
+ * component.
+ *
+ * Flatten a region only when it directly contains one of Chisimba's recognised
+ * visual surfaces. Plain module output retains the normal region surface and
+ * padding, which protects modules such as toolbar, wiki and modulecatalogue
+ * that render tables, forms or other unboxed content directly.
+ *
+ * This also keeps exceptional blocks, such as the main user block, unchanged
+ * when they do not use one of these recognised component wrappers.
+ *
+ * @author Derek Keats
+ */
+
+/* CHISIMBA-REBORN: COMPONENT-AWARE REGION SURFACES */
+#Canvas_Content_Body_Region1:has(> .featurebox),
+#Canvas_Content_Body_Region1:has(> .contentfeaturebox),
+#Canvas_Content_Body_Region3:has(> .featurebox),
+#Canvas_Content_Body_Region3:has(> .contentfeaturebox),
+#Canvas_Content_Body_Region2:has(> .featurebox),
+#Canvas_Content_Body_Region2:has(> .contentfeaturebox),
+#Canvas_Content_Body_Region2:has(> .allstories),
+#Canvas_Content_Body_Region2:has(> .currentstory) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+/*
+ * Keep a consistent vertical rhythm between multiple complete components once
+ * the enclosing region has been flattened.
+ */
+#Canvas_Content_Body_Region1 > .featurebox + .featurebox,
+#Canvas_Content_Body_Region1 > .contentfeaturebox + .contentfeaturebox,
+#Canvas_Content_Body_Region3 > .featurebox + .featurebox,
+#Canvas_Content_Body_Region3 > .contentfeaturebox + .contentfeaturebox,
+#Canvas_Content_Body_Region2 > .featurebox + .featurebox,
+#Canvas_Content_Body_Region2 > .contentfeaturebox + .contentfeaturebox,
+#Canvas_Content_Body_Region2 > .currentstory + .currentstory {
+    margin-block-start: var(--chisimba-shell-component-gap, 1rem);
+}
+
+/* END CHISIMBA-REBORN: COMPONENT-AWARE REGION SURFACES */
+
+/* BEGIN CHISIMBA-REBORN: POSTLOGIN BLOCK-WRAPPED COMPONENT SURFACES
+ *
+ * Authenticated canvas blocks are wrapped more deeply than prelogin content:
+ *
+ *   Region2
+ *     > #middleblocks
+ *       > .block
+ *         > .featurebox
+ *
+ * The earlier component-aware selectors only handled direct component
+ * children, so authenticated story blocks retained three visible surfaces:
+ * the region card, the generic block card, and the feature box itself.
+ *
+ * When a Region 2 block contains a complete feature box, flatten only the
+ * structural Region 2 and generic block wrappers. The feature box remains the
+ * single visible component surface.
+ *
+ * Plain Region 2 module output is deliberately unaffected.
+ *
+ * @author Derek Keats
+ */
+
+/* CHISIMBA-REBORN: POSTLOGIN BLOCK-WRAPPED COMPONENT SURFACES */
+#Canvas_Content_Body_Region2:has(
+    > #middleblocks > .block > .featurebox
+) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+#Canvas_Content_Body_Region2
+    > #middleblocks
+    > .block:has(> .featurebox) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+/*
+ * Allow the feature box to occupy the available Region 2 width without the
+ * legacy five-pixel inset that was previously useful inside older skins.
+ */
+#Canvas_Content_Body_Region2
+    > #middleblocks
+    > .block
+    > .featurebox {
+    margin: 0;
+    width: 100%;
+}
+
+/* END CHISIMBA-REBORN: POSTLOGIN BLOCK-WRAPPED COMPONENT SURFACES */
+
+/* BEGIN CHISIMBA-REBORN: SIDEBLOCK-WRAPPED COMPONENT SURFACES
+ *
+ * Authenticated side blocks use the same nested-card pattern as Region 2:
+ *
+ *   Region1 / Region3
+ *     > #leftblocks / #rightblocks
+ *       > .block
+ *         > .featurebox
+ *
+ * The region shell and generic block wrapper are structural. When the block
+ * already contains a complete feature box, only the feature box should remain
+ * visible as the component surface.
+ *
+ * Ordinary sidebar output that is not wrapped in a feature box is unchanged.
+ *
+ * @author Derek Keats
+ */
+
+/* CHISIMBA-REBORN: SIDEBLOCK-WRAPPED COMPONENT SURFACES */
+#Canvas_Content_Body_Region1:has(
+    > :is(#leftblocks, #rightblocks) > .block > .featurebox
+),
+#Canvas_Content_Body_Region3:has(
+    > :is(#leftblocks, #rightblocks) > .block > .featurebox
+) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+/*
+ * Keep the block-list wrapper structural and provide spacing between complete
+ * components at the list level rather than through nested card padding.
+ */
+#Canvas_Content_Body_Region1
+    > :is(#leftblocks, #rightblocks):has(> .block > .featurebox),
+#Canvas_Content_Body_Region3
+    > :is(#leftblocks, #rightblocks):has(> .block > .featurebox) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chisimba-space-3, 12px);
+}
+
+/* Flatten only generic block wrappers that contain complete feature boxes. */
+#Canvas_Content_Body_Region1
+    > :is(#leftblocks, #rightblocks)
+    > .block:has(> .featurebox),
+#Canvas_Content_Body_Region3
+    > :is(#leftblocks, #rightblocks)
+    > .block:has(> .featurebox) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Let each feature box occupy the full available sidebar width. */
+#Canvas_Content_Body_Region1
+    > :is(#leftblocks, #rightblocks)
+    > .block
+    > .featurebox,
+#Canvas_Content_Body_Region3
+    > :is(#leftblocks, #rightblocks)
+    > .block
+    > .featurebox {
+    margin: 0;
+    width: 100%;
+}
+
+/* END CHISIMBA-REBORN: SIDEBLOCK-WRAPPED COMPONENT SURFACES */
+
+/* BEGIN CHISIMBA-REBORN: REGION COMPONENT BASELINE ALIGNMENT
+ *
+ * The first visible component in Regions 1, 2 and 3 must begin on the same
+ * vertical baseline. Legacy wrappers previously supplied different mixtures
+ * of margin and padding in each column, which caused side blocks and Region 2
+ * blocks to begin at slightly different heights after those wrappers were
+ * correctly flattened.
+ *
+ * These rules make each canvas region a pure layout container and remove only
+ * top-edge spacing from the first rendered component. Spacing between multiple
+ * components remains controlled by the block-list gap rules.
+ *
+ * This establishes a presentation-layer invariant:
+ *
+ *     first visible component in every occupied region starts at block-start 0
+ *
+ * @author Derek Keats
+ */
+
+/* CHISIMBA-REBORN: REGION COMPONENT BASELINE ALIGNMENT */
+
+/*
+ * Prevent the region columns themselves from introducing independent
+ * block-start offsets.
+ */
+#Canvas_Content_Body_Region1,
+#Canvas_Content_Body_Region2,
+#Canvas_Content_Body_Region3 {
+    margin-top: 0;
+    align-self: start;
+}
+
+/*
+ * Region 2 authenticated blocks:
+ * remove any remaining top offset from the first generic block and its
+ * feature-box component.
+ */
+#Canvas_Content_Body_Region2
+    > #middleblocks
+    > .block:first-child,
+#Canvas_Content_Body_Region2
+    > #middleblocks
+    > .block:first-child
+    > .featurebox {
+    margin-top: 0;
+}
+
+/*
+ * Side regions:
+ * normalize the first block and first feature box in either legacy sideblock
+ * list. This supports both leftblocks and rightblocks without assuming which
+ * physical side a region occupies.
+ */
+#Canvas_Content_Body_Region1
+    > :is(#leftblocks, #rightblocks)
+    > .block:first-child,
+#Canvas_Content_Body_Region3
+    > :is(#leftblocks, #rightblocks)
+    > .block:first-child,
+#Canvas_Content_Body_Region1
+    > :is(#leftblocks, #rightblocks)
+    > .block:first-child
+    > .featurebox,
+#Canvas_Content_Body_Region3
+    > :is(#leftblocks, #rightblocks)
+    > .block:first-child
+    > .featurebox {
+    margin-top: 0;
+}
+
+/*
+ * Some modules render a complete feature box directly in a region rather than
+ * inside a block list. Keep those direct components on the same baseline too.
+ */
+#Canvas_Content_Body_Region1 > .featurebox:first-child,
+#Canvas_Content_Body_Region2 > .featurebox:first-child,
+#Canvas_Content_Body_Region3 > .featurebox:first-child {
+    margin-top: 0;
+}
+
+/* END CHISIMBA-REBORN: REGION COMPONENT BASELINE ALIGNMENT */

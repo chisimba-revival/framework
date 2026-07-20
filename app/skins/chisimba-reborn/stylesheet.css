@@ -2161,3 +2161,15 @@ h5.featureboxheader,
 }
 
 /* END CHISIMBA-REBORN NOTIFICATION COMPONENT */
+
+/* BEGIN CHISIMBA-REBORN SITE-BANNER TOP SPACING
+ *
+ * Preserve the canvas gutter on the sides and below the page while reducing
+ * the unused space above the site banner to a deliberate 10px.
+ *
+ * @author Derek Keats
+ */
+.ChisimbaCanvas {
+    padding-top: 10px;
+}
+/* END CHISIMBA-REBORN SITE-BANNER TOP SPACING */
