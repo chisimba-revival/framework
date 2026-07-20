@@ -79,7 +79,7 @@ class tabsmenu extends ChisimbaObject
     {
         $objBreadcrumbs = $this->getObject('breadcrumbs');
         
-        return $this->generateMenu().'<div id="breadcrumbs">'.$objBreadcrumbs->show().'</div>';
+        return $this->generateMenu() . $objBreadcrumbs->show();
         
     }
     

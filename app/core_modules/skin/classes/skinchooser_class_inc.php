@@ -134,6 +134,37 @@ class skinchooser extends ChisimbaObject
 
         $curPage = $this->curPageURL();
 
+        /*
+         * CHISIMBA_SKINCHOOSER_FULL_PAGE_RETURN
+         *
+         * The skin chooser block may be rendered through
+         * postlogin?action=renderblock. In that case curPageURL() points to
+         * the block-only Ajax endpoint. Returning there after saving a skin
+         * produces a page containing only the chooser block.
+         *
+         * Prefer the referring full page when the current request is a
+         * renderblock request. If no safe full-page referrer is available,
+         * return to the normal postlogin page.
+         */
+        if (
+            stripos($curPage, 'action=renderblock') !== false
+            || stripos($curPage, 'action%3Drenderblock') !== false
+        ) {
+            $referrer = isset($_SERVER['HTTP_REFERER'])
+                ? trim($_SERVER['HTTP_REFERER'])
+                : '';
+
+            if (
+                $referrer !== ''
+                && stripos($referrer, 'action=renderblock') === false
+                && stripos($referrer, 'action%3Drenderblock') === false
+            ) {
+                $curPage = $referrer;
+            } else {
+                $curPage = $this->uri(array(), 'postlogin');
+            }
+        }
+
         $objSelf = new textinput('returnUri', $curPage);
         $objSelf->fldType="hidden";
         // Get all the skins as an array

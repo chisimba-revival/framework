@@ -268,22 +268,80 @@ if ($this->isValid('addblock')) {
 echo $objCssLayout->show();
 
 if ($this->getParam('message') == 'contextsetup') {
-    $alertBox = $this->getObject('alertbox', 'htmlelements');
-    $alertBox->putJs();
+    /*
+     * CHISIMBA INLINE CONTEXT-CREATED NOTIFICATION
+     *
+     * Course creation now reports success directly in the normal page flow.
+     * The language subsystem remains responsible for all visible text and
+     * placeholder substitution. Facebox, AJAX and submodal transport are not
+     * required for a page-status message.
+     */
+    $createdMessage = $this->objLanguage->code2Txt(
+        'mod_context_congratscontextcreated',
+        'context',
+        NULL,
+        'Congratulations! Your [-context-] has been created'
+    );
 
-    echo "<script type='text/javascript'>
- var browser=navigator.appName;
- var b_version=parseFloat(b_version);
- if(browser=='Microsoft Internet Explorer'){
-    alert('" . $browserError . "');
- }else{
-     jQuery.facebox(function() {
-      jQuery.get('" . str_replace('&amp;', '&', $this->uri(array('action' => 'contextcreatedmessage'))) . "', function(data) {
-        jQuery.facebox(data);
-      })
-     })
- }
-</script>";
+    $createdMessageOne = $this->objLanguage->code2Txt(
+        'mod_context_contextcreatedmessage1',
+        'context',
+        NULL,
+        'This is the home page of your [-context-] You can modify the contents of the page, by clicking "Turn Editing On"'
+    );
+
+    $createdMessageTwo = $this->objLanguage->languageText(
+        'mod_context_contextcreatedmessage2',
+        'context',
+        'This will allow you to add different types of content blocks to this page'
+    );
+
+    $createdMessageThree = $this->objLanguage->code2Txt(
+        'mod_context_contextcreatedmessage3',
+        'context',
+        NULL,
+        'To add [-readonlys-] to your [-context-], or to add/remove [-context-] plugins, go to the [-context-] control panel'
+    );
+
+    echo '<section class="chisimba-context-created-response" '
+      . 'role="status" aria-live="polite" '
+      . 'aria-labelledby="chisimba-context-created-title">'
+      . '<div class="chisimba-notification '
+      . 'chisimba-notification--success">'
+      . '<div class="chisimba-notification__icon" '
+      . 'aria-hidden="true">&#10003;</div>'
+      . '<div class="chisimba-notification__content">'
+      . '<p class="chisimba-notification__message" '
+      . 'id="chisimba-context-created-title">'
+      . htmlspecialchars($createdMessage . '.', ENT_QUOTES, 'UTF-8')
+      . '</p>'
+      . '</div>'
+      . '</div>'
+      . '<div class="chisimba-notification-followup">'
+      . '<p>'
+      . htmlspecialchars(
+            html_entity_decode(
+                $createdMessageOne . '. ' . $createdMessageTwo . '.',
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        )
+      . '</p>'
+      . '<p>'
+      . htmlspecialchars(
+            html_entity_decode(
+                $createdMessageThree . '.',
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        )
+      . '</p>'
+      . '</div>'
+      . '</section>';
 } else {
     //Check if poll module is installed
     $pollInstalled = $this->objModuleCatalogue->checkIfRegistered('poll');

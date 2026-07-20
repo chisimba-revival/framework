@@ -309,20 +309,24 @@ class menu extends ChisimbaObject
             $iconList[] = $bookmark;
         }
 
-        $im = $this->tools->addIM();
-        if($im){
-            $iconList[] = $im;
-        }
+        /*
+         * Legacy HTML instant messaging was retired in Milestone 12.
+         *
+         * A future Chisimba messaging facility should be service-backed,
+         * mobile-capable, and suitable for integrations such as Discord.
+         */
 
         $pause = $this->tools->addPause();
         if($pause){
             $iconList[] = $pause;
         }
 
-        $helpBtn = $this->tools->getHelp();
-        if($helpBtn){
-            $iconList[] = $helpBtn;
-        }
+        /*
+         * The legacy toolbar Help icon was retired in Milestone 12.
+         *
+         * Help can return later as an accessible documentation and support
+         * feature rather than as an isolated toolbar icon.
+         */
 
         $iconsStr = '';
         $divider = '';
@@ -334,7 +338,10 @@ class menu extends ChisimbaObject
         }
 
         //removed id="menu" from the div because it looks crap
-        $navbar = '<div  id="menu">'.$menu.'</div><div id="tooliconslist">'.$iconsStr.'</div><div id="breadcrumbs">'.$crumbs.'</div>' . $this->tools->addStatusbar();
+        $navbar = '<div id="menu">'.$menu.'</div>'
+          . '<div id="tooliconslist">'.$iconsStr.'</div>'
+          . $crumbs
+          . $this->tools->addStatusbar();
 
         return $navbar;
     }

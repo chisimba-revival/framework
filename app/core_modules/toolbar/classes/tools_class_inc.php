@@ -282,16 +282,75 @@ class tools extends ChisimbaObject
     }
 
     /**
+     * Render a semantic breadcrumb navigation landmark.
+     *
+     * Existing modules retain addToBreadCrumbs(), replaceBreadCrumbs(),
+     * insertBreadCrumb(), and disableModuleLink(). This method is the single
+     * rendering boundary for their established HTML fragment representation.
+     *
+     * @param string $breadcrumbs Legacy breadcrumb HTML or text.
+     * @return string Semantic breadcrumb navigation, or an empty string.
+     */
+    protected function renderBreadcrumbNavigation($breadcrumbs)
+    {
+        $breadcrumbs = trim((string) $breadcrumbs);
+
+        if ($breadcrumbs === '') {
+            return '';
+        }
+
+        $items = preg_split(
+            '/\s*(?:&raquo;|&#187;|»)\s*/u',
+            $breadcrumbs,
+            -1,
+            PREG_SPLIT_NO_EMPTY
+        );
+
+        if (!is_array($items) || empty($items)) {
+            return '';
+        }
+
+        $renderedItems = array();
+        $lastIndex = count($items) - 1;
+
+        foreach ($items as $index => $item) {
+            $item = trim($item);
+
+            if ($item === '') {
+                continue;
+            }
+
+            $attributes = ' class="chisimba-breadcrumb__item"';
+
+            if ($index === $lastIndex) {
+                $attributes .= ' aria-current="page"';
+            }
+
+            $renderedItems[] = '<li' . $attributes . '>' . $item . '</li>';
+        }
+
+        if (empty($renderedItems)) {
+            return '';
+        }
+
+        return '<nav id="breadcrumbs" class="chisimba-breadcrumb" '
+          . 'aria-label="Breadcrumb">'
+          . '<ol class="chisimba-breadcrumb__list">'
+          . implode('', $renderedItems)
+          . '</ol></nav>';
+    }
+
+    /**
      * Method to provide the breadcrumbs on the menu.
      *
-     * @return string $nav The breadcrumbs
+     * @return string Semantic breadcrumb navigation.
      */
     public function navigation()
     {
         $replaceCrumbs = $this->getSession ( 'replacebreadcrumbs' );
         if (isset ( $replaceCrumbs ) && ! empty ( $replaceCrumbs )) {
             $this->unsetSession ( 'replacebreadcrumbs' );
-            return $replaceCrumbs;
+            return $this->renderBreadcrumbNavigation($replaceCrumbs);
         }
         // Language
         $home = $this->objLanguage->languageText ( 'word_home', 'system', 'Home' );
@@ -321,9 +380,7 @@ class tools extends ChisimbaObject
             $nav = $this->makeBreadCrumbs ( $home, $module, $moduleInfo );
         }
 
-        return "<div class='Canvas_Content_Head_Breadcrumbs_Before'></div>"
-          . "<div class='Canvas_Content_Head_Breadcrumbs'>" . $nav
-          . "</div><div class='Canvas_Content_Head_Breadcrumbs_After'></div>";
+        return $this->renderBreadcrumbNavigation($nav);
     }
 
     /**

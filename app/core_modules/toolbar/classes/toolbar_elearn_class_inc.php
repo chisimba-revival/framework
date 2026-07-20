@@ -61,9 +61,9 @@ class toolbar_elearn extends ChisimbaObject
         // Take Decision on this
         // Should something be shown to not logged in users
         if ($this->objUser->isLoggedIn()) {
-            return $this->generateMenu().'<div id="breadcrumbs">'.$objBreadcrumbs->show().'</div>';
+            return $this->generateMenu() . $objBreadcrumbs->show();
         } else {
-            return '<div id="breadcrumbs">'.$objBreadcrumbs->show().'</div>';
+            return $objBreadcrumbs->show();
         }
 
 

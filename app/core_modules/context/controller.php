@@ -546,11 +546,55 @@ class context extends controller {
      * @access protected
      */
     protected function __contextcreatedmessage() {
-        echo '<h3>' . $this->objLanguage->code2Txt('mod_context_congratscontextcreated', 'context', NULL, 'Congratulations! Your [-context-] has been created') . '.</h3>
-        <p>' . $this->objLanguage->code2Txt('mod_context_contextcreatedmessage1', 'context', NULL, 'This is the home page of your [-context-] You can modify the contents of the page, by clicking "Turn Editing On"') . '.
-        ' . $this->objLanguage->languageText('mod_context_contextcreatedmessage2', 'context', 'This will allow you to add different types of content blocks to this page') . '.</p>
-        <p>' . $this->objLanguage->code2Txt('mod_context_contextcreatedmessage3', 'context', NULL, 'To add [-readonlys-] to your [-context-], or to add/remove [-context-] plugins, go to the [-context-] control panel') . '.</p>
-        ';
+        /*
+         * CHISIMBA DESIGN-SYSTEM SUCCESS NOTIFICATION
+         *
+         * The language system continues to own the translated message and
+         * placeholder substitution. The controller supplies semantic markup;
+         * the active skin owns visual presentation.
+         */
+        $createdMessage = $this->objLanguage->code2Txt(
+            'mod_context_congratscontextcreated',
+            'context',
+            NULL,
+            'Congratulations! Your [-context-] has been created'
+        );
+
+        echo '<div class="chisimba-notification '
+          . 'chisimba-notification--success" '
+          . 'role="status" aria-live="polite">'
+          . '<div class="chisimba-notification__icon" '
+          . 'aria-hidden="true">&#10003;</div>'
+          . '<div class="chisimba-notification__content">'
+          . '<p class="chisimba-notification__message">'
+          . htmlspecialchars($createdMessage . '.', ENT_QUOTES, 'UTF-8')
+          . '</p>'
+          . '</div>'
+          . '</div>'
+          . '<div class="chisimba-notification-followup">'
+          . '<p>'
+          . $this->objLanguage->code2Txt(
+                'mod_context_contextcreatedmessage1',
+                'context',
+                NULL,
+                'This is the home page of your [-context-] You can modify the contents of the page, by clicking "Turn Editing On"'
+            )
+          . '. '
+          . $this->objLanguage->languageText(
+                'mod_context_contextcreatedmessage2',
+                'context',
+                'This will allow you to add different types of content blocks to this page'
+            )
+          . '.</p>'
+          . '<p>'
+          . $this->objLanguage->code2Txt(
+                'mod_context_contextcreatedmessage3',
+                'context',
+                NULL,
+                'To add [-readonlys-] to your [-context-], or to add/remove [-context-] plugins, go to the [-context-] control panel'
+            )
+          . '.</p>'
+          . '</div>';
     }
 
     /**
