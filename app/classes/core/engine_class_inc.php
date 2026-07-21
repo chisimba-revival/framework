@@ -1834,13 +1834,35 @@ class engine {
         if (! empty ( $action )) {
             $params ['action'] = $action;
         }
+        /*
+         * CHISIMBA_CANONICAL_HTTPS_URI_SCHEME
+         *
+         * Legacy object::uri() callers cannot pass engine::uri()'s seventh
+         * $https argument. The old default therefore forced ordinary links
+         * and controller redirects to http://, even when the canonical site
+         * root was configured for HTTPS.
+         *
+         * Prefer the configured canonical site-root scheme, while also
+         * recognising native HTTPS and the standard reverse-proxy header.
+         */
+        $canonicalSiteRoot = $this->_objDbConfig->getsiteRoot();
+        $canonicalUsesHttps = is_string($canonicalSiteRoot)
+            && stripos($canonicalSiteRoot, 'https://') === 0;
+        $requestUsesHttps = isset($_SERVER['HTTPS'])
+            && strtolower((string) $_SERVER['HTTPS']) !== 'off'
+            && (string) $_SERVER['HTTPS'] !== '';
+        $forwardedProto = isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            ? strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]))
+            : '';
+        $forwardedUsesHttps = ($forwardedProto === 'https');
+        $useHttps = $https || $canonicalUsesHttps || $requestUsesHttps || $forwardedUsesHttps;
+
         if ($omitServerName) {
             $uri = $_SERVER ['PHP_SELF'];
-        } elseif($https == FALSE) {
-            $uri = "http://" . $_SERVER ['HTTP_HOST'] . $_SERVER ['PHP_SELF'];
-        }
-        else {
-            $uri = "https://" . $_SERVER ['HTTP_HOST'] . $_SERVER ['PHP_SELF'];
+        } else {
+            $uri = ($useHttps ? 'https://' : 'http://')
+                . $_SERVER ['HTTP_HOST']
+                . $_SERVER ['PHP_SELF'];
         }
         if ($mode == 'push' && $this->getParam ( '_pushed_action' )) {
             $mode = 'preserve';
