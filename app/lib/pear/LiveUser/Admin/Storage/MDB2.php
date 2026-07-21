@@ -100,12 +100,17 @@ class LiveUser_Admin_Storage_MDB2 extends LiveUser_Admin_Storage_SQL
     var $function = 'connect';
 
     /**
-     * determines of the use of sequences should be forced
+     * Whether PEAR MDB2 sequence allocation should be forced.
+     *
+     * Chisimba's MySQL permission-user table defines perm_user_id as an
+     * AUTO_INCREMENT column. Forcing PEAR MDB2 sequences makes LiveUser look
+     * for tbl_perms_perm_users_seq, which is obsolete in this schema and can
+     * leave authentication and permission records out of sync.
      *
      * @var bool
      * @access private
      */
-    var $force_seq = true;
+    var $force_seq = false;
 
     /**
      * Initializes database storage container.
