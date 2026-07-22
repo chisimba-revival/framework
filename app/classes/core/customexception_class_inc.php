@@ -53,6 +53,37 @@ class customException extends Exception
      * @param mixed $msg Encoded error message
      * @return void
      */
+    /**
+     * Determine the public URL scheme for exception redirects.
+     *
+     * CHISIMBA_EXCEPTION_REDIRECT_SCHEME
+     *
+     * The exception handler is static and therefore cannot rely on the
+     * normal engine object. It honours the configured canonical site-root
+     * constant when available, then direct HTTPS, then the reverse-proxy
+     * X-Forwarded-Proto header. This mirrors the central URI repair.
+     *
+     * @return string Public URL scheme including ://
+     */
+    protected static function redirectScheme()
+    {
+        $canonicalUsesHttps = defined('KEWL_SITE_ROOT')
+            && is_string(KEWL_SITE_ROOT)
+            && stripos(KEWL_SITE_ROOT, 'https://') === 0;
+    
+        $requestUsesHttps = isset($_SERVER['HTTPS'])
+            && strtolower((string) $_SERVER['HTTPS']) !== 'off'
+            && (string) $_SERVER['HTTPS'] !== '';
+    
+        $forwardedUsesHttps = isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            && strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]))
+                === 'https';
+    
+        return ($canonicalUsesHttps || $requestUsesHttps || $forwardedUsesHttps)
+            ? 'https://'
+            : 'http://';
+    }
+    
     public static function diePage($msg)
     {
         if ($msg === 'MDB2+Error%3A+connect+failed') {
@@ -68,7 +99,7 @@ class customException extends Exception
             ? $_SERVER['PHP_SELF']
             : '/index.php';
 
-        $uri = 'http://'
+        $uri = self::redirectScheme()
             . $host
             . $script
             . '?module=errors&action=syserr&msg='
@@ -101,7 +132,7 @@ class customException extends Exception
                 ? $_SERVER['PHP_SELF']
                 : '/index.php';
 
-            $uri = 'http://'
+            $uri = self::redirectScheme()
                 . $host
                 . $script
                 . '?module=errors'

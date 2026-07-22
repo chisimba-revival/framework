@@ -1349,7 +1349,165 @@ class engine {
      * @param  $moduleName string The name of the module to load the class from (optional)
      * @return a           reference to the loaded object in engine ($this)
      */
-    public function loadClass($name, $moduleName = '') {
+
+    /**
+     * Load a Chisimba class with typed PHP 8 diagnostics.
+     *
+     * CHISIMBA_PHP82_TYPED_CLASS_LOADER
+     *
+     * @param string $name Requested class name.
+     * @param string $moduleName Requested module namespace.
+     *
+     * @return bool
+     *
+     * @throws customException
+     */
+    public function loadClass($name, $moduleName = '')
+    {
+        $name = trim((string) $name);
+        $moduleName = trim((string) $moduleName);
+
+        if (
+            $name === ''
+            || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name) !== 1
+        ) {
+            throw new customException(
+                $this->formatClassLoaderError(
+                    'MODULE_NAMESPACE_INVALID',
+                    $name,
+                    $moduleName,
+                    '',
+                    'The requested class name is empty or unsafe.'
+                )
+            );
+        }
+
+        if (
+            $moduleName !== ''
+            && preg_match('/^[A-Za-z0-9_][A-Za-z0-9_.-]*$/', $moduleName) !== 1
+        ) {
+            throw new customException(
+                $this->formatClassLoaderError(
+                    'MODULE_NAMESPACE_INVALID',
+                    $name,
+                    $moduleName,
+                    '',
+                    'The requested module namespace is unsafe.'
+                )
+            );
+        }
+
+        if (
+            class_exists($name, false)
+            || interface_exists($name, false)
+            || trait_exists($name, false)
+        ) {
+            return true;
+        }
+
+        try {
+            $result = $this->loadClassLegacy($name, $moduleName);
+        } catch (Throwable $error) {
+            $message = $error->getMessage();
+            $filename = $this->extractClassLoaderFilename($message);
+            $category = 'PHP_INCLUDE_ERROR';
+
+            if (
+                preg_match(
+                    "/Class\\s+[\"'][^\"']+[\"']\\s+not\\s+found/i",
+                    $message
+                ) === 1
+            ) {
+                $category = 'INVALID_BASE_CLASS';
+            } elseif ($filename !== '' && !is_file($filename)) {
+                $category = 'FILE_NOT_FOUND';
+            } elseif (
+                stripos($message, 'Could not load class') !== false
+                && $filename !== ''
+                && is_file($filename)
+            ) {
+                $category = 'CLASS_ABSENT_AFTER_INCLUDE';
+            } elseif (
+                stripos($message, 'module') !== false
+                && $filename === ''
+            ) {
+                $category = 'MODULE_NAMESPACE_INVALID';
+            }
+
+            throw new customException(
+                $this->formatClassLoaderError(
+                    $category,
+                    $name,
+                    $moduleName,
+                    $filename,
+                    $message
+                ),
+                0,
+                $error
+            );
+        }
+
+        if (
+            !class_exists($name, false)
+            && !interface_exists($name, false)
+            && !trait_exists($name, false)
+        ) {
+            throw new customException(
+                $this->formatClassLoaderError(
+                    'CLASS_ABSENT_AFTER_INCLUDE',
+                    $name,
+                    $moduleName,
+                    '',
+                    'The include completed but did not declare the requested symbol.'
+                )
+            );
+        }
+
+        return $result === null ? true : (bool) $result;
+    }
+
+    protected function extractClassLoaderFilename($message)
+    {
+        if (
+            preg_match(
+                '/filename\s+([^\r\n]+?)\s*$/i',
+                (string) $message,
+                $matches
+            ) === 1
+        ) {
+            return trim($matches[1], " \t\n\r\0\x0B'\"");
+        }
+
+        return '';
+    }
+
+    protected function formatClassLoaderError(
+        $category,
+        $name,
+        $moduleName,
+        $filename,
+        $detail
+    ) {
+        $parts = array(
+            'CHISIMBA_CLASS_LOADER',
+            'type=' . $category,
+            'class=' . $name,
+            'module=' . ($moduleName === '' ? '[core]' : $moduleName),
+            'file=' . ($filename === '' ? '[unresolved]' : $filename),
+            'file_exists='
+                . ($filename !== '' && is_file($filename) ? 'yes' : 'no'),
+            'file_readable='
+                . ($filename !== '' && is_readable($filename) ? 'yes' : 'no'),
+            'detail=' . trim((string) $detail)
+        );
+
+        $message = implode('; ', $parts);
+        error_log($message);
+
+        return $message;
+    }
+
+    protected function loadClassLegacy($name, $moduleName = '') {
         if ($name == 'config' && $moduleName == 'config' && $this->_objConfig) {
             // special case: skip if config and objConfig exists, this means config
             // class is already loaded using relative path, and an attempt to load with absolute
@@ -1414,10 +1572,10 @@ class engine {
             throw new customException ( "Could not load class $name from module $moduleName: filename $filename " );
         }
         $engine = $this;
-        $this->__autoload ( $filename );
+        $this->includeClassFile( $filename );
     }
 
-    public function __autoload($class_name) {
+    protected function includeClassFile($class_name) {
         require_once $class_name;
     }
 

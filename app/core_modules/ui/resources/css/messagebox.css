@@ -1,0 +1,30 @@
+.chisimba-message {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--chisimba-space-3, .75rem);
+    margin-block: var(--chisimba-space-3, .75rem);
+    padding: var(--chisimba-space-4, 1rem);
+    border: 1px solid currentColor;
+    border-radius: var(--chisimba-radius-md, .5rem);
+    background: var(--chisimba-message-background, Canvas);
+    color: var(--chisimba-message-foreground, CanvasText);
+}
+.chisimba-message__content { min-width: 0; flex: 1 1 auto; }
+.chisimba-message__title { display: block; margin-block-end: .25rem; }
+.chisimba-message__dismiss {
+    flex: 0 0 auto;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border: 0;
+    border-radius: .25rem;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.chisimba-message__dismiss:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+.chisimba-message--success { --chisimba-message-background: #eef8f0; --chisimba-message-foreground: #14532d; }
+.chisimba-message--warning { --chisimba-message-background: #fff8e1; --chisimba-message-foreground: #713f12; }
+.chisimba-message--error { --chisimba-message-background: #fff0f0; --chisimba-message-foreground: #7f1d1d; }

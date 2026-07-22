@@ -1,0 +1,12 @@
+framework/app/core_modules/filemanager/templates/content/fileinfo_tpl.php
+framework/app/core_modules/filemanager/templates/content/showfolder.php
+framework/app/core_modules/filters/classes/parse4mp3_class_inc.php
+framework/app/core_modules/filters/classes/parse4youtube_class_inc.php
+modules/cmsadmin/classes/cmsutils_class_inc.php
+modules/cmsadmin/templates/content/cms_test_tpl.php
+modules/discussion/templates/content/discussion_moderatetopic.php
+modules/forms/classes/ui_class_inc.php
+modules/forum/templates/content/forum_moderatetopic.php
+modules/simpleregistration/templates/content/addeditevent.php
+modules/simpleregistration/templates/content/eventcontent_tpl.php
+modules/worksheetadmin/templates/content/addedit_question_tpl.php

@@ -2,27 +2,16 @@
 
 function aa(){alert("here");}
 
-//FCKEditor Specific maxLength Validator, Consumes the FCKEditor API to get the values.
+// Rich-text maxLength validator using the neutral Chisimba editor API.
 function valFckMaxLength(val, elemId, maxLength) {
-
-	var oEditor = FCKeditorAPI.GetInstance(elemId);
-	var txtInputLength = oEditor.GetHTML().length
-
-	//FCKEditor ads this by default so calculate length minus this.
-	var FCKEditorPrependDefault = '<p></p>';
-	var omitLength = FCKEditorPrependDefault.length;
-
-	var actualLength = txtInputLength - omitLength;
-
-	if (txtInputLength == 0) {
-		if (txtInputLength <= maxLength) {
-			return true;
-		}
-	} else if ((actualLength) <= maxLength) {
-		return true;
-	}
-
-	return false;
+    var content = '';
+    if (window.ChisimbaEditor) {
+        content = window.ChisimbaEditor.getData(elemId);
+    } else {
+        var element = document.getElementById(elemId);
+        content = element && typeof element.value !== 'undefined' ? element.value : val;
+    }
+    return String(content || '').length <= maxLength;
 }
 
 

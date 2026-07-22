@@ -28,6 +28,22 @@ if (!
 class htmlarea extends ChisimbaObject {
 
     /**
+     * CHISIMBA EDITOR COMPATIBILITY BOUNDARY
+     *
+     * Application modules must request rich-text editing through this class
+     * in the htmlelements core module. They must not choose or instantiate a
+     * vendor editor implementation directly.
+     *
+     * The historical class name is retained as Chisimba's stable server-side
+     * contract. A later modern editor adapter may replace the implementation
+     * behind this boundary without requiring module-level rewrites.
+     *
+     * @var string
+     */
+    const EDITOR_COMPATIBILITY_BOUNDARY = 'htmlelements/htmlarea';
+
+
+    /**
      *
      * @var string $siteRootPath: The path to the site
      */
@@ -118,10 +134,7 @@ class htmlarea extends ChisimbaObject {
      */
     function init($name=null, $value=null, $rows=4, $cols=50, $context=false) {
         $this->sysConf = $this->getObject('dbsysconfig', 'sysconfig');
-        //Loading the default FCK version from htmlelements
-        $this->fckVersion = $this->sysConf->getValue('FCKEDITOR_VERSION', 'htmlelements');
-        //Loading the default editor type from htmlelements
-        $this->sysEditor = $this->sysConf->getValue('SYSTEM_EDITOR', 'htmlelements');
+        // Editor implementation is selected only by editoradapter.
         $this->autoSaveTime = $this->sysConf->getValue('AUTOSAVE_TIME', 'htmlelements');
         $this->enableAutoSave = $this->sysConf->getValue('ENABLE_AUTOSAVE', 'htmlelements');
         $this->disableSpellChecker = $this->sysConf->getValue('DISABLE_SPELLCHECKER', 'ckeditor', true);
@@ -133,6 +146,8 @@ class htmlarea extends ChisimbaObject {
         $this->rows = $rows;
         $this->cols = $cols;
         $this->css = 'textarea';
+        $this->cssClass = 'textarea';
+        $this->cssId = $name;
         $this->templatePath = ''; //will load the default template path
         //$siteRootPath = "http://".$_SERVER['HTTP_HOST']."/nextgen/";
         //$this->setSiteRootPath($siteRoot);
@@ -217,83 +232,36 @@ class htmlarea extends ChisimbaObject {
      * Method to display the WYSIWYG Editor
      */
     function show() {
+        $adapter = $this->newObject('editoradapter', 'htmlelements');
 
+        $result = $adapter->render(array(
+            'name' => $this->name,
+            'id' => $this->cssId,
+            'value' => $this->value,
+            'cssClass' => $this->cssClass,
+            'height' => $this->height,
+            'width' => $this->width,
+            'toolbar' => $this->toolbarSet,
+            'siteRoot' => $this->siteRoot,
+            'sitePath' => $this->sitePath,
+            'ckeditorUri' => $this->getResourceUri(
+                'ckeditor/ckeditor.js',
+                'ckeditor'
+            ),
+            'ckeditorAjaxUri' => $this->getResourceUri(
+                'ckeditor/_source/core/ajax.js',
+                'ckeditor'
+            ),
+            'disableSpellChecker' => $this->disableSpellChecker,
+        ));
 
-        /* if (($this->fckVersion == '2.5.1') || ($this->fckVersion == '2.6.3')) {
-          return $this->showFCKEditor($this->fckVersion);
-          } else {
-         */
-        $base = '<script language="JavaScript" src="' . $this->getResourceUri('ckeditor/ckeditor.js', 'ckeditor') . '" type="text/javascript"></script>';
-        $baseajax = '<script language="JavaScript" src="' . $this->getResourceUri('ckeditor/_source/core/ajax.js', 'ckeditor') . '" type="text/javascript"></script>';
-        $autosave = false;
-        if (strtoupper($this->enableAutoSave) == 'TRUE') {
-            $autosave = true;
+        if (isset($result['headers']) && is_array($result['headers'])) {
+            foreach ($result['headers'] as $header) {
+                $this->appendArrayVar('headerParams', $header);
+            }
         }
-        $initVars = '
-            <div class="ChisimbaCanvas_Editor_Before"></div>
-<div class="ChisimbaCanvas_Editor">
-<script type="text/javascript">
-    var instancename=\'' . $this->name . '\';
-    var siteRootPath=\'' . $this->siteRoot . '\';
 
-</script>';
-        if ($autosave) {
-            $initVars.='
-
-    var editorIdleTime=0;
-    var autoSaveTime=\'' . $this->autoSaveTime . '\';
-    setInterval( saveUnsavedContent, 60 * 1000);
-    function saveUnsavedContent(){
-    editorIdleTime++;
-    if(editorIdleTime == autoSaveTime){
-       var numberForms = document.forms.length;
-       var formIndex;
-       for (formIndex = 0; formIndex < numberForms; formIndex++)
-         {
-          var formname=document.forms[formIndex].name;
-          if(formname != "query"){
-          document.forms[formIndex].submit();
-           }
-         }
-     }
-    }';
-        }
-        $initVars.='
-</script>
-    </div>
-     <div class="ChisimbaCanvas_Editor_After"></div>';
-
-        $this->appendArrayVar('headerParams', $initVars);
-        $this->appendArrayVar('headerParams', $base);
-        $this->appendArrayVar('headerParams', $baseajax);
-
-        $rawvalue = $this->value;
-
-        $this->editor = '<textarea name="' . $this->name . '" class="'.$this->cssClass.'" id="'.$this->cssId.'"  >' . htmlspecialchars($rawvalue) . '</textarea>';
-        $this->editor.="
-        <script type=\"text/javascript\">
-                var disablespellchecker=" . $this->disableSpellChecker . ";
-          
-        CKEDITOR.replace( '$this->name',
-       		{
-                     			filebrowserBrowseUrl : '$this->siteRoot?module=filemanager&action=fcklink&context=yes&loadwindow=yes',
-                     			filebrowserImageBrowseUrl : '$this->siteRoot?module=filemanager&action=fckimage&context=yes&loadwindow=yes&scrollbars=yes',
-	                     		filebrowserFlashBrowseUrl : '$this->siteRoot?module=filemanager&action=fckflash&context=yes&loadwindow=yes',
-                        height:'" . $this->height . "', width:'" . $this->width . "',
-                        filebrowserWindowWidth : '80%',
-                        filebrowserWindowHeight : '100%',
-                        disableNativeSpellChecker:disablespellchecker,
-                        scayt_autoStartup :!disablespellchecker,
-                        contentsCss: '$this->sitePath/core_modules/ckeditor/resources/ckeditor/chisimba.css',
-                        toolbar:'" . $this->toolbarSet . "'
-       		}
-
-
-        );
-       </script>
-            ";
-        return $this->editor;
-        //}
+        return isset($result['html']) ? $result['html'] : '';
     }
 
     /**
@@ -301,64 +269,8 @@ class htmlarea extends ChisimbaObject {
      * @return string
      */
     function showFCKEditor($version = '2.6.3') {
-        if ($version == '2.5.1') {
-            require_once($this->getResourcePath('fckeditor_2.5.1/fckeditor.php', 'fckeditor'));
-        } else {
-            require_once($this->getResourcePath('fckeditor/fckeditor_2.6.3/fckeditor_php5.php', 'fckeditor'));
-        }
-        $objConfig = $this->newObject('altconfig', 'config');
-
-        $sitePath = pathinfo($_SERVER['PHP_SELF']);
-        $sBasePath = $sitePath['dirname'];
-
-        $sBasePath = str_replace('\\', '/', $sBasePath);
-        $sBasePath = preg_replace('/\/+/', '/', $sBasePath);
-
-        if (substr($sBasePath, -1, 1) != '/') {
-            $sBasePath .= '/core_modules/fckeditor/resources/fckeditor/fckeditor_2.6.3/';
-        }
-
-        if ($version == '2.5.1') {
-            $sBasePath .= 'core_modules/fckeditor/resources/fckeditor_2.5.1/';
-        }
-
-        $oFCKeditor = new FCKeditor($this->name);
-        $oFCKeditor->BasePath = $sBasePath;
-        $oFCKeditor->Width = $this->width;
-        $oFCKeditor->Height = $this->height;
-        $oFCKeditor->ToolbarSet = $this->toolbarSet;
-        //$oFCKeditor->SiteRoot=$objConfig->getsiteRoot();
-
-        $siteRootPath = str_replace('\\', '/', $sitePath['dirname']);
-        $siteRootPath = preg_replace('/\/+/', '/', $siteRootPath);
-
-
-        if (substr($siteRootPath, -1, 1) != '/') {
-            $siteRootPath .= '/';
-        }
-
-        $oFCKeditor->SiteRoot = $siteRootPath;
-
-        $oFCKeditor->Config['SkinPath'] = $sBasePath . 'editor/skins/default/';
-        $oFCKeditor->Config['CustomConfigurationsPath'] = $sBasePath . 'chisimba_config.js';
-
-        // Only setting the template path if one specified else leaving the config '' will
-        // continue default behaviour
-        if ($this->templatePath != '') {
-            $oFCKeditor->Config['TemplatesXmlPath'] = $this->templatePath;
-        }
-
-        if ($this->context) {
-            $oFCKeditor->Context = 'Yes';
-        } else {
-            $oFCKeditor->Context = 'No';
-        }
-
-        $oFCKeditor->Value = $this->value;
-
-        $this->showFCKEditorWakeupJS();
-
-        return '<span onmouseover="wakeUpFireFoxFckeditor(\'' . $this->name . '\');">' . $oFCKeditor->CreateHtml() . '</span>';
+        // Legacy public entry point retained for module compatibility.
+        return $this->show();
     }
 
     /**
@@ -368,42 +280,8 @@ class htmlarea extends ChisimbaObject {
      *         Taken from: http://www.tohir.co.za/2006/06/fckeditor-doesnt-want-to-focus-in.html
      */
     function showFCKEditorWakeupJS() {
-        $this->appendArrayVar('headerParams', '
-<script type="text/javascript">
-    function wakeUpFireFoxFckeditor(fckEditorInstance)
-    {
-        try
-        {
-            var oEditor = FCKeditorAPI.GetInstance(fckEditorInstance);
-            try
-            {
-                oEditor.MakeEditable();
-            }
-                catch (e) {}
-            //oEditor.Focus();
-        }
-            catch (e) {}
-    }
-
-    function copyFCKData(fckEditorInstance)
-    {
-        try
-        {
-            var oEditor = FCKeditorAPI.GetInstance(fckEditorInstance);
-            try
-            {
-                oEditor.UpdateLinkedField();
-                // For Testing Purposes
-                //document.getElementById(\'content_\'+fckEditorInstance).innerHTML = document.getElementById(fckEditorInstance).value;
-            }
-                catch (e) {}
-            //oEditor.Focus();
-        }
-            catch (e) {}
-
-    }
-
-</script>');
+        // Retained as a harmless compatibility method.
+        return;
     }
 
     /**
@@ -411,11 +289,8 @@ class htmlarea extends ChisimbaObject {
      * @return string
      */
     function showTinyMCE() {
-        $str = '';
-        $str = $this->getJavaScripts();
-        $str .='<form name="imgform"><input type="hidden" name="hiddentimg"/></form>';
-        $str .='<textarea id="' . $this->name . '" name="' . $this->name . '" rows="' . $this->rows . '" cols="' . $this->cols . '" style="width: 100%">' . $this->value . '</textarea>';
-        return $str;
+        // Legacy public entry point retained for module compatibility.
+        return $this->show();
     }
 
     /**
@@ -477,51 +352,8 @@ class htmlarea extends ChisimbaObject {
      * @return string
      */
     public function getJavaScripts() {
-        $str = '
-                <script language="javascript" type="text/javascript" src="core_modules/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
-
-
-                <script language="javascript" type="text/javascript">
-
-                    tinyMCE.init({
-                        mode : "textareas",
-                        theme : "' . $this->toolbarSet . '",
-                        plugins : "style,layer,table,save,advhr,advimage,advlink,emotions,iespell,insertdatetime,preview,flash,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable",
-                        theme_advanced_buttons1_add_before : "save,newdocument,separator",
-                        theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-                        theme_advanced_buttons2_add : "separator,insertdate,inserttime,preview,separator,forecolor,backcolor",
-                        theme_advanced_buttons2_add_before: "cut,copy,paste,pastetext,pasteword,separator,search,replace,separator",
-                        theme_advanced_buttons3_add_before : "tablecontrols,separator",
-                        theme_advanced_buttons3_add : "emotions,iespell,flash,advhr,separator,print,separator,ltr,rtl,separator,fullscreen",
-                        theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops",
-                        theme_advanced_toolbar_location : "top",
-                        theme_advanced_toolbar_align : "left",
-                        theme_advanced_path_location : "bottom",
-                        content_css : "example_full.css",
-                        plugin_insertdate_dateFormat : "%Y-%m-%d",
-                        plugin_insertdate_timeFormat : "%H:%M:%S",
-                        extended_valid_elements : "hr[class|width|size|noshade],font[face|size|color|style],span[class|align|style]",
-                        external_link_list_url : "example_link_list.js",
-                        external_image_list_url : "example_image_list.js",
-                        flash_external_list_url : "example_flash_list.js",
-                        file_browser_callback : "fileBrowserCallBack",
-                        theme_advanced_resize_horizontal : false,
-                        theme_advanced_resizing : true
-                    });
-
-                    function fileBrowserCallBack(field_name, url, type, win) {
-                        // This is where you insert your custom filebrowser logic
-                        //alert("Example of filebrowser callback: field_name: " + field_name + ", url: " + url + ", type: " + type);
-                        mywindow = window.open ("' . $this->uri(array('action' => 'showmedia'), 'mediamanager') . '",  "imagewindow","location=1,status=1,scrollbars=0,  width=200,height=200");  mywindow.moveTo(0,0);
-
-                        //alert(mywindow.document.forms[0].hideme.value);
-                        // Insert new URL, this would normaly be done in a popup
-                        win.document.forms[0].elements[hide' . $this->name . '].value = "' . $this->uri(array('action' => 'list'), 'mediamanager') . '";
-                    }
-                </script>
-                    ';
-        $this->appendArrayVar('headerParams', $str);
-        //return $str;
+        // Assets are now registered by editoradapter.
+        return '';
     }
 
     /**
