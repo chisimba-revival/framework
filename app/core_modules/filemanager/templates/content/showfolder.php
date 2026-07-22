@@ -36,15 +36,10 @@ $checkOpenerScript = '
 
             if (window.opener) {
 
-                 try
-                 {
-                   window.opener.CKEDITOR.tools.callFunction(1, path' . $widthHeight . ') ;
-
+                 if (!window.opener.ChisimbaEditor
+                     || !window.opener.ChisimbaEditor.selectFile(path' . $widthHeight . ')) {
+                     return false;
                  }
-                catch(err)
-                {
-                   window.opener.CKEDITOR.tools.callFunction(2, path' . $widthHeight . ') ;
-                }
 
                  window.top.close() ;
                  window.top.opener.focus() ;

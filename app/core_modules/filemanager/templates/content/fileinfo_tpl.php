@@ -100,15 +100,9 @@ if ($mode == 'selectfilewindow' || $mode == 'selectimagewindow' || $mode == 'fck
         function selectFile()
         {
             if (window.opener) {
-                try
-                 {
-                     window.opener.CKEDITOR.tools.callFunction(1, "' . htmlspecialchars_decode($this->uri(array('action' => 'file', 'id' => $file['id'], 'filename' => $file['filename'], 'type' => '.' . $file['datatype']), 'filemanager', '', TRUE, FALSE, TRUE)) . '"' . $widthHeight . ') ;
-            
-                 }
-                catch(err)
-                {
-                     window.opener.CKEDITOR.tools.callFunction(2, "' . htmlspecialchars_decode($this->uri(array('action' => 'file', 'id' => $file['id'], 'filename' => $file['filename'], 'type' => '.' . $file['datatype']), 'filemanager', '', TRUE, FALSE, TRUE)) . '"' . $widthHeight . ') ;
-             
+                if (!window.opener.ChisimbaEditor
+                    || !window.opener.ChisimbaEditor.selectFile("' . htmlspecialchars_decode($this->uri(array('action' => 'file', 'id' => $file['id'], 'filename' => $file['filename'], 'type' => '.' . $file['datatype']), 'filemanager', '', TRUE, FALSE, TRUE)) . '"' . $widthHeight . ')) {
+                    return false;
                 }
 
                  window.top.close() ;
