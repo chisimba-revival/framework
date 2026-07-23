@@ -241,6 +241,51 @@ class dbsysconfig extends dbTable
     * @param string $module The module code of the module
     * @param array $ar The array of parameter, value pairs
     */
+    /**
+    * Add only module parameters that are not already stored.
+    *
+    * SYSCONFIG_ADDITIVE_REGISTER_RELOAD
+    * Existing values are deliberately never updated or removed.
+    *
+    * @param string $pmodule Module code
+    * @param array $ar Parsed CONFIG entries from register.conf
+    * @return array Counts of added and preserved parameters
+    */
+    function registerMissingModuleParams($pmodule, $ar)
+    {
+        $result = array('added' => 0, 'preserved' => 0);
+
+        foreach ($ar as $line) {
+            $pname = $line['pname'];
+            if ($this->checkIfSet($pname, $pmodule)) {
+                /*
+                 * SYSCONFIG_RELOAD_DESCRIPTION_METADATA
+                 * A register.conf reload may correct a language-description
+                 * key, but must never replace the stored parameter value.
+                 */
+                $existing = $this->getValueFull($pname, $pmodule);
+                if (isset($existing[0])
+                        && $existing[0]['pdesc'] !== $line['pdesc']) {
+                    $this->update(
+                            'id',
+                            $existing[0]['id'],
+                            array('pdesc' => $line['pdesc']));
+                }
+                $result['preserved']++;
+                continue;
+            }
+
+            $this->insertParam(
+                    $pname,
+                    $pmodule,
+                    $line['pvalue'],
+                    $line['pdesc']);
+            $result['added']++;
+        }
+
+        return $result;
+    }
+
     function registerModuleParams($pmodule, $ar)
     {
         // Loop through the array, and register each one

@@ -95,9 +95,15 @@ class dbfolder extends dbTable {
 
         if (!$this->valueExists('folderpath', $folder)) {
             return $this->addFolder($folder);
-        } else {
-            return $folder['id'];
         }
+
+        $folderRecord = $this->getRow('folderpath', $folder);
+
+        if (is_array($folderRecord) && isset($folderRecord['id'])) {
+            return $folderRecord['id'];
+        }
+
+        return FALSE;
     }
 
     /**

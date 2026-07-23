@@ -117,6 +117,7 @@ class filemanager extends controller {
         $this->sysConf = $this->getObject('dbsysconfig', 'sysconfig');
         $this->fckVersion = $this->sysConf->getValue('FCKEDITOR_VERSION', 'htmlelements');
         $this->objUploadMessages = $this->getObject('uploadmessages', 'filemanager');
+        $this->objFileApi = $this->getObject('fileapi', 'filemanager');
 
         // Other Classes
         $this->objConfig = $this->getObject('altconfig', 'config');
@@ -247,15 +248,44 @@ class filemanager extends controller {
      *
      */
     public function dispatch($action = 'home') {
+        // Some Chisimba entry paths call dispatch() without passing the
+        // query-string action. Resolve it from the request before routing.
+        $requestedAction = $this->getParam('action', $action);
+        if ($requestedAction === null || trim((string) $requestedAction) === '') {
+            $requestedAction = 'home';
+        }
+        $action = (string) $requestedAction;
+
+        // Explicit headless upload route.
+        // This action must bypass layouts and ordinary template rendering so
+        // the response remains JSON.
+        if ($action === 'apiuploadimage') {
+            $this->__apiuploadimage();
+        }
+
         // Check to ensure the user has access to the file manager.
         if (!$this->userHasAccess()) {
             return 'access_denied_tpl.php';
         }
 
-        $this->setLayoutTemplate('filemanager_layout_tpl.php');
-
         // retrieve the mode (edit/add/translate) from the querystring
         $mode = $this->getParam("mode", null);
+
+        // Keep legacy popup/select modes on their proven compatibility layout.
+        // Normal file-manager pages use the new semantic native shell.
+        $legacyLayoutModes = array(
+            'selectfilewindow',
+            'selectimagewindow',
+            'fckimage',
+            'fckflash',
+            'fcklink'
+        );
+        if (in_array($mode, $legacyLayoutModes, true)) {
+            $this->setLayoutTemplate('filemanager_layout_tpl.php');
+        } else {
+            $this->setLayoutTemplate('filemanager_native_layout_tpl.php');
+        }
+
 
         // hide banner and footer for certain modes
         $suppressModes = array('selectfilewindow', 'selectimagewindow', 'fckimage', 'fckflash', 'fcklink');
@@ -384,6 +414,124 @@ class filemanager extends controller {
             }
         }
         return $this->__viewfolder($folderId);
+    }
+
+    /**
+     * Purpose-built editor image picker.
+     *
+     * The picker UI consumes the headless JSON API and does not render the
+     * filemanager application layout.
+     */
+    private function __imagepicker()
+    {
+        $this->setVar('pageSuppressBanner', true);
+        $this->setVar('pageSuppressToolbar', true);
+        $this->setVar('suppressFooter', true);
+        $this->setLayoutTemplate(null);
+
+        return 'api_imagepicker_tpl.php';
+    }
+
+    /**
+     * Headless JSON endpoint for image browsing.
+     *
+     * This endpoint intentionally bypasses all filemanager HTML templates.
+     */
+    private function __apiimages()
+    {
+        $folderId = $this->getParam('folder', null);
+        $payload = $this->objFileApi->listUserImages($folderId);
+
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store, private');
+            header('X-Content-Type-Options: nosniff');
+
+            if (empty($payload['ok'])) {
+                $code = isset($payload['error']['code']) ? $payload['error']['code'] : '';
+                if ($code === 'folder_forbidden') {
+                    http_response_code(403);
+                } elseif ($code === 'folder_not_found' || $code === 'user_root_not_found') {
+                    http_response_code(404);
+                } else {
+                    http_response_code(400);
+                }
+            }
+        }
+
+        echo json_encode($payload);
+        exit;
+    }
+
+
+    /**
+     * Authenticated JSON endpoint for one editor image upload.
+     */
+    private function __apiuploadimage()
+    {
+        if (!isset($_SERVER['REQUEST_METHOD']) ||
+                strtoupper((string) $_SERVER['REQUEST_METHOD']) !== 'POST') {
+            $payload = array(
+                'ok' => false,
+                'error' => array(
+                    'code' => 'method_not_allowed',
+                    'message' => $this->objLanguage->languageText('mod_filemanager_native_upload_requires_post', 'filemanager'),
+                ),
+            );
+            $status = 405;
+        } else {
+            $folderId = $this->getParam('folder', null);
+            $payload = $this->objFileApi->uploadUserImage($folderId, 'image');
+            $status = empty($payload['ok']) ? 400 : 201;
+
+            if (empty($payload['ok']) && isset($payload['error']['code']) &&
+                    $payload['error']['code'] === 'folder_forbidden') {
+                $status = 403;
+            } elseif (empty($payload['ok']) && isset($payload['error']['code']) &&
+                    ($payload['error']['code'] === 'folder_not_found' ||
+                     $payload['error']['code'] === 'user_root_not_found')) {
+                $status = 404;
+            }
+        }
+
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store, private');
+            header('X-Content-Type-Options: nosniff');
+            header('Allow: POST');
+            http_response_code($status);
+        }
+
+        $json = json_encode(
+            $payload,
+            JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE
+        );
+
+        if ($json === false) {
+            $jsonError = function_exists('json_last_error_msg')
+                ? json_last_error_msg()
+                : 'Unknown JSON encoding error';
+
+            error_log(
+                'filemanager apiuploadimage JSON encoding failed: ' .
+                $jsonError
+            );
+
+            if (!headers_sent()) {
+                http_response_code(500);
+            }
+
+            $json = json_encode(array(
+                'ok' => false,
+                'error' => array(
+                    'code' => 'json_encoding_failed',
+                    'message' => $this->objLanguage->languageText('mod_filemanager_native_json_response_failed', 'filemanager'),
+                ),
+            ));
+        }
+
+        echo $json;
+        exit;
     }
 
     /**
@@ -595,7 +743,7 @@ class filemanager extends controller {
 
     <input name="texttocopy" readonly="readonly" style="width:70%" type="text" value="' . $value . '" />';
                 $right .= '
-    <br /><input type="button" onclick="javascript:copyToClipboard(document.formtocopy.texttocopy);" value="Copy to Clipboard" />
+    <br /><input type="button" onclick="javascript:copyToClipboard(document.formtocopy.texttocopy);" value="' . htmlspecialchars($this->objLanguage->languageText('mod_filemanager_native_copy_to_clipboard', 'filemanager'), ENT_QUOTES, 'UTF-8') . '" />
     </form>';
             }
 
@@ -612,7 +760,18 @@ class filemanager extends controller {
             $objCopy = $this->getObject('copytoclipboard', 'htmlelements');
             $objCopy->show();
 
-            return 'fileinfo_tpl.php';
+            $legacyDetailModes = array(
+                'selectfilewindow',
+                'selectimagewindow',
+                'fckimage',
+                'fckflash',
+                'fcklink'
+            );
+            if (in_array($this->getParam('mode'), $legacyDetailModes, true)) {
+                return 'fileinfo_tpl.php';
+            }
+
+            return 'native_fileinfo_tpl.php';
         }
     }
 
@@ -679,7 +838,7 @@ class filemanager extends controller {
 
     <input name="texttocopy" readonly="readonly" style="width:70%" type="text" value="' . $value . '" />';
             $right .= '
-    <br /><input type="button" onclick="javascript:copyToClipboard(document.formtocopy.texttocopy);" value="Copy to Clipboard" />
+    <br /><input type="button" onclick="javascript:copyToClipboard(document.formtocopy.texttocopy);" value="' . htmlspecialchars($this->objLanguage->languageText('mod_filemanager_native_copy_to_clipboard', 'filemanager'), ENT_QUOTES, 'UTF-8') . '" />
     </form>';
         }
 
@@ -807,7 +966,7 @@ class filemanager extends controller {
 
         $this->setVar('overwriteMessage', $this->objUploadMessages->processOverwriteMessages());
 
-        $this->objMenuTools->addToBreadCrumbs(array('Upload Results'));
+        $this->objMenuTools->addToBreadCrumbs(array($this->objLanguage->languageText('mod_filemanager_native_upload_results', 'filemanager')));
 
 
         return 'list_uploadresults_tpl.php';
@@ -911,7 +1070,7 @@ class filemanager extends controller {
                 return $this->__symlinkcontext();
         } else if (isset($_POST['submitform'])) {
             // Delete files
-            $this->objMenuTools->addToBreadCrumbs(array('Confirm Delete'));
+            $this->objMenuTools->addToBreadCrumbs(array($this->objLanguage->languageText('mod_filemanager_native_confirm_delete', 'filemanager')));
             return 'multidelete_form_tpl.php';
         } else {
             return $this->__home();
@@ -924,59 +1083,80 @@ class filemanager extends controller {
      * @access private
      */
     private function __multideleteconfirm() {
-        // echo '<pre>';
-        // print_r($_POST);
+        /* NATIVE_SAFE_DELETE_FILE */
+        if (!isset($_SERVER['REQUEST_METHOD']) ||
+                strtoupper((string) $_SERVER['REQUEST_METHOD']) !== 'POST') {
+            return $this->nextAction(NULL, array(
+                'error' => 'delete_requires_post'
+            ));
+        }
 
-        if ($this->getParam('files') == NULL || !is_array($this->getParam('files')) || count($this->getParam('files')) == 0) {
+        $folderId = $this->getParam('folder');
+        $folder = $this->objFolders->getFolder($folderId);
+        if ($folder === false) {
+            return $this->nextAction(NULL, array(
+                'error' => 'delete_folder_not_found'
+            ));
+        }
 
-            if ($this->getParam('folder') != '') {
-                return $this->nextAction('viewfolder', array('message' => 'nofilesconfirmedfordelete', 'folder' => $this->getParam('folder')));
-            } else {
-                return $this->nextAction(NULL, array('message' => 'nofilesconfirmedfordelete', 'folder' => $this->getParam('folder')));
+        $folderParts = explode('/', (string) $folder['folderpath']);
+        $canManageFolder = count($folderParts) >= 2 &&
+            $this->objFolders->checkPermissionUploadFolder(
+                $folderParts[0],
+                $folderParts[1]
+            );
+        if (!$canManageFolder) {
+            return $this->nextAction('viewfolder', array(
+                'folder' => $folderId,
+                'error' => 'delete_not_permitted'
+            ));
+        }
+
+        $files = $this->getParam('files');
+        if (!is_array($files) || count($files) === 0) {
+            return $this->nextAction('viewfolder', array(
+                'folder' => $folderId,
+                'error' => 'nofilesconfirmedfordelete'
+            ));
+        }
+
+        $numFiles = 0;
+        foreach ($files as $fileId) {
+            $fileId = (string) $fileId;
+            if ($fileId === '' ||
+                    strpos($fileId, 'folder__') === 0 ||
+                    strpos($fileId, 'symlink__') === 0) {
+                continue;
             }
-        } else {
-            $files = $this->getParam('files');
 
-            $numFiles = 0;
-            $numFolders = 0;
-
-            $objBackground = $this->newObject('background', 'utilities');
-
-            //check the users connection status,
-            //only needs to be done once, then it becomes internal
-            $status = $objBackground->isUserConn();
-
-            //keep the user connection alive, even if browser is closed!
-            $callback = $objBackground->keepAlive();
-
-            foreach ($files as $file) {
-                if (substr($file, 0, 8) == 'folder__') {
-                    $folder = substr($file, 8);
-                    $this->objFolders->deleteFolder($folder);
-                    $numFolders++;
-                } else if (substr($file, 0, 9) == 'symlink__') {
-                    $symlink = substr($file, 9);
-                    $this->objSymlinks->removeSymlink($symlink);
-                    $numFiles++;
-                } else {
-                    $fileDetails = $this->objFiles->getFile($file);
-
-                    // Check if User, and so be able to delete files
-                    if ($fileDetails['userid'] = $this->objUser->userId()) {
-                        $this->objFiles->deleteFile($file, TRUE);
-                        $numFiles++;
-                    }
-                }
+            $fileDetails = $this->objFiles->getFile($fileId);
+            if ($fileDetails === false ||
+                    !isset($fileDetails['filefolder']) ||
+                    (string) $fileDetails['filefolder'] !==
+                        (string) $folder['folderpath']) {
+                continue;
             }
 
-            //$call2 = $objBackground->setCallback("john.doe@tohir.co.za","Your Script","The really long running process that you requested is complete!");
+            $isOwner = isset($fileDetails['userid']) &&
+                (string) $fileDetails['userid'] ===
+                    (string) $this->objUser->userId();
+            if (!$isOwner && !$canManageFolder) {
+                continue;
+            }
 
-            if ($this->getParam('folder') != '') {
-                return $this->nextAction('viewfolder', array('folder' => $this->getParam('folder'), 'message' => 'filesdeleted', 'numfiles' => $numFiles, 'numfolders' => $numFolders));
-            } else {
-                return $this->nextAction(NULL, array('message' => 'filesdeleted'));
+            // Delete only the selected file/version. Do not remove unrelated
+            // same-named archives or copies.
+            if ($this->objFiles->deleteFile($fileId, false)) {
+                $numFiles++;
             }
         }
+
+        return $this->nextAction('viewfolder', array(
+            'folder' => $folderId,
+            'message' => $numFiles > 0 ? 'filesdeleted' : '',
+            'error' => $numFiles > 0 ? '' : 'couldnotdeletefile',
+            'numfiles' => $numFiles
+        ));
     }
 
     /**
@@ -1029,21 +1209,53 @@ class filemanager extends controller {
 
         $this->setVarByRef('symlinks', $symlinks);
 
-        $objPreviewFolder = $this->getObject('previewfolder');
-        $objPreviewFolder->editPermission = $folderPermission;
-        $this->setVarByRef(
-                'table', $objPreviewFolder->previewContent(
-                        $subfolders, $files, $this->getParam("mode"), $this->getParam("name"), $symlinks, explode(
-                                '____', $this->getParam('restriction')), ($this->getParam('forcerestrictions') == 'yes')
-                )
+        // The native browser renders directly from folders/files/symlinks and
+        // must not build the legacy preview table. That table eagerly creates
+        // thumbnails and can fail before the native template is reached.
+        $legacyPreviewModes = array(
+            'selectfilewindow',
+            'selectimagewindow',
+            'fckimage',
+            'fckflash',
+            'fcklink'
         );
+        if (in_array($this->getParam('mode'), $legacyPreviewModes, true)) {
+            $objPreviewFolder = $this->getObject('previewfolder');
+            $objPreviewFolder->editPermission = $folderPermission;
+            $this->setVarByRef(
+                'table',
+                $objPreviewFolder->previewContent(
+                    $subfolders,
+                    $files,
+                    $this->getParam("mode"),
+                    $this->getParam("name"),
+                    $symlinks,
+                    explode('____', $this->getParam('restriction')),
+                    ($this->getParam('forcerestrictions') == 'yes')
+                )
+            );
+        } else {
+            $table = '';
+            $this->setVarByRef('table', $table);
+        }
 
         $breadcrumbs = $this->objFolders->generateBreadCrumbs($folder['folderpath']);
         $this->setVarByRef('breadcrumbs', $breadcrumbs);
 
 
 
-        return 'showfolder.php';
+        $legacyTemplateModes = array(
+            'selectfilewindow',
+            'selectimagewindow',
+            'fckimage',
+            'fckflash',
+            'fcklink'
+        );
+        if (in_array($this->getParam('mode'), $legacyTemplateModes, true)) {
+            return 'showfolder.php';
+        }
+
+        return 'native_showfolder_tpl.php';
     }
 
     /**
@@ -1124,38 +1336,57 @@ class filemanager extends controller {
      * @access private
      */
     private function __deletefolder() {
-        $id = $this->getParam('id');
-
-        // Get the Folder Path
-        $folder = $this->objFolders->getFolderPath($id);
-
-        $objBackground = $this->newObject('background', 'utilities');
-
-        //check the users connection status,
-        //only needs to be done once, then it becomes internal
-        $status = $objBackground->isUserConn();
-
-        //keep the user connection alive, even if browser is closed!
-        $callback = $objBackground->keepAlive();
-
-        // Delete the Folder
-        $result = $this->objFolders->deleteFolder($id);
-
-        //
-        //$call2 = $objBackground->setCallback("john.doe@tohir.co.za","Your Script","The really long running process that you requested is complete!");
-
-
-        if ($result == 'norecordoffolder') {
-            return $this->nextAction(NULL, array('error' => 'norecordoffolder'));
+        /* NATIVE_SAFE_DELETE_FOLDER */
+        if (!isset($_SERVER['REQUEST_METHOD']) ||
+                strtoupper((string) $_SERVER['REQUEST_METHOD']) !== 'POST') {
+            return $this->nextAction(NULL, array(
+                'error' => 'delete_requires_post'
+            ));
         }
 
-        $resultmessage = $result ? 'folderdeleted' : 'couldnotdeletefolder';
+        $id = $this->getParam('id');
+        $folderRecord = $this->objFolders->getFolder($id);
+        if ($folderRecord === false) {
+            return $this->nextAction(NULL, array(
+                'error' => 'norecordoffolder'
+            ));
+        }
 
-        // Get Parent Id based on the Folder Path
-        $parentId = $this->objFolders->getFolderId(dirname($folder));
+        // A level-two user/context root must never be deleted here.
+        if (!isset($folderRecord['folderlevel']) ||
+                (int) $folderRecord['folderlevel'] <= 2) {
+            return $this->nextAction('viewfolder', array(
+                'folder' => $id,
+                'error' => 'cannotdeleterootfolder'
+            ));
+        }
 
-        // Redirect to Parent Folder
-        return $this->nextAction('viewfolder', array('folder' => $parentId, 'message' => $resultmessage, 'ref' => basename($folder)));
+        $folderPath = (string) $folderRecord['folderpath'];
+        $folderParts = explode('/', $folderPath);
+        $canManageFolder = count($folderParts) >= 2 &&
+            $this->objFolders->checkPermissionUploadFolder(
+                $folderParts[0],
+                $folderParts[1]
+            );
+        if (!$canManageFolder) {
+            $parentId = $this->objFolders->getFolderId(dirname($folderPath));
+            return $this->nextAction('viewfolder', array(
+                'folder' => $parentId,
+                'error' => 'delete_not_permitted'
+            ));
+        }
+
+        $parentId = $this->objFolders->getFolderId(dirname($folderPath));
+        $this->objFolders->deleteFolder($id);
+
+        // The legacy service returns FALSE even after success; verify state.
+        $deleted = $this->objFolders->getFolder($id) === false;
+        return $this->nextAction('viewfolder', array(
+            'folder' => $parentId,
+            'message' => $deleted ? 'folderdeleted' : '',
+            'error' => $deleted ? '' : 'couldnotdeletefolder',
+            'ref' => basename($folderPath)
+        ));
     }
 
     /**
@@ -1166,7 +1397,7 @@ class filemanager extends controller {
      * @access private
      */
     private function __symlinkcontext() {
-        $this->objMenuTools->addToBreadCrumbs(array('Add to Course'));
+        $this->objMenuTools->addToBreadCrumbs(array($this->objLanguage->languageText('mod_filemanager_native_add_to_course', 'filemanager')));
         return 'symlinkcontext_tpl.php';
     }
 
@@ -1199,81 +1430,211 @@ class filemanager extends controller {
      */
     private function __extractarchive() {
         $archiveFileId = $this->getParam('file');
+        $parentId = $this->getParam('parentfolder');
 
-        $file = $this->objFiles->getFullFilePath($archiveFileId);
-
-        if ($this->debug) {
-            echo 'Zip Files Detail';
-            var_dump($file);
+        if ($parentId === 'ROOT') {
+            $parentId = $this->objFolders->getFolderId(
+                'users/' . $this->objUser->userId()
+            );
         }
 
-        if ($file == FALSE) {
-            return $this->nextAction('viewfolder', array('folder' => $this->getParam('parentfolder'), 'error' => 'couldnotfindarchive'));
-        } else {
+        $returnError = function ($message) use (&$parentId) {
+            return $this->nextAction(
+                'viewfolder',
+                array(
+                    'folder' => $parentId,
+                    'archiveerror' => $message,
+                )
+            );
+        };
 
-            $parentId = $this->getParam('parentfolder');
+        if (!class_exists('ZipArchive')) {
+            return $returnError(
+                $this->objLanguage->languageText('mod_filemanager_native_zip_unavailable', 'filemanager')
+            );
+        }
 
-            if ($parentId == 'ROOT') {
-                $parentId = $this->objFolders->getFolderId('users/' . $this->objUser->userId());
+        $fileRecord = $this->objFiles->getFileInfo($archiveFileId);
+        if (($parentId === null || $parentId === '') &&
+                is_array($fileRecord) &&
+                !empty($fileRecord['filefolder'])) {
+            $parentId = $this->objFolders->getFolderId(
+                $fileRecord['filefolder']
+            );
+        }
+        $archivePath = $this->objFiles->getFullFilePath($archiveFileId);
+        if ($fileRecord === false || $archivePath === false ||
+                !is_file($archivePath)) {
+            return $returnError($this->objLanguage->languageText('mod_filemanager_native_zip_not_found', 'filemanager'));
+        }
+
+        $archiveType = isset($fileRecord['datatype'])
+            ? strtolower((string) $fileRecord['datatype'])
+            : '';
+        if ($archiveType !== 'zip') {
+            return $returnError($this->objLanguage->languageText('mod_filemanager_native_zip_only', 'filemanager'));
+        }
+
+        $sourceParts = explode('/', (string) $fileRecord['filefolder']);
+        if (count($sourceParts) < 2 ||
+                !$this->objFolders->checkPermissionUploadFolder(
+                    $sourceParts[0],
+                    $sourceParts[1]
+                )) {
+            return $returnError(
+                $this->objLanguage->languageText('mod_filemanager_native_zip_permission', 'filemanager')
+            );
+        }
+
+        $folder = $this->objFolders->getFolderPath($parentId);
+        $fullFolderPath = $this->objFolders->getFullFolderPath($parentId);
+        if ($folder === false || $fullFolderPath === false ||
+                !is_dir($fullFolderPath) || !is_writable($fullFolderPath)) {
+            return $returnError(
+                $this->objLanguage->languageText('mod_filemanager_native_destination_unavailable', 'filemanager')
+            );
+        }
+
+        $folderParts = explode('/', (string) $folder);
+        if (count($folderParts) < 2 ||
+                !$this->objFolders->checkPermissionUploadFolder(
+                    $folderParts[0],
+                    $folderParts[1]
+                )) {
+            return $returnError(
+                $this->objLanguage->languageText('mod_filemanager_native_destination_forbidden', 'filemanager')
+            );
+        }
+
+        $destination = realpath($fullFolderPath);
+        if ($destination === false) {
+            return $returnError(
+                $this->objLanguage->languageText('mod_filemanager_native_destination_unresolved', 'filemanager')
+            );
+        }
+
+        $zip = new ZipArchive();
+        $openResult = $zip->open($archivePath);
+        if ($openResult !== true) {
+            return $returnError($this->objLanguage->languageText('mod_filemanager_native_zip_unreadable', 'filemanager'));
+        }
+
+        $entryLimit = 2000;
+        $expandedSizeLimit = 512 * 1024 * 1024;
+        $compressionRatioLimit = 250;
+        $expandedSize = 0;
+        $entryNames = array();
+        $validationError = '';
+
+        if ($zip->numFiles > $entryLimit) {
+            $validationError = $this->objLanguage->languageText('mod_filemanager_native_zip_too_many', 'filemanager');
+        }
+
+        for ($index = 0;
+                $validationError === '' && $index < $zip->numFiles;
+                $index++) {
+            $stat = $zip->statIndex($index, ZipArchive::FL_UNCHANGED);
+            if ($stat === false || !isset($stat['name'])) {
+                $validationError = $this->objLanguage->languageText('mod_filemanager_native_zip_bad_entry', 'filemanager');
+                break;
             }
 
-            if ($this->debug) {
-                echo 'Posted Variables';
-                var_dump($_POST);
-
-                echo 'Folder ID';
-                var_dump($parentId);
+            $name = str_replace('\\', '/', (string) $stat['name']);
+            if ($name === '' || strpos($name, "\0") !== false ||
+                    $name[0] === '/' ||
+                    preg_match('/^[A-Za-z]:\//', $name)) {
+                $validationError = $this->objLanguage->languageText('mod_filemanager_native_zip_absolute_path', 'filemanager');
+                break;
             }
 
-            $folder = $this->objFolders->getFolderPath($parentId);
-            $fullFolderPath = $this->objFolders->getFullFolderPath($parentId);
-
-            $folderParts = explode('/', $folder);
-
-            if ($this->debug) {
-                echo 'FolderParts';
-                var_dump($folder);
-                var_dump($folderParts);
-            }
-
-            // $objBackground = $this->newObject('background', 'utilities');
-            //check the users connection status,
-            //only needs to be done once, then it becomes internal
-            //$status = $objBackground->isUserConn();
-            //keep the user connection alive, even if browser is closed!
-            //$callback = $objBackground->keepAlive();
-            if (extension_loaded('zip') && function_exists('zip_open')) {
-                $this->extzip = TRUE;
-            }
-
-            if ($this->extzip == TRUE) {
-                $zip = new ZipArchive;
-                $zip->open($file);
-                if (!$zip->extractTo($fullFolderPath)) {
-                    //log_debug($zip->error);
-                    $zip->close();
-                    //return FALSE;
-                } else {
-                    $zip->close();
-                    //return TRUE;
+            $segments = explode('/', $name);
+            foreach ($segments as $segment) {
+                if ($segment === '..') {
+                    $validationError =
+                        $this->objLanguage->languageText('mod_filemanager_native_zip_parent_path', 'filemanager');
+                    break 2;
                 }
-            } else {
-                $objZip = $this->newObject('wzip', 'utilities');
-                $objZip->unzip($file, $fullFolderPath);
             }
 
-            if ($this->debug) {
-                echo 'Full Folder Path';
-                var_dump($fullFolderPath);
+            $opsys = 0;
+            $attributes = 0;
+            if ($zip->getExternalAttributesIndex(
+                    $index,
+                    $opsys,
+                    $attributes,
+                    ZipArchive::FL_UNCHANGED
+                ) && $opsys === ZipArchive::OPSYS_UNIX) {
+                $fileType = ($attributes >> 16) & 0170000;
+                if ($fileType === 0120000) {
+                    $validationError =
+                        $this->objLanguage->languageText('mod_filemanager_native_zip_symlink', 'filemanager');
+                    break;
+                }
             }
 
-            $objIndexFileProcessor = $this->getObject('indexfileprocessor');
-            $objIndexFileProcessor->indexFolder($folderParts[0], $folderParts[1], $fullFolderPath, $this->objUser->userId());
+            $size = isset($stat['size']) ? (int) $stat['size'] : 0;
+            $compressedSize = isset($stat['comp_size'])
+                ? (int) $stat['comp_size']
+                : 0;
+            $expandedSize += max(0, $size);
+            if ($expandedSize > $expandedSizeLimit) {
+                $validationError =
+                    'The ZIP expands beyond the 512 MB safety limit.';
+                break;
+            }
+            if ($compressedSize > 0 &&
+                    ($size / $compressedSize) > $compressionRatioLimit) {
+                $validationError =
+                    $this->objLanguage->languageText('mod_filemanager_native_zip_ratio', 'filemanager');
+                break;
+            }
 
-            //$call2 = $objBackground->setCallback("john.doe@tohir.co.za","Your Script","The really long running process that you requested is complete!");
+            $target = $destination . DIRECTORY_SEPARATOR
+                . str_replace('/', DIRECTORY_SEPARATOR, $name);
+            $isDirectory = substr($name, -1) === '/';
+            if ((!$isDirectory && file_exists($target)) ||
+                    ($isDirectory && file_exists($target) && !is_dir($target))) {
+                $validationError =
+                    $this->objLanguage->languageText('mod_filemanager_native_zip_overwrite', 'filemanager');
+                break;
+            }
 
-            return $this->nextAction('viewfolder', array('folder' => $parentId, 'message' => 'archiveextracted', 'archivefile' => $archiveFileId));
+            $entryNames[] = $name;
         }
+
+        if ($validationError !== '') {
+            $zip->close();
+            return $returnError($validationError);
+        }
+
+        $oldUmask = umask(0022);
+        $extracted = $zip->extractTo($destination, $entryNames);
+        umask($oldUmask);
+        $zipStatus = $zip->getStatusString();
+        $zip->close();
+
+        if (!$extracted) {
+            return $returnError(
+                $this->objLanguage->languageText('mod_filemanager_native_zip_extract_failed', 'filemanager') . ' ' . $zipStatus
+            );
+        }
+
+        $objIndexFileProcessor = $this->getObject('indexfileprocessor');
+        $objIndexFileProcessor->indexFolder(
+            $folderParts[0],
+            $folderParts[1],
+            $destination,
+            $this->objUser->userId()
+        );
+
+        return $this->nextAction(
+            'viewfolder',
+            array(
+                'folder' => $parentId,
+                'message' => 'archiveextracted',
+                'archivefile' => $archiveFileId,
+            )
+        );
     }
 
     /**

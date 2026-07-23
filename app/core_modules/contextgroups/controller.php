@@ -162,7 +162,7 @@ class contextgroups extends controller {
      * @param string $action Action to be taken
      * @return boolean Whether user has permission to access or not.
      */
-    public function isValid($action) {
+    public function isValid($action, $default = true) {
         $needPermissions = array('searchforusers', 'viewsearchresults', 'addusers', 'removeuser', 'removeallusers');
 
         if (in_array($action, $needPermissions)) {

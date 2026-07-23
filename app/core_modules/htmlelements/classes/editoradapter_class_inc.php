@@ -7,18 +7,11 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 /**
  * Neutral server-side rendering adapter for Chisimba rich-text fields.
  *
- * The historical htmlarea class remains the public compatibility boundary.
- * Vendor-specific rendering is isolated here so that the editor library can
- * later be replaced without changing application modules.
+ * htmlarea remains the application-facing compatibility boundary. TinyMCE is
+ * isolated here so application modules do not depend on a vendor API.
  */
 class editoradapter extends ChisimbaObject
 {
-    /**
-     * Render an editor field and return its header assets and body markup.
-     *
-     * @param array $options
-     * @return array{headers: array<int,string>, html: string}
-     */
     public function render($options = array())
     {
         $name = isset($options['name']) ? (string) $options['name'] : '';
@@ -33,52 +26,69 @@ class editoradapter extends ChisimbaObject
         $width = isset($options['width']) ? (string) $options['width'] : '100%';
         $toolbar = isset($options['toolbar']) ? (string) $options['toolbar'] : 'advanced';
         $siteRoot = isset($options['siteRoot']) ? (string) $options['siteRoot'] : '';
-        $sitePath = isset($options['sitePath']) ? (string) $options['sitePath'] : '';
-        $ckeditorUri = isset($options['ckeditorUri']) ? (string) $options['ckeditorUri'] : '';
-        $ckeditorAjaxUri = isset($options['ckeditorAjaxUri'])
-            ? (string) $options['ckeditorAjaxUri']
+        $tinymceUri = isset($options['tinymceUri'])
+            ? (string) $options['tinymceUri']
             : '';
-        $disableSpellChecker = !empty($options['disableSpellChecker']);
 
         $headers = array();
 
-        // Neutral browser-side editor API. Application modules must use this
-        // object rather than addressing CKEditor, FCKeditor, or TinyMCE.
         $headers[] = '<script type="text/javascript">'
             . '(function(w){'
-            . 'if(w.ChisimbaEditor){return;}'
             . 'function instance(id){'
-            . 'if(w.CKEDITOR&&w.CKEDITOR.instances){return w.CKEDITOR.instances[id]||null;}'
-            . 'return null;'
+            . 'return w.tinymce&&typeof w.tinymce.get==="function"'
+            . '?w.tinymce.get(id):null;'
             . '}'
             . 'w.ChisimbaEditor={'
+            . 'activePicker:null,'
             . 'get:function(id){return instance(id);},'
-            . 'getData:function(id){var e=instance(id);if(e&&typeof e.getData==="function"){return e.getData();}var n=document.getElementById(id);return n&&typeof n.value!=="undefined"?n.value:"";},'
-            . 'setData:function(id,value){var e=instance(id);if(e&&typeof e.setData==="function"){e.setData(value);return true;}var n=document.getElementById(id);if(n&&typeof n.value!=="undefined"){n.value=value;return true;}return false;},'
-            . 'sync:function(id){var e=instance(id);if(e&&typeof e.updateElement==="function"){e.updateElement();return true;}return !!document.getElementById(id);},'
-            . 'focus:function(id){var e=instance(id);if(e&&typeof e.focus==="function"){e.focus();return true;}var n=document.getElementById(id);if(n&&typeof n.focus==="function"){n.focus();return true;}return false;},'
-            . 'preview:function(id){var e=instance(id);if(e&&typeof e.execCommand==="function"){try{e.execCommand("preview");return true;}catch(ignore){}}var p=w.open("","chisimba_editor_preview");if(!p){return false;}p.document.open();p.document.write("<!doctype html><html><head><title>Preview</title></head><body>"+this.getData(id)+"</body></html>");p.document.close();return true;},'
+            . 'getData:function(id){'
+            . 'var e=instance(id);'
+            . 'if(e&&typeof e.getContent==="function"){return e.getContent();}'
+            . 'var n=document.getElementById(id);'
+            . 'return n&&typeof n.value!=="undefined"?n.value:"";'
+            . '},'
+            . 'setData:function(id,value){'
+            . 'var e=instance(id);'
+            . 'if(e&&typeof e.setContent==="function"){e.setContent(value||"");return true;}'
+            . 'var n=document.getElementById(id);'
+            . 'if(n&&typeof n.value!=="undefined"){n.value=value||"";return true;}'
+            . 'return false;'
+            . '},'
+            . 'sync:function(id){'
+            . 'var e=instance(id);'
+            . 'if(e&&typeof e.save==="function"){e.save();return true;}'
+            . 'return !!document.getElementById(id);'
+            . '},'
+            . 'focus:function(id){'
+            . 'var e=instance(id);'
+            . 'if(e&&typeof e.focus==="function"){e.focus();return true;}'
+            . 'var n=document.getElementById(id);'
+            . 'if(n&&typeof n.focus==="function"){n.focus();return true;}'
+            . 'return false;'
+            . '},'
+            . 'preview:function(id){'
+            . 'var p=w.open("","chisimba_editor_preview");'
+            . 'if(!p){return false;}'
+            . 'p.document.open();'
+            . 'p.document.write("<!doctype html><html><head><title>Preview</title></head><body>"+this.getData(id)+"</body></html>");'
+            . 'p.document.close();'
+            . 'return true;'
+            . '},'
+            . 'beginFilePick:function(callback){this.activePicker=callback;},'
             . 'selectFile:function(url,width,height){'
-            . 'if(!(w.CKEDITOR&&w.CKEDITOR.tools&&typeof w.CKEDITOR.tools.callFunction==="function")){return false;}'
-            . 'var args=[url];if(typeof width!=="undefined"){args.push(width);}if(typeof height!=="undefined"){args.push(height);}'
-            . 'try{w.CKEDITOR.tools.callFunction.apply(w.CKEDITOR.tools,[1].concat(args));return true;}'
-            . 'catch(ignore){try{w.CKEDITOR.tools.callFunction.apply(w.CKEDITOR.tools,[2].concat(args));return true;}catch(ignore2){return false;}}'
+            . 'if(typeof this.activePicker!=="function"){return false;}'
+            . 'var callback=this.activePicker;'
+            . 'this.activePicker=null;'
+            . 'callback(url,{width:width||undefined,height:height||undefined});'
+            . 'return true;'
             . '}'
             . '};'
             . '}(window));'
             . '</script>';
 
-        if ($ckeditorUri !== '') {
+        if ($tinymceUri !== '') {
             $headers[] = '<script src="'
-                . htmlspecialchars($ckeditorUri, ENT_QUOTES, 'UTF-8')
-                . '" type="text/javascript"></script>';
-        }
-
-        // Retained temporarily for exact compatibility with the historical
-        // CKEditor package. It can be removed when the vendor is replaced.
-        if ($ckeditorAjaxUri !== '') {
-            $headers[] = '<script src="'
-                . htmlspecialchars($ckeditorAjaxUri, ENT_QUOTES, 'UTF-8')
+                . htmlspecialchars($tinymceUri, ENT_QUOTES, 'UTF-8')
                 . '" type="text/javascript"></script>';
         }
 
@@ -92,32 +102,61 @@ class editoradapter extends ChisimbaObject
             . htmlspecialchars($value, ENT_QUOTES, 'UTF-8')
             . '</textarea>';
 
+        $heightNumber = (int) preg_replace('/[^0-9]/', '', $height);
+        if ($heightNumber < 200) {
+            $heightNumber = 400;
+        }
+
+        $toolbarValue = strtolower($toolbar) === 'simple'
+            ? 'undo redo | bold italic | bullist numlist | link image | removeformat'
+            : 'undo redo | blocks | bold italic underline | '
+                . 'alignleft aligncenter alignright | bullist numlist | '
+                . 'link image table | code preview | removeformat';
+
+        $pickerUrl = $siteRoot
+            . '?module=filemanager&action=imagepicker'
+            . '&context=yes&loadwindow=yes&scrollbars=yes';
+
         $config = array(
-            'filebrowserBrowseUrl' => $siteRoot
-                . '?module=filemanager&action=fcklink&context=yes&loadwindow=yes',
-            'filebrowserImageBrowseUrl' => $siteRoot
-                . '?module=filemanager&action=fckimage&context=yes&loadwindow=yes&scrollbars=yes',
-            'filebrowserFlashBrowseUrl' => $siteRoot
-                . '?module=filemanager&action=fckflash&context=yes&loadwindow=yes',
-            'height' => $height,
+            'selector' => '#' . $id,
+            'height' => $heightNumber,
             'width' => $width,
-            'filebrowserWindowWidth' => '80%',
-            'filebrowserWindowHeight' => '100%',
-            'disableNativeSpellChecker' => $disableSpellChecker,
-            'scayt_autoStartup' => !$disableSpellChecker,
-            'contentsCss' => $sitePath
-                . '/core_modules/ckeditor/resources/ckeditor/chisimba.css',
-            'toolbar' => $toolbar,
+            'license_key' => 'gpl',
+            'menubar' => false,
+            'promotion' => false,
+            'branding' => false,
+            'plugins' => 'link image lists table code preview',
+            'toolbar' => $toolbarValue,
+            'browser_spellcheck' => true,
+            'convert_urls' => false,
+            'relative_urls' => false,
+            'remove_script_host' => false,
+            'file_picker_types' => 'image',
         );
 
         $script = '<script type="text/javascript">'
             . '(function(){'
-            . 'if(typeof CKEDITOR==="undefined"){return;}'
-            . 'CKEDITOR.replace('
-            . json_encode($name)
-            . ','
-            . json_encode($config)
-            . ');'
+            . 'function start(){'
+            . 'if(typeof tinymce==="undefined"){'
+            . 'console.error("Chisimba editor: TinyMCE failed to load.");'
+            . 'return;'
+            . '}'
+            . 'var config=' . json_encode($config) . ';'
+            . 'config.file_picker_callback=function(callback,value,meta){'
+            . 'if(!window.ChisimbaEditor){return;}'
+            . 'window.ChisimbaEditor.beginFilePick(callback);'
+            . 'window.open('
+            . json_encode($pickerUrl)
+            . ',"chisimba_image_picker",'
+            . '"width=1000,height=720,resizable=yes,scrollbars=yes");'
+            . '};'
+            . 'tinymce.init(config).catch(function(error){'
+            . 'console.error("Chisimba editor initialization failed.",error);'
+            . '});'
+            . '}'
+            . 'if(document.readyState==="loading"){'
+            . 'document.addEventListener("DOMContentLoaded",start,{once:true});'
+            . '}else{start();}'
             . '}());'
             . '</script>';
 
@@ -126,7 +165,7 @@ class editoradapter extends ChisimbaObject
             'html' => '<style>'
                 . '.chisimba-editor-adapter{display:block;width:100%;max-width:100%;box-sizing:border-box;}'
                 . '.chisimba-editor-adapter textarea{width:100%;max-width:100%;box-sizing:border-box;}'
-                . '.chisimba-editor-adapter .cke,.chisimba-editor-adapter .cke_chrome{width:100% !important;max-width:100%;box-sizing:border-box;}'
+                . '.chisimba-editor-adapter .tox-tinymce{width:100% !important;max-width:100%;box-sizing:border-box;}'
                 . '</style>'
                 . '<div class="chisimba-editor-adapter">'
                 . $textarea

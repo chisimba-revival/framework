@@ -128,6 +128,38 @@ class sysconfig extends controller {
                 if ($pmodule !== NULL) {
                     //Set the pmodule code in the template
                     $this->setVar('pmodule', $pmodule);
+
+                    // SYSCONFIG_RELOAD_MODULE_PARAMS feedback
+                    $reloadStatus = $this->getParam('reload_status', NULL);
+                    if ($reloadStatus === 'success') {
+                        $reloadMessage = $this->objLanguage->languageText(
+                                'mod_sysconfig_reloadparams_success', 'sysconfig');
+                        $reloadMessage = str_replace(
+                                array('[ADDED]', '[PRESERVED]', '[LANGUAGE]'),
+                                array(
+                                    (int) $this->getParam('reload_added', 0),
+                                    (int) $this->getParam('reload_preserved', 0),
+                                    (int) $this->getParam('reload_language', 0)
+                                ),
+                                $reloadMessage);
+                        $this->setVar('reloadMessage', $reloadMessage);
+                        $this->setVar('reloadMessageClass', 'success');
+                    } elseif ($reloadStatus === 'invalid') {
+                        $this->setVar(
+                                'reloadMessage',
+                                $this->objLanguage->languageText(
+                                    'mod_sysconfig_reloadparams_invalid',
+                                    'sysconfig'));
+                        $this->setVar('reloadMessageClass', 'error');
+                    } elseif ($reloadStatus === 'missing') {
+                        $this->setVar(
+                                'reloadMessage',
+                                $this->objLanguage->languageText(
+                                    'mod_sysconfig_reloadparams_missing',
+                                    'sysconfig'));
+                        $this->setVar('reloadMessageClass', 'error');
+                    }
+
                     //Get an array of data for the module whose params are being set
                     $ary = $this->objSysConfig->getProperties($pmodule);
                     //Set the text instructions for the table
@@ -151,6 +183,80 @@ class sysconfig extends controller {
                     return "dump_tpl.php";
                 }
                 break;
+            case 'reloadmoduleparams':
+                /*
+                 * SYSCONFIG_RELOAD_MODULE_PARAMS
+                 * Parse the selected module's current register.conf and add
+                 * missing CONFIG entries without modifying existing values.
+                 */
+                $pmodule = trim($this->getParam('pmodule_id', ''));
+                if (!preg_match('/^[A-Za-z0-9_]+$/', $pmodule)
+                        || $pmodule === '_site_') {
+                    return $this->nextAction(
+                            'step2',
+                            array(
+                                'pmodule_id' => $pmodule,
+                                'reload_status' => 'invalid'
+                            ));
+                }
+
+                $objModuleFile = $this->getObject(
+                        'modulefile', 'modulecatalogue');
+                $registerFile = $objModuleFile->findRegisterFile($pmodule);
+                if ($registerFile === FALSE) {
+                    return $this->nextAction(
+                            'step2',
+                            array(
+                                'pmodule_id' => $pmodule,
+                                'reload_status' => 'missing'
+                            ));
+                }
+
+                $registerData = $objModuleFile->readRegisterFile($registerFile);
+                if (!is_array($registerData)
+                        || !isset($registerData['MODULE_ID'])
+                        || $registerData['MODULE_ID'] !== $pmodule) {
+                    return $this->nextAction(
+                            'step2',
+                            array(
+                                'pmodule_id' => $pmodule,
+                                'reload_status' => 'invalid'
+                            ));
+                }
+
+                $configEntries = isset($registerData['CONFIG'])
+                        ? $registerData['CONFIG'] : array();
+                $languageEntries = isset($registerData['TEXT'])
+                        && is_array($registerData['TEXT'])
+                        ? $registerData['TEXT'] : array();
+                $reloadResult = $this->objSysConfig
+                        ->registerMissingModuleParams(
+                            $pmodule, $configEntries);
+
+                /*
+                 * SYSCONFIG_RELOAD_MODULE_LANGUAGE
+                 * Refresh language elements only for Sysconfig and the
+                 * selected module. This makes new parameter descriptions and
+                 * this maintenance action's own labels immediately available.
+                 */
+                $objModuleAdmin = $this->getObject(
+                        'modulesadmin', 'modulecatalogue');
+                $objModuleAdmin->moduleText('sysconfig', 'replace');
+                if ($pmodule !== 'sysconfig') {
+                    $objModuleAdmin->moduleText($pmodule, 'replace');
+                }
+
+                return $this->nextAction(
+                        'step2',
+                        array(
+                            'pmodule_id' => $pmodule,
+                            'reload_status' => 'success',
+                            'reload_added' => $reloadResult['added'],
+                            'reload_preserved' => $reloadResult['preserved'],
+                        'reload_language' => count($languageEntries)
+                        ));
+                break;
+
             case 'save':
                 //Get the module for the parameter
                 $pmodule = TRIM($_POST['pmodule']);

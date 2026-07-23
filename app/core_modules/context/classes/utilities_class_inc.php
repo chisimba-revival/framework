@@ -142,13 +142,25 @@ class utilities extends ChisimbaObject {
         $nodes [] = array('text' => $this->objDBContext->getMenuText() . ' - Home', 'uri' => $this->uri(NULL, 'context'), 'nodeid' => 'context');
         if (is_array($arr)) {
             foreach ($arr as $contextModule) {
-                //$modInfo =$objModule->getModuleInfo($plugin['moduleid']);
-                if ($contextModule ['moduleid'] == 'cms') {
+                if (is_array($contextModule) && isset($contextModule['moduleid'])) {
+                    $moduleId = $contextModule['moduleid'];
+                } elseif (is_string($contextModule) && $contextModule !== '') {
+                    $moduleId = $contextModule;
+                } else {
+                    continue;
+                }
+
+                if ($moduleId == 'cms') {
                     $isregistered = TRUE;
                 } else {
-                    $modInfo = $objModule->getModuleInfo($contextModule ['moduleid']);
-                    $moduleLink = $this->uri(NULL, $contextModule ['moduleid']); //$this->uri(array('action' => 'contenthome', 'moduleid' => $contextModule['moduleid']));
-                    $nodes [] = array('text' => ucwords($modInfo ['name']), 'uri' => $moduleLink, 'nodeid' => $contextModule ['moduleid']);
+                    $modInfo = $objModule->getModuleInfo($moduleId);
+
+                    if (!is_array($modInfo) || !isset($modInfo['name'])) {
+                        continue;
+                    }
+
+                    $moduleLink = $this->uri(NULL, $moduleId);
+                    $nodes [] = array('text' => ucwords($modInfo['name']), 'uri' => $moduleLink, 'nodeid' => $moduleId);
                 }
             }
 

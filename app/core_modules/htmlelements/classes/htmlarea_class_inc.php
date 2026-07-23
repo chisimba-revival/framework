@@ -96,7 +96,7 @@ class htmlarea extends ChisimbaObject {
      */
     public $fckVersion;
     /**
-     * @var string $sysEditor Which Editor to load (fckeditor or ckeditor)
+     * @var string $sysEditor Legacy compatibility value; editoradapter selects TinyMCE
      */
     public $sysEditor;
     /**
@@ -244,13 +244,9 @@ class htmlarea extends ChisimbaObject {
             'toolbar' => $this->toolbarSet,
             'siteRoot' => $this->siteRoot,
             'sitePath' => $this->sitePath,
-            'ckeditorUri' => $this->getResourceUri(
-                'ckeditor/ckeditor.js',
-                'ckeditor'
-            ),
-            'ckeditorAjaxUri' => $this->getResourceUri(
-                'ckeditor/_source/core/ajax.js',
-                'ckeditor'
+            'tinymceUri' => $this->getResourceUri(
+                'tinymce8/tinymce.min.js',
+                'htmlelements'
             ),
             'disableSpellChecker' => $this->disableSpellChecker,
         ));

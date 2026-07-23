@@ -118,7 +118,37 @@ if($pmodule == '_site_'){
 }
 $header->str = $pgHd;
 $left = "<div class='sysconfig_left'>$leftText</div><br />&nbsp;<br />";
-$middle = $header->show() . $objTable->show();
+/*
+ * SYSCONFIG_RELOAD_MODULE_PARAMS_UI
+ * This maintenance action is intentionally unavailable for site parameters.
+ */
+$reloadTools = '';
+if ($pmodule != '_site_') {
+    $reloadLink = new link($this->uri(array(
+        'action' => 'reloadmoduleparams',
+        'pmodule_id' => $pmodule
+    )));
+    $reloadLink->link = $this->objLanguage->languageText(
+            'mod_sysconfig_reloadparams', 'sysconfig');
+    $reloadTools = '<div class="sysconfig-reload-tools">'
+            . $reloadLink->show() . '</div>';
+}
+
+$reloadFeedback = '';
+if (isset($reloadMessage)) {
+    $messageClass = isset($reloadMessageClass)
+            ? $reloadMessageClass : 'information';
+    $reloadFeedback = '<div class="sysconfig-reload-message '
+            . htmlspecialchars($messageClass, ENT_QUOTES, 'UTF-8')
+            . '" role="status">'
+            . htmlspecialchars($reloadMessage, ENT_QUOTES, 'UTF-8')
+            . '</div>';
+}
+
+$middle = $header->show()
+        . $reloadFeedback
+        . $reloadTools
+        . $objTable->show();
 $middle = "<div class='sysconfig_main'>$middle</div>";
 $cssLayout->setLeftColumnContent($left);
 $cssLayout->setMiddleColumnContent($middle);

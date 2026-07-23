@@ -143,7 +143,29 @@ class upload extends filemanagerobject {
      * @todo: use htmlelements
      */
     public function show($folderId = '', $fileSizeLimit = '') {
-        $form = '<form name="form1" id="form1" enctype="multipart/form-data" method="post" action="' . $this->formaction . '">';
+        $form = '<form name="form1" id="form1" class="native-upload-form" enctype="multipart/form-data" method="post" action="' . $this->formaction . '">';
+        /*
+         * NATIVE_UPLOAD_LICENSE_SELECTOR
+         * Keep the established Creative Commons field names and configured
+         * values visible when the native file-manager upload UI is used.
+         */
+        $form .= '<style>'
+                . '.native-upload-choice{display:grid;grid-template-columns:minmax(0,1fr) minmax(12rem,18rem);gap:.75rem;align-items:end;margin:.65rem 0;}'
+                . '.native-upload-file,.native-upload-license{min-width:0;}'
+                . '.native-upload-file label,.native-upload-license label{display:block;font-size:.875rem;font-weight:600;margin:0 0 .3rem;}'
+                . '.native-upload-choice input[type=file],.native-upload-choice select{box-sizing:border-box;display:block!important;width:100%;max-width:100%;min-height:2.6rem;}'
+                . '@media(max-width:44rem){.native-upload-choice{grid-template-columns:1fr;}}'
+                . '</style>';
+
+        /*
+         * NATIVE_UPLOAD_LICENSE_CONFIGURATION
+         * Missing configuration deliberately behaves like 0. Installations
+         * must opt in before presenting licensing choices to uploaders.
+         */
+        $objFileManagerConfig = $this->getObject('dbsysconfig', 'sysconfig');
+        $showLicenseChooserValue = $objFileManagerConfig->getValue(
+                'show_license_chooser', 'filemanager');
+        $showLicenseChooser = ((string) $showLicenseChooserValue === '1');
 
         if (!is_int($this->numInputs) || $this->numInputs < 1) {
             $this->numInputs = 2;
@@ -153,11 +175,36 @@ class upload extends filemanagerobject {
 
         for ($i = 1; $i <= $this->numInputs; $i++) {
 
-            $objLicense = $this->newObject('licensechooserdropdown', 'creativecommons');
-            $objLicense->inputName = 'creativecommons_' . $this->name . $i;
-            $form .= '<input type="file" name="'
-                    . $this->name . $i . '" '
-                    . 'id="' . $this->name . $i . '" />' . $objLicense->show() . $break;
+            $fileInputName = $this->name . $i;
+            $licenseFieldName = 'creativecommons_' . $fileInputName;
+            $licenseControl = '';
+            $licenseInputName = '';
+
+            if ($showLicenseChooser) {
+                $objLicense = $this->newObject(
+                        'licensechooserdropdown', 'creativecommons');
+                $objLicense->inputName = $licenseFieldName;
+                $licenseInputName = 'input_' . $licenseFieldName;
+                $licenseControl = $objLicense->show();
+            }
+
+            $form .= '<div class="native-upload-choice">'
+                    . '<div class="native-upload-file">'
+                    . '<label for="' . $fileInputName . '">Choose file ' . $i . '</label>'
+                    . '<input type="file" name="' . $fileInputName . '" id="' . $fileInputName . '" />'
+                    . '</div>';
+
+            if ($showLicenseChooser && $licenseControl !== '') {
+                $form .= '<div class="native-upload-license">'
+                        . '<label for="' . $licenseInputName . '">Licence</label>'
+                        . $licenseControl
+                        . '</div>';
+            } else {
+                $form .= '<input type="hidden" name="' . $licenseFieldName
+                        . '" value="copyright" />';
+            }
+
+            $form .= '</div>';
         }
 
         if ($this->numInputs == 1) {
@@ -394,7 +441,15 @@ class upload extends filemanagerobject {
                         $fileId = $this->objFile->addFile($filename, $path, $file['size'], $file['type'], $subfolder, $version, $this->objUser->userId(), NULL, $this->getParam('creativecommons_' . $fileInputName, ''));
 
                         // 2) Start Analysis of File
-                        if ($subfolder == 'images' || $subfolder == 'audio' || $subfolder == 'video' || $subfolder == 'flash' || $originalsubfolder == 'images') {
+                        /* NATIVE_UPLOAD_BYPASS_LEGACY_IMAGE_ANALYSER
+                         * Image storage records already contain the path, MIME type,
+                         * size and category required by Native File Manager. The
+                         * obsolete analyser terminates some valid PHP 8.2 image
+                         * uploads before the controller can redirect. Retain legacy
+                         * analysis for audio, video and Flash only.
+                         */
+                        if ($subfolder == 'audio' || $subfolder == 'video' ||
+                                $subfolder == 'flash') {
 
                             // Get Media Info
                             $fileInfo = $this->objAnalyzeMediaFile->analyzeFile($savepath);
@@ -410,7 +465,12 @@ class upload extends filemanagerobject {
                             // Create Thumbnail if Image
                             // Thumbnails are not created for temporary files
                             if ($subfolder == 'images' || $originalsubfolder == 'images') {
-                                $this->objThumbnails->createThumbailFromFile($savepath, $fileId);
+                                /* NATIVE_UPLOAD_SKIP_EAGER_THUMBNAIL
+                                 * Native File Manager renders the stored image directly.
+                                 * Legacy thumbnails remain available through the lazy
+                                 * thumbnail action, but must not interrupt a successful
+                                 * upload or its redirect.
+                                 */
                             }
                         } else if ($subfolder == 'scripts' && ($file['type'] == 'application/xml' || $file['type'] == 'text/xml')) {
 
@@ -665,7 +725,15 @@ class upload extends filemanagerobject {
                 }
 
                 // 2) Start Analysis of File
-                if ($subfolder == 'images' || $subfolder == 'audio' || $subfolder == 'video' || $subfolder == 'flash' || $originalsubfolder == 'images') {
+                /* NATIVE_UPLOAD_BYPASS_LEGACY_IMAGE_ANALYSER
+                         * Image storage records already contain the path, MIME type,
+                         * size and category required by Native File Manager. The
+                         * obsolete analyser terminates some valid PHP 8.2 image
+                         * uploads before the controller can redirect. Retain legacy
+                         * analysis for audio, video and Flash only.
+                         */
+                        if ($subfolder == 'audio' || $subfolder == 'video' ||
+                                $subfolder == 'flash') {
 
                     // Get Media Info
                     $fileInfo = $this->objAnalyzeMediaFile->analyzeFile($savepath);
@@ -681,7 +749,12 @@ class upload extends filemanagerobject {
                     // Create Thumbnail if Image
                     // Thumbnails are not created for temporary files
                     if ($subfolder == 'images' || $originalsubfolder == 'images') {
-                        $this->objThumbnails->createThumbailFromFile($savepath, $fileId);
+                        /* NATIVE_UPLOAD_SKIP_EAGER_THUMBNAIL
+                                 * Native File Manager renders the stored image directly.
+                                 * Legacy thumbnails remain available through the lazy
+                                 * thumbnail action, but must not interrupt a successful
+                                 * upload or its redirect.
+                                 */
                     }
                 } else if ($subfolder == 'scripts' && ($file['type'] == 'application/xml' || $file['type'] == 'text/xml')) {
 
