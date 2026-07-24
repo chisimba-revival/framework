@@ -104,6 +104,10 @@ class groupadmin extends controller {
             throw new customException($this->objLanguage->languageText("mod_groupadmin_insufficientperms", "groupadmin"));
         }
         switch ($action) {
+            // CHISIMBA_M15_GROUPADMIN_NATIVE_PASS1
+            case 'native':
+                return $this->nativeReadOnly();
+
             default :
                 //$this->setLayoutTemplate('main_layout_tpl.php');
                 return "main_tpl.php";
@@ -299,6 +303,35 @@ class groupadmin extends controller {
                 exit(0);
                 break;
         }
+    }
+
+
+    /**
+     * Native read-only group administration interface.
+     * CHISIMBA_M15_GROUPADMIN_NATIVE_PASS1
+     *
+     * @return string
+     */
+    public function nativeReadOnly()
+    {
+        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
+            return 'error_tpl.php';
+        }
+
+        // CHISIMBA_M15_GROUPADMIN_NATIVE_PASS2
+        $service = $this->getObject('groupadminreadservice', 'groupadmin');
+        $snapshot = $service->getSnapshot(
+            $this->getParam('groupid'),
+            $this->getParam('page', 1),
+            $this->getParam('limit', 25),
+            $this->getParam('q', ''),
+            $this->getParam('sort', 'name'),
+            $this->getParam('dir', 'asc')
+        );
+
+        $this->setVar('groupAdminSnapshot', $snapshot);
+
+        return 'native_readonly_tpl.php';
     }
 
 }

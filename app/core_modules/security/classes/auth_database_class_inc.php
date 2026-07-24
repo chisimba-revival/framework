@@ -39,6 +39,11 @@ class auth_database extends abauth implements ifauth
     */
     public function authenticate($username, $password, $remember = true)
     {
+        if ($this->nativeLoginEnabled()
+            && $password !== '--twitter--'
+            && $password !== '--') {
+            return $this->authenticateNatively($username, $password);
+        }
         require_once dirname(__FILE__)
             . '/nativeauth/nativeauthshadowtrace.php';
 
@@ -109,6 +114,123 @@ class auth_database extends abauth implements ifauth
             }
         }
         return FALSE;
+    }
+
+    /**
+     * Whether the reversible first native-login switch is enabled.
+     *
+     * Enable only in the local PHP 8.2 container with:
+     * CHISIMBA_NATIVE_AUTH_LOGIN=1
+     */
+    private function nativeLoginEnabled()
+    {
+        $value = getenv('CHISIMBA_NATIVE_AUTH_LOGIN');
+
+        return in_array(
+            strtolower(trim((string) $value)),
+            array('1', 'true', 'yes', 'on'),
+            true
+        );
+    }
+
+    /**
+     * Verify local credentials through the native authentication stack while
+     * leaving compatibility session establishment to authenticate/abauth.
+     */
+    private function authenticateNatively($username, $password)
+    {
+        require_once dirname(__FILE__)
+            . '/nativeauth/mdb2nativedatabaseadapter.php';
+        require_once dirname(__FILE__)
+            . '/nativeauth/nativeuserrepository.php';
+        require_once dirname(__FILE__)
+            . '/nativeauth/nativepasswordverifier.php';
+        require_once dirname(__FILE__)
+            . '/nativeauth/localpasswordprovider.php';
+        require_once dirname(__FILE__)
+            . '/nativeauth/authenticationproviderregistry.php';
+        require_once dirname(__FILE__)
+            . '/nativeauth/nativeauthenticationservice.php';
+        require_once dirname(__FILE__)
+            . '/nativeauth/legacyauthsessionbridge.php';
+
+        $database = new Mdb2NativeDatabaseAdapter(
+            $this->objEngine->getDbObj()
+        );
+        $users = new NativeUserRepository($database);
+        $provider = new LocalPasswordProvider(
+            $users,
+            new NativePasswordVerifier()
+        );
+        $service = new NativeAuthenticationService(
+            new AuthenticationProviderRegistry(array($provider)),
+            new LegacyAuthSessionBridge()
+        );
+
+        $result = $service->authenticate(
+            LocalPasswordProvider::PROVIDER_ID,
+            trim((string) $username),
+            (string) $password,
+            array(
+                'ip' => isset($_SERVER['REMOTE_ADDR'])
+                    ? $_SERVER['REMOTE_ADDR']
+                    : null,
+                'user_agent' => isset($_SERVER['HTTP_USER_AGENT'])
+                    ? $_SERVER['HTTP_USER_AGENT']
+                    : null,
+            )
+        );
+
+        if (!$result->isSuccess()) {
+            if ($result->getStatus()
+                === CanonicalAuthenticationResult::STATUS_INACTIVE) {
+                if (!defined('STATUS')) {
+                    define('STATUS', 'inactive');
+                }
+            }
+
+            return false;
+        }
+
+        $record = $database->fetchOne(
+            'SELECT username, userid, title, firstname, surname, pass, '
+            . 'creationdate, emailaddress, logins, isactive, accesslevel '
+            . 'FROM tbl_users WHERE username = ?',
+            array($result->getUsername())
+        );
+
+        if (!is_array($record)
+            || empty($record['userid'])
+            || (string) $record['userid'] !== (string) $result->getUserId()
+            || (string) $record['isactive'] !== '1') {
+            return false;
+        }
+
+        $this->_record = $record;
+        $this->storeNativeCompatibilityPrincipal($record);
+
+        return true;
+    }
+
+    /**
+     * Preserve the userprincipal contract historically populated by
+     * auth_database::authenticate().
+     */
+    private function storeNativeCompatibilityPrincipal(array $record)
+    {
+        $user = new stdClass();
+        $user->username = $record['username'];
+        $user->userid = $record['userid'];
+        $user->title = $record['title'];
+        $user->firstname = $record['firstname'];
+        $user->surname = $record['surname'];
+        $user->pass = null;
+        $user->creationdate = $record['creationdate'];
+        $user->emailaddress = $record['emailaddress'];
+        $user->logins = $record['logins'];
+        $user->isactive = $record['isactive'];
+
+        $this->setSession('userprincipal', serialize($user));
     }
 
     /**

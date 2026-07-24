@@ -405,7 +405,23 @@ class user extends dbTable {
      * user is logged in and FALSE if not. This method has no
      * parameters.
      */
-    public function isLoggedIn() {
+    public function isLoggedIn()
+    {
+        // NATIVE_LOGIN_STATE_COMPATIBILITY
+        // During the reversible native-auth rollout, storeInSession()
+        // remains the compatibility authority and writes this flag.
+        // LiveUser remains the fallback until authorization is replaced.
+        $nativeFlag = getenv('CHISIMBA_NATIVE_AUTH_LOGIN');
+        $nativeEnabled = in_array(
+            strtolower(trim((string) $nativeFlag)),
+            array('1', 'true', 'yes', 'on'),
+            true
+        );
+    
+        if ($nativeEnabled && $this->getSession('isLoggedIn') === TRUE) {
+            return TRUE;
+        }
+    
         return $this->objLu->isLoggedIn();
     }
 

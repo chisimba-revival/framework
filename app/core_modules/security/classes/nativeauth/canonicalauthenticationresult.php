@@ -1,139 +1,114 @@
 <?php
 /**
- * Provider-neutral authentication result.
+ * Provider-neutral primary-authentication result.
  *
- * This object describes authentication outcome and the identity attributes
- * required to establish the traditional Chisimba user session. It performs no
- * session writes and has no dependency on LiveUser.
+ * This object contains identity proof only. Authorisation data such as groups,
+ * roles, permissions, and administrator state is intentionally excluded.
  */
 class CanonicalAuthenticationResult
 {
     const STATUS_SUCCESS = 'success';
-    const STATUS_FAILURE = 'failure';
+    const STATUS_INVALID_CREDENTIALS = 'invalid_credentials';
     const STATUS_INACTIVE = 'inactive';
+    const STATUS_LOCKED = 'locked';
+    const STATUS_MFA_REQUIRED = 'mfa_required';
     const STATUS_ERROR = 'error';
 
     private $status;
-    private $provider;
+    private $providerId;
     private $userId;
     private $username;
-    private $identity;
-    private $groups;
-    private $roles;
-    private $permissions;
+    private $attributes;
     private $metadata;
     private $reason;
 
     private function __construct(
         $status,
-        $provider,
+        $providerId,
         $userId,
         $username,
-        array $identity,
-        array $groups,
-        array $roles,
-        array $permissions,
+        array $attributes,
         array $metadata,
         $reason
     ) {
         $this->status = (string) $status;
-        $this->provider = (string) $provider;
+        $this->providerId = (string) $providerId;
         $this->userId = $userId === null ? null : (string) $userId;
         $this->username = $username === null ? null : (string) $username;
-        $this->identity = $identity;
-        $this->groups = array_values($groups);
-        $this->roles = array_values($roles);
-        $this->permissions = array_values($permissions);
+        $this->attributes = $attributes;
         $this->metadata = $metadata;
         $this->reason = $reason === null ? null : (string) $reason;
     }
 
     public static function success(
-        $provider,
+        $providerId,
         $userId,
         $username,
-        array $identity = array(),
-        array $groups = array(),
-        array $roles = array(),
-        array $permissions = array(),
+        array $attributes = array(),
         array $metadata = array()
     ) {
-        if ($userId === null || trim((string) $userId) === '') {
+        if (trim((string) $userId) === '' || trim((string) $username) === '') {
             throw new InvalidArgumentException(
-                'Successful authentication requires a user ID.'
-            );
-        }
-
-        if ($username === null || trim((string) $username) === '') {
-            throw new InvalidArgumentException(
-                'Successful authentication requires a username.'
+                'Successful authentication requires user ID and username.'
             );
         }
 
         return new self(
             self::STATUS_SUCCESS,
-            $provider,
+            $providerId,
             $userId,
             $username,
-            $identity,
-            $groups,
-            $roles,
-            $permissions,
+            $attributes,
             $metadata,
             null
         );
     }
 
-    public static function failure($provider, $reason, array $metadata = array())
-    {
+    public static function failure(
+        $providerId,
+        $status = self::STATUS_INVALID_CREDENTIALS,
+        $reason = null,
+        array $metadata = array()
+    ) {
+        $allowed = array(
+            self::STATUS_INVALID_CREDENTIALS,
+            self::STATUS_INACTIVE,
+            self::STATUS_LOCKED,
+            self::STATUS_ERROR,
+        );
+
+        if (!in_array($status, $allowed, true)) {
+            throw new InvalidArgumentException(
+                'Unsupported authentication failure status.'
+            );
+        }
+
         return new self(
-            self::STATUS_FAILURE,
-            $provider,
+            $status,
+            $providerId,
             null,
             null,
-            array(),
-            array(),
-            array(),
             array(),
             $metadata,
             $reason
         );
     }
 
-    public static function inactive(
-        $provider,
+    public static function mfaRequired(
+        $providerId,
         $userId,
         $username,
-        array $identity = array(),
+        array $attributes = array(),
         array $metadata = array()
     ) {
         return new self(
-            self::STATUS_INACTIVE,
-            $provider,
+            self::STATUS_MFA_REQUIRED,
+            $providerId,
             $userId,
             $username,
-            $identity,
-            array(),
-            array(),
-            array(),
+            $attributes,
             $metadata,
-            'inactive'
-        );
-    }
-
-    public static function error($provider, $reason, array $metadata = array())
-    {
-        return new self(
-            self::STATUS_ERROR,
-            $provider,
-            null,
-            null,
-            array(),
-            array(),
-            array(),
-            array(),
-            $metadata,
-            $reason
+            'mfa_required'
         );
     }
 
@@ -142,9 +117,9 @@ class CanonicalAuthenticationResult
         return $this->status === self::STATUS_SUCCESS;
     }
 
-    public function isInactive()
+    public function requiresMfa()
     {
-        return $this->status === self::STATUS_INACTIVE;
+        return $this->status === self::STATUS_MFA_REQUIRED;
     }
 
     public function getStatus()
@@ -152,9 +127,9 @@ class CanonicalAuthenticationResult
         return $this->status;
     }
 
-    public function getProvider()
+    public function getProviderId()
     {
-        return $this->provider;
+        return $this->providerId;
     }
 
     public function getUserId()
@@ -167,24 +142,9 @@ class CanonicalAuthenticationResult
         return $this->username;
     }
 
-    public function getIdentity()
+    public function getAttributes()
     {
-        return $this->identity;
-    }
-
-    public function getGroups()
-    {
-        return $this->groups;
-    }
-
-    public function getRoles()
-    {
-        return $this->roles;
-    }
-
-    public function getPermissions()
-    {
-        return $this->permissions;
+        return $this->attributes;
     }
 
     public function getMetadata()
@@ -195,62 +155,5 @@ class CanonicalAuthenticationResult
     public function getReason()
     {
         return $this->reason;
-    }
-
-    /**
-     * Return the provider-neutral comparison representation.
-     */
-    public function toSnapshotArray()
-    {
-        return array(
-            'authenticated' => $this->isSuccess(),
-            'status' => $this->status,
-            'provider' => $this->provider,
-            'user_id' => $this->userId,
-            'username' => $this->username,
-            'identity' => $this->identity,
-            'groups' => $this->groups,
-            'roles' => $this->roles,
-            'permissions' => $this->permissions,
-            'metadata' => $this->metadata,
-            'reason' => $this->reason,
-        );
-    }
-
-    /**
-     * Return the fields historically consumed by storeUserSession().
-     *
-     * Password values are intentionally absent.
-     */
-    public function toLegacyUserRecord()
-    {
-        if (!$this->isSuccess()) {
-            throw new LogicException(
-                'Only successful results can produce a legacy user record.'
-            );
-        }
-
-        $identity = $this->identity;
-
-        return array(
-            'username' => $this->username,
-            'userid' => $this->userId,
-            'title' => isset($identity['title'])
-                ? (string) $identity['title'] : '',
-            'firstname' => isset($identity['first_name'])
-                ? (string) $identity['first_name'] : '',
-            'surname' => isset($identity['surname'])
-                ? (string) $identity['surname'] : '',
-            'creationdate' => isset($identity['creation_date'])
-                ? $identity['creation_date'] : null,
-            'emailaddress' => isset($identity['email_address'])
-                ? (string) $identity['email_address'] : '',
-            'logins' => isset($identity['login_count'])
-                ? $identity['login_count'] : 0,
-            'isactive' => isset($identity['is_active'])
-                && $identity['is_active'] ? '1' : '0',
-            'accesslevel' => isset($identity['access_level'])
-                ? (string) $identity['access_level'] : '',
-        );
     }
 }

@@ -1,0 +1,182 @@
+/* CHISIMBA_M15_GROUPADMIN_NATIVE_PASS2 */
+.groupadmin-native {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-sizing: border-box;
+}
+.groupadmin-native *,
+.groupadmin-native *::before,
+.groupadmin-native *::after { box-sizing: border-box; }
+.groupadmin-native__header,
+.groupadmin-native__summary,
+.groupadmin-native__panel-heading,
+.groupadmin-native__toolbar,
+.groupadmin-native__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.groupadmin-native__header { margin-bottom: 1rem; align-items: flex-start; }
+.groupadmin-native__header h1,
+.groupadmin-native__panel h2 { margin-top: 0; }
+.groupadmin-native__eyebrow {
+    margin: 0 0 .25rem;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .72;
+}
+.groupadmin-native__badge,
+.groupadmin-native__type,
+.groupadmin-native__status {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: .2rem .55rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: .78rem;
+    line-height: 1.25;
+}
+.groupadmin-native__layout {
+    display: grid;
+    grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    width: 100%;
+}
+.groupadmin-native__content { display: grid; gap: 1rem; min-width: 0; }
+.groupadmin-native__panel {
+    padding: 1rem;
+    border: 1px solid rgba(127, 127, 127, .35);
+    border-radius: .55rem;
+    background: var(--chisimba-surface, transparent);
+}
+.groupadmin-native__panel-heading { margin-bottom: .75rem; }
+.groupadmin-native__panel-heading h2 { margin-bottom: 0; }
+.groupadmin-native__group-list { list-style: none; padding: 0; margin: 0; }
+.groupadmin-native__group-list li + li { margin-top: .25rem; }
+.groupadmin-native__group-list a {
+    display: grid;
+    gap: .35rem;
+    padding: .65rem .7rem;
+    border-radius: .4rem;
+    text-decoration: none;
+}
+.groupadmin-native__group-list a:hover,
+.groupadmin-native__group-list a:focus-visible { background: rgba(127, 127, 127, .12); }
+.groupadmin-native__group-list a[aria-current="page"] {
+    background: rgba(127, 127, 127, .18);
+    font-weight: 700;
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+}
+.groupadmin-native__group-name { overflow-wrap: anywhere; }
+.groupadmin-native__metrics { display: flex; gap: 1rem; margin: 0; }
+.groupadmin-native__metrics div { min-width: 6rem; text-align: center; }
+.groupadmin-native__metrics dt { font-size: .78rem; opacity: .75; }
+.groupadmin-native__metrics dd { margin: .1rem 0 0; font-size: 1.4rem; font-weight: 700; }
+.groupadmin-native__toolbar { flex-wrap: wrap; justify-content: flex-start; }
+.groupadmin-native__field { display: grid; gap: .3rem; }
+.groupadmin-native__field--search { flex: 1 1 18rem; }
+.groupadmin-native input,
+.groupadmin-native select,
+.groupadmin-native button,
+.groupadmin-native__button-secondary {
+    min-height: 2.5rem;
+    padding: .5rem .7rem;
+    font: inherit;
+}
+.groupadmin-native input,
+.groupadmin-native select { width: 100%; }
+.groupadmin-native button,
+.groupadmin-native__button-secondary { cursor: pointer; }
+.groupadmin-native__tables { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.groupadmin-native__table-wrap { width: 100%; overflow-x: auto; }
+.groupadmin-native table { width: 100%; border-collapse: collapse; }
+.groupadmin-native th,
+.groupadmin-native td { padding: .55rem; text-align: left; border-bottom: 1px solid rgba(127, 127, 127, .3); vertical-align: top; }
+.groupadmin-native th { white-space: nowrap; }
+.groupadmin-native__pagination { justify-content: center; }
+.groupadmin-native__empty { min-height: 12rem; display: grid; place-content: center; text-align: center; }
+@media (max-width: 75rem) {
+    .groupadmin-native__tables { grid-template-columns: 1fr; }
+}
+@media (max-width: 52rem) {
+    .groupadmin-native__layout { grid-template-columns: 1fr; }
+    .groupadmin-native__summary,
+    .groupadmin-native__header { align-items: flex-start; flex-direction: column; }
+}
+
+
+/* CHISIMBA_M15_GROUPADMIN_NATIVE_PASS2_1 */
+.groupadmin-native,
+.groupadmin-native__layout,
+.groupadmin-native__content,
+.groupadmin-native__panel,
+.groupadmin-native__tables,
+.groupadmin-native__table-wrap {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.groupadmin-native { overflow: clip; }
+.groupadmin-native__layout { grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr); }
+.groupadmin-native__groups { max-height: min(75vh, 60rem); overflow: auto; }
+.groupadmin-native__toolbar > * { min-width: 0; }
+.groupadmin-native__toolbar .groupadmin-native__field:not(.groupadmin-native__field--search) { flex: 1 1 9rem; }
+.groupadmin-native__toolbar button,
+.groupadmin-native__button-secondary { flex: 0 0 auto; }
+.groupadmin-native__sort-state { flex: 1 1 100%; margin: 0; font-size: .85rem; opacity: .78; }
+
+@media (max-width: 64rem) {
+    .groupadmin-native__layout { grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); }
+    .groupadmin-native__tables { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 46rem) {
+    .groupadmin-native__layout { grid-template-columns: 1fr; }
+    .groupadmin-native__groups { max-height: 18rem; }
+    .groupadmin-native__summary,
+    .groupadmin-native__header { align-items: flex-start; flex-direction: column; }
+    .groupadmin-native__metrics { width: 100%; justify-content: space-around; }
+    .groupadmin-native__toolbar { align-items: stretch; flex-direction: column; }
+    .groupadmin-native__toolbar > *,
+    .groupadmin-native__toolbar .groupadmin-native__field,
+    .groupadmin-native__toolbar button,
+    .groupadmin-native__button-secondary { width: 100%; }
+}
+
+@media (max-width: 38rem) {
+    .groupadmin-native__table-wrap { overflow: visible; }
+    .groupadmin-native table,
+    .groupadmin-native thead,
+    .groupadmin-native tbody,
+    .groupadmin-native tr,
+    .groupadmin-native th,
+    .groupadmin-native td { display: block; width: 100%; }
+    .groupadmin-native thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+    .groupadmin-native tbody tr {
+        padding: .65rem 0;
+        border-bottom: 1px solid rgba(127, 127, 127, .3);
+    }
+    .groupadmin-native td {
+        display: grid;
+        grid-template-columns: minmax(6rem, 35%) minmax(0, 1fr);
+        gap: .75rem;
+        padding: .35rem 0;
+        border: 0;
+        overflow-wrap: anywhere;
+    }
+    .groupadmin-native td::before { content: attr(data-label); font-weight: 700; }
+}

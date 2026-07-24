@@ -1,13 +1,26 @@
 <?php
 /**
- * Adapter contract around Chisimba's existing session conventions.
+ * Sole boundary for establishing and clearing authenticated Chisimba state.
+ *
+ * Implementations must regenerate the session identifier before writing a new
+ * authenticated identity. They must not calculate groups, permissions, roles,
+ * or administrator status.
  */
 interface NativeSessionServiceInterface
 {
-    /** @return bool */
+    /**
+     * Establish authenticated identity and regenerate the session identifier.
+     *
+     * @return bool
+     */
     public function establish($userId, array $attributes = array());
 
-    /** @return bool */
+    /**
+     * Clear authenticated identity without destroying unrelated UI/session
+     * preferences such as the selected skin.
+     *
+     * @return bool
+     */
     public function destroy();
 
     /** @return bool */

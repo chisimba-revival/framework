@@ -1,109 +1,122 @@
 <?php
 require_once dirname(__FILE__) . '/nativeauthenticationserviceinterface.php';
-require_once dirname(__FILE__) . '/nativeauthenticationresult.php';
-require_once dirname(__FILE__) . '/nativeuserrepositoryinterface.php';
-require_once dirname(__FILE__) . '/nativegrouprepositoryinterface.php';
-require_once dirname(__FILE__) . '/nativepermissionrepositoryinterface.php';
+require_once dirname(__FILE__) . '/authenticationproviderregistryinterface.php';
 require_once dirname(__FILE__) . '/nativesessionserviceinterface.php';
-require_once dirname(__FILE__) . '/nativepasswordverifierinterface.php';
+require_once dirname(__FILE__) . '/canonicalauthenticationresult.php';
 
 /**
- * Non-active implementation skeleton for Milestone 8.
+ * Canonical authentication orchestrator.
  *
- * IMPORTANT: Nothing in the current Chisimba login path instantiates this
- * class. It must remain dormant until comparison tests demonstrate behavioural
- * parity and a separately reviewed feature-flag integration is committed.
+ * This service coordinates credential verification, optional MFA policy, and
+ * authenticated-session establishment. Policy evaluation and presentation
+ * remain outside this service.
  */
-class NativeAuthenticationService implements NativeAuthenticationServiceInterface
+class NativeAuthenticationService
+    implements NativeAuthenticationServiceInterface
 {
-    private $users;
-    private $groups;
-    private $permissions;
+    private $providers;
     private $sessions;
-    private $passwords;
+    private $mfaPolicy;
+    private $mfaChallenges;
 
     public function __construct(
-        NativeUserRepositoryInterface $users,
-        NativeGroupRepositoryInterface $groups,
-        NativePermissionRepositoryInterface $permissions,
+        AuthenticationProviderRegistryInterface $providers,
         NativeSessionServiceInterface $sessions,
-        NativePasswordVerifierInterface $passwords
+        $mfaPolicy = null,
+        $mfaChallenges = null
     ) {
-        $this->users = $users;
-        $this->groups = $groups;
-        $this->permissions = $permissions;
+        if ($mfaPolicy !== null
+            && !method_exists($mfaPolicy, 'requiresChallenge')) {
+            throw new InvalidArgumentException(
+                'MFA policy must implement requiresChallenge().'
+            );
+        }
+
+        if ($mfaChallenges !== null
+            && (!method_exists($mfaChallenges, 'createChallenge')
+                || !method_exists($mfaChallenges, 'verifyChallenge'))) {
+            throw new InvalidArgumentException(
+                'MFA challenge service has an invalid contract.'
+            );
+        }
+
+        $this->providers = $providers;
         $this->sessions = $sessions;
-        $this->passwords = $passwords;
+        $this->mfaPolicy = $mfaPolicy;
+        $this->mfaChallenges = $mfaChallenges;
     }
 
-    public function authenticate($username, $password, array $context = array())
-    {
-        $normalisedUsername = trim((string) $username);
-        $user = $this->users->findByUsername($normalisedUsername);
+    public function authenticate(
+        $providerId,
+        $identifier,
+        $secret,
+        array $context = array()
+    ) {
+        $provider = $this->providers->getProvider($providerId);
 
-        if (!is_array($user)) {
-            $this->users->recordFailedLogin($normalisedUsername, $context);
-            return new NativeAuthenticationResult(
-                NativeAuthenticationResult::STATUS_INVALID_CREDENTIALS
+        if (!$provider instanceof AuthenticationProviderInterface) {
+            return CanonicalAuthenticationResult::failure(
+                (string) $providerId,
+                CanonicalAuthenticationResult::STATUS_ERROR,
+                'provider_unavailable'
             );
         }
 
-        $userId = isset($user['user_id']) ? $user['user_id'] : null;
-        $storedHash = isset($user['password_hash']) ? $user['password_hash'] : '';
-
-        if ($userId === null || !$this->users->isUserActive($userId)) {
-            return new NativeAuthenticationResult(
-                NativeAuthenticationResult::STATUS_INACTIVE,
-                $userId,
-                $normalisedUsername
-            );
-        }
-
-        if (!$this->passwords->verify((string) $password, $storedHash, $user)) {
-            $this->users->recordFailedLogin($normalisedUsername, $context);
-            return new NativeAuthenticationResult(
-                NativeAuthenticationResult::STATUS_INVALID_CREDENTIALS
-            );
-        }
-
-        return new NativeAuthenticationResult(
-            NativeAuthenticationResult::STATUS_SUCCESS,
-            $userId,
-            $normalisedUsername,
-            '',
-            array(
-                'group_ids' => $this->groups->getGroupIdsForUser($userId),
-                'permissions' => $this->permissions
-                    ->getEffectivePermissionsForUser($userId),
-                'password_rehash_required' => $this->passwords
-                    ->needsRehash($storedHash),
-            )
+        $result = $provider->authenticate(
+            $identifier,
+            $secret,
+            $this->sanitiseContext($context)
         );
+
+        if (!$result instanceof CanonicalAuthenticationResult) {
+            return CanonicalAuthenticationResult::failure(
+                (string) $providerId,
+                CanonicalAuthenticationResult::STATUS_ERROR,
+                'invalid_provider_result'
+            );
+        }
+
+        if (!$result->isSuccess()) {
+            return $result;
+        }
+
+        if ($this->mfaPolicy !== null
+            && $this->mfaPolicy->requiresChallenge($result, $context)) {
+            $metadata = $result->getMetadata();
+
+            if ($this->mfaChallenges !== null) {
+                $metadata['mfa_challenge'] =
+                    $this->mfaChallenges->createChallenge($result, $context);
+            }
+
+            return CanonicalAuthenticationResult::mfaRequired(
+                $result->getProviderId(),
+                $result->getUserId(),
+                $result->getUsername(),
+                $result->getAttributes(),
+                $metadata
+            );
+        }
+
+        return $result;
     }
 
     public function establishAuthenticatedSession(
-        NativeAuthenticationResult $result,
+        CanonicalAuthenticationResult $result,
         array $context = array()
     ) {
-        if (!$result->isSuccess() || $result->getUserId() === null) {
+        if (!$result->isSuccess()) {
             return false;
         }
 
-        if (!$this->sessions->regenerateIdentifier()) {
-            return false;
-        }
-
-        $attributes = array(
-            'username' => $result->getUsername(),
-            'native_auth_metadata' => $result->getMetadata(),
+        return $this->sessions->establish(
+            $result->getUserId(),
+            array(
+                'username' => $result->getUsername(),
+                'provider' => $result->getProviderId(),
+                'metadata' => $result->getMetadata(),
+            )
         );
-
-        if (!$this->sessions->establish($result->getUserId(), $attributes)) {
-            return false;
-        }
-
-        $this->users->recordSuccessfulLogin($result->getUserId(), $context);
-        return true;
     }
 
     public function logout()
@@ -119,5 +132,22 @@ class NativeAuthenticationService implements NativeAuthenticationServiceInterfac
     public function isAuthenticated()
     {
         return $this->sessions->isAuthenticated();
+    }
+
+    private function sanitiseContext(array $context)
+    {
+        foreach (array(
+            'password',
+            'passwd',
+            'secret',
+            'token',
+            'access_token',
+            'refresh_token',
+            'authorization'
+        ) as $secretKey) {
+            unset($context[$secretKey]);
+        }
+
+        return $context;
     }
 }
