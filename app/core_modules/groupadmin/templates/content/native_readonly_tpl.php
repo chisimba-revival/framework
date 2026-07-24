@@ -19,6 +19,9 @@ $sort = isset($snapshot['sort']) ? $snapshot['sort'] : 'name';
 $direction = isset($snapshot['direction']) ? $snapshot['direction'] : 'asc';
 $page = isset($snapshot['page']) ? $snapshot['page'] : 1;
 $limit = isset($snapshot['limit']) ? $snapshot['limit'] : 25;
+$csrfToken = isset($groupAdminCsrfToken) ? (string) $groupAdminCsrfToken : '';
+$messageCode = isset($groupAdminMessage) ? (string) $groupAdminMessage : '';
+$errorCode = isset($groupAdminError) ? (string) $groupAdminError : '';
 
 $baseParams = array('action' => 'native');
 if ($selectedId !== null) {
@@ -28,6 +31,39 @@ if ($selectedId !== null) {
 $buildUrl = function (array $changes) use ($baseParams) {
     return $this->uri(array_merge($baseParams, $changes), 'groupadmin');
 };
+
+$lang = function ($code, $fallback) {
+    return $this->objLanguage->languageText($code, 'groupadmin', $fallback);
+};
+
+$groupTypeLabel = function ($type) use ($lang) {
+    switch ($type) {
+        case 'context':
+            return $lang('mod_groupadmin_type_context', 'Context');
+        case 'subgroup':
+            return $lang('mod_groupadmin_type_contextgroup', 'Group');
+        default:
+            return $lang('mod_groupadmin_type_sitegroup', 'Site');
+    }
+};
+
+$statusLabel = function ($status) use ($lang) {
+    switch (strtolower((string) $status)) {
+        case 'active':
+        case '1':
+            return $lang('mod_groupadmin_status_active', 'Active');
+        case 'inactive':
+        case '0':
+            return $lang('mod_groupadmin_status_inactive', 'Inactive');
+        default:
+            return $lang('mod_groupadmin_status_unknown', 'Unknown');
+    }
+};
+
+$headingName = $lang('mod_groupadmin_col_name', 'Name');
+$headingUsername = $lang('mod_groupadmin_col_username', 'Username');
+$headingEmail = $lang('mod_groupadmin_col_email', 'Email');
+$headingStatus = $lang('mod_groupadmin_col_status', 'Status');
 ?>
 
 <link rel="stylesheet" type="text/css" href="<?php echo $escape($this->getResourceUri('css/native-admin.css', 'groupadmin')); ?>" />
@@ -45,14 +81,44 @@ $buildUrl = function (array $changes) use ($baseParams) {
                 <?php echo $escape($this->objLanguage->languageText(
                     'mod_groupadmin_native_readonly',
                     'groupadmin',
-                    'Read-only native interface. Membership changes remain disabled during this migration stage.'
+                    'Manage direct group membership using the native Chisimba interface.'
                 )); ?>
             </p>
         </div>
         <span class="groupadmin-native__badge">
-            <?php echo $escape($this->objLanguage->languageText('mod_groupadmin_readonly', 'groupadmin', 'Read only')); ?>
+            <?php echo $escape($this->objLanguage->languageText('mod_groupadmin_native', 'groupadmin', 'Native')); ?>
         </span>
     </header>
+
+    <?php
+    $noticeMessages = array(
+        'member_added' => $lang('mod_groupadmin_member_added', 'The user was added to the group.'),
+        'member_removed' => $lang('mod_groupadmin_member_removed', 'The user was removed from the group.'),
+    );
+    $errorMessages = array(
+        'group_not_found' => $lang('mod_groupadmin_group_not_found', 'The selected group could not be found.'),
+        'invalid_user' => $lang('mod_groupadmin_invalid_user', 'The selected user is invalid.'),
+        'user_not_available' => $lang('mod_groupadmin_user_not_available', 'That user is not available to add to this group.'),
+        'permission_user_not_found' => $lang('mod_groupadmin_permission_user_not_found', 'The user has no permission identity.'),
+        'already_member' => $lang('mod_groupadmin_already_member', 'That user is already a member of the group.'),
+        'not_a_member' => $lang('mod_groupadmin_not_a_member', 'That user is not a direct member of the group.'),
+        'cannot_remove_self_admin' => $lang('mod_groupadmin_cannot_remove_self_admin', 'You cannot remove your own Site Admin membership.'),
+        'cannot_remove_last_admin' => $lang('mod_groupadmin_cannot_remove_last_admin', 'The final Site Admin member cannot be removed.'),
+        'add_failed' => $lang('mod_groupadmin_add_failed', 'The user could not be added to the group.'),
+        'remove_failed' => $lang('mod_groupadmin_remove_failed', 'The user could not be removed from the group.'),
+        'membership_update_failed' => $lang('mod_groupadmin_membership_update_failed', 'The membership change failed.'),
+    );
+    ?>
+    <?php if ($messageCode !== '' && isset($noticeMessages[$messageCode])): ?>
+        <div class="groupadmin-native__notice groupadmin-native__notice--success" role="status">
+            <?php echo $escape($noticeMessages[$messageCode]); ?>
+        </div>
+    <?php endif; ?>
+    <?php if ($errorCode !== '' && isset($errorMessages[$errorCode])): ?>
+        <div class="groupadmin-native__notice groupadmin-native__notice--error" role="alert">
+            <?php echo $escape($errorMessages[$errorCode]); ?>
+        </div>
+    <?php endif; ?>
 
     <div class="groupadmin-native__layout">
         <nav class="groupadmin-native__panel groupadmin-native__groups" aria-labelledby="group-list-title">
@@ -70,22 +136,27 @@ $buildUrl = function (array $changes) use ($baseParams) {
                     <?php foreach ($groups as $group): ?>
                         <?php
                         $isCurrent = (string) $selectedId === (string) $group['id'];
-                        $url = $this->uri(array(
-                            'action' => 'native',
-                            'groupid' => $group['id'],
-                            'q' => $query,
-                            'sort' => $sort,
-                            'dir' => $direction,
-                            'limit' => $limit
-                        ), 'groupadmin');
                         ?>
                         <li>
-                            <a href="<?php echo $escape($url); ?>" <?php echo $isCurrent ? 'aria-current="page"' : ''; ?>>
-                                <span class="groupadmin-native__group-name"><?php echo $escape($group['name']); ?></span>
-                                <span class="groupadmin-native__type groupadmin-native__type--<?php echo $escape($group['type']); ?>">
-                                    <?php echo $escape($group['typeLabel']); ?>
-                                </span>
-                            </a>
+                            <form class="groupadmin-native__group-form"
+                                  method="get"
+                                  action="<?php echo $escape($this->uri(array(), 'groupadmin')); ?>">
+                                <input type="hidden" name="module" value="groupadmin" />
+                                <input type="hidden" name="action" value="native" />
+                                <input type="hidden" name="groupid" value="<?php echo $escape($group['id']); ?>" />
+                                <input type="hidden" name="q" value="<?php echo $escape($query); ?>" />
+                                <input type="hidden" name="sort" value="<?php echo $escape($sort); ?>" />
+                                <input type="hidden" name="dir" value="<?php echo $escape($direction); ?>" />
+                                <input type="hidden" name="limit" value="<?php echo (int) $limit; ?>" />
+                                <button type="submit"
+                                        class="groupadmin-native__group-button"
+                                        <?php echo $isCurrent ? 'aria-current="page"' : ''; ?>>
+                                    <span class="groupadmin-native__group-name"><?php echo $escape($group['name']); ?></span>
+                                    <span class="groupadmin-native__type groupadmin-native__type--<?php echo $escape($group['type']); ?>">
+                                        <?php echo $escape($groupTypeLabel($group['type'])); ?>
+                                    </span>
+                                </button>
+                            </form>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -106,7 +177,7 @@ $buildUrl = function (array $changes) use ($baseParams) {
             <?php else: ?>
                 <section class="groupadmin-native__panel groupadmin-native__summary" aria-labelledby="selected-group-title">
                     <div>
-                        <p class="groupadmin-native__eyebrow"><?php echo $escape($selected['typeLabel']); ?></p>
+                        <p class="groupadmin-native__eyebrow"><?php echo $escape($groupTypeLabel($selected['type'])); ?></p>
                         <h2 id="selected-group-title"><?php echo $escape($selected['name']); ?></h2>
                         <?php if ($selected['contextCode'] !== ''): ?>
                             <p><?php echo $escape($this->objLanguage->languageText('mod_groupadmin_contextcode', 'groupadmin', 'Context code')); ?>: <code><?php echo $escape($selected['contextCode']); ?></code></p>
@@ -152,21 +223,39 @@ $buildUrl = function (array $changes) use ($baseParams) {
                     </div>
                     <button type="submit"><?php echo $escape($this->objLanguage->languageText('word_apply', 'system', 'Apply')); ?></button>
                     <p class="groupadmin-native__sort-state" role="status">
-                        <?php echo $escape(sprintf(
-                            'Sorted by %s, %s',
-                            $sort === 'email' ? 'email' : ($sort === 'status' ? 'status' : 'name'),
-                            $direction === 'desc' ? 'descending' : 'ascending'
-                        )); ?>
+                        <?php
+                        $sortLabel = $sort === 'email'
+                            ? $headingEmail
+                            : ($sort === 'status' ? $headingStatus : $headingName);
+                        $directionLabel = $direction === 'desc'
+                            ? $lang('mod_groupadmin_direction_descending', 'descending')
+                            : $lang('mod_groupadmin_direction_ascending', 'ascending');
+                        echo $escape(sprintf(
+                            $lang('mod_groupadmin_sortedby', 'Sorted by %s, %s'),
+                            $sortLabel,
+                            $directionLabel
+                        ));
+                        ?>
                     </p>
                     <?php if ($query !== ''): ?>
-                        <a class="groupadmin-native__button-secondary" href="<?php echo $escape($buildUrl(array())); ?>"><?php echo $escape($this->objLanguage->languageText('word_clear', 'system', 'Clear')); ?></a>
+                        <a class="groupadmin-native__button-secondary" href="<?php echo $escape($buildUrl(array('q' => '', 'page' => 1))); ?>"><?php echo $escape($this->objLanguage->languageText('word_clear', 'system', 'Clear')); ?></a>
                     <?php endif; ?>
                 </form>
 
                 <?php
                 $tables = array(
-                    array('id' => 'members', 'title' => 'Current members', 'data' => $members, 'empty' => 'No matching members were found.'),
-                    array('id' => 'available', 'title' => 'Users not currently in this group', 'data' => $available, 'empty' => 'No matching available users were found.'),
+                    array(
+                        'id' => 'members',
+                        'title' => $lang('mod_groupadmin_currentmembers', 'Current members'),
+                        'data' => $members,
+                        'empty' => $lang('mod_groupadmin_nomatchingmembers', 'No matching members were found.')
+                    ),
+                    array(
+                        'id' => 'available',
+                        'title' => $lang('mod_groupadmin_usersnotingroup', 'Users not currently in this group'),
+                        'data' => $available,
+                        'empty' => $lang('mod_groupadmin_nomatchingavailable', 'No matching available users were found.')
+                    ),
                 );
                 ?>
                 <div class="groupadmin-native__tables">
@@ -182,14 +271,31 @@ $buildUrl = function (array $changes) use ($baseParams) {
                             <?php else: ?>
                                 <div class="groupadmin-native__table-wrap">
                                     <table>
-                                        <thead><tr><th scope="col">Name</th><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Status</th></tr></thead>
+                                        <thead><tr><th scope="col"><?php echo $escape($headingName); ?></th><th scope="col"><?php echo $escape($headingUsername); ?></th><th scope="col"><?php echo $escape($headingEmail); ?></th><th scope="col"><?php echo $escape($headingStatus); ?></th><th scope="col"><?php echo $escape($lang('mod_groupadmin_col_action', 'Action')); ?></th></tr></thead>
                                         <tbody>
                                             <?php foreach ($table['data']['records'] as $user): ?>
                                                 <tr>
-                                                    <td data-label="Name"><?php echo $escape($user['displayName']); ?></td>
-                                                    <td data-label="Username"><?php echo $escape($user['username']); ?></td>
-                                                    <td data-label="Email"><?php echo $escape($user['email']); ?></td>
-                                                    <td data-label="Status"><span class="groupadmin-native__status"><?php echo $escape($user['status']); ?></span></td>
+                                                    <td data-label="<?php echo $escape($headingName); ?>"><?php echo $escape($user['displayName'] !== '' ? $user['displayName'] : $lang('mod_groupadmin_unnameduser', 'Unnamed user')); ?></td>
+                                                    <td data-label="<?php echo $escape($headingUsername); ?>"><?php echo $escape($user['username']); ?></td>
+                                                    <td data-label="<?php echo $escape($headingEmail); ?>"><?php echo $escape($user['email']); ?></td>
+                                                    <td data-label="<?php echo $escape($headingStatus); ?>"><span class="groupadmin-native__status"><?php echo $escape($statusLabel($user['status'])); ?></span></td>
+                                                    <td data-label="<?php echo $escape($lang('mod_groupadmin_col_action', 'Action')); ?>">
+                                                        <form class="groupadmin-native__membership-form" method="post" action="<?php echo $escape($this->uri(array(), 'groupadmin')); ?>">
+                                                            <input type="hidden" name="module" value="groupadmin" />
+                                                            <input type="hidden" name="action" value="<?php echo $table['id'] === 'members' ? 'removemember' : 'addmember'; ?>" />
+                                                            <input type="hidden" name="groupid" value="<?php echo (int) $selectedId; ?>" />
+                                                            <input type="hidden" name="userid" value="<?php echo $escape($user['userId']); ?>" />
+                                                            <input type="hidden" name="csrf_token" value="<?php echo $escape($csrfToken); ?>" />
+                                                            <input type="hidden" name="q" value="<?php echo $escape($query); ?>" />
+                                                            <input type="hidden" name="sort" value="<?php echo $escape($sort); ?>" />
+                                                            <input type="hidden" name="dir" value="<?php echo $escape($direction); ?>" />
+                                                            <input type="hidden" name="limit" value="<?php echo (int) $limit; ?>" />
+                                                            <input type="hidden" name="page" value="<?php echo (int) $page; ?>" />
+                                                            <button type="submit" class="groupadmin-native__membership-button <?php echo $table['id'] === 'members' ? 'groupadmin-native__membership-button--remove' : 'groupadmin-native__membership-button--add'; ?>">
+                                                                <?php echo $escape($table['id'] === 'members' ? $lang('mod_groupadmin_remove_user', 'Remove') : $lang('mod_groupadmin_add_user', 'Add')); ?>
+                                                            </button>
+                                                        </form>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -201,13 +307,13 @@ $buildUrl = function (array $changes) use ($baseParams) {
                 </div>
 
                 <?php if ($members['pages'] > 1 || $available['pages'] > 1): ?>
-                    <nav class="groupadmin-native__pagination" aria-label="User result pages">
+                    <nav class="groupadmin-native__pagination" aria-label="<?php echo $escape($lang('mod_groupadmin_userresultpages', 'User result pages')); ?>">
                         <?php if ($page > 1): ?>
-                            <a href="<?php echo $escape($buildUrl(array('q' => $query, 'sort' => $sort, 'dir' => $direction, 'limit' => $limit, 'page' => $page - 1))); ?>">Previous</a>
+                            <a href="<?php echo $escape($buildUrl(array('q' => $query, 'sort' => $sort, 'dir' => $direction, 'limit' => $limit, 'page' => $page - 1))); ?>"><?php echo $escape($lang('mod_groupadmin_previous', 'Previous')); ?></a>
                         <?php endif; ?>
-                        <span>Page <?php echo (int) $page; ?> of <?php echo (int) max($members['pages'], $available['pages']); ?></span>
+                        <span><?php echo $escape(sprintf($lang('mod_groupadmin_pageof', 'Page %d of %d'), (int) $page, (int) max($members['pages'], $available['pages']))); ?></span>
                         <?php if ($page < max($members['pages'], $available['pages'])): ?>
-                            <a href="<?php echo $escape($buildUrl(array('q' => $query, 'sort' => $sort, 'dir' => $direction, 'limit' => $limit, 'page' => $page + 1))); ?>">Next</a>
+                            <a href="<?php echo $escape($buildUrl(array('q' => $query, 'sort' => $sort, 'dir' => $direction, 'limit' => $limit, 'page' => $page + 1))); ?>"><?php echo $escape($lang('mod_groupadmin_next', 'Next')); ?></a>
                         <?php endif; ?>
                     </nav>
                 <?php endif; ?>

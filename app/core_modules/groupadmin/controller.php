@@ -1,324 +1,40 @@
 <?php
-
-// security check - must be included in all scripts
-if (!/**
-         * Description for $GLOBALS
-         * @global unknown $GLOBALS['kewl_entry_point_run']
-         * @name   $kewl_entry_point_run
-         */
-        $GLOBALS ['kewl_entry_point_run']) {
-    die("You cannot view this page directly");
+if (empty($GLOBALS['kewl_entry_point_run'])) {
+    die('You cannot view this page directly');
 }
-/**
- *
- * @copyright  (c) 2000-2004, Kewl.NextGen ( http://kngforge.uwc.ac.za )
- * @package    groupadmin
- * @subpackage controller
- * @version    0.1
- * @since      22 November 2004
- * @author     Jonathan Abrahams
- * @filesource
- */
 
-/**
- * Class to manage groups.
- *
- * @package    groupadmin
- * @subpackage controller
- * @access     public
- * @author     Jonathan Abrahams
- */
-class groupadmin extends controller {
-
-    /**
-     *
-     * @var groupAdminModel an object reference.
-     */
-    public $objGroupAdminModel;
-    /**
-     *
-     * @var langauge an object reference.
-     */
+class groupadmin extends controller
+{
     public $objLanguage;
-    /**
-     *
-     * @var strValidate an object reference.
-     */
-    public $objStrValidate;
-    /**
-     *
-     * @var string the current groups Id
-     */
-    public $groupId;
-    /**
-     *
-     * @var array a list of current groups members
-     */
-    public $memberList;
-    /**
-     *
-     * @var array a list of current groups non-members
-     */
-    public $usersList;
-    /**
-     *
-     * @var bool the validation status of a form.
-     */
-    public $valid;
+    public $objUser;
+    public $objLog;
 
-    /**
-     * Method that initializes the objects
-     *
-     * @access private
-     * @return nothing
-     */
-    public function init() {
+    public function init()
+    {
         $this->objUser = $this->getObject('user', 'security');
         $this->objLanguage = $this->getObject('language', 'language');
-        // Get the activity logger class
         $this->objLog = $this->newObject('logactivity', 'logger');
-        // Log this module call
         $this->objLog->log();
-        $this->objOps = $this->getObject('groupops');
-        $this->objGroups = $this->getObject('groupadminmodel');
-        $this->jQuery = $this->newObject('jquery', 'jquery');
-        $this->jQuery->loadLiveQueryPlugin();
     }
 
-    /**
-     * Method to handle the messages.
-     *
-     * @param  string  $action the message.
-     * @access private
-     * @return string  the template file name.
-     */
-    function dispatch($action) {
-        // CHISIMBA_GROUPADMIN_CONTROLLER_TRACE
-        error_log('[CHISIMBA CTRL TRACE] dispatch action=' . var_export($action, true)
-            . ' request=' . json_encode($_REQUEST));
-        // check that the current user has access to do this stuff.
-        $hasAccess = $this->objUser->isContextLecturer();
-        $hasAccess |= $this->objUser->isAdmin();
-        if (!$hasAccess) {
-            // This module is very sensitive, so get the intruder out asap, with no way to get back here!
-            throw new customException($this->objLanguage->languageText("mod_groupadmin_insufficientperms", "groupadmin"));
-        }
-        switch ($action) {
-            // CHISIMBA_M15_GROUPADMIN_NATIVE_PASS1
-            case 'native':
-                return $this->nativeReadOnly();
-
-            default :
-                //$this->setLayoutTemplate('main_layout_tpl.php');
-                return "main_tpl.php";
-                // get a list of all the groups
-                $groups = $this->objOps->getAllGroups();
-                // formulate the groups list into something pretty
-                $grps = $this->objOps->layoutGroups($groups);
-                $this->setVarByRef('grps', $grps);
-
-                return 'viewgrps_tpl.php';
-
-
-            case 'searchusers':
-                $items = $this->objOps->getSearchableUsers();
-
-                $q = $this->getParam('q');
-                foreach ($items as $key => $value) {
-                    if (strpos(strtolower($key), $q) !== false) {
-                        echo "$key|$value\n";
-                    }
-                }
-                exit(0);
-
-            case 'ajaxgetmultipleusers':
-                echo $this->objOps->getUserList($this->getParam('groupid'));
-                exit(0);
-
-            case 'ajaxadduser':
-                $userId = $this->objUser->getUserId($this->getParam('username'));
-                //echo $userId;
-                // get the permissions id for this user...
-                $permid = $this->objOps->getUserByUserId($userId);
-                $permid = $permid['perm_user_id'];
-                $groupId = $this->getParam('groupid');
-                $res = $this->objGroups->addGroupUser($groupId, $permid);
-
-                exit(0);
-
-            case 'ajaxremoveuser':
-                $userId = $this->getParam('userid');
-                $permid = $this->objOps->getUserByUserId($userId);
-                $permid = $permid['perm_user_id'];
-                $groupId = $this->getParam('groupid');
-                $res = $this->objGroups->deleteGroupUser($groupId, $permid);
-                exit(0);
-                break;
-
-
-
-            case 'ajaxgetgroupname':
-                //echo 'here is the content for group..'.$this->getParam('groupid');
-                $details = $this->objOps->getGroupInfo($this->getParam('groupid'));
-                echo '<span class="subdued">Add to users to </span>' . $details[0]['group_define_name'];
-                exit(0);
-
-            case 'ajaxgetgroupcontent':
-                //echo 'here is the content for group..'.$this->getParam('groupid');
-                $groupId = $this->getParam('groupid');
-                $subGroups = $this->objGroups->getSubgroups($groupId);
-
-                if ($subGroups) {
-                    echo $this->objOps->doSubGroups($groupId, $subGroups);
-                } else {
-                    echo $this->objOps->loadGroupContent($groupId);
-                }
-                //echo $this->objOps->loadGroupContent($groupId);
-                exit(0);
-
-            case 'contextgroups':
-                $this->setLayoutTemplate('main_layout_tpl.php');
-                return 'contextgroups_tpl.php';
-
-            case 'editgrp' :
-                // get the group id
-                $grId = $this->getParam('id', NULL);
-                $adduser = $this->getParam('adduser', NULL);
-                // get the group info
-                $grpInfo = $this->objOps->getGroupInfo($grId);
-
-                if ($this->getParam('button') == 'save') {
-                    $rightData = $this->getParam('rightList');
-                    $this->objOps->addUserToGroup($rightData, $grId);
-                } elseif ($this->getParam('button') == 'cancel') {
-                    $this->nextAction(NULL);
-                }
-                // get the users IN the group already
-                $usersin = $this->objOps->getUsersInGroup($grId);
-                // format them nicely
-                if (!empty($usersin)) {
-                    $usersin = $this->objOps->layoutUsers($usersin, $grId);
-                }
-
-                if ($adduser !== NULL) {
-                    // get all the POTENTIAL users that are not in ANY Group
-                    $nongrpu = $this->objOps->getNonGrpUsers();
-                    // get all the users that are in groups, but not this one (yet)
-                    $permusers = $this->objOps->getAllPermUsers();
-                    // clobber the nongrpusers and all other users together as the potentials for this grp
-                    $potusers = array_merge($nongrpu, $permusers);
-                    $this->setVarByRef('potusers', $potusers);
-                    $this->setVarByRef('adduser', TRUE);
-                }
-
-                $this->setVarByRef('groupinfo', $grpInfo);
-                $this->setVarByRef('usersin', $usersin);
-
-                return 'usergroup_tpl.php';
-
-            case 'addusertogrp' :
-                $grpId = $this->getParam('grpid');
-
-            case 'removeuser' :
-                $grid = $this->getParam('grid');
-                $id = $this->getParam('id');
-
-                $this->objOps->removeUser($grid, $id);
-                $this->nextAction('editgrp', array('id' => $grid));
-                break;
-            ///////////////////
-            /// JSON CALLS ////
-            ///////////////////
-            case 'json_getallgroups':
-                echo $this->objOps->getJsonAllGroups();
-                exit(0);
-                break;
-
-            case 'json_getgroupusers':
-                error_log('[CHISIMBA CTRL TRACE] branch=json_getgroupusers obj=' . get_class($this->objOps));
-                $response = $this->objOps->getJsonGroupUsers(
-                    $this->getParam('groupid'),
-                    $this->getParam('start'),
-                    $this->getParam('limit')
-                );
-                error_log('[CHISIMBA CTRL TRACE] json_getgroupusers response_type=' . gettype($response)
-                    . ' length=' . strlen((string)$response)
-                    . ' prefix=' . substr((string)$response, 0, 300));
-                header('Content-Type: application/json; charset=UTF-8');
-                echo $response;
-                exit(0);
-                break;
-
-            case 'json_getsubgroups':
-                echo $this->objOps->getJsonSubGroups($this->getParam('groupid'));
-                exit(0);
-                break;
-
-            case 'json_removeusers':
-                echo $this->objOps->jsonRemoveUsers($this->getParam('groupid'), $this->getParam('ids'));
-                exit(0);
-                break;
-
-            case 'json_allusers':
-                error_log('[CHISIMBA CTRL TRACE] branch=json_allusers obj=' . get_class($this->objOps));
-                $response = $this->objOps->jsonGetAllUsers(
-                    $this->getParam('groupid'),
-                    $this->getParam('start'),
-                    $this->getParam('limit')
-                );
-                error_log('[CHISIMBA CTRL TRACE] json_allusers response_type=' . gettype($response)
-                    . ' length=' . strlen((string)$response)
-                    . ' prefix=' . substr((string)$response, 0, 300));
-                header('Content-Type: application/json; charset=UTF-8');
-                echo $response;
-                exit(0);
-                break;
-
-            case 'json_addusers':
-                echo $this->objOps->jsonAddUsers($this->getParam('groupid'), $this->getParam('ids'));
-                exit(0);
-                break;
-            case 'json_getgroupsbysearch':
-                echo $this->objOps->jsonGetGroups($this->getParam('start'), $this->getParam('limit'));
-                exit(0);
-                break;
-
-            case 'checkgroup':
-                echo $this->objOps->jsonCheckGroupAvailable($this->getParam('groupname'));
-                exit(0);
-                break;
-
-            case 'json_addgroup':
-                echo $this->objOps->jsonAddGroup($this->getParam('groupname'));
-                exit(0);
-                break;
-
-            case 'json_editgroup':
-                echo $this->objOps->jsonEditGroup($this->getParam('id'), $this->getParam('groupname'), $this->getParam('oldgroupname'));
-                exit(0);
-                break;
-
-            case 'json_getgroup':
-                echo $this->objOps->jsonGetGroup($this->getParam('id'));
-                exit(0);
-                break;
-        }
-    }
-
-
-    /**
-     * Native read-only group administration interface.
-     * CHISIMBA_M15_GROUPADMIN_NATIVE_PASS1
-     *
-     * @return string
-     */
-    public function nativeReadOnly()
+    public function dispatch($action)
     {
-        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
-            return 'error_tpl.php';
-        }
+        $this->assertAdministrator();
 
-        // CHISIMBA_M15_GROUPADMIN_NATIVE_PASS2
+        switch (strtolower((string) $action)) {
+            case 'addmember':
+                return $this->mutateMembership('add');
+            case 'removemember':
+                return $this->mutateMembership('remove');
+            default:
+                return $this->nativeInterface();
+        }
+    }
+
+    public function nativeInterface()
+    {
+        $this->assertAdministrator();
+
         $service = $this->getObject('groupadminreadservice', 'groupadmin');
         $snapshot = $service->getSnapshot(
             $this->getParam('groupid'),
@@ -329,12 +45,92 @@ class groupadmin extends controller {
             $this->getParam('dir', 'asc')
         );
 
+        $token = $this->getSession('membership_csrf', '');
+        if (!is_string($token) || strlen($token) < 32) {
+            try {
+                $token = bin2hex(random_bytes(32));
+            } catch (Exception $exception) {
+                $token = hash('sha256', uniqid('', true) . mt_rand());
+            }
+            $this->setSession('membership_csrf', $token);
+        }
+
         $this->setVar('groupAdminSnapshot', $snapshot);
+        $this->setVar('groupAdminCsrfToken', $token);
+        $this->setVar('groupAdminMessage', $this->getParam('message', ''));
+        $this->setVar('groupAdminError', $this->getParam('error', ''));
 
         return 'native_readonly_tpl.php';
     }
 
-}
+    private function mutateMembership($operation)
+    {
+        $this->assertPost();
+        $this->assertCsrfToken();
 
-//end of class
+        $groupId = $this->getParam('groupid');
+        $userId = $this->getParam('userid');
+
+        $service = $this->getObject('groupservice', 'groupadmin');
+        $result = $operation === 'add'
+            ? $service->addMember($groupId, $userId)
+            : $service->removeMember($groupId, $userId);
+
+        $params = array(
+            'groupid' => $groupId,
+            'page' => $this->getParam('page', 1),
+            'limit' => $this->getParam('limit', 25),
+            'q' => $this->getParam('q', ''),
+            'sort' => $this->getParam('sort', 'name'),
+            'dir' => $this->getParam('dir', 'asc'),
+        );
+
+        if (!empty($result['ok'])) {
+            $params['message'] = $result['code'];
+        } else {
+            $params['error'] = isset($result['code'])
+                ? $result['code']
+                : 'membership_update_failed';
+        }
+
+        return $this->nextAction('native', $params, 'groupadmin');
+    }
+
+    private function assertPost()
+    {
+        if (!isset($_SERVER['REQUEST_METHOD'])
+            || strtoupper((string) $_SERVER['REQUEST_METHOD']) !== 'POST') {
+            throw new customException('This action requires an HTTP POST request.');
+        }
+    }
+
+    private function assertCsrfToken()
+    {
+        $expected = $this->getSession('membership_csrf', '');
+        $provided = $this->getParam('csrf_token', '');
+
+        if (!is_string($expected)
+            || !is_string($provided)
+            || $expected === ''
+            || $provided === ''
+            || !hash_equals($expected, $provided)) {
+            throw new customException(
+                'The security token is missing or invalid. Reload the page and try again.'
+            );
+        }
+    }
+
+    private function assertAdministrator()
+    {
+        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
+            throw new customException(
+                $this->objLanguage->languageText(
+                    'mod_groupadmin_insufficientperms',
+                    'groupadmin',
+                    'You do not have sufficient permission to process this action.'
+                )
+            );
+        }
+    }
+}
 ?>

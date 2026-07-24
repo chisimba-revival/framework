@@ -21,6 +21,7 @@ class groupservice extends ChisimbaObject
     private $objUserAdmin;
     private $objUser;
     private $objContext;
+    private $objMembershipDb;
 
     public function init()
     {
@@ -28,7 +29,10 @@ class groupservice extends ChisimbaObject
         $this->objUserAdmin = $this->getObject('useradmin_model2', 'security');
         $this->objUser = $this->getObject('user', 'security');
         $this->objContext = $this->getObject('dbcontext', 'context');
-    }
+        $this->objMembershipDb = $this->getObject('groupmembershipdb', 'groupadmin');
+    
+        $this->objIdentityService = $this->getObject('identityservice', 'security');
+}
 
     /**
      * Return a normalized flat hierarchy.
@@ -72,8 +76,7 @@ class groupservice extends ChisimbaObject
                 'name' => $contextTitle !== '' ? $contextTitle : $storedName,
                 'storedName' => $storedName,
                 'type' => $children ? 'context' : 'group',
-                'typeLabel' => $children ? 'Context' : 'Site group',
-                'parentId' => null,
+                                'parentId' => null,
                 'contextCode' => $children ? $storedName : '',
             );
 
@@ -95,35 +98,53 @@ class groupservice extends ChisimbaObject
             return array();
         }
 
-        $memberships = $this->objGroups->getGroupUsers($groupId);
-        if (!is_array($memberships)) {
+        /*
+         * Native read path.  LiveUser getUsers() is unreliable on PHP 8.2,
+         * while this schema join is already proven elsewhere in GroupAdmin.
+         */
+        $sql = "
+            SELECT DISTINCT
+                gu.perm_user_id AS id,
+                pu.auth_user_id AS userid,
+                us.firstname,
+                us.surname,
+                us.username,
+                us.emailAddress,
+                us.isActive
+            FROM tbl_perms_groupusers AS gu
+            INNER JOIN tbl_perms_perm_users AS pu
+                ON gu.perm_user_id = pu.perm_user_id
+            INNER JOIN tbl_users AS us
+                ON pu.auth_user_id = us.userId
+            WHERE gu.group_id = " . $groupId . "
+            ORDER BY UPPER(us.surname), UPPER(us.firstname), UPPER(us.username)
+        ";
+
+        $rows = $this->objUser->getArray($sql);
+        if (!is_array($rows)) {
             return array();
         }
 
-        $records = array();
+        $members = array();
         $seen = array();
 
-        foreach ($memberships as $membership) {
-            if (!is_array($membership)
-                || empty($membership['auth_user_id'])) {
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
                 continue;
             }
 
-            $authUserId = (string) $membership['auth_user_id'];
-            if (isset($seen[$authUserId])) {
+            $user = $this->normaliseUser($row);
+            $identityKey = $this->userIdentityKey($user);
+
+            if ($identityKey === '' || isset($seen[$identityKey])) {
                 continue;
             }
 
-            $user = $this->objUser->getUserDetails($authUserId);
-            if (!is_array($user) || !$user) {
-                continue;
-            }
-
-            $records[] = $this->normaliseUser($user);
-            $seen[$authUserId] = true;
+            $seen[$identityKey] = true;
+            $members[] = $user;
         }
 
-        return $records;
+        return $members;
     }
 
     /**
@@ -136,45 +157,167 @@ class groupservice extends ChisimbaObject
             return array();
         }
 
-        $memberIds = array();
-        $memberships = $this->objGroups->getGroupUsers($groupId);
-        if (is_array($memberships)) {
-            foreach ($memberships as $membership) {
-                if (is_array($membership)
-                    && isset($membership['auth_user_id'])) {
-                    $memberIds[(string) $membership['auth_user_id']] = true;
-                }
+        $memberKeys = array();
+        foreach ($this->getMembers($groupId) as $member) {
+            $key = $this->userIdentityKey($member);
+            if ($key !== '') {
+                $memberKeys[$key] = true;
             }
         }
 
-        $users = $this->objUserAdmin->getUsers(
-            'listall',
-            'firstname',
-            'surname',
-            true
-        );
-        if (!is_array($users)) {
+        $rows = $this->objUserAdmin->getAll();
+        if (!is_array($rows)) {
             return array();
         }
 
-        $records = array();
-        foreach ($users as $user) {
-            if (!is_array($user)) {
+        $available = array();
+        $seen = array();
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
                 continue;
             }
 
-            $authUserId = isset($user['userid'])
-                ? (string) $user['userid']
-                : '';
+            $user = $this->normaliseUser($row);
 
-            if ($authUserId === '' || isset($memberIds[$authUserId])) {
+            if (strtolower((string) $user['status']) !== 'active') {
                 continue;
             }
 
-            $records[] = $this->normaliseUser($user);
+            $identityKey = $this->userIdentityKey($user);
+            if ($identityKey === ''
+                || isset($memberKeys[$identityKey])
+                || isset($seen[$identityKey])) {
+                continue;
+            }
+
+            $seen[$identityKey] = true;
+            $available[] = $user;
         }
 
-        return $records;
+        return $available;
+    }
+
+    public function addMember($groupId, $userId)
+    {
+        $this->assertAdministrator();
+
+        $group = $this->findGroup($groupId);
+        $userId = $this->normaliseUserId($userId);
+
+        if ($group === null) {
+            return array('ok' => false, 'code' => 'group_not_found');
+        }
+        if ($userId === null) {
+            return array('ok' => false, 'code' => 'invalid_user');
+        }
+
+        $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
+        if ($candidate === null) {
+            return array('ok' => false, 'code' => 'user_not_available');
+        }
+
+        $permissionUserId = $this->objIdentityService->permissionUserIdForUser($userId);
+        if ($permissionUserId === null) {
+            return array('ok' => false, 'code' => 'permission_user_not_found');
+        }
+
+        if ($this->objMembershipDb->membershipExists($group['id'], $permissionUserId)) {
+            return array('ok' => false, 'code' => 'already_member');
+        }
+
+        return $this->objMembershipDb->addMembership($group['id'], $permissionUserId)
+            ? array('ok' => true, 'code' => 'member_added')
+            : array('ok' => false, 'code' => 'add_failed');
+    }
+
+    public function removeMember($groupId, $userId)
+    {
+        $this->assertAdministrator();
+
+        $group = $this->findGroup($groupId);
+        $userId = $this->normaliseUserId($userId);
+
+        if ($group === null) {
+            return array('ok' => false, 'code' => 'group_not_found');
+        }
+        if ($userId === null) {
+            return array('ok' => false, 'code' => 'invalid_user');
+        }
+
+        $member = $this->findUserById($this->getMembers($group['id']), $userId);
+        if ($member === null) {
+            return array('ok' => false, 'code' => 'not_a_member');
+        }
+
+        if (strcasecmp((string) $group['storedName'], 'Site Admin') === 0) {
+            if ((string) $this->objUser->userId() === (string) $userId) {
+                return array('ok' => false, 'code' => 'cannot_remove_self_admin');
+            }
+            if (count($this->getMembers($group['id'])) <= 1) {
+                return array('ok' => false, 'code' => 'cannot_remove_last_admin');
+            }
+        }
+
+        $permissionUserId = $this->objIdentityService->permissionUserIdForUser($userId);
+        if ($permissionUserId === null) {
+            return array('ok' => false, 'code' => 'permission_user_not_found');
+        }
+
+        return $this->objMembershipDb->removeMembership($group['id'], $permissionUserId)
+            ? array('ok' => true, 'code' => 'member_removed')
+            : array('ok' => false, 'code' => 'remove_failed');
+    }
+
+    private function assertAdministrator()
+    {
+        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
+            throw new Exception('Administrator authorization required.');
+        }
+    }
+
+    private function findGroup($groupId)
+    {
+        $groupId = $this->positiveInteger($groupId);
+        if ($groupId === null) {
+            return null;
+        }
+
+        foreach ($this->listGroups() as $group) {
+            if ((int) $group['id'] === $groupId) {
+                return $group;
+            }
+        }
+
+        return null;
+    }
+
+    private function findUserById(array $users, $userId)
+    {
+        foreach ($users as $user) {
+            if (isset($user['userId'])
+                && (string) $user['userId'] === (string) $userId) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    private function normaliseUserId($value)
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+        if ($value === ''
+            || strlen($value) > 255
+            || preg_match('/[\\x00-\\x1F\\x7F]/', $value)) {
+            return null;
+        }
+
+        return $value;
     }
 
     private function directSubgroups($parentId)
@@ -218,8 +361,7 @@ class groupservice extends ChisimbaObject
                 'name' => $displayName,
                 'storedName' => $storedName,
                 'type' => 'subgroup',
-                'typeLabel' => 'Context group',
-                'parentId' => (int) $parentId,
+                                'parentId' => (int) $parentId,
                 'contextCode' => isset($parts[0]) ? trim($parts[0]) : '',
             );
         }
@@ -235,6 +377,26 @@ class groupservice extends ChisimbaObject
 
         $title = $this->objContext->getTitle($contextCode, false);
         return is_scalar($title) ? trim((string) $title) : '';
+    }
+
+    private function userIdentityKey(array $user)
+    {
+        $userId = isset($user['userId']) ? trim((string) $user['userId']) : '';
+        if ($userId !== '') {
+            return 'id:' . strtolower($userId);
+        }
+
+        $username = isset($user['username']) ? trim((string) $user['username']) : '';
+        if ($username !== '') {
+            return 'username:' . strtolower($username);
+        }
+
+        $email = isset($user['email']) ? trim((string) $user['email']) : '';
+        if ($email !== '') {
+            return 'email:' . strtolower($email);
+        }
+
+        return '';
     }
 
     private function normaliseUser(array $user)
@@ -257,7 +419,7 @@ class groupservice extends ChisimbaObject
         $displayName = trim($firstName . ' ' . $surname);
 
         if ($displayName === '') {
-            $displayName = $username !== '' ? $username : 'Unnamed user';
+            $displayName = $username;
         }
 
         return array(
@@ -300,14 +462,14 @@ class groupservice extends ChisimbaObject
     private function normaliseStatus($value)
     {
         if ($value === true || $value === 1 || $value === '1') {
-            return 'Active';
+            return 'active';
         }
         if ($value === false || $value === 0 || $value === '0') {
-            return 'Inactive';
+            return 'inactive';
         }
 
         $value = trim((string) $value);
-        return $value !== '' ? $value : 'Unknown';
+        return $value !== '' ? $value : 'unknown';
     }
 
     private function positiveInteger($value)
