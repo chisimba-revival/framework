@@ -103,6 +103,7 @@ class user extends dbTable {
      * @return TRUE|FALSE Boolean value indicating success of authentication
      */
     public function authenticateUser($username, $password, $remember = NULL) {
+        $username = trim($username);
 
         $this->objAuth = $this->getObject('authenticate');
         $result = $this->objAuth->authenticateUser($username, $password, $remember);

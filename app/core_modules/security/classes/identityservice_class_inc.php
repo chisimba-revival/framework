@@ -82,6 +82,67 @@ class identityservice extends dbTable
         return $this->permissionUserIdForUser($userId, $containerName) !== null;
     }
 
+
+    /**
+     * Return the existing permission identity for a logical user, or create it.
+     *
+     * @return int|null
+     */
+    public function ensurePermissionIdentity(
+        $userId,
+        $containerName = 'database_local',
+        $permissionType = 5
+    ) {
+        $userId = $this->normaliseLogicalUserId($userId);
+        $containerName = $this->normaliseContainerName($containerName);
+        $permissionType = $this->positiveInteger($permissionType);
+
+        if ($userId === null || $containerName === null || $permissionType === null) {
+            return null;
+        }
+
+        $existing = $this->permissionUserIdForUser($userId, $containerName);
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $userRows = $this->getArray(
+            'SELECT userid FROM tbl_users WHERE userid = '
+            . $this->quoteValue($userId)
+            . ' LIMIT 2'
+        );
+        if (!is_array($userRows) || count($userRows) !== 1) {
+            return null;
+        }
+
+        $rows = $this->getArray(
+            'SELECT MAX(perm_user_id) AS max_perm_user_id FROM tbl_perms_perm_users'
+        );
+        $nextPermissionUserId = 1;
+        if (is_array($rows)
+            && isset($rows[0]['max_perm_user_id'])
+            && $rows[0]['max_perm_user_id'] !== null) {
+            $maximum = (int) $rows[0]['max_perm_user_id'];
+            if ($maximum > 0) {
+                $nextPermissionUserId = $maximum + 1;
+            }
+        }
+
+        $inserted = $this->insert(array(
+            'id' => substr('perm_' . md5($userId . '|' . $containerName . '|' . microtime(true)), 0, 32),
+            'perm_user_id' => $nextPermissionUserId,
+            'auth_user_id' => $userId,
+            'auth_container_name' => $containerName,
+            'perm_type' => $permissionType,
+        ));
+
+        if ($inserted === false) {
+            return $this->permissionUserIdForUser($userId, $containerName);
+        }
+
+        return $this->permissionUserIdForUser($userId, $containerName);
+    }
+
     private function normaliseLogicalUserId($value)
     {
         if (!is_scalar($value)) {

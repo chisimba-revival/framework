@@ -1369,7 +1369,23 @@ EOT;
                     $this->update_progess("OK\n");
                 }
             }
-            // Flag the first time registration as having been run
+            $objInitialAdminProvisioning = $this->getObject(
+                'initialadminprovisioningservice',
+                'security'
+            );
+            $adminProvisioning = $objInitialAdminProvisioning
+                ->ensureInitialAdministrator('1');
+
+            if (!is_array($adminProvisioning) || empty($adminProvisioning['ok'])) {
+                $code = is_array($adminProvisioning) && isset($adminProvisioning['code'])
+                    ? $adminProvisioning['code']
+                    : 'unknown_failure';
+                throw new customException(
+                    'Initial administrator provisioning failed: ' . $code
+                );
+            }
+
+            // Flag first-time registration complete only after provisioning succeeds.
             $this->objSysConfig->insertParam ( 'firstreg_run', 'modulecatalogue', TRUE, 'mod_modulecatalogue_firstreg_run_desc' );
             log_debug ( 'first time registration performed, variable set. First time registration cannot be performed again unless system variable \'firstreg_run\' is unset.' );
             $this->update_progess("Installation complete.\n");

@@ -587,56 +587,10 @@ class engine {
  	 
  	 
         } 
-        // CHISIMBA_IDEMPOTENT_SITE_ADMIN_BOOTSTRAP_PHP82
-        // This legacy 2.x-to-3.x bootstrap used a group-filtered getUsers()
-        // query. Under the PHP 8.2 LiveUser compatibility path that query can
-        // return an empty result even when Admin already exists, causing a new
-        // permission user and Site Admin membership to be inserted on every
-        // request. Resolve the canonical Admin permission user directly and
-        // only create it when no mapping exists at all.
-        $admingrp = $this->luAdmin->perm->getGroups(
-            array('filters' => array('group_define_name' => 'Site Admin'))
-        );
-
-        if (is_array($admingrp) && isset($admingrp[0]['group_id'])) {
-            $admingrpId = $admingrp[0]['group_id'];
-
-            $adminPermUsers = $this->luAdmin->perm->getUsers(
-                array(
-                    'filters' => array(
-                        'auth_user_id' => '1',
-                        'auth_container_name' => 'database_local'
-                    )
-                )
-            );
-
-            if (is_array($adminPermUsers) && isset($adminPermUsers[0]['perm_user_id'])) {
-                $adminPermUserId = $adminPermUsers[0]['perm_user_id'];
-            } else {
-                $user = $this->luAdmin->auth->getUsers(
-                    array('filters' => array('auth_user_id' => '1'))
-                );
-
-                $adminPermUserId = false;
-                if (is_array($user) && isset($user[0]['auth_user_id'])) {
-                    $userdata = array(
-                        'auth_user_id' => $user[0]['auth_user_id'],
-                        'auth_container_name' => 'database_local',
-                        'perm_type' => 5
-                    );
-                    $adminPermUserId = $this->luAdmin->perm->addUser($userdata);
-                }
-            }
-
-            if ($adminPermUserId !== false && $adminPermUserId !== null) {
-                $this->luAdmin->perm->addUserToGroup(
-                    array(
-                        'perm_user_id' => $adminPermUserId,
-                        'group_id' => $admingrpId
-                    )
-                );
-            }
-        }
+        /*
+         * Initial administrator identity and membership are provisioned once
+         * after first-time registration by initialadminprovisioningservice.
+         */
         /* -- End remove for 2.x -> 3.x series -- */ 
 
         // Set the user agent
