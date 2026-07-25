@@ -82,7 +82,7 @@ class block_mycontexts extends ChisimbaObject
             $this->objUserContext = $this->getObject('usercontext', 'context');
             $this->objUser = $this->getObject('user', 'security');
             $this->objContext =  $this->getObject('dbcontext');
-            $this->objGroups =  $this->getObject('groupAdminModel', 'groupadmin');
+            $this->objGroups =  $this->getObject('groupservice', 'groupadmin');
             $this->title = ucWords($this->objLanguage->code2Txt('phrase_mycourses', 'system', NULL, 'My [-contexts-]'));
             
             // HTML Elements
@@ -119,7 +119,7 @@ class block_mycontexts extends ChisimbaObject
                	
                if($contextDetails["status"] == "Unpublished"){
                		//if so check if this person is lecturer lecturer of the course
-               		$groupId = $this->objGroups->getLeafId(array($contextCode ,'Lecturers'));               		
+                    $groupId = $this->objGroups->groupIdForName($contextCode . '^Lecturers');
         			$ret = $this->objGroups->isGroupMember($this->objUser->userId(), $groupId);        			
         			if ($ret){
         				$contextArray[$contextDetails['title']] = $contextCode;
