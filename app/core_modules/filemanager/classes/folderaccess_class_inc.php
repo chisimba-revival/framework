@@ -46,8 +46,6 @@ class folderaccess extends ChisimbaObject {
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objFolder = $this->getObject("dbfolder");
         $this->objUser = $this->getObject('user', 'security');
-        $this->objGroupOps = $this->getObject('groupops', 'groupadmin');
-        $this->objGroupAdminModel = $this->getObject('groupadminmodel', 'groupadmin');
     }
 
     /**
