@@ -869,33 +869,15 @@ function getContexts()
      * @param <type> $contextCode2
      */
     function copyStudentsFromOneCourseToNext($contextCode1, $contextCode2) {
-        $groupOps = $this->getObject('groupops', 'groupadmin');
-        $objGroups = $this->getObject('groupadminmodel', 'groupadmin');
-        $contextGroupId1 = $objGroups->getId($contextCode1 . '^Students');
-        $contextGroupId2 = $objGroups->getId($contextCode2 . '^Students');
+        $objGroups = $this->getObject('groupservice', 'groupadmin');
+        $sourceGroupId = $objGroups->groupIdForName($contextCode1 . '^Students');
+        $destinationGroupId = $objGroups->groupIdForName($contextCode2 . '^Students');
 
-        $usersInContext1 = $groupOps->getUsersInGroup($contextGroupId1);
-        foreach ($usersInContext1 as $user) {
-            $puid = $this->getUserPuid($user['auth_user_id']);
-
-            $objGroups->addGroupUser($contextGroupId2, $puid);
+        foreach ($objGroups->getMembers($sourceGroupId) as $user) {
+            $objGroups->addMember($destinationGroupId, $user['userid']);
         }
 
         return true;
-    }
-
-    /**
-     * we get puid because we need it to add a user to a group
-     * @param <type> $userid
-     * @return <type>
-     */
-    function getUserPuid($userid) {
-
-        $sql =
-                "select puid  from tbl_users where userid = '$userid'";
-        $rows = $this->objDBContext->getArray($sql);
-        $row = $rows[0];
-        return $row['puid'];
     }
 
 }
