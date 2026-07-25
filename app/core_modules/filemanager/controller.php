@@ -82,7 +82,7 @@ class filemanager extends controller {
     public $objLog;
 
     /**
-     * Object of the groupadminmodel class in the groupadmin module.
+     * Object of the GroupService class in the groupadmin module.
      *
      * @access protected
      * @var object
@@ -122,7 +122,7 @@ class filemanager extends controller {
         // Other Classes
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objUser = $this->getObject('user', 'security');
-        $this->objGroup = $this->getObject('groupadminmodel', 'groupadmin');
+        $this->objGroup = $this->getObject('groupservice', 'groupadmin');
         $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
 
         $this->objLanguage = $this->getObject('language', 'language');
@@ -368,7 +368,7 @@ class filemanager extends controller {
             $groups = array('Site Admin', 'Lecturers');
             $isMember = FALSE;
             foreach ($groups as $group) {
-                $groupId = $this->objGroup->getId($group);
+                $groupId = $this->objGroup->groupIdForName($group);
                 if ($this->objGroup->isGroupMember($userId, $groupId)) {
                     $isMember = TRUE;
                     break;

@@ -835,10 +835,9 @@ class context extends controller {
             $contextcode = $this->contextCode;
         }
 
-        $groupOps = $this->getObject('groupops', 'groupadmin');
-        $objGroups = $this->getObject('groupadminmodel', 'groupadmin');
-        $contextGroupId = $objGroups->getId($contextcode . '^Students');
-        $usersInContext = $groupOps->getUsersInGroup($contextGroupId);
+        $objGroups = $this->getObject('groupservice', 'groupadmin');
+        $contextGroupId = $objGroups->groupIdForName($contextcode . '^Students');
+        $usersInContext = $objGroups->getMembers($contextGroupId);
 
         $data = $objUserActivity->getUserActivityByModule($startDate, $endDate, $module, $studentsonly, $usersInContext, $contextcode);
         $this->setVarByRef("data", $data);

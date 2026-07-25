@@ -63,7 +63,7 @@ class contextCondition extends condition
      * Object reference to the Group Admin module via its facet interface.
      *
      * @access private
-     * @var    groupAdminModel
+     * @var    groupservice
      */
     var $_objGroupAdmin = NULL;
 
@@ -111,7 +111,7 @@ class contextCondition extends condition
      */
     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
-        $this->_objGroupAdmin = $this->getObject('groupadminmodel','groupadmin');
+        $this->_objGroupAdmin = $this->getObject('groupservice','groupadmin');
         $this->_objUser = $this->getObject('user','security');
         $this->_objPermissions = $this->getObject('permissions_model','permissions');
         $this->_objDBContext = $this->getObject('dbcontext','context');
@@ -210,7 +210,7 @@ class contextCondition extends condition
      */
     function isMember($absPath=NULL)
     {
-        $groupId = $this->_objGroupAdmin->getId( $absPath );
+        $groupId = $this->_objGroupAdmin->groupIdForName( $absPath );
         // Evaluate result: TRUE means is a member, FALSE means is not a member
         $result = $this->_objGroupAdmin->isGroupMember( $this->_objUser->userId(), $groupId );
         // var_dump($result);
