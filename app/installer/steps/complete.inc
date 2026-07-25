@@ -71,15 +71,33 @@ class CompleteAction extends StepAction
     function paintAction()
     {
         $tpl = new Template(INSTALL_DIR.'/templates/complete.tpl');
-        $registerLink = 'http://'.str_replace('//','/',$_SESSION['site_server_url'].'/'.$_SESSION['site_url'].'/index.php?module=modulecatalogue&action=firsttimeregistration&sysType=').str_replace(' ','%20',$_SESSION['SysType']);
+        $siteRoot = isset($_SESSION['site_url'])
+            ? trim((string) $_SESSION['site_url'])
+            : '';
+        $serverUrl = isset($_SESSION['site_server_url'])
+            ? trim((string) $_SESSION['site_server_url'])
+            : '';
+
+        $configuredRoot = $serverUrl . '/' . $siteRoot . '/';
+        if (!preg_match('#^https?://#i', $configuredRoot)) {
+            $configuredRoot = 'https://' . $configuredRoot;
+        }
+        $configuredRoot = preg_replace('#(?<!:)/{2,}#', '/', $configuredRoot);
+
+        $registerLink = $configuredRoot
+            . 'index.php?module=modulecatalogue'
+            . '&action=firsttimeregistration'
+            . '&sysType='
+            . rawurlencode($_SESSION['SysType']);
+
         // Define variables for AJAX installer
-        $ajaxRegisterLink = 'http://'.str_replace('//','/',$_SESSION['site_server_url'].'/'.$_SESSION['site_url'].'/').'index.php';
+        $ajaxRegisterLink = $configuredRoot . 'index.php';
         //$ajaxRegisterLinkParams = 'module=modulecatalogue&action=firsttimeregistration&sysType='.$_SESSION['SysType'].'&ajax=true'; //str_replace(' ','%20',);
         $ajaxRegisterLinkParams = "{ module: \'modulecatalogue\', action: \'firsttimeregistration\', sysType: \'".$_SESSION['SysType']."\', ajax: \'true\' }"; //urlencode()
         // Do not place credentials in the URL. The installer now sends the
         // administrator to the normal login page, where authentication occurs
         // through the standard POST-based login form.
-        $ajaxLoginLink = 'http://'.str_replace('//','/',$_SESSION['site_server_url'].'/'.$_SESSION['site_url'].'/').'index.php';
+        $ajaxLoginLink = $configuredRoot . 'index.php';
 
         $tpl->set('login_url', $registerLink);
         // Pass variables for AJAX installer to template
