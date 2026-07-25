@@ -44,22 +44,8 @@ class auth_database extends abauth implements ifauth
             && $password !== '--') {
             return $this->authenticateNatively($username, $password);
         }
-        require_once dirname(__FILE__)
-            . '/nativeauth/nativeauthshadowtrace.php';
-
-        NativeAuthShadowTrace::log(
-            'auth_database.authenticate',
-            'entered',
-            array('username' => $username)
-        );
-
         $login = $this->objLu->login($username, $password, $remember);
 
-        NativeAuthShadowTrace::log(
-            'auth_database.authenticate',
-            'LiveUser login returned',
-            array('result' => $login ? TRUE : FALSE)
-        );
         if(!$login) {
             // check if user is inactive
             if($this->objLu->isInactive()) {
@@ -73,11 +59,6 @@ class auth_database extends abauth implements ifauth
         //Retrieve the users data from the database
         $line=$this->getUserDataAsArray($username);
 
-        NativeAuthShadowTrace::log(
-            'auth_database.authenticate',
-            'user record loaded',
-            array('record_found' => is_array($line))
-        );
         // set the line as a stdClass, serialize and store in session to lower db calls
         $user = new stdClass();
         // add the user info to the class
