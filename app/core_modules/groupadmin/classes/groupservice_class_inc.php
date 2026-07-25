@@ -89,7 +89,33 @@ class groupservice extends ChisimbaObject
     }
 
     /**
+     * Resolve a group name to its canonical group identifier.
+     *
+     * @param string $groupName
+     * @return mixed Group identifier, or the underlying model's not-found value.
+     */
+    public function groupIdForName($groupName)
+    {
+        return $this->objGroups->getId($groupName);
+    }
+
+    /**
+     * Determine whether a logical user belongs to a group.
+     *
+     * @param mixed $userId
+     * @param mixed $groupId
+     * @return boolean
+     */
+    public function isGroupMember($userId, $groupId)
+    {
+        return (bool) $this->objGroups->isGroupMember($userId, $groupId);
+    }
+
+    /**
      * Return normalized direct members of one group.
+     *
+     * @param mixed $groupId
+     * @return array
      */
     public function getMembers($groupId)
     {

@@ -261,7 +261,7 @@ class blocks extends ChisimbaObject {
      */
     private function checkGroupRequirement() {
         if (isset($this->objBlock->requiresGroup)) {
-            $objGroup = $this->getObject('groupadminmodel', 'groupadmin');
+            $objGroup = $this->getObject('groupservice', 'groupadmin');
             if (is_array($this->objBlock->requiresGroup)) {
                 // @todo write this code
                 die("ARRAY OF GROUPS NOT READY");
@@ -270,7 +270,7 @@ class blocks extends ChisimbaObject {
                 if ($this->objUser->isLoggedin()) {
                     $userId = $this->objUser->userId();
                     $groupName = $this->objBlock->requiresGroup;
-                    $groupId = $objGroup->getId($groupName);
+                    $groupId = $objGroup->groupIdForName($groupName);
                     if ($objGroup->isGroupMember($userId, $groupId)) {
                         return TRUE;
                     } else {
