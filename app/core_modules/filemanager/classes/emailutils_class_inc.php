@@ -29,8 +29,6 @@ class emailutils extends ChisimbaObject {
     function init() {
         $this->objUser = $this->getObject('user', 'security');
         $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
-        $this->objGroupOps = $this->getObject('groupops', 'groupadmin');
-        $this->objGroups = $this->getObject('groupadminmodel', 'groupadmin');
         $this->objManageGroups = $this->getObject('managegroups', 'contextgroups');
     }
 

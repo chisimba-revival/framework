@@ -95,8 +95,8 @@ class perms extends ChisimbaObject
 
      public function isContextMember($group = 'Lecturers') {
         $this->objUser = $this->getObject('user', 'security');
-        $this->objGroups = $this->getObject('groupadminmodel', 'groupadmin');
-        $grid = $this->objGroups->getId($group);
+        $this->objGroups = $this->getObject('groupservice', 'groupadmin');
+        $grid = $this->objGroups->groupIdForName($group);
         $userId = $this->objUser->userId();
         $ret = $this->objGroups->isGroupMember($userId, $grid);
 
@@ -105,8 +105,8 @@ class perms extends ChisimbaObject
 
      public function isMember($group = 'Lecturers') {
         $this->objUser = $this->getObject('user', 'security');
-        $this->objGroups = $this->getObject('groupadminmodel', 'groupadmin');
-        $grid = $this->objGroups->getId($group);
+        $this->objGroups = $this->getObject('groupservice', 'groupadmin');
+        $grid = $this->objGroups->groupIdForName($group);
         $userId = $this->objUser->userId();
         $ret = $this->objGroups->isGroupMember($userId, $grid);
      }

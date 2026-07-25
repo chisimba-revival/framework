@@ -222,10 +222,10 @@ class utils extends ChisimbaObject
        */
       public function getContextLecturers($contextCode)
       {
-              $objLeaf = $this->newObject('groupadminmodel', 'groupadmin');
-              $leafId = $objLeaf->getLeafId(array($contextCode,'Lecturers'));
+              $objGroups = $this->newObject('groupservice', 'groupadmin');
+              $groupId = $objGroups->groupIdForName($contextCode . '^Lecturers');
 
-              $arr = $objLeaf->getGroupUsers($leafId);
+              $arr = $objGroups->getMembers($groupId);
 
               return $arr;
 
