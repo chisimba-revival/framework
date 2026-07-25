@@ -184,7 +184,18 @@ class CreateConfigsAction extends FiveStepAction
             return false;
 
         }
-        $root_url = (isset ( $_SESSION ['site_server_url'] ) ? $_SESSION ['site_server_url'] : '') . '/' . $root_url;
+        $root_url = $this->buildCanonicalSiteRoot(
+            isset($_SESSION['site_server_url'])
+                ? $_SESSION['site_server_url']
+                : '',
+            $root_url
+        );
+
+        if ($root_url === false) {
+            $this->errors[] = 'The configured site URL is not a valid HTTP or HTTPS URL.';
+            $this->success = false;
+            return false;
+        }
 
         // if there is already a root url defined, check if it's already defined in the list of
 
@@ -209,8 +220,8 @@ class CreateConfigsAction extends FiveStepAction
 
         $_SESSION ['end_url'] = $root_url;
 
-        // Filter out unwanted double or triple slashes
-        $finalurl = str_replace ( '///', '//', 'http://' . str_replace ( '//', '/', $root_url . '/' ) );
+        // The shared builder already normalises scheme, origin, path and slash.
+        $finalurl = $root_url;
 
         /*
                 // Last minute sanity-check

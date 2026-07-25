@@ -71,18 +71,20 @@ class CompleteAction extends StepAction
     function paintAction()
     {
         $tpl = new Template(INSTALL_DIR.'/templates/complete.tpl');
-        $siteRoot = isset($_SESSION['site_url'])
-            ? trim((string) $_SESSION['site_url'])
-            : '';
-        $serverUrl = isset($_SESSION['site_server_url'])
-            ? trim((string) $_SESSION['site_server_url'])
-            : '';
+        $configuredRoot = $this->buildCanonicalSiteRoot(
+            isset($_SESSION['site_server_url'])
+                ? $_SESSION['site_server_url']
+                : '',
+            isset($_SESSION['site_url'])
+                ? $_SESSION['site_url']
+                : ''
+        );
 
-        $configuredRoot = $serverUrl . '/' . $siteRoot . '/';
-        if (!preg_match('#^https?://#i', $configuredRoot)) {
-            $configuredRoot = 'https://' . $configuredRoot;
+        if ($configuredRoot === false) {
+            throw new RuntimeException(
+                'The configured site URL is not a valid HTTP or HTTPS URL.'
+            );
         }
-        $configuredRoot = preg_replace('#(?<!:)/{2,}#', '/', $configuredRoot);
 
         $registerLink = $configuredRoot
             . 'index.php?module=modulecatalogue'

@@ -132,6 +132,118 @@ function StepAction($step_name='')
 	}//end isRequired()
 	
 	
+
+    /**
+     * Build the canonical public site root selected by the installer.
+     *
+     * CHISIMBA_INSTALLER_CANONICAL_SITE_ROOT
+     *
+     * The server field may contain an explicit http:// or https:// scheme.
+     * When it does not, preserve the current request scheme, including the
+     * standard reverse-proxy X-Forwarded-Proto header.
+     *
+     * @param string $serverUrl Host[:port], or an absolute HTTP(S) origin.
+     * @param string $sitePath  Installation path below the origin.
+     *
+     * @return string|false Canonical absolute site root with trailing slash.
+     */
+    protected function buildCanonicalSiteRoot($serverUrl, $sitePath)
+    {
+        $serverUrl = trim((string) $serverUrl);
+        $sitePath = trim((string) $sitePath);
+
+        if ($serverUrl === '') {
+            $serverUrl = isset($_SERVER['HTTP_HOST'])
+                ? trim((string) $_SERVER['HTTP_HOST'])
+                : '';
+        }
+
+        if (!preg_match('#^https?://#i', $serverUrl)) {
+            $serverUrl = $this->getInstallerRequestScheme()
+                . '://'
+                . ltrim($serverUrl, '/');
+        }
+
+        $parts = parse_url($serverUrl);
+        if (
+            !is_array($parts)
+            || !isset($parts['scheme'])
+            || !isset($parts['host'])
+            || !in_array(
+                strtolower($parts['scheme']),
+                array('http', 'https'),
+                true
+            )
+        ) {
+            return false;
+        }
+
+        $origin = strtolower($parts['scheme']) . '://' . $parts['host'];
+        if (isset($parts['port'])) {
+            $origin .= ':' . (int) $parts['port'];
+        }
+
+        $serverPath = isset($parts['path'])
+            ? trim((string) $parts['path'], '/')
+            : '';
+        $sitePath = trim($sitePath, '/');
+
+        $paths = array();
+        if ($serverPath !== '') {
+            $paths[] = $serverPath;
+        }
+        if ($sitePath !== '') {
+            $paths[] = $sitePath;
+        }
+
+        return $origin
+            . (empty($paths) ? '/' : '/' . implode('/', $paths) . '/');
+    }
+
+    /**
+     * Resolve the public request scheme used by the installer.
+     *
+     * @return string
+     */
+    protected function getInstallerRequestScheme()
+    {
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $forwarded = strtolower(
+                trim(
+                    explode(
+                        ',',
+                        (string) $_SERVER['HTTP_X_FORWARDED_PROTO']
+                    )[0]
+                )
+            );
+            if ($forwarded === 'http' || $forwarded === 'https') {
+                return $forwarded;
+            }
+        }
+
+        if (
+            isset($_SERVER['HTTPS'])
+            && strtolower((string) $_SERVER['HTTPS']) !== 'off'
+            && (string) $_SERVER['HTTPS'] !== ''
+        ) {
+            return 'https';
+        }
+
+        if (
+            isset($_SERVER['REQUEST_SCHEME'])
+            && in_array(
+                strtolower((string) $_SERVER['REQUEST_SCHEME']),
+                array('http', 'https'),
+                true
+            )
+        ) {
+            return strtolower((string) $_SERVER['REQUEST_SCHEME']);
+        }
+
+        return 'http';
+    }
+
+
 }//end class
 
 ?>
