@@ -194,82 +194,6 @@ class login extends controller
     {
         return "demo_tpl.php";
     }
-    
-    /**
-    * 
-    * Method corresponding to the ajaxlogin action. This is the business
-    * of the login. It uses the chain of command stuff from the security
-    * module.
-    * 
-    * @access private
-    * @return void
-    * 
-    */
-    private function __ajaxlogin()
-    {
-        $okLogin = FALSE;
-        $nonce = $this->objLoginSecurity->getVariable('nonce', FALSE);
-        $msg = NULL;
-        if ($nonce) {
-            // Check the nonce to see if it exists
-            $tries = $this->objNonce->getTries($nonce);
-            if ($tries) {
-                $username = $this->objLoginSecurity->getUsername();
-                $password = $this->objLoginSecurity->getPassword();
-                $remember = $this->objLoginSecurity->getVariable('remember', "off");
-                $okLogin = $this->objUser->authenticateUser($username, $password, $remember);
-                if ($tries <= 3 || $okLogin == TRUE) {
-                    if ($okLogin) {
-                        $this->objNonce->deleteNonce($nonce);
-                        // Set up the session as per the security module.
-                        if (!isset($_REQUEST [session_name()])) {
-                            $this->objEngine->sessionStart();
-                        } else {
-                            session_regenerate_id();
-                        }
-                        // Validate the current skin Session or set it if not present.
-                        // Note: Skin is also passed as a hidden input.
-                        $this->objSkin->validateSkinSession();
-                        echo 'yes';
-                    // This is crapola from security. The authenticate method should return values here. @ToDo fix this
-                    } else {
-                        $msg = NULL;
-                        if (defined('STATUS') && STATUS == 'inactive') {
-                            // User account is inactive.  
-                            $msg = "accountinactive";
-                        }
-                        if($this->objUser->valueExists('username', $username)) {
-                            // Send a message that the password was wrong.
-                            $msg = 'wrongpassword';
-                        } else {
-                            // Check for LDAP error for cying out loud!
-                            if ($this->getSession('ldaperror') == 'FAIL') {
-                                $this->setSession('ldaperror', '');
-                                // send a message that the LDAP server cannot be contacted.
-                                $msg = 'noldap';
-                            } else {
-                                // Send a message that the username doesn't exist
-                                $msg = 'noaccount'; 
-                            }
-                        }
-                        if ($msg == NULL) {
-                            $msg = "no";
-                        }
-                    }       
-                } else {
-                    // Disable the nonce
-                    $this->objNonce->disableNonce($nonce);
-                    $msg = 'loginsdisabled';
-                }
-            } else {
-                $msg = 'nononceindb';
-            }
-        } else {
-            $msg = 'noncemissing';
-        }
-        echo $msg;
-        exit(0);
-    }
 
     /**
     * 
@@ -412,7 +336,6 @@ class login extends controller
         switch ($action)
         {
             case 'view':
-            case 'ajaxlogin':
             case 'generatecaptcha':
             case 'ajaxgetloginblock':
             case 'verifycaptcha':

@@ -180,6 +180,16 @@ class manageGroups extends ChisimbaObject
 		       // Now create the ACLS
 		       $this->createAcls( $contextcode, $title );        
         }
+
+        $objPermissionService = $this->getObject(
+            'permissionservice',
+            'security'
+        );
+        if (!$objPermissionService->materializeContextRoleGrants($contextcode)) {
+            throw new RuntimeException(
+                'Canonical contextual permission grants could not be created'
+            );
+        }
     } // End createGroups
 
     /**

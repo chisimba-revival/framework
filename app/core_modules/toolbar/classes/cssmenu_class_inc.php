@@ -29,7 +29,7 @@ class cssmenu extends ChisimbaObject {
                 $this->objLanguage = $this->getObject('language', 'language');
                 $this->objSkin = $this->getObject('skin', 'skin');
                 $this->objConfig = $this->getObject('altconfig', 'config');
-                //$this->objUser = $this->getObject('user','security');
+                $this->securityContext = $this->getObject('toolbarsecuritycontext');
 
                 $this->loadClass('link', 'htmlelements');
                 $this->toolbarIcon = $this->newObject('geticon', 'htmlelements');
@@ -47,7 +47,6 @@ class cssmenu extends ChisimbaObject {
         public function show() {
                 $homeLabel = $this->objLanguage->languageText('word_home', 'system', 'Home');
                 $logoutLabel = $this->objLanguage->languageText('word_logout', 'system', 'Logout');
-                $confirmLabel = $this->objLanguage->languageText('phrase_confirmlogout');
 
                 $home = $this->objConfig->getdefaultModuleName();
 
@@ -84,7 +83,14 @@ class cssmenu extends ChisimbaObject {
                         }
                         $str.="</ul></li>\n";
                 }
-                $str .= '<li id="logout" class="navigation-list last"><a href="javascript: if(confirm(\'' . $confirmLabel . '\')) {document.location= \'' . $this->uri(array('action' => 'logoff'), 'security', '', FALSE, TRUE) . '\'};">' . $logoutLabel . '</a></li>';
+                if ($this->securityContext->isAuthenticated()) {
+                        $str .= '<li id="logout" class="navigation-list last">'
+                                . $this->securityContext->logoutForm(
+                                        $logoutLabel,
+                                        'toolbar-css-logout'
+                                )
+                                . '</li>';
+                }
                 $str .="</ul>";
 
                 return $str;

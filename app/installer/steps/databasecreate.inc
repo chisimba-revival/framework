@@ -182,8 +182,6 @@ class DbCreateAction extends StepAction
     $this->_installDb32('core_modules/toolbar/sql/tbl_menu_category.sql');
     $this->_installDb32('core_modules/sysconfig/sql/tbl_sysconfig_properties.sql');
     //we need tbl_groupadmin_groupuser as well.
-    $this->_installDb32('core_modules/groupadmin/sql/tbl_groupadmin_groupuser.sql');
-    $this->_installDb32('core_modules/groupadmin/sql/tbl_groupadmin_group.sql');
 
     //tbl_permissions_acl
     $this->_installDb32('core_modules/permissions/sql/tbl_permissions_acl.sql');
@@ -200,7 +198,6 @@ class DbCreateAction extends StepAction
 					  'languagemodules' => 'core_modules/language/sql/langmodules.xml',
 					  'toolbar' => 'core_modules/toolbar/sql/defaultdata.xml',
 					  'sysconfig' => 'core_modules/sysconfig/sql/defaultdata.xml',
-					  'groupadmin' => 'core_modules/groupadmin/sql/groupadmin.xml',
 					  'groupadmin2' => 'core_modules/groupadmin/sql/data.xml',
 					  'permissions' => 'core_modules/permissions/sql/defaultdata.xml',
 					  'decisiontable' => 'core_modules/decisiontable/sql/defaultdata.xml',

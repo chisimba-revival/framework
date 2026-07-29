@@ -33,7 +33,7 @@ class toolbar_elearn extends ChisimbaObject
 
         $this->loadClass('link','htmlelements');
         $this->objContext = $this->getObject('dbcontext', 'context');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
         $this->contextCode = $this->objContext->getContextCode();
 
 
@@ -60,7 +60,7 @@ class toolbar_elearn extends ChisimbaObject
 
         // Take Decision on this
         // Should something be shown to not logged in users
-        if ($this->objUser->isLoggedIn()) {
+        if ($this->securityContext->isAuthenticated()) {
             return $this->generateMenu() . $objBreadcrumbs->show();
         } else {
             return $objBreadcrumbs->show();
@@ -86,7 +86,7 @@ class toolbar_elearn extends ChisimbaObject
 
         $this->menuItems['contextadmin'] = array('text'=>ucwords($this->objLanguage->code2Txt('phrase_mycourses', 'system', NULL, 'My [-contexts-]')), 'link'=>$this->uri(NULL, 'contextadmin'));
 
-        if ($this->objUser->isAdmin()) {
+        if ($this->securityContext->isSiteAdministrator()) {
             $this->menuItems['admin'] = array('text'=>$this->objLanguage->languageText('category_admin', 'toolbar', 'Admin'), 'link'=>$this->uri(NULL, 'toolbar'));
         }
 
@@ -210,9 +210,6 @@ jQuery('.homelink').bind('click', function() {
             $this->menuItems['sitemap'] = array('text'=>$this->objLanguage->languageText('phrase_sitemap', 'sitemap', 'Site Map'), 'link'=>$this->uri(NULL, 'sitemap'));
         }
 
-        // Logout is always last
-        $this->menuItems['logout'] = array('text'=>$this->objLanguage->languageText('word_logout', 'system', 'Logout'), 'link'=>$this->uri(array('action'=>'logoff'), 'security'));
-
         $str = '<span class="glossymenu"><ul class="glossytabs">';
 
         foreach ($this->menuItems as $menuItem=>$menuInfo)
@@ -232,7 +229,19 @@ jQuery('.homelink').bind('click', function() {
             $str .= '<li '.$css.'>'.$link->show().'</li>';
         }
 
-        if ($this->objModule->checkIfRegistered('bookmarks') && $this->objUser->isLoggedIn())
+        $str .= '<li>'
+            . $this->securityContext->logoutForm(
+                $this->objLanguage->languageText(
+                    'word_logout',
+                    'system',
+                    'Logout'
+                ),
+                'toolbar-elearn-logout'
+            )
+            . '</li>';
+
+        if ($this->objModule->checkIfRegistered('bookmarks')
+            && $this->securityContext->isAuthenticated())
         {
             if (!$this->objModule->checkIfRegistered('statusbar'))
             {
@@ -249,7 +258,8 @@ jQuery('.homelink').bind('click', function() {
 
         $str .= '</ul></span>';
 
-        if ($this->objModule->checkIfRegistered('statusbar') && $this->objUser->isLoggedIn())
+        if ($this->objModule->checkIfRegistered('statusbar')
+            && $this->securityContext->isAuthenticated())
         {
             $objStatusbar = $this->getObject('statusbarops', 'statusbar');
             $str .= $objStatusbar->showStatusbar();

@@ -1,0 +1,46 @@
+.ua-admin{display:grid;gap:var(--space-6,1.5rem);color:var(--color-text,#24313d)}
+.ua-page-header,.ua-panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.ua-page-header h1,.ua-panel h2{margin:.15rem 0}.ua-page-header p,.ua-panel-header p{margin:.25rem 0;color:#607080}
+.ua-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#356a63!important}
+.ua-panel{background:#fff;border:1px solid #dbe3e8;border-radius:12px;padding:1.25rem;box-shadow:0 2px 8px rgba(25,45,60,.06)}
+.ua-notice{padding:.8rem 1rem;border-radius:8px}.ua-notice-success{background:#e7f6ef;color:#175c3d}.ua-notice-error{background:#fff0f0;color:#8d2424}
+.ua-search label{display:block;font-weight:650;margin-bottom:.3rem}.ua-search>div{display:flex;gap:.5rem}.ua-search input{min-width:min(22rem,65vw)}
+.ua-button{display:inline-block;border:1px solid #9aabb5;border-radius:7px;background:#fff;color:#263b47;padding:.58rem .85rem;text-decoration:none;font:inherit;cursor:pointer}
+.ua-button:hover,.ua-button:focus-visible{background:#f1f5f7}.ua-button-primary{background:#356a63;border-color:#356a63;color:#fff}.ua-button-primary:hover,.ua-button-primary:focus-visible{background:#28554f}
+.ua-button-danger{border-color:#a23d3d;color:#8d2424}.ua-table-wrap{overflow-x:auto;margin-top:1rem}
+.ua-admin table{width:100%;border-collapse:collapse}.ua-admin th,.ua-admin td{text-align:left;padding:.75rem;border-bottom:1px solid #e2e8ec;vertical-align:middle}.ua-admin th{font-size:.83rem;text-transform:uppercase;letter-spacing:.035em;color:#536572}
+.ua-actions{text-align:right!important}.ua-status{display:inline-block;border-radius:999px;padding:.2rem .55rem;font-size:.82rem;font-weight:650}.ua-status.is-active{background:#e2f4eb;color:#17603e}.ua-status.is-inactive{background:#edf0f2;color:#58636b}
+.ua-empty{text-align:center!important;color:#687985;padding:2rem!important}.ua-pagination{display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1rem}
+.ua-editor form>fieldset{border:0;border-top:1px solid #e1e8ec;margin:1.25rem 0 0;padding:1.25rem 0 0}.ua-editor legend{font-size:1.05rem;font-weight:700;padding-right:.75rem}
+.ua-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}.ua-form-grid label{display:grid;gap:.35rem;font-weight:650}.ua-form-grid input,.ua-form-grid select{width:100%;box-sizing:border-box;border:1px solid #aab8c1;border-radius:7px;padding:.62rem;background:#fff;color:inherit;font:inherit}
+.ua-form-grid input:focus,.ua-form-grid select:focus,.ua-search input:focus{outline:3px solid rgba(53,106,99,.22);border-color:#356a63}
+.ua-checkbox{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;align-self:end}.ua-checkbox input{width:auto}.ua-form-actions{margin-top:1.25rem}.ua-help{color:#607080;font-size:.9rem}.ua-status-form{margin-top:1rem;padding-top:1rem;border-top:1px solid #e1e8ec}
+.ua-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:720px){.ua-admin thead{display:none}.ua-admin table,.ua-admin tbody,.ua-admin tr,.ua-admin td{display:block;width:100%;box-sizing:border-box}.ua-admin tr{border-bottom:1px solid #ced9df;padding:.5rem 0}.ua-admin td{display:grid;grid-template-columns:7rem 1fr;gap:.75rem;border:0;padding:.35rem}.ua-admin td:before{content:attr(data-label);font-weight:700;color:#536572}.ua-actions{text-align:left!important}.ua-actions:before{content:"Action"}.ua-search,.ua-search>div,.ua-search input{width:100%;min-width:0}}
+
+
+/* Chisimba Reborn module typography: match the native group administration UI. */
+.ua-admin {
+    font-family: var(--chisimba-font-family-body, sans-serif);
+    font-size: var(--chisimba-font-size-sm, 0.875rem);
+    line-height: var(--chisimba-line-height-normal, 1.5);
+}
+.ua-page-header h1 {
+    font-family: var(--chisimba-font-family-heading, inherit);
+    font-size: var(--chisimba-font-size-xl, 1.25rem);
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    line-height: var(--chisimba-line-height-heading, 1.25);
+}
+.ua-panel h2,
+.ua-editor legend {
+    font-family: var(--chisimba-font-family-heading, inherit);
+    font-size: var(--chisimba-font-size-lg, 1.125rem);
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    line-height: var(--chisimba-line-height-heading, 1.25);
+}
+.ua-admin input,
+.ua-admin select,
+.ua-admin button,
+.ua-admin td {
+    font-size: var(--chisimba-font-size-sm, 0.875rem);
+}

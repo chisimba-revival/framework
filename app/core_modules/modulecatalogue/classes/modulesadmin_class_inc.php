@@ -232,9 +232,8 @@ class modulesadmin extends dbTableManager
                 if (isset($registerdata['TABLE'])) {
                     foreach ($registerdata['TABLE'] as $table) {
                         if (!$this->objModules->valueExists('tablename',$table,'tbl_modules_owned_tables')) {
-                            if (!$this->makeTable($table) || $this->makeTable($table) == FALSE) {
-                                echo "table creation failed miserably";
-                                die();
+                            $tableCreated = $this->makeTable($table);
+                            if (!$tableCreated) {
                                 $text=$this->objLanguage->languageText('mod_modulecatalogue_needinfo','modulecatalogue');
                                 $text=str_replace('{MODULE}',$table,$text);
                                 $this->output.='<b>'.$text.'</b><br />';
@@ -253,26 +252,19 @@ class modulesadmin extends dbTableManager
                 if (!$update) {
                     if (!$this->loadData($moduleId)) return FALSE;
 
-                    // register the module as an area
-                    $data = array(
-                        'application_id' => $this->appid,
-                        'area_define_name' => $moduleId,
+                    // Canonical permission definitions own module areas.
+                    $objPermissionService = $this->getObject(
+                        'permissionservice',
+                        'security'
                     );
-                    $areaId  = $this->objLuAdmin->perm->addArea($data);
-                    if ($areaId === false) {
-                        log_debug($this->objLuAdmin->getErrors());
-                    } else {
-                        log_debug("Created Area Id $areaId for module $moduleId in application $this->appid");
-                        // add the admin user as an area admin now.
-                        $users = $this->objLuAdmin->getUsers(array('filters' => array('perm_type' => 5)));
-                        if(is_array($users) && array_key_exists(0, $users)) {
-                            $data = array(
-                                'area_id' => $areaId,
-                                'perm_user_id' => $users[0]['perm_user_id']
-                            );
-                            $result = $this->objLuAdmin->perm->addAreaAdmin($data);
-                        }
-
+                    $areaId = $objPermissionService->ensureArea(
+                        'chisimba',
+                        $moduleId
+                    );
+                    if (!is_int($areaId) || $areaId < 1) {
+                        throw new RuntimeException(
+                            'Canonical module permission area creation failed'
+                        );
                     }
                 }
             }
@@ -326,117 +318,21 @@ class modulesadmin extends dbTableManager
                     $isContext = $registerdata['DEPENDS_CONTEXT'];
                 }
                 /*
-                Set up permissions for the module.
-                Set up a module specific ACL, set up module specific groups and add
-                them to the acl.
-                If there is no ACL, set up groups.
-                */
-                if(isset($registerdata['ACL'][0])){
-                    $objPerm = $this->getObject('permissions_model', 'permissions');
-                    $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-                    $perms = array(); $aclId = ''; $aclList = array(); $permList = array(); $groupArray = array();
-
-                    foreach($registerdata['ACL'] as $regAcl){
-                        $perms = explode('|', $regAcl);
-                        if(isset($perms[0]) && !empty($perms[0])){
-                            $aclId = $objPerm->newAcl($perms[0], $moduleId.' '.$perms[0]);
-                            if(empty($aclList)){
-                                $aclList = $aclId;
-                            } else {
-                                $aclList .= ','.$aclId;
-                            }
-                            $permList[] = $perms[0];
-
-                            $groups = array();
-                            if(isset($perms[1]) && !empty($perms[1])){
-                                $groups = explode(',', $perms[1]);
-                                foreach($groups as $group){
-                                    $groupId = '';
-                                    $groupId = $objGroups->getId($group);
-                                    if(empty($groupId)){
-                                        $description = $moduleId.' '.$group;
-                                        $groupId = $objGroups->addGroup($group, $description);
-                                    }
-
-                                    $objPerm->addAclGroup($aclId, $groupId);
-                                    $groupArray[] = $group;
-                                }
-                            }
-                        }else{
-                            $groups = array();
-                            if(isset($perms[1]) && !empty($perms[1])){
-                                $groups = explode(',', $perms[1]);
-                                foreach($groups as $group){
-                                    $groupId = '';
-                                    $groupId = $objGroups->addGroup($moduleId.'_'.$group, $moduleId
-                                    .' '.$group);
-                                    $groupArray[] = $group;
-                                }
-                                foreach($groups as $group){
-                                    $groupId = '';
-                                    $groupId = $objGroups->getId($group);
-                                    if(empty($groupId)){
-                                        $description = $moduleId.' '.$group;
-                                        $objGroups->addGroup($group, $description);
-                                    }
-                                    $groupArray[] = $group;
-                                }
-                            }
-                        }
-                    }
-                }
-                $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-                $groupList = '';
-
-                // Link existing groups with access to the module.
-                // First check if the group exists and create it if it doesn't.
-                if(isset($registerdata['USE_GROUPS'][0])){
-
-                    $groupList = '';
-                    $group = ''; $grId = ''; $exGroup = array(); $description = '';
-
-                    foreach($registerdata['USE_GROUPS'] as $group){
-                        $exGroup = explode('|', $group);
-                        $group = $exGroup[0];
-
-                        $this->grId = $objGroups->getId($group);
-
-                        if(empty($this->grId)){
-                            if(!empty($exGroup[1])){
-                                $description = $exGroup[1];
-                            }else{
-                                $description = $moduleId.' '.$group;
-                            }
-
-                            $objGroups->addGroup($group, $description);
-
-                        }
-                        $groupArray2[] = $group;
-                        if(empty($groupList)){
-                            $groupList = $group;
-                        }else{
-                            $groupList .= ','.$group;
-                        }
-
-                    }
-                    $aclList .= '|'.$groupList;
-
-                }
-
-                // Link existing groups with access to a context dependent module
-                if(isset($registerdata['USE_CONTEXT_GROUPS'][0])){
-                    $contextGroupList = '';
-
-                    foreach($registerdata['USE_CONTEXT_GROUPS'] as $conGroup){
-                        if(empty($contextGroupList)){
-                            $contextGroupList = $conGroup;
-                        }else{
-                            $contextGroupList .= ','.$conGroup;
-                        }
-                    }
-                    $aclList .= '|_con_'.$contextGroupList;
-                    //var_dump($aclList); die();
-                }
+                 * Toolbar owns menu authorization registration. This call
+                 * defines one canonical module-scoped right, grants it through
+                 * PermissionService, and returns only its positive identifier
+                 * (or the empty public marker) for menu storage.
+                 */
+                $objToolbarRegister = $this->getObject(
+                    'register',
+                    'toolbar'
+                );
+                $aclList = $objToolbarRegister
+                    ->canonicalRightForRegistration(
+                        $registerdata,
+                        $moduleId,
+                        'default'
+                    );
 
                 /* Create a condition type
                 if(isset($registerdata['CONDITION_TYPE'][0])){
@@ -623,76 +519,29 @@ class modulesadmin extends dbTableManager
 
                 // Side menus
                 if (isset($registerdata['SIDEMENU'])) {
-                    //$objGroups = $this->getObject('groupAdminModel', 'groupadmin');
                     foreach ($registerdata['SIDEMENU'] as $sidemenu) {
                         $admin = $isAdmin;
-                        $groupList = '';
-                        $sidemenu=strtolower($sidemenu);
                         $actions = explode('|', $sidemenu);
                         if(isset($actions[1]) && !empty($actions[1])){
-                            $sidemenu = str_replace($actions[1],'',$sidemenu);
-                            $conGroups = '';
-                            $siteGroups = '';
-                            $acls = '';
-                            $access = explode(',',$actions[1]);
+                            $sidemenu = $actions[0];
                             $admin = 0;
-                            foreach($access as $val){
-
-                                // check for context groups
-                                if(!(strpos($val, 'con_') === FALSE)){
-                                    if(!empty($conGroups)){
-                                        $conGroups .= ',';
-                                    }
-                                    $conGroups .= ucwords(str_replace('con_','',$val));
-                                }
-
-                                // check for module permissions, create if don't exist
-                                else if(!(strpos($val, 'acl_') === FALSE)){
-                                    $perm = str_replace('acl_','',$val);
-
-                                    $permId = $objPerm->getId($perm);
-                                    var_dump($permId); die();
-                                    if(empty($permId)){
-                                        $permId = $objPerm->newAcl($perm, $moduleId
-                                        .' '.$perm);
-                                    }
-                                    if(!empty($acls)){
-                                        $acls .= ',';
-                                    }
-                                    $acls .= $permId;
-
-                                }
-                                // check for module groups, create if don't exist
-                                else{
-                                    // check for sitewide access
-                                    if(strtolower($val) == 'site'){
-                                        $siteGroups .= 'site';
-                                    }else{
-                                        $grId = $objGroups->getId($val);
-                                        $group = ucwords($val);
-                                        if(empty($grId)){
-                                            $group = ucwords($val);
-                                            $grId = $objGroups->getId($group);
-                                            if(empty($grId)){
-                                                $objGroups->addGroup($group, $moduleId.' '.$val);
-                                            }
-                                        }
-                                        if(!empty($siteGroups)){
-                                            $siteGroups .= ',';
-                                        }
-                                        $siteGroups .= $group;
-                                    }
-                                }
-                            }
-                            // build permissions string
-                            $groupList = $acls.'|'.$siteGroups.'|_con_'.$conGroups;
+                            $rightId = $objToolbarRegister
+                                ->canonicalRightForAccessList(
+                                    $moduleId,
+                                    'side:' . $sidemenu,
+                                    array_map(
+                                        'trim',
+                                        explode(',', $actions[1])
+                                    )
+                                );
                         }
                         else {
-                            $groupList = $aclList;
+                            $rightId = $aclList;
                         }
+                        $sidemenu = strtolower($sidemenu);
 
                         $catArray = array('category'=>'menu_'.$sidemenu,'module'=>$moduleId,
-                                    'adminonly'=>$admin,'permissions'=>$groupList,'dependscontext'=>$isContext);
+                                    'adminonly'=>$admin,'permissions'=>$rightId,'dependscontext'=>$isContext);
                         if ($id = $this->existsInMenu("menu_$sidemenu",$moduleId)) {
                             $this->objModules->update('id',$id,$catArray,'tbl_menu_category');
                         } else {
@@ -976,6 +825,11 @@ class modulesadmin extends dbTableManager
             }
 
             $this->createTable($tablename, $fields, $options);
+            if (isset($tableIndexes) && is_array($tableIndexes)) {
+                foreach ($tableIndexes as $indexName => $indexDefinition) {
+                    $this->createTableIndex($tablename, $indexName, $indexDefinition);
+                }
+            }
             if (isset($indexes)) {
                 $name = array_keys($indexes['fields']);
                 $name = $name[0];
@@ -1462,5 +1316,51 @@ class modulesadmin extends dbTableManager
     public function errorCallback($exception) {
         echo customException::cleanUp($exception);
     }
+
+
+    /**
+     * Resolve one module-declared site group through its canonical owner.
+     *
+     * register.conf remains the declarative policy source. GroupService alone
+     * validates and persists the group, including identifier normalization.
+     *
+     * @param string $groupName Group declared by module registration metadata.
+     * @param string $description Optional declaration description.
+     * @return int Canonical group identifier.
+     * @throws customException When the declaration cannot be provisioned.
+     */
+    private function ensureRegistrationGroup($groupName, $description)
+    {
+        $objGroupService = $this->getObject('groupservice', 'groupadmin');
+        $result = $objGroupService->ensureGroups(
+            array(
+                array(
+                    'name' => $groupName,
+                    'description' => $description,
+                ),
+            )
+        );
+
+        if (!is_array($result)
+            || empty($result['ok'])
+            || !isset($result['groups'][$groupName])) {
+            $code = is_array($result) && isset($result['code'])
+                ? (string) $result['code']
+                : 'group_registration_failed';
+            throw new customException(
+                'Module group provisioning failed: '.$code
+            );
+        }
+
+        $groupId = $result['groups'][$groupName];
+        if (!is_numeric($groupId) || (int) $groupId < 1) {
+            throw new customException(
+                'Module group provisioning failed: invalid_group_id'
+            );
+        }
+
+        return (int) $groupId;
+    }
+
 }
 ?>

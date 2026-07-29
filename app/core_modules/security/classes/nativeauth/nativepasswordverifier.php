@@ -2,15 +2,11 @@
 require_once dirname(__FILE__) . '/nativepasswordverifierinterface.php';
 
 /**
- * Password verifier for comparison and migration planning.
+ * Password verifier for modern password_hash() credentials only.
  *
- * Supported verification:
- * - password_hash() formats recognised by password_get_info()
- * - 32-character hexadecimal MD5
- * - 40-character hexadecimal SHA-1
- * - portable crypt() hashes beginning with $1$, $2, $5$, or $6$
+ * Legacy MD5, SHA-1, crypt, and plaintext credentials are never accepted.
  *
- * Plaintext and unknown formats are never accepted.
+ * @author Derek Keats
  */
 class NativePasswordVerifier implements NativePasswordVerifierInterface
 {
@@ -29,32 +25,8 @@ class NativePasswordVerifier implements NativePasswordVerifierInterface
         $storedHash = trim((string) $storedHash);
         $scheme = $this->identifyHashScheme($storedHash);
 
-        if ($scheme === 'password_hash') {
-            return password_verify($plainTextPassword, $storedHash);
-        }
-
-        if ($scheme === 'md5') {
-            return hash_equals(
-                strtolower($storedHash),
-                md5($plainTextPassword)
-            );
-        }
-
-        if ($scheme === 'sha1') {
-            return hash_equals(
-                strtolower($storedHash),
-                sha1($plainTextPassword)
-            );
-        }
-
-        if ($scheme === 'crypt') {
-            $candidate = crypt($plainTextPassword, $storedHash);
-            return is_string($candidate)
-                && strlen($candidate) === strlen($storedHash)
-                && hash_equals($storedHash, $candidate);
-        }
-
-        return false;
+        return $scheme === 'password_hash'
+            && password_verify($plainTextPassword, $storedHash);
     }
 
     public function needsRehash($storedHash)
@@ -98,18 +70,6 @@ class NativePasswordVerifier implements NativePasswordVerifierInterface
         $info = password_get_info($storedHash);
         if (isset($info['algo']) && $info['algo'] !== 0) {
             return 'password_hash';
-        }
-
-        if (preg_match('/\A[0-9a-f]{32}\z/i', $storedHash) === 1) {
-            return 'md5';
-        }
-
-        if (preg_match('/\A[0-9a-f]{40}\z/i', $storedHash) === 1) {
-            return 'sha1';
-        }
-
-        if (preg_match('/\A\$(?:1|2[abxy]?|5|6)\$/', $storedHash) === 1) {
-            return 'crypt';
         }
 
         return 'unknown';

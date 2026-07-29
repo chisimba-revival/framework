@@ -36,6 +36,7 @@ class authenticate extends ChisimbaObject
 {
     private $username;
     private $password;
+    private $verifiedProvider = null;
 
     /**
     *
@@ -81,9 +82,12 @@ class authenticate extends ChisimbaObject
                    $authClass = "auth_" . trim($authMethod);
                    $objAuth = $this->getObject($authClass, "security");
                    if ($objAuth->authenticate($username, $password, $remember)) {
-                       //Authentication succeeded
-                       $objAuth->initiateSession();
-                       $objAuth->storeInSession();
+                       /*
+                        * Authentication here proves credentials only. Canonical
+                        * session and remembered-login finalisation belong to the
+                        * authentication transaction coordinator.
+                        */
+                       $this->verifiedProvider = $objAuth;
                        return TRUE;
                    } else {
                        //Authentication failed
@@ -95,7 +99,24 @@ class authenticate extends ChisimbaObject
                }
         }
         //If it gets through them all then fail the login
+        $this->verifiedProvider = null;
         return FALSE;
+    }
+
+    /**
+     * Return the successful provider's credential proof without finalising
+     * authenticated state.
+     *
+     * @return array|null
+     */
+    public function getCredentialProof()
+    {
+        if ($this->verifiedProvider === null
+            || !method_exists($this->verifiedProvider, 'getCredentialProof')) {
+            return null;
+        }
+
+        return $this->verifiedProvider->getCredentialProof();
     }
 }
 ?>

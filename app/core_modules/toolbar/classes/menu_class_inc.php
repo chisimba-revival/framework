@@ -42,7 +42,7 @@ class menu extends ChisimbaObject
 
         $this->objLanguage = $this->getObject('language','language');
         $this->objSkin = $this->newObject('skin','skin');
-        $this->objUser = $this->getObject('user','security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
         $this->objSysConfig = $this->getObject('dbsysconfig','sysconfig');
         $this->objModule = $this->getObject('modules', 'modulecatalogue');
         $this->objTable = $this->newObject('htmltable','htmlelements');
@@ -52,7 +52,7 @@ class menu extends ChisimbaObject
         $this->objDbConMod = $this->getObject('dbcontextmodules','context');
         $this->contextCode = $this->objContext->getContextCode();
         $this->context = FALSE; $this->im = FALSE;
-        $this->objUserId = $this->objUser->userId();
+        $this->objUserId = $this->securityContext->userId();
         // First check if the user is in a context
         if(!empty($this->contextCode)){
             $this->context = TRUE;
@@ -71,10 +71,8 @@ class menu extends ChisimbaObject
     {
         $access = 2;
 
-        if($this->objUser->isAdmin()){
+        if($this->securityContext->isSiteAdministrator()){
             $access = 1;
-        } else if ($this->objUser->isLecturer()) {
-            $access = 3;
         }
 
         // get category and module data
@@ -263,7 +261,7 @@ class menu extends ChisimbaObject
     {
         $access = 2;
 
-        if($this->objUser->isAdmin()){
+        if($this->securityContext->isSiteAdministrator()){
             $access = 1;
         }
 

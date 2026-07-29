@@ -145,25 +145,33 @@ function ajax_install(register_url, register_url_params_, login_url_)
         parameters: register_url_params,
         // onSuccess callback
         onSuccess: function(transport){
-            //var response = transport.responseText || "no response text";
-            // If timerId is defined then stop the timer, and set timerId to null.
+            var result = null;
+            try {
+                result = transport.responseText.evalJSON(true);
+            } catch (e) {
+                result = null;
+            }
+            if (!result || result.ok !== true
+                || result.code !== 'first_registration_complete') {
+                if (timerId != null) {
+                    window.clearTimeout(timerId);
+                    timerId = null;
+                }
+                UpdateStatus('Installation failed: the final provisioning response was invalid. Please review the installer logs.');
+                return;
+            }
             if (timerId != null) {
                 window.clearTimeout(timerId);
                 timerId = null;
             }
-            //UpdateProgress_deleteprogressfile = true;
-            // Update the progress status one last time in case there have been changes to the progress status since UpdateProgress() was last triggered, and specify that the progress file should be deleted.
             UpdateProgress(true);
-            // Set up message.
-            UpdateStatus(UpdateProgress_message + '\nSuccess!' /* + response */ + ' Please wait while you are redirected...');
-            ///ajax_progress/
-            // If login_url is defined then redirect to the application and log in.
-            if (login_url !== null) {
-                window.location.replace(login_url); //?message='+encodeURI(response)
-            }
+            UpdateStatus(UpdateProgress_message + '\nSuccess! Please wait while you are redirected...');
+            window.location.replace(
+                '../index.php?module=security&action=showlogin'
+            );
         },
         // onFailure callback
-        onFailure: function(){
+        onFailure: function(transport){
             //var response = '\nSomething went wrong...';
             // If timerId is defined then stop the timer, and set timerId to null.
             if (timerId != null) {

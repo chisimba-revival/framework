@@ -1,0 +1,13 @@
+V74 GUARDED LOGIN APPLICATION BOUNDARY ROLLBACK
+
+This is permanent architecture, not compatibility scaffolding.
+
+If V74 must be rolled back before V75:
+1. Restore nativeauthwebcompositionfactory.php and
+   native_auth_web_composition_factory_test.php from the repository diff.
+2. Remove guardedloginapplicationservice.php.
+3. Remove guarded_login_application_service_test.php.
+4. Remove this rollback file.
+5. Re-run the V73A verifier.
+
+The runtime was not rebuilt or modified by V74.

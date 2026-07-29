@@ -51,7 +51,7 @@ class sidemenu extends ChisimbaObject {
         $this->objTools = $this->newObject('tools', 'toolbar');
 
         $this->objLanguage = $this->getObject('language', 'language');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
         $this->objUserPic = $this->getObject('imageupload', 'useradmin');
         $this->objIcon = $this->newObject('geticon', 'htmlelements');
         $this->objLink = $this->getObject('link', 'htmlelements');
@@ -120,11 +120,13 @@ class sidemenu extends ChisimbaObject {
         $menus = $this->dbMenu->getSideMenus('user', $access, $this->context);
         $menus = $this->checkPerm($menus);
 
-        $this->objHead->str = $this->objUser->fullName();
+        $this->objHead->str = $this->securityContext->displayName();
         $menu = "<div class=\"toolbar_menuuser\">" . $this->objHead->show();
         $menu .= "<span class=\"toolbar_userimage\">"
                 . '<p align="center"><img src="'
-                . $this->objUserPic->userpicture($this->objUser->userId())
+                . $this->objUserPic->userpicture(
+                    $this->securityContext->userId()
+                )
                 . '" alt="User Image" /></p></span></div>';
 
         $menu .= $this->getMenuList($menus);
@@ -145,10 +147,14 @@ class sidemenu extends ChisimbaObject {
         $menus = $this->dbMenu->getSideMenus('postlogin', $access, $this->context);
         $menus = $this->checkPerm($menus);
 
-        $this->objHead->str = $this->objUser->fullName();
+        $this->objHead->str = $this->securityContext->displayName();
         $menu = $this->objHead->show();
 
-        $menu .= '<p align="center"><img src="' . $this->objUserPic->userpicture($this->objUser->userId()) . '" alt="User Image" /></p>';
+        $menu .= '<p align="center"><img src="'
+            . $this->objUserPic->userpicture(
+                $this->securityContext->userId()
+            )
+            . '" alt="User Image" /></p>';
 
         $menu .= $this->joinContext();
 
@@ -165,8 +171,13 @@ class sidemenu extends ChisimbaObject {
         $objFeature = $this->newObject('featurebox', 'navigation');
         $head = NULL;
         //$head .= '<div class="vcard">'."\n";
-        $head .= '<span class="fn">' . $this->objUser->fullName() . '</span>' . "\n";
-        $body = '<p align="center"><img class="photo" src="' . $this->objUserPic->userpicture($this->objUser->userId()) . '" alt="' . $this->objUser->fullName() . '" /></p>' . "\n";
+        $displayName = $this->securityContext->displayName();
+        $head .= '<span class="fn">' . $displayName . '</span>' . "\n";
+        $body = '<p align="center"><img class="photo" src="'
+            . $this->objUserPic->userpicture(
+                $this->securityContext->userId()
+            )
+            . '" alt="' . $displayName . '" /></p>' . "\n";
 
         return $objFeature->show($head, $body);
     }
@@ -222,7 +233,7 @@ class sidemenu extends ChisimbaObject {
      */
     function checkAccess() {
         $access = 2;
-        if ($this->objUser->isAdmin()) {
+        if ($this->securityContext->isSiteAdministrator()) {
             $access = 1;
         }
         return $access;
@@ -263,7 +274,10 @@ class sidemenu extends ChisimbaObject {
                   if($line['module'] == 'email'){
                   // Add new email count if the module is email
                   $kngmail =& $this->getObject('kngmail', 'email');
-                  $emails = $kngmail->listMail($this->objUser->userId(), 'new');
+                  $emails = $kngmail->listMail(
+                      $this->securityContext->userId(),
+                      'new'
+                  );
                   $count = (is_countable($emails) ? count($emails) : 0);
                   $name .= ' ('.$count.' ' .$this->objLanguage->languageText('word_new').')';
                   }
@@ -435,10 +449,16 @@ class sidemenu extends ChisimbaObject {
                 if ($objCondition->isContextMember('Lecturers')) {
                     $workgroups = $objDBWorkgroup->getAll($this->contextcode);
                 } else {
-                    $workgroups = $objDBWorkgroup->getAllForUser($this->contextcode, $this->objUser->userId());
+                    $workgroups = $objDBWorkgroup->getAllForUser(
+                        $this->contextcode,
+                        $this->securityContext->userId()
+                    );
                 }
             } else {
-                $workgroups = $objDBWorkgroup->getAllForUser(NULL, $this->objUser->userId());
+                $workgroups = $objDBWorkgroup->getAllForUser(
+                    NULL,
+                    $this->securityContext->userId()
+                );
             }
 
             // No workgroups are available.

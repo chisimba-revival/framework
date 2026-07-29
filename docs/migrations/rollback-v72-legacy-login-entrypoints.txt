@@ -1,0 +1,19 @@
+V72 rollback information
+
+This change deliberately removes obsolete authentication entry points.
+It does not modify the active security&action=login path.
+
+Pre-change SHA-256:
+792df32ee35f7cac184d23fa397317f23e41a12eff7916b1ee551c0bd7fe0b11  /tmp/tmp.x1P8jQLJlf/security-controller.before.php
+94a6a67b09ebc8b49cec3c019e755e6227175d34ac285b010361734b7afca276  /tmp/tmp.x1P8jQLJlf/login-controller.before.php
+
+To reverse V72 before further edits, apply the reverse of:
+  git diff -- app/core_modules/security/controller.php \
+    app/core_modules/login/controller.php \
+    tests/nativeauth/no_controller_authentication_bypass_test.php
+
+Removal checklist:
+- Remove the V72 test only if a stronger repository-wide controller-boundary test replaces it.
+- Never restore ajax_login or __ajaxlogin().
+- The remaining direct authenticateUser() call in security doLogin()
+  is the explicit target of the next guarded-login cutover.

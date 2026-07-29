@@ -55,6 +55,7 @@ class user extends dbTable {
     private $imageUrl;
     public $userData = NULL;
     public $objPerms;
+    private $nativeSessionService;
 
     /**
      * Constructor
@@ -71,6 +72,9 @@ class user extends dbTable {
         $this->imageUrl = $this->objConfig->getsiteRoot() . 'user_images/';
         $this->imageUri = 'user_images/';
         $this->objPerms = $this->getObject('perms', 'permissions');
+        require_once dirname(__FILE__)
+            . '/nativeauth/nativesessionservice.php';
+        $this->nativeSessionService = new NativeSessionService($this);
     }
 
     /**
@@ -110,6 +114,21 @@ class user extends dbTable {
 
 
         return $result;
+    }
+
+    /**
+     * Return the successful local provider's credential proof.
+     *
+     * @return array|null
+     */
+    public function getCredentialProof()
+    {
+        if (!isset($this->objAuth)
+            || !method_exists($this->objAuth, 'getCredentialProof')) {
+            return null;
+        }
+
+        return $this->objAuth->getCredentialProof();
     }
 
     /**
@@ -313,8 +332,7 @@ class user extends dbTable {
     public function logout() {
         $skin = $this->objSkin->getSkin();
         $this->loggedInUsers->doLogout($this->userId());
-        // session_unset();
-        $this->objLu->logout();
+        $this->nativeSessionService->destroy();
         $this->objSkin->setSession('skin', $skin);
 
     }
@@ -350,22 +368,8 @@ class user extends dbTable {
      */
     public function isLoggedIn()
     {
-        // NATIVE_LOGIN_STATE_COMPATIBILITY
-        // During the reversible native-auth rollout, storeInSession()
-        // remains the compatibility authority and writes this flag.
-        // LiveUser remains the fallback until authorization is replaced.
-        $nativeFlag = getenv('CHISIMBA_NATIVE_AUTH_LOGIN');
-        $nativeEnabled = in_array(
-            strtolower(trim((string) $nativeFlag)),
-            array('1', 'true', 'yes', 'on'),
-            true
-        );
-    
-        if ($nativeEnabled && $this->getSession('isLoggedIn') === TRUE) {
-            return TRUE;
-        }
-    
-        return $this->objLu->isLoggedIn();
+        return $this->nativeSessionService->isAuthenticated()
+            && $this->nativeSessionService->getUserId() !== null;
     }
 
     public function notExpired() {

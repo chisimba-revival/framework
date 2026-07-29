@@ -46,21 +46,20 @@ class tools extends ChisimbaObject
         $this->objLanguage = $this->getObject ( 'language', 'language' );
         $this->objConfig = $this->getObject ( 'altconfig', 'config' );
         $this->objSysConfig = $this->getObject ( 'dbsysconfig', 'sysconfig' );
-        $this->objUser = $this->getObject ( 'user', 'security' );
+        $this->securityContext = $this->getObject(
+            'toolbarsecuritycontext'
+        );
         $this->objIcon = $this->newObject ( 'geticon', 'htmlelements' );
         $this->objLink = $this->newObject ( 'link', 'htmlelements' );
         $this->objSkin = $this->newObject ( 'skin', 'skin' );
         $this->moduleCheck = $this->newObject ( 'modules', 'modulecatalogue' );
         $this->objHelp = $this->getObject ( 'help', 'help' );
         //$this->objCond = $this->newObject('contextCondition','contextpermissions');
-        // $this->objPerm = $this->newObject('permissions_model','permissions');
         $this->contextObject = $this->getObject ( 'dbcontext', 'context' );
         $this->contextCode = $this->contextObject->getContextCode ();
         $this->contextTitle = $this->contextObject->getTitle ();
         $this->contextMenu = $this->contextObject->getMenuText ();
         $this->loadClass ( 'link', 'htmlelements' );
-        $this->objPerms = $this->getObject('perms', 'permissions');
-        $this->objPerms->outputRights();
     }
 
     /**
@@ -73,15 +72,7 @@ class tools extends ChisimbaObject
         if ($requiresLogin == 'FALSE') {
             return TRUE;
         }
-        $mod = $this->getParam ( 'module' );
-        $act = $this->getParam ( 'action' );
-        if (! ($mod == "security" && $act == "logoff")) {
-            $objSecurity = $this->getObject ( "user", "security" );
-            $var = $this->objLu->isLoggedIn();
-
-            return $var;
-        }
-        return false;
+        return $this->securityContext->isAuthenticated();
     }
 
     /**
@@ -90,8 +81,18 @@ class tools extends ChisimbaObject
      * @param bool $context True when in a context, false if not.
      */
     public function checkPermissions($module, $context) {
-        // $check = $this->objPerms->checkRule($rule, $module);
-        return TRUE;
+        if (!is_array($module) || !array_key_exists('permissions', $module)) {
+            return false;
+        }
+        $rightId = trim((string) $module['permissions']);
+        if ($rightId === '') {
+            return true;
+        }
+        if (!ctype_digit($rightId) || (int) $rightId < 1) {
+            return false;
+        }
+
+        return $this->securityContext->mayUseRight((int) $rightId);
     }
 
     /**
@@ -119,7 +120,8 @@ class tools extends ChisimbaObject
      */
     public function addBookmark()
     {
-        if ($this->moduleCheck->checkIfRegistered('bookmarks') && $this->objUser->isLoggedIn())
+        if ($this->moduleCheck->checkIfRegistered('bookmarks')
+            && $this->securityContext->isAuthenticated())
         {
             if (!$this->moduleCheck->checkIfRegistered('statusbar'))
             {                
@@ -139,7 +141,8 @@ class tools extends ChisimbaObject
      */
     public function addStatusbar()
     {
-        if ($this->moduleCheck->checkIfRegistered('statusbar') && $this->objUser->isLoggedIn())
+        if ($this->moduleCheck->checkIfRegistered('statusbar')
+            && $this->securityContext->isAuthenticated())
         {
             $objStatusbar = $this->getObject('statusbarops', 'statusbar');
             $bar = $objStatusbar->showStatusbar() . '&nbsp;';
@@ -206,24 +209,24 @@ class tools extends ChisimbaObject
     {
         $login = $this->objLanguage->languageText ( 'mod_toolbar_loggedin', 'toolbar' );
         $role = $this->objLanguage->languageText ( 'mod_toolbar_role', 'toolbar' );
-        $user = $this->objUser->fullname ();
-
-        $this->objLink = new link ( $this->uri ( array ('action' => 'logout' ), 'security' ) );
-        $this->objLink->link = $this->objLanguage->languageText ( 'word_logout', 'security', 'Logout' );
-        $logout = $this->objLink->show ();
+        $user = $this->securityContext->displayName();
+        $logout = $this->securityContext->logoutForm(
+            $this->objLanguage->languageText(
+                'word_logout',
+                'system',
+                'Logout'
+            ),
+            'toolbar-role-logout'
+        );
         $roleName = $this->objLanguage->languageText ( 'mod_toolbar_guest', 'toolbar' );
-        if ($this->objUser->isAdmin ()) {
+        if ($this->securityContext->isSiteAdministrator()) {
             $roleName = $this->objLanguage->languageText ( 'mod_toolbar_administrator', 'toolbar' );
-        } elseif ($this->contextObject->isInContext ()) {
-            if ($this->objPerms->isContextMember ( 'Lecturers' )) {
-                $roleName = $this->objLanguage->languageText ( 'mod_toolbar_lecturer', 'toolbar' );
-            } else if ($this->objPerms->isContextMember ( 'Students' )) {
-                $roleName = $this->objLanguage->languageText ( 'mod_toolbar_student', 'toolbar' );
-            }
-        } else if ($this->objPerms->isMember ( 'Lecturers' )) {
-            $roleName = $this->objLanguage->languageText ( 'mod_toolbar_lecturer', 'toolbar' );
-        } else if ($this->objPerms->isMember ( 'Students' )) {
-            $roleName = $this->objLanguage->languageText ( 'mod_toolbar_student', 'toolbar' );
+        } elseif ($this->securityContext->isAuthenticated()) {
+            $roleName = $this->objLanguage->languageText(
+                'mod_toolbar_user',
+                'toolbar',
+                'User'
+            );
         }
 
         return "$login <b>$user</b> ($logout) | $role <b>$roleName</b>";
@@ -366,8 +369,9 @@ class tools extends ChisimbaObject
         // If the module is the default module
         if ($module == '_default' || $module == 'postlogin' || $module == '') {
             //$nav = $welcome.' ';
-            if ($this->objUser->isLoggedIn ()) {
-                $nav = $welcome . ' ' . $this->objUser->fullname ();
+            if ($this->securityContext->isAuthenticated()) {
+                $nav = $welcome . ' '
+                    . $this->securityContext->displayName();
             } else {
                 $nav = '';
             }

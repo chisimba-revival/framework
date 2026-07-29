@@ -1,601 +1,368 @@
 <?php
 /**
-* @package toolbar
-*/
+ * Canonical dynamic-navigation registration.
+ *
+ * @package toolbar
+ * @author Derek Keats
+ * @copyright 2026 Derek Keats
+ */
 
-// security check - must be included in all scripts
-if (!$GLOBALS['kewl_entry_point_run']){
-    die("You cannot view this page directly");
+if (empty($GLOBALS['kewl_entry_point_run'])) {
+    die('You cannot view this page directly');
 }
-
-/**
-* Class to update the dynamic site navigation.
-*
-* The class affects the side menus, main toolbar menus, lecturers page
-* and admin page.
-*
-* The class provides functions to read the register files of modules
-* and update or insert the toolbar and menu information into the table
-* tbl_menu_category. The access permissions for the module are created
-* if they don't already exist.
-*
-* @author Megan Watson
-* @copyright 2005 (c) UWC
-* @package toolbar
-* @version 1
-*/
 
 class register extends ChisimbaObject
 {
-    /**
-    * Function to construct the class
-    */
-    function init()
+    public function init()
     {
-        $this->objFileReader = $this->getObject('modulefile', 'modulecatalogue');
-        $this->objModules = $this->getObject('modules', 'modulecatalogue');
-        $this->objModulesAdmin = $this->getObject('modulesadmin', 'modulecatalogue');
+        $this->objFileReader = $this->getObject(
+            'modulefile',
+            'modulecatalogue'
+        );
+        $this->objModules = $this->getObject(
+            'modules',
+            'modulecatalogue'
+        );
+        $this->objModulesAdmin = $this->getObject(
+            'modulesadmin',
+            'modulecatalogue'
+        );
         $this->objDbMenu = $this->getObject('dbmenu');
+        $this->objPermissionService = $this->getObject(
+            'permissionservice',
+            'security'
+        );
+        $this->objGroupService = $this->getObject(
+            'groupservice',
+            'groupadmin'
+        );
     }
 
-    /**
-    * Method to update the dynamic navigation for the site.
-    * The method empties or truncates the table tbl_menu_category and
-    * finds a list of registered modules. The register.conf file of each
-    * module is read and the relevant fields are used to refill the database
-    * table.
-    */
-    function updateMenus()
+    public function updateMenus()
     {
-        $sql = "TRUNCATE TABLE tbl_menu_category";
-        $this->objModulesAdmin->executeModSQL($sql);
-
+        $this->objModulesAdmin->executeModSQL(
+            'TRUNCATE TABLE tbl_menu_category'
+        );
         $modules = $this->objModules->getModules(2);
-        foreach($modules as $line){
-            $this->restoreDefaults($line['module_id']);
+        foreach ($modules as $module) {
+            $this->restoreDefaults($module['module_id']);
         }
     }
 
-    /**
-    * Method to reset the default permissions for a module
-    * @param string $module The module name / Id
-    */
-    function setDefaultPermissions($module)
+    public function setDefaultPermissions($module)
     {
         $data = $this->getModuleData($module);
-        $this->restoreConditions($data, $module);
+        return $this->canonicalRightForRegistration(
+            $data,
+            $module,
+            'default'
+        );
     }
 
-    /**
-    * Method to update the default permissions for a module
-    */
-    function updatePermissions()
+    public function updatePermissions()
     {
         $modules = $this->objModules->getModules(2);
-        foreach($modules as $line){
-            $module = $line['module_id'];
-            $this->setDefaultPermissions($module);
+        foreach ($modules as $module) {
+            $this->setDefaultPermissions($module['module_id']);
         }
     }
 
-    /**
-    * Method to read data from the register.conf for a module.
-    * @param string $module The module path.
-    * @return array $regData The register data.
-    */
-    function getModuleData($module)
+    public function getModuleData($module)
     {
         $filepath = $this->objFileReader->findRegisterFile($module);
-        $regData = $this->objFileReader->readRegisterFile($filepath, FALSE);
-        return $regData;
+        return $this->objFileReader->readRegisterFile($filepath, false);
+    }
+
+    public function restoreDefaults($module)
+    {
+        $this->readData($this->getModuleData($module));
+    }
+
+    public function restoreDefaultPerms($module)
+    {
+        return $this->canonicalRightForRegistration(
+            $this->getModuleData($module),
+            $module,
+            'default'
+        );
     }
 
     /**
-    * Method to restore the modules default links and permissions.
-    * @param string $module The specified module.
-    */
-    function restoreDefaults($module)
+     * Return canonical registration information for administration views.
+     */
+    public function readModuleData($module)
     {
-        // Get Module Data
-        $regData = $this->getModuleData($module);
-        $this->readData($regData);
-    }
-
-    /*
-    * Method to restore the default permissions for a link.
-    * @param string $module The name of the module.
-    * @return string $aclList The default permissions.
-    */
-    function restoreDefaultPerms($module)
-    {
-        // Get Module Data
         $data = $this->getModuleData($module);
-        $aclList = $this->setPermissions($data, $module);
-        return $aclList;
+        return array(
+            'rightId' => $this->canonicalRightForRegistration(
+                $data,
+                $module,
+                'default'
+            ),
+            'contextRoles' => $this->contextRoles($data),
+            'groups' => $this->siteGroups($data),
+        );
     }
 
-    /**
-    * Method to process the data from the register.conf for a module.
-    * The method builds an array containing the modules default permissions.
-    * @param string $module The module path.
-    * @param array $data The processed data.
-    */
-    function readModuleData($module)
+    public function readData($regData)
     {
-        $objPerm = $this->getObject('permissions_model', 'permissions');
-        $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-        $regData = $this->getModuleData($module);
-
-        $data = array('acls'=>array(), 'groups'=>array(), 'cons'=>array(), 'toolbar'=>array(), 'sidemenu'=>array(), 'page'=>array());
-
-        // Module settings
-        if(isset($regData['MODULE_ISADMIN'])){
-            $data['isAdmin'] = $regData['MODULE_ISADMIN'];
+        if (!is_array($regData) || empty($regData['MODULE_ID'])) {
+            throw new RuntimeException('Invalid toolbar registration data');
         }
 
-        if(isset($regData['DEPENDS_CONTEXT'])){
-            $data['isContext'] = $regData['DEPENDS_CONTEXT'];
-        }
-
-        // Module Permissions
-        if(isset($regData['ACL'][0])){
-            foreach($regData['ACL'] as $regAcl){
-                $perms = explode('|', $regAcl);
-                if(isset($perms[0]) && !empty($perms[0])){
-                    $aclId = $objPerm->getId($module.'_'.$perms[0]);
-                    $data['acls'][] = $aclId;
-                }
-                if(isset($perms[1]) && !empty($perms[1])){
-                    $groups = explode(',', $perms[1]);
-                    foreach($groups as $group){
-                        $data['groups'][] = $module.'_'.$group;
-                    }
-                }
-            }
-        }
-
-        // All groups
-        if(isset($regData['USE_GROUPS'][0])){
-            foreach($regData['USE_GROUPS'] as $regGroup){
-                $data['groups'][] = $regGroup;
-            }
-        }
-
-        // Context groups
-        if(isset($regData['USE_CONTEXT_GROUPS'][0])){
-            foreach($regData['USE_CONTEXT_GROUPS'] as $regCon){
-                $data['cons'][] = $regCon;
-            }
-        }
-        return $data;
-    }
-
-    /**
-    * Method insert the dynamic navigation data in the table.
-    * @param array $regData The navigation data for the module.
-    */
-    function readData($regData)
-    {
         $moduleId = $regData['MODULE_ID'];
+        $isAdmin = isset($regData['MODULE_ISADMIN'])
+            ? (int) $regData['MODULE_ISADMIN']
+            : 0;
+        $isContext = isset($regData['DEPENDS_CONTEXT'])
+            ? (int) $regData['DEPENDS_CONTEXT']
+            : 0;
+        $defaultRight = $this->canonicalRightForRegistration(
+            $regData,
+            $moduleId,
+            'default'
+        );
 
-        $isAdmin = 0; $isContext = 0; $aclList = '';
-        if(isset($regData['MODULE_ISADMIN'])){
-            $isAdmin = $regData['MODULE_ISADMIN'];
-        }
-        if(isset($regData['DEPENDS_CONTEXT'])){
-            $isContext = $regData['DEPENDS_CONTEXT'];
-        }
-
-        $aclList = $this->setPermissions($regData, $moduleId);
-
-        // Menu category
-        if (isset($regData['MENU_CATEGORY'][0]))
-        {
-            foreach ($regData['MENU_CATEGORY'] as $line)
-            {
-                $line=strtolower($line);
-                $this->sql($line,$moduleId,$isAdmin,$aclList,$isContext);
+        if (!empty($regData['MENU_CATEGORY'])) {
+            foreach ($regData['MENU_CATEGORY'] as $category) {
+                $this->sql(
+                    strtolower($category),
+                    $moduleId,
+                    $isAdmin,
+                    $defaultRight,
+                    $isContext
+                );
             }
-        }// end menu category
+        }
 
-        // Side menus
-        if (isset($regData['SIDEMENU'][0]))
-        {
-            $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-            foreach ($regData['SIDEMENU'] as $line)
-            {
-                $admin = $isAdmin;
-                $groupList = '';
-                $line=strtolower($line);
+        if (!empty($regData['SIDEMENU'])) {
+            foreach ($regData['SIDEMENU'] as $declaration) {
+                list($category, $access) = $this->splitMenuDeclaration(
+                    $declaration
+                );
+                $rightId = $access === array()
+                    ? $defaultRight
+                    : $this->canonicalRightForAccessList(
+                        $moduleId,
+                        'side:' . $category,
+                        $access
+                    );
+                $this->sql(
+                    'menu_' . strtolower($category),
+                    $moduleId,
+                    $access === array() ? $isAdmin : 0,
+                    $rightId,
+                    $isContext
+                );
+            }
+        }
 
-                $actions = array();
-                $actions = explode('|', $line);
-
-                if(isset($actions[1]) && !empty($actions[1])){
-                    $line = str_replace($actions[1],'',$line);
-
-                    $conGroups = ''; $siteGroups = ''; $acls = '';
-                    $access = explode(',',$actions[1]);
+        if (!empty($regData['PAGE'])) {
+            foreach ($regData['PAGE'] as $page) {
+                $admin = stripos($page, 'admin') !== false ? 1 : 0;
+                if (stripos($page, 'lecturer') !== false) {
                     $admin = 0;
-
-                    foreach($access as $val){
-                        // check for context groups
-                        if(!(strpos($val, 'con_') === FALSE)){
-                            if(!empty($conGroups)){
-                                $conGroups .= ',';
-                            }
-                            $conGroups .= ucwords(str_replace('con_','',$val));
-
-                        // check for module permissions, create if don't exist
-                        }else if(!(strpos($val, 'acl_') === FALSE)){
-                            $perm = str_replace('acl_','',$val);
-                            $permId = $objPerm->getId($moduleId.'_'.$perm);
-                            if(empty($permId)){
-                                $permId = $objPerm->newAcl($moduleId.'_'.$perm, $moduleId.' '.$perm);
-                            }
-                            if(!empty($acls)){
-                                $acls .= ',';
-                            }
-                            $acls .= $permId;
-
-                        // check for module groups, create if don't exist
-                        }else{
-                            // check for sitewide access
-                            if(strtolower($val) == 'site'){
-                                $siteGroups .= 'site';
-                            }else{
-                                $grId = $objGroups->getId($val);
-                                $group = ucwords($val);
-                                if(empty($grId)){
-                                    $group = $moduleId.'_'.ucwords($val);
-                                    $grId = $objGroups->getId($group);
-                                    if(empty($grId)){
-                                        $objGroups->addGroup($group, $moduleId.' '.$val);
-                                    }
-                                }
-                                if(!empty($siteGroups)){
-                                    $siteGroups .= ',';
-                                }
-                                $siteGroups .= $group;
-                            }
-                        }
-                    }
-                    // build permissions string
-                    $groupList = $acls.'|'.$siteGroups.'|_con_'.$conGroups;
-                }else{
-                    $groupList = $aclList;
                 }
-                $this->sql('menu_'.$line,$moduleId,$admin,$groupList,$isContext);
+                $this->sql(
+                    'page_' . $page,
+                    $moduleId,
+                    $admin,
+                    $defaultRight,
+                    $isContext
+                );
             }
-        }// end side menu
-
-        // admin and lecturer pages
-        if(isset($regData['PAGE'][0])){
-            foreach($regData['PAGE'] as $line){
-                $actions = explode('|',$line);
-                $pages = explode(',',$actions[0]);
-                $admin = 0;
-                foreach($pages as $page){
-                    if(!(strpos($page, 'admin')===FALSE)){
-                        $admin = 1;
-                    }
-                    if(!(strpos($page, 'lecturer')===FALSE)){
-                        $admin = 0;
-                    }
-                }
-                $this->sql('page_'.$line,$moduleId,$admin,$aclList,$isContext);
-            }
-        }// end pages
+        }
     }
 
     /**
-    * Set up permissions for the module.
-    * Set up a module specific ACL, set up module specific groups and add them
-    * to the acl. If there is no ACL, set up groups.
-    * @param array $regData The register data for the module.
-    * @param string $moduleId The name of the module.
-    * @return string $aclList The permissions list.
-    */
-    function setPermissions($regData, $moduleId)
-    {
-        $objPerm = $this->getObject('permissions_model', 'permissions');
-        $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-        $aclList = '';
-
-        if(isset($regData['ACL'][0])){
-            foreach($regData['ACL'] as $regAcl){
-                $perms = explode('|', $regAcl);
-
-                if(isset($perms[0]) && !empty($perms[0])){
-                    $aclId = $objPerm->getId($moduleId.'_'.$perms[0]);
-                    if(empty($aclId)){
-                        $aclId = $objPerm->newAcl($moduleId.'_'.$perms[0], $moduleId.' '.$perms[0]);
-                    }
-                    if(empty($aclList)){
-                        $aclList = $aclId;
-                    }else{
-                        $aclList .= ','.$aclId;
-                    }
-
-                    if(isset($perms[1]) && !empty($perms[1])){
-                        $groups = explode(',', $perms[1]);
-                        foreach($groups as $group){
-                            $groupId = $objGroups->getId($moduleId.'_'.$group);
-                            if(empty($groupId)){
-                                $groupId = $objGroups->addGroup($moduleId.'_'.$group, $moduleId
-                                .' '.$group);
-                                $objPerm->addAclGroup($aclId, $groupId);
-                            }
-                        }
-                    }
-                }else{
-                    if(isset($perms[1]) && !empty($perms[1])){
-                        $groups = explode(',', $perms[1]);
-                        foreach($groups as $group){
-                            $groupId = $objGroups->getId($moduleId.'_'.$group);
-                            if(empty($groupId)){
-                                $groupId = $objGroups->addGroup($moduleId.'_'.$group, $moduleId
-                                .' '.$group);
-                            }
-                        }
+     * Define the one default toolbar-access right for a module.
+     *
+     * Empty declarations are explicitly public and return an empty marker.
+     */
+    public function canonicalRightForRegistration(
+        $regData,
+        $moduleId,
+        $scope = 'default'
+    ) {
+        $access = array();
+        if (!empty($regData['ACL'])) {
+            foreach ($regData['ACL'] as $declaration) {
+                $parts = explode('|', $declaration, 2);
+                if (!empty($parts[0])) {
+                    $access[] = 'acl_' . trim($parts[0]);
+                }
+                if (!empty($parts[1])) {
+                    foreach (explode(',', $parts[1]) as $group) {
+                        $access[] = trim($group);
                     }
                 }
             }
         }
-
-        // Link existing groups with access to the module.
-        // First check if the group exists and create it if it doesn't.
-        if(isset($regData['USE_GROUPS'][0])){
-            $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-            $groupList = '';
-
-            foreach($regData['USE_GROUPS'] as $group){
-                $grId = $objGroups->getId($group);
-                if(empty($grId)){
-                    $objGroups->addGroup($group, $moduleId.' '.$group);
-                }
-                if(empty($groupList)){
-                    $groupList = $group;
-                }else{
-                    $groupList .= ','.$group;
-                }
-            }
-            $aclList .= '|'.$groupList;
+        foreach ($this->siteGroups($regData) as $group) {
+            $access[] = $group;
+        }
+        foreach ($this->contextRoles($regData) as $role) {
+            $access[] = 'con_' . $role;
         }
 
-        // Link existing groups with access to a context dependent module
-        if(isset($regData['USE_CONTEXT_GROUPS'][0])){
-            $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-            $contextGroupList = '';
-
-            foreach($regData['USE_CONTEXT_GROUPS'] as $conGroup){
-                if(empty($contextGroupList)){
-                    $contextGroupList = $conGroup;
-                }else{
-                    $contextGroupList .= ','.$conGroup;
-                }
-            }
-            $aclList .= '|_con_'.$contextGroupList;
-        }
-
-        return $aclList;
+        return $this->canonicalRightForAccessList(
+            $moduleId,
+            $scope,
+            $access
+        );
     }
 
     /**
-    * Method to restore the default conditions
-    */
-    function restoreConditions($registerdata, $moduleId)
-    {
-        $aclList = '';
-        $groupArray = array();
-        $groupArray2 = array();
-        $permList = array();
+     * Convert one declaration into a canonical right and exact grants.
+     */
+    public function canonicalRightForAccessList(
+        $moduleId,
+        $scope,
+        $access
+    ) {
+        $moduleId = trim((string) $moduleId);
+        if ($moduleId === '' || !is_array($access)) {
+            throw new RuntimeException('Invalid toolbar permission declaration');
+        }
 
-        /* Set up permissions for the module.
-            Set up a module specific ACL, set up module specific groups and add them
-            to the acl.
-            If there is no ACL, set up groups.
-        */
-        if(isset($registerdata['ACL'][0])){
-            $objPerm = $this->getObject('permissions_model', 'permissions');
-            $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
+        $siteGroups = array();
+        $contextRoles = array();
+        $permissionNames = array();
+        foreach ($access as $value) {
+            $value = trim((string) $value);
+            if ($value === '') {
+                continue;
+            }
+            if (strtolower($value) === 'site') {
+                return '';
+            }
+            if (strpos($value, 'con_') === 0) {
+                $contextRoles[] = substr($value, 4);
+            } elseif (strpos($value, 'acl_') === 0) {
+                $permissionNames[] = substr($value, 4);
+            } else {
+                $siteGroups[] = $value;
+            }
+        }
+        if ($siteGroups === array()
+            && $contextRoles === array()
+            && $permissionNames === array()) {
+            return '';
+        }
 
-            foreach($registerdata['ACL'] as $regAcl){
-                $perms = explode('|', $regAcl);
+        $areaId = $this->objPermissionService->ensureArea(
+            'chisimba',
+            $moduleId
+        );
+        $administratorGroupId = $this->objGroupService->groupIdForName(
+            'Site Admin'
+        );
+        $rightName = $scope === 'default'
+            ? 'toolbar_access'
+            : 'toolbar_' . substr(sha1($scope), 0, 20);
+        $rightId = $this->objPermissionService->ensureRight(
+            $areaId,
+            $rightName,
+            $administratorGroupId
+        );
+        if (!is_int($rightId) || $rightId < 1) {
+            throw new RuntimeException('Canonical toolbar right creation failed');
+        }
 
-                if(isset($perms[0]) && !empty($perms[0])){
-                    $aclId = $objPerm->newAcl($moduleId.'_'.$perms[0], $moduleId.' '.$perms[0]);
-                    if(empty($aclList)){
-                        $aclList = $aclId;
-                    }else{
-                        $aclList .= ','.$aclId;
-                    }
-                    $permList[] = $perms[0];
-
-                    if(isset($perms[1]) && !empty($perms[1])){
-                        $groups = explode(',', $perms[1]);
-                        foreach($groups as $group){
-                            $groupId = $objGroups->addGroup($moduleId.'_'.$group, $moduleId
-                            .' '.$group);
-                            $objPerm->addAclGroup($aclId, $groupId);
-                            $groupArray[] = $group;
-                        }
-                    }
-                }else{
-                    if(isset($perms[1]) && !empty($perms[1])){
-                        $groups = explode(',', $perms[1]);
-                        foreach($groups as $group){
-                            $groupId = $objGroups->addGroup($moduleId.'_'.$group, $moduleId
-                            .' '.$group);
-                            $groupArray[] = $group;
-                        }
-                    }
-                }
+        foreach (array_unique($siteGroups) as $groupName) {
+            $groupId = $this->ensureSiteGroup($groupName, $moduleId);
+            if (!$this->objPermissionService->ensureGroupGrant(
+                $groupId,
+                $rightId
+            )) {
+                throw new RuntimeException(
+                    'Canonical toolbar group grant failed'
+                );
+            }
+        }
+        foreach (array_unique($contextRoles) as $roleName) {
+            if (!$this->objPermissionService
+                ->ensureContextRoleGrantTemplate($rightId, $roleName)) {
+                throw new RuntimeException(
+                    'Canonical toolbar context grant failed'
+                );
             }
         }
 
-        // Link existing groups with access to the module.
-        // First check if the group exists and create it if it doesn't.
-        if(isset($registerdata['USE_GROUPS'][0])){
-            $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-            $groupList = '';
-
-            foreach($registerdata['USE_GROUPS'] as $group){
-                $grId = $objGroups->getId($group);
-                if(empty($grId)){
-                    $objGroups->addGroup($group, $moduleId.' '.$group);
-                }
-                $groupArray2[] = $group;
-                if(empty($groupList)){
-                    $groupList = $group;
-                }else{
-                    $groupList .= ','.$group;
-                }
-            }
-            $aclList .= '|'.$groupList;
-        }
-
-        // Link existing groups with access to a context dependent module
-        if(isset($registerdata['USE_CONTEXT_GROUPS'][0])){
-            $objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-            $contextGroupList = '';
-
-            foreach($registerdata['USE_CONTEXT_GROUPS'] as $conGroup){
-                if(empty($contextGroupList)){
-                    $contextGroupList = $conGroup;
-                }else{
-                    $contextGroupList .= ','.$conGroup;
-                }
-            }
-            $aclList .= '|_con_'.$contextGroupList;
-        }
-
-        /* Create conditions.
-            Create a condition in the decisiontable, returns the condition object.
-            Populate an array with condition objects for use in creating rules.
-        */
-        $conditions = array();
-        if(isset($registerdata['CONDITION'][0])){
-            $objCond =& $this->getObject('condition','decisiontable');
-            foreach($registerdata['CONDITION'] as $condition){
-                $array = explode('|', $condition);
-                if(isset($array[2]) && !empty($array[2])){
-                            $list = explode(',', $array[2]);
-                }else{
-                    $list = '';
-                }
-                $paramList = array();
-
-                if($array[1] == 'hasPermission'){
-                    foreach($permList as $perm){
-                        foreach($list as $val){
-                            if($perm == $val){
-                                $val = $moduleId.'_'.$perm;
-                                $paramList[] = $val;
-                            }
-                        }
-                    }
-                }else if($array[1] == 'isMember'){
-                    foreach($list as $val){
-                        foreach($groupArray as $perm){
-                            if($perm == $val){
-                                $val = $moduleId.'_'.$perm;
-                                $paramList[] = $val;
-                            }
-                        }
-                        foreach($groupArray2 as $perm2){
-                            if($perm2 == $val){
-                                $val = $perm2;
-                                $paramList[] = $val;
-                            }
-                        }
-                    }
-                }else{
-                    $paramList = $list;
-                }
-
-                $name = $array[0];
-                if(!empty($paramList)){
-                    $paramList = implode(',', $paramList);
-                            $params = $array[1].$objCond->_delimiterFunc.$paramList;
-                    }else{
-                    $params = $array[1];
-                }
-                $conditions[$name] = $objCond->create($name, $params);
-            }
-        }
-
-        // Use existing conditions
-        if(isset($registerdata['USE_CONDITION'][0])){
-            $objCond =& $this->getObject('condition','decisiontable');
-            foreach($registerdata['USE_CONDITION'] as $condition){
-                $array = explode('|', $condition);
-                $name = $array[0];
-                $conditions[$name] = $objCond->create($name);
-            }
-        }
-
-        /* Create rules.
-            Create the decisiontable for the module.
-            Create the action in the decisiontable, returns the action object.
-            Create the rule in the decisiontable, returns the rule object.
-            Add the action object to the rule object.
-            Add the condition object to the rule object.
-        */
-        if(isset($registerdata['RULE'][0])){
-            $objDecisionTable =& $this->getObject('decisiontable','decisiontable');
-            $objAction =& $this->getObject('action','decisiontable');
-            $objAction->connect($objDecisionTable);
-            $objRule =& $this->getObject('rule','decisiontable');
-            $objRule->connect($objDecisionTable);
-            $i = 1;
-
-            // Create the decision table
-            $modTable = $objDecisionTable->create($moduleId);
-
-            foreach($registerdata['RULE'] as $rule){
-                $ruleName = $moduleId.' rule '.$i++;
-                $array = explode('|', $rule);
-                $actionList = explode( ',', $array[0] );
-                $conditionList = explode( ',', $array[1] );
-
-                // Create rule object and add to the decision table
-                $rule = $objRule->create($ruleName);
-                // Add the rule to the decision table.
-                $objDecisionTable->addRule( $rule );
-
-                // Create action object and add to decision table.
-                foreach( $actionList as $anAction ) {
-                    $arrActions[$anAction] = $objAction->create($anAction);
-                    // Add the action to the decision table.
-                    $objDecisionTable->add( $arrActions[$anAction] );
-                    // Add the rule to the action
-                    $arrActions[$anAction]->add($rule);
-                }
-
-                // Add the condition to the rule
-                foreach( $conditionList as $aCondition ) {
-
-                    $rule->add($conditions[$aCondition]);
-                }
-            }
-        }
-        // end Permissions and Security
-
+        /*
+         * ACL names identify the canonical module right but are not a second
+         * grant mechanism. Their group declarations above determine grants.
+         */
+        return $rightId;
     }
 
-    /**
-    * Method to write the sql to insert the data into the table.
-    * The method bypasses the dbTable method since the data is site
-    * specific and shouldn't be mirrored.
-    */
-    function sql($category, $module, $admin, $aclList, $context)
+    private function ensureSiteGroup($groupName, $moduleId)
     {
-        $sql = 'INSERT INTO tbl_menu_category ';
-        $sql .= '(id, category, module, adminOnly, permissions, dependsContext) ';
-        $sql .= "values('init@".time().rand(1000,9999)."','$category','$module',";
-        $sql .= "'$admin', '$aclList', '$context')";
-        $this->objModulesAdmin->executeModSQL($sql);
+        $groupName = trim((string) $groupName);
+        $result = $this->objGroupService->ensureGroups(array(array(
+            'name' => $groupName,
+            'description' => $moduleId . ' ' . $groupName,
+        )));
+        if (!is_array($result)
+            || empty($result['ok'])
+            || empty($result['groups'][$groupName])) {
+            throw new RuntimeException('Canonical toolbar group creation failed');
+        }
+        return (int) $result['groups'][$groupName];
+    }
+
+    private function siteGroups($regData)
+    {
+        $groups = array();
+        if (!empty($regData['USE_GROUPS'])) {
+            foreach ($regData['USE_GROUPS'] as $declaration) {
+                $parts = explode('|', $declaration, 2);
+                if (trim($parts[0]) !== '') {
+                    $groups[] = trim($parts[0]);
+                }
+            }
+        }
+        return $groups;
+    }
+
+    private function contextRoles($regData)
+    {
+        $roles = array();
+        if (!empty($regData['USE_CONTEXT_GROUPS'])) {
+            foreach ($regData['USE_CONTEXT_GROUPS'] as $declaration) {
+                foreach (explode(',', $declaration) as $role) {
+                    if (trim($role) !== '') {
+                        $roles[] = trim($role);
+                    }
+                }
+            }
+        }
+        return $roles;
+    }
+
+    private function splitMenuDeclaration($declaration)
+    {
+        $parts = explode('|', $declaration, 2);
+        $category = strtolower(rtrim($parts[0], '|'));
+        $access = isset($parts[1])
+            ? array_filter(array_map('trim', explode(',', $parts[1])))
+            : array();
+        return array($category, array_values($access));
+    }
+
+    private function sql($category, $module, $admin, $rightId, $context)
+    {
+        if ($rightId !== '' && (!is_int($rightId) || $rightId < 1)) {
+            throw new RuntimeException('Invalid canonical toolbar right');
+        }
+        $fields = array(
+            'category' => $category,
+            'module' => $module,
+            'adminonly' => (int) $admin,
+            'permissions' => $rightId === '' ? '' : (string) $rightId,
+            'dependscontext' => (int) $context,
+        );
+        $this->objDbMenu->saveLinks($fields);
     }
 }
 ?>

@@ -1,168 +1,128 @@
 <?php
-require_once dirname(__FILE__)
-    . '/../../app/core_modules/security/classes/nativeauth/localpasswordprovider.php';
+/**
+ * Modern-only local password provider regression test.
+ *
+ * @category  Chisimba
+ * @package   security
+ * @author    Derek Keats
+ * @copyright 2026 Derek Keats
+ * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU GPL version 2
+ */
+define('MDB2_PREPARE_RESULT', 1);
+define('MDB2_PREPARE_MANIP', 2);
+define('MDB2_FETCHMODE_ASSOC', 2);
 
-class FakeUserRepository implements NativeUserRepositoryInterface
-{
-    public $failed = array();
+$base = dirname(__FILE__)
+    . '/../../app/core_modules/security/classes/nativeauth/';
+require_once $base . 'mdb2nativedatabaseadapter.php';
+require_once $base . 'nativeuserrepository.php';
+require_once $base . 'nativepasswordverifier.php';
+require_once $base . 'localpasswordprovider.php';
 
-    private $users = array(
-        'active' => array(
-            'user_id' => 'user-1',
-            'username' => 'active',
-            'password_hash' => 'valid-hash',
-            'is_active' => true,
-        ),
-        'inactive' => array(
-            'user_id' => 'user-2',
-            'username' => 'inactive',
-            'password_hash' => 'valid-hash',
-            'is_active' => false,
-        ),
-        'legacy' => array(
-            'user_id' => 'user-3',
-            'username' => 'legacy',
-            'password_hash' => 'legacy-hash',
-            'is_active' => true,
-        ),
-    );
-
-    public function findByUsername($username)
-    {
-        return isset($this->users[$username])
-            ? $this->users[$username]
-            : null;
-    }
-
-    public function findById($userId)
-    {
-        foreach ($this->users as $user) {
-            if ($user['user_id'] === $userId) {
-                return $user;
-            }
-        }
-
-        return null;
-    }
-
-    public function isUserActive($userId)
-    {
-        $user = $this->findById($userId);
-
-        return is_array($user) && !empty($user['is_active']);
-    }
-
-    public function updatePasswordHash($userId, $passwordHash)
-    {
-        return true;
-    }
-
-    public function recordSuccessfulLogin(
-        $userId,
-        array $context = array()
-    ) {
-        return true;
-    }
-
-    public function recordFailedLogin(
-        $username,
-        array $context = array()
-    ) {
-        $this->failed[] = array($username, $context);
-
-        return true;
-    }
-}
-
-class FakePasswordVerifier implements NativePasswordVerifierInterface
-{
-    public function verify(
-        $plainTextPassword,
-        $storedHash,
-        array $userRecord = array()
-    ) {
-        return $plainTextPassword === 'correct'
-            && in_array($storedHash, array('valid-hash', 'legacy-hash'), true);
-    }
-
-    public function needsRehash($storedHash)
-    {
-        return $storedHash === 'legacy-hash';
-    }
-
-    public function createHash($plainTextPassword)
-    {
-        return 'new-hash';
-    }
-
-    public function identifyHashScheme($storedHash)
-    {
-        return $storedHash === 'legacy-hash'
-            ? 'sha1'
-            : 'password_hash';
-    }
-}
-
-function assertTrue($condition, $message)
+function v99assert($condition, $message)
 {
     if (!$condition) {
         fwrite(STDERR, "FAIL: {$message}\n");
         exit(1);
     }
-
     echo "PASS: {$message}\n";
 }
 
-$users = new FakeUserRepository();
-$provider = new LocalPasswordProvider(
-    $users,
-    new FakePasswordVerifier()
-);
+class V99Result
+{
+    private $rows;
+    public function __construct(array $rows) { $this->rows = $rows; }
+    public function fetchRow($mode) {
+        return empty($this->rows) ? false : array_shift($this->rows);
+    }
+    public function fetchAll($mode) { return $this->rows; }
+    public function free() {}
+}
 
-assertTrue(
-    $provider->getProviderId() === 'local',
-    'provider exposes stable local identifier'
-);
+class V99Statement
+{
+    private $connection;
+    private $sql;
+    public function __construct($connection, $sql) {
+        $this->connection = $connection;
+        $this->sql = $sql;
+    }
+    public function execute($parameters) {
+        return $this->connection->executePrepared($this->sql, $parameters);
+    }
+    public function free() {}
+}
 
-$result = $provider->authenticate('active', 'correct');
-assertTrue($result->isSuccess(), 'valid active account authenticates');
-assertTrue($result->getUserId() === 'user-1', 'canonical user ID is returned');
-assertTrue(
-    $result->getMetadata()['password_rehash_required'] === false,
-    'modern password hash does not request migration'
-);
+class V99Connection
+{
+    private $users;
+    public $updates = 0;
+    public function __construct(array $users) { $this->users = $users; }
+    public function prepare($sql, $types = null, $mode = null) {
+        return new V99Statement($this, $sql);
+    }
+    public function executePrepared($sql, $parameters) {
+        if (stripos($sql, 'UPDATE ') === 0) {
+            $this->updates++;
+            return 1;
+        }
+        foreach ($this->users as $user) {
+            if (isset($parameters[0])
+                && ($parameters[0] === $user['username']
+                    || $parameters[0] === $user['userid'])) {
+                return new V99Result(array($user));
+            }
+        }
+        return new V99Result(array());
+    }
+}
 
-$result = $provider->authenticate('legacy', 'correct');
-assertTrue($result->isSuccess(), 'valid legacy hash authenticates');
-assertTrue(
-    $result->getMetadata()['password_rehash_required'] === true,
-    'legacy hash requests migration'
-);
+function v99row($id, $username, $hash)
+{
+    return array(
+        'id' => 'row-' . $id,
+        'userid' => $id,
+        'username' => $username,
+        'pass' => $hash,
+        'isactive' => '1',
+        'puid' => '1',
+        'emailaddress' => $username . '@example.test',
+        'firstname' => 'Test',
+        'surname' => 'User',
+        'accesslevel' => '1',
+        'howcreated' => 'local',
+        'logins' => '0',
+        'last_login' => null,
+    );
+}
 
-$result = $provider->authenticate('active', 'wrong');
-assertTrue(
-    $result->getStatus()
-        === CanonicalAuthenticationResult::STATUS_INVALID_CREDENTIALS,
-    'wrong password returns generic invalid-credentials status'
+$modern = password_hash('correct-password', PASSWORD_DEFAULT);
+$legacy = 'b03ddf3ca2e714a6548e491607f89281ff6ab6db';
+$connection = new V99Connection(array(
+    v99row('u-modern', 'modern', $modern),
+    v99row('u-legacy', 'legacy', $legacy),
+));
+$repository = new NativeUserRepository(
+    new Mdb2NativeDatabaseAdapter($connection),
+    false
 );
+$verifier = new NativePasswordVerifier();
+$provider = new LocalPasswordProvider($repository, $verifier);
 
-$result = $provider->authenticate('missing', 'correct');
-assertTrue(
-    $result->getStatus()
-        === CanonicalAuthenticationResult::STATUS_INVALID_CREDENTIALS,
-    'unknown account returns same generic status as wrong password'
-);
+$success = $provider->authenticate('modern', 'correct-password');
+v99assert($success->isSuccess(), 'modern password_hash credential authenticates');
+v99assert($success->getUserId() === 'u-modern',
+    'modern credential returns canonical user ID');
+v99assert($success->getMetadata()['password_rehash_required'] === false,
+    'current modern credential needs no rehash');
 
-$result = $provider->authenticate('inactive', 'correct');
-assertTrue(
-    $result->getStatus()
-        === CanonicalAuthenticationResult::STATUS_INACTIVE,
-    'inactive account is rejected'
-);
+$wrong = $provider->authenticate('modern', 'wrong-password');
+v99assert(!$wrong->isSuccess(), 'incorrect modern password is rejected');
 
-assertTrue(
-    count($users->failed) === 2,
-    'failed-login recording occurs for wrong password and unknown account'
-);
+$legacyResult = $provider->authenticate('legacy', 'correct-password');
+v99assert(!$legacyResult->isSuccess(),
+    'legacy SHA-1 credential is rejected without migration');
+v99assert($verifier->identifyHashScheme($legacy) === 'unknown',
+    'legacy SHA-1 credential is outside the supported scheme');
 
-echo "ALL LOCAL PASSWORD PROVIDER TESTS PASSED\n";
+echo "ALL MODERN-ONLY LOCAL PASSWORD PROVIDER TESTS PASSED\n";

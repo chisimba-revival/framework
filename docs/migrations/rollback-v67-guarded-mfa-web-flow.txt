@@ -1,0 +1,13 @@
+V67 GUARDED MFA WEB-FLOW BOUNDARY ROLLBACK
+
+Created files:
+- app/core_modules/security/classes/nativeauth/mfawebflowservice.php
+- tests/nativeauth/mfa_web_flow_service_test.php
+
+Removal:
+1. Remove those two files.
+2. Remove future controller references to MfaWebFlowService if a later stage
+   has been installed.
+3. Run all tests under framework/tests/nativeauth.
+
+V67 changes no schema, runtime, container, volume, or configuration.

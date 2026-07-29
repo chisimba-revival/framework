@@ -1,0 +1,11 @@
+V77 NATIVE AUTH POLICY READERS ROLLBACK
+
+This is permanent canonical architecture, not compatibility scaffolding.
+
+If V77 must be rolled back before the active login cutover:
+1. Remove nativeauth/nativeauthpolicycontextreaders.php.
+2. Remove tests/nativeauth/native_auth_policy_context_readers_test.php.
+3. Restore nativeauthwebcompositionfactory.php to the verified V75A version.
+4. Remove this rollback file.
+
+The runtime was not rebuilt or modified by V77.

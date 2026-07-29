@@ -1,0 +1,16 @@
+V69 THIN MFA WEB ADAPTER ROLLBACK AND REMOVAL CHECKLIST
+
+Files added:
+- app/core_modules/security/classes/nativeauth/mfawebcontrolleradapter.php
+- app/core_modules/security/templates/content/mfa_web_tpl.php
+- tests/nativeauth/mfa_web_controller_adapter_test.php
+
+File changed:
+- app/core_modules/security/register.conf (mod_security_mfa* display strings)
+
+Removal:
+1. Remove future security/controller.php references to MfaWebControllerAdapter.
+2. Remove the two production files and their test listed above.
+3. Remove only the V69 mod_security_mfa* TEXT entries if no remaining caller
+   uses them.
+4. Run PHP lint and the complete nativeauth test suite.

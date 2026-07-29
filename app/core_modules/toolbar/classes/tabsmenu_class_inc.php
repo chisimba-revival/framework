@@ -55,7 +55,7 @@ class tabsmenu extends ChisimbaObject
     {
         // Load Classes Required
         $this->loadClass('link','htmlelements');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
         
         $this->objLanguage = $this->getObject('language', 'language');
         
@@ -99,7 +99,7 @@ class tabsmenu extends ChisimbaObject
         }
         
         // Add Admin Module
-        if ($this->objUser->isAdmin()) {
+        if ($this->securityContext->isSiteAdministrator()) {
             $this->menuItems['admin'] = array('text'=>$this->objLanguage->languageText('category_admin', 'toolbar', 'Admin'), 'link'=>$this->uri(NULL, 'toolbar'));
         }
         
@@ -145,10 +145,6 @@ class tabsmenu extends ChisimbaObject
     {
         
         // Logout is always last
-        if ($this->objUser->isLoggedIn()) {
-            $this->menuItems['logout'] = array('text'=>$this->objLanguage->languageText('word_logout', 'system', 'Logout'), 'link'=>$this->uri(array('action'=>'logoff'), 'security'));
-        }
-        
         $str = '<ul class="glossytabs">';
         
         foreach ($this->menuItems as $menuItem=>$menuInfo)
@@ -166,6 +162,19 @@ class tabsmenu extends ChisimbaObject
             
             $css = ($this->default == $menuItem) ? ' class="current"' : '';
             $str .= '<li '.$css.'>'.$link->show().'</li>';
+        }
+
+        if ($this->securityContext->isAuthenticated()) {
+            $str .= '<li>'
+                . $this->securityContext->logoutForm(
+                    $this->objLanguage->languageText(
+                        'word_logout',
+                        'system',
+                        'Logout'
+                    ),
+                    'toolbar-tabs-logout'
+                )
+                . '</li>';
         }
         
         $str .= '</ul>';

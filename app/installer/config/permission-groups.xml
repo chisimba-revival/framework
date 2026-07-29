@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissionGroups version="1">
+    <group name="Site Admin"
+           description="Site-wide administration"
+           required="true"
+           system="true" />
+    <group name="Lecturers"
+           description="Teaching staff" />
+    <group name="Students"
+           description="Learners" />
+    <group name="Guest"
+           description="Authenticated guest users"
+           required="true"
+           system="true" />
+</permissionGroups>

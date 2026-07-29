@@ -13,21 +13,6 @@ class groupadmin_installscripts extends dbTable {
         switch ($version) {
             default :
               // re-create the top level groups
-              $allogrps = $this->getArray("SELECT name, parent_id from tbl_groupadmin_group WHERE parent_id IS NULL");
-              foreach($allogrps as $ogs) {
-                 $ogsname = $ogs['name'];
-                 $ongrpid = $this->objGroupModel->getId($ogsname);
-                 if( !isset($ongrpid) || $ongrpid == NULL ) {
-                     if($ogsname != '' && $ogsname != NULL && !empty($ogsname)) {
-                         // create the group
-                         log_debug("group doesnt exist, creating $ogsname");
-                         $ongrpid = $this->objGroupModel->addGroup( $ogsname, NULL, null );
-                         $ongrpid = $this->objGroupModel->getId($ogsname);
-                         log_debug("Adding subgroups now");
-                         $this->objGroupModel->addSubGroups($ogsname, $ongrpid);
-                      }
-                   }
-               }
 
                 $pusers = $this->objGroupOps->getAllUsers();
                 $cusers = $this->getAll();

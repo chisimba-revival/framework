@@ -35,6 +35,7 @@ class toolbar extends ChisimbaObject
         $this->objSkin= $this->newObject('skin','skin');
         $this->objLanguage= $this->getObject('language','language');
         $this->table=$this->newObject('htmltable','htmlelements');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
     }
 
     /**
@@ -44,14 +45,7 @@ class toolbar extends ChisimbaObject
     */
     function check()
     {
-        $mod = $this->getParam('module');
-        $act = $this->getParam('action');
-        if(!($mod=="security" && $act=="logoff")){
-            $objSecurity= $this->getObject("user","security");
-            $var = $objSecurity->isLoggedIn();
-            return $var;
-        }
-        return false;
+        return $this->securityContext->isAuthenticated();
     }
 
 

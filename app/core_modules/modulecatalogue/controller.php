@@ -498,6 +498,14 @@ class modulecatalogue extends controller {
                         log_debug ( 'Modulecatalogue controller - performing first time registration' );
                         $this->firstRegister ( $sysType );
                         log_debug ( 'First time registration complete' );
+                        if ($this->ajaxInstall) {
+                            header('Content-Type: application/json; charset=UTF-8');
+                            echo json_encode(array(
+                                'ok' => true,
+                                'code' => 'first_registration_complete'
+                            ));
+                            exit();
+                        }
                     } else {
                         log_debug ( 'First time registration has already been performed on this system. Aborting' );
                     }
@@ -1390,7 +1398,17 @@ EOT;
             log_debug ( 'first time registration performed, variable set. First time registration cannot be performed again unless system variable \'firstreg_run\' is unset.' );
             $this->update_progess("Installation complete.\n");
         } catch ( customException $e ) {
-            $this->errorCallback ( 'Caught exception: ' . $e->getMessage () );
+            if ($this->ajaxInstall) {
+                http_response_code(500);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(array(
+                    'ok' => false,
+                    'code' => 'first_registration_failed',
+                    'message' => $e->getMessage()
+                ));
+            } else {
+                $this->errorCallback ( 'Caught exception: ' . $e->getMessage () );
+            }
             exit ();
         }
     }

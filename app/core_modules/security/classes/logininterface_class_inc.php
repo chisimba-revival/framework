@@ -107,8 +107,15 @@ class loginInterface extends ChisimbaObject {
             // prepare the link for the oAuth providers 
             $box = $this->oauthDisp();
             $fb = $this->fbButton(); //fbConnect();
-            // Create a Form object
+            require_once dirname(__FILE__)
+                . '/nativeauth/csrftokenservice.php';
+            $nativeCsrf = new CsrfTokenService($this);
+            // Create the native, CSRF-protected login form.
             $objForm = new form('loginform', $formAction);
+            $objForm->addToForm('<input type="hidden" '
+                . 'name="native_auth_begin" value="'
+                . htmlspecialchars($nativeCsrf->issue('native_auth_begin'),
+                    ENT_QUOTES, 'UTF-8') . '">');
             $objFields = new fieldset();
             $objFields->setLegend(' ');
 
@@ -158,118 +165,9 @@ class loginInterface extends ChisimbaObject {
             // Set the button type to submit
             $objButton->setToSubmit();
             // Add the button to the form
-            // openid / google /yahoo login
-            // Open ID login code.
-            $showOpenIdLogin = $objSysConfig->getValue('show_openidconnect_auth', 'security');
-            $openidlink = "";
-            if ($showOpenIdLogin == 'true') {
-
-                // OpenId auth page is used for Google and Yahoo
-                $objAltConfig = $this->getObject('altconfig', 'config');
-                $siteRoot = $objAltConfig->getSiteRoot();
-                $OPENID_AUTH_PAGE = $this->uri(array("action" => "openidconnect"), "security");
-
-                // Google icon
-                $gIcon = $this->newObject('geticon', 'htmlelements');
-                $gIcon->setIcon('google');
-                $gIcon->alt = "Google ID";
-                $gIcon->extra = ' name="but_google" id="but_google2" onload="" ';
-
-                // Facebook icon
-                $fIcon = $this->newObject('geticon', 'htmlelements');
-                $fIcon->setIcon('facebook');
-                $fIcon->alt = "FB ID";
-                $fIcon->extra = ' name="but_fb" id="but_fb" onload="" ';
-                $FB_AUTH_PAGE = $this->uri(array("action" => "initfacebooklogin", 'auth_site' => 'facebook'), "security");
-
-                // Yahoo icon
-                $yIcon = $this->newObject('geticon', 'htmlelements');
-                $yIcon->setIcon('yahoo');
-                $yIcon->alt = "Yahoo ID";
-                $yIcon->extra = ' name="but_yahoo" id="but_yahoo" onload="" ';
-
-                //Twitter icon
-                $tIcon = $this->newObject('geticon', 'htmlelements');
-                $tIcon->setIcon('twitter', 'png');
-                $tIcon->alt = "TWITTER ID";
-                $tIcon->extra = ' name="but_twitter" id="but_twitter" onload="" ';
-                $TWITTER_AUTH_PAGE = $this->uri(array("action" => "dotwitterlogin", 'auth_site' => 'twitter'), "security");
-                $TWITTER_AUTH_PAGE = str_replace("&amp;", "&", $TWITTER_AUTH_PAGE);
-
-
-                $openidloginlink = new link($this->uri(array("action" => "openidconnect"), "security"));
-                $openidloginlink->link = '<h3>' . $this->objLanguage->languageText('mod_security_oauthheading', 'security') . '</h3>';
-                $sitePath = $objAltConfig->getSitePath();
-
-                // A google login icon linked to OpenID login with gooogle id.
-                $googleTD = '<a href="' . $OPENID_AUTH_PAGE . '&auth_site=google" target="_top">' . $gIcon->show() . '</a>';
-                // A Yahoo login icon linked to OpenId login with Yahoo ID.
-                $yahooTD = '<a href="' . $OPENID_AUTH_PAGE
-                        . '&auth_site=yahoo" target="_top">'
-                        . $yIcon->show() . '</a>';
-                // Facebook login icon with link to login page.
-                $fbTD = '<a href="' . $FB_AUTH_PAGE
-                        . '" target="_top">'
-                        . $fIcon->show() . '</a>';
-                // Twitter login icon with link to login page.
-                $twitterTD = '<a href="' . $TWITTER_AUTH_PAGE
-                        . '" target="_top">'
-                        . $tIcon->show() . '</a>';
-                //$twitterTD = NULL; <--- uncomment for commit until TWITTER AUTH is fixed
-
-                // Explanation text for the textbox and Choose button
-                $explainBox = '<div class="oid_explain">' .
-                        $this->objLanguage->languageText(
-                                'mod_security_openidexplainbox', 'security'
-                        ) . '</div>';
-                // Title for the fieldset.
-                $title = '<h3>' . $this->objLanguage->languageText(
-                                'mod_security_openidlogintitle', 'security'
-                        ) . '</h3>';
-
-                $allowOpenIdForm = FALSE;
-                if ($allowOpenIdForm) {
-                    // Allow login via any Open ID url, use mainly for testing.
-                    $openIdForm = new form('openlogiidnform', $this->uri(array("action" => "openidconnect", "auth_site" => "openid"))
-                    );
-                    $objInput = new textinput('openIDField', '', 'text', '30');
-                    $objInput->extra = 'maxlength="255"';
-                    $openIdForm->addToForm($explainBox . $objInput->show());
-                    // The login via provided open ID URL button
-                    $openIdButton = new button('submit', $this->objLanguage->languageText(
-                                    "mod_security_openidlogin", 'security'
-                            )
-                    );
-                    // Add the login icon
-                    $openIdButton->setIconClass("user");
-                    // Set the button type to submit
-                    $openIdButton->setToSubmit();
-                    $openIdForm->addToForm($openIdButton->show());
-                    $opForm = '<hr/><br/>' . $openIdForm->show();
-                } else {
-                    $opForm = NULL;
-                }
-
-                $openIdFields = new fieldset();
-                $openIdFields->setLegend('<h3>' . $title . '</h3>');
-                $openIdFields->addContent(
-                     $this->objLanguage->languageText('mod_security_oidliinstr', 
-                    'security', 
-                    'Login with one of the accounts indicated by the icons below')
-                );
-                $openIdFields->addContent('<hr>');
-                $openIdFields->addContent($fbTD . '&nbsp;'
-                        . $twitterTD . '&nbsp;' . $googleTD
-                        . '&nbsp;' . $yahooTD . '&nbsp;'
-                        . $opForm);
-
-                $openidlink = '<div class="openidlogin">'
-                        . $openIdFields->show() . "</div>";
-            }
-
-            $objFields->addContent($ldap . '<br />' . $rem . $box
-                    . "<div class='loginbuttonwrap'>" . $objButton->show()
-                    . '</div>' . $fb);
+            $objFields->addContent($rem
+                    . "<div class='loginbuttonwrap'>"
+                    . $objButton->show() . '</div>');
 
             $notice = $this->objLanguage->languageText('mod_security_forgotpassword');
             $helpText = strtoupper($this->objLanguage->languageText('mod_security_helpmelogin', 'security', 'Yes, please help me to login'));
@@ -402,81 +300,6 @@ class loginInterface extends ChisimbaObject {
                      </script>';
             $fb .= '<fb:login-button autologoutlink="false" perms="email,read_stream" onlogin="window.location = \'' . $onloginurl . '\'"></fb:login-button>';
             return $fb;
-        }
-    }
-
-    private function fbAuth($me) {
-        // skip the nonsense and log in
-        $username = $me['username'];
-        $p = explode("@", $me['email']);
-        $password = $p[0];
-        if ($username == '' || $password == '') {
-            return $this->nextAction('error', array('message' => 'no_fbconnect'));
-        }
-        // try the login
-        $objUModel = $this->getObject('useradmin_model2', 'security');
-        $objUser = $this->getObject('user', 'security');
-        $login = $this->objUser->authenticateUser($username, $password, FALSE);
-        if ($login) {
-            if (!isset($_REQUEST [session_name()])) {
-                $this->objEngine->sessionStart();
-            } else {
-                session_regenerate_id();
-            }
-            $this->objSkin->validateSkinSession();
-            $url = $this->getSession('oldurl');
-            $url ['passthroughlogin'] = 'true';
-            if ($module != NULL) {
-                $url ['module'] = $module;
-            }
-            if (is_array($url) && (isset($url ['module'])) && ($url ['module'] != 'splashscreen')) {
-                if (isset($url ['action']) && ($url ['action'] != 'logoff')) {
-                    $act = $url ['action'];
-                } else {
-                    $act = NULL;
-                }
-                return $this->nextAction($act, $url, $url ['module']);
-            }
-            $postlogin = $this->objConfig->getdefaultModuleName();
-            return $this->nextAction(NULL, NULL, $postlogin);
-        } else {
-            // login failure, so new user. Lets create him in the system now and then log him in.
-            $userid = $me['id'];
-            $title = '';
-            $firstname = $me['first_name'];
-            $surname = $me['last_name'];
-            $email = $me['email'];
-            $sex = $me['gender'];
-            if ($sex == 'male') {
-                $sex = 'M';
-            } else {
-                $sex = 'F';
-            }
-            $country = '';
-            $accountType = 'Facebook';
-            $objUModel->addUser($userid, $username, $password, $title, $firstname, $surname, $email, $sex, $country, $cellnumber = '', $staffnumber = '', $accountType, '1');
-            $this->objUser->authenticateUser($username, $password, FALSE);
-            if (!isset($_REQUEST [session_name()])) {
-                $this->objEngine->sessionStart();
-            } else {
-                session_regenerate_id();
-            }
-            $this->objSkin->validateSkinSession();
-            $url = $this->getSession('oldurl');
-            $url ['passthroughlogin'] = 'true';
-            if ($module != NULL) {
-                $url ['module'] = $module;
-            }
-            if (is_array($url) && (isset($url ['module'])) && ($url ['module'] != 'splashscreen')) {
-                if (isset($url ['action']) && ($url ['action'] != 'logoff')) {
-                    $act = $url ['action'];
-                } else {
-                    $act = NULL;
-                }
-                return $this->nextAction($act, $url, $url ['module']);
-            }
-            $postlogin = $this->objConfig->getdefaultModuleName();
-            return $this->nextAction(NULL, NULL, $postlogin);
         }
     }
 
@@ -749,140 +572,6 @@ class loginInterface extends ChisimbaObject {
         }
     }
 
-    private function openIdAuth($me, $fb = FALSE) {
-
-
-        $objUModel = $this->getObject('useradmin_model2', 'security');
-        $objUser = $this->getObject('user', 'security');
-        $username = $me['username'];
-
-        $userid = $objUser->getUserId($username);
-
-        //the user might have changed pwd when asked to change default details
-        //doesnt matter, since they will never be able to login with it. so, reset it
-        // try the login
-        if ($userid) {
-            $user = $objUser->getUserDetails($userid);
-
-            $objUModel->updateUserDetails($user['id'], $username, $user['firstname'], $user['surname'], $user['title'], $user['emailaddress'], $user['sex'], $user['country'], $user['cellnumber'], $user['staffnumber'], '--');
-        }
-        $p = explode("@", $me['email']);
-        $password = $p[0];
-        if ($username == '' || $password = '') {
-            return $this->nextAction('error', array('message' => 'no_fbconnect'));
-        }
-        $objSkin = $this->getObject("skin", "skin");
-        if ($fb || $password == '') {
-            $password = '--';
-        }
-
-
-        $login = $objUser->authenticateUser($username, '--', FALSE);
-        if ($login) {
-
-
-            if (!isset($_REQUEST [session_name()])) {
-                $this->objEngine->sessionStart();
-            } else {
-                session_regenerate_id();
-            }
-            $objSkin = $this->getObject("skin", 'skin');
-            $objSkin->validateSkinSession();
-            $url = $this->getSession('oldurl');
-            $url ['passthroughlogin'] = 'true';
-            if (isset($module)) {
-                if ($module != NULL) {
-                    $url ['module'] = $module;
-                }
-            }
-            if (is_array($url) && (isset($url ['module'])) && ($url ['module'] != 'splashscreen')) {
-                if (isset($url ['action']) && ($url ['action'] != 'logoff')) {
-                    $act = $url ['action'];
-                } else {
-                    $act = NULL;
-                }
-                return $this->nextAction($act, $url, $url ['module']);
-            }
-            //check to see if user still has not updated names. If so, force redirect to profile
-            $updateDetailsPhrase = $this->objLanguage->languageText("mod_security_updateprofile", 'security');
-            if ($objUser->getFirstname() == $updateDetailsPhrase || $objUser->getFirstname() == 'Not set') {
-                return "userdetails";
-            }
-
-            $postlogin = $this->objConfig->getdefaultModuleName();
-            if ($fb) {
-                return $this->nextAction(NULL, NULL, $postlogin);
-            }
-
-            return $postlogin;
-        } else {
-
-
-
-            $userid = $me['id'];
-            $title = '';
-            $firstname = $me['first_name'];
-            $surname = $me['last_name'];
-            $email = $me['email'];
-            if ($fb) {
-                $email = 'notset@chisimba.com';
-            }
-            $sex = $me['gender'];
-            if ($sex == 'male') {
-                $sex = 'M';
-            } else {
-                $sex = 'F';
-            }
-            $country = '';
-            $accountType = 'OpenId';
-            $objUModel->addUser(
-                    $userid, $username, '--', $title, $firstname, $surname, $email, $sex, $country, $cellnumber = '', $staffnumber = '', $accountType, '1');
-            $objUser->authenticateUser($username, $password, FALSE);
-            if (!isset($_REQUEST [session_name()])) {
-                $this->objEngine->sessionStart();
-            } else {
-                session_regenerate_id();
-            }
-            $objSkin->validateSkinSession();
-            $url = $this->getSession('oldurl');
-            $url ['passthroughlogin'] = 'true';
-            if (isset($module)) {
-                if ($module != NULL) {
-                    $url ['module'] = $module;
-                }
-            }
-
-            if (is_array($url) && (isset($url ['module'])) && ($url ['module'] != 'splashscreen')) {
-                if (isset($url ['action']) && ($url ['action'] != 'logoff')) {
-                    $act = $url ['action'];
-                } else {
-                    $act = NULL;
-                }
-                return $this->nextAction($act, $url, $url ['module']);
-            }
-
-
-            //now, we would usually head for postlogin, but we shouldnt. Rather head for the profile
-            //so that we get the user to replace the 'Not Set' bull with real name
-            //$postlogin = $this->objConfig->getdefaultModuleName();
-            //check to see if user still has not updated names. If so, force redirect to profile
-            $updateDetailsPhrase = $this->objLanguage->languageText("mod_security_updateprofile", 'security');
-            if ($objUser->getFirstname() == $updateDetailsPhrase || $objUser->getFirstname() == 'Not set') {
-                return "userdetails";
-            } else {
-
-                return $this->objConfig->getdefaultModuleName();
-            }
-        }
-    }
-
-    /**
-     * Method to call a further action within a module.
-     *
-     * @param  string $action Action to perform next.
-     * @param  array  $params Parameters to pass to action.
-     * @return NULL
-     */
     public function nextAction($action, $params = array(), $module = NULL) {
         // list($template, $_) = $this->_dispatch($action, $this->_moduleName);
         $params['action'] = $action;

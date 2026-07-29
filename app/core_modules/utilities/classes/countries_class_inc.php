@@ -315,6 +315,16 @@ class countries extends ChisimbaObject
     * @param string $code: Two letter country code
     * @return string : name of the country
     */
+    /**
+     * Return the authoritative country-code catalogue.
+     *
+     * @return array
+     */
+    public function getCountries()
+    {
+        return $this->countries;
+    }
+
     public function getCountryName($code)
     {
         $code = strtoupper($code);

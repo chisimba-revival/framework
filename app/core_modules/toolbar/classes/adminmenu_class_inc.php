@@ -29,7 +29,7 @@ class adminmenu extends ChisimbaObject
     {
         $this->objLanguage= $this->getObject('language','language');
         $this->moduleCheck=$this->newObject('modules','modulecatalogue');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
         $this->objUserPic = $this->getObject('imageupload', 'useradmin');
         $this->globalTable=$this->newObject('htmltable','htmlelements');
         $this->globalTable->cellpadding=5;
@@ -48,9 +48,13 @@ class adminmenu extends ChisimbaObject
     {
         $userTitle = $this->getObject('htmlheading', 'htmlelements');
         $userTitle->type=2;
-        $userTitle->str=$this->objUser->fullName();
+        $userTitle->str=$this->securityContext->displayName();
         $menu =  $userTitle->show();
-        $menu .= '<img class="userimage" src="'.$this->objUserPic->userpicture($this->objUser->userId() ).'" />';
+        $menu .= '<img class="userimage" src="'
+            . $this->objUserPic->userpicture(
+                $this->securityContext->userId()
+            )
+            . '" />';
         $menu .= $this->createMenuTable();
         return $menu;
     }

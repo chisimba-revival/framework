@@ -143,6 +143,40 @@ class identityservice extends dbTable
         return $this->permissionUserIdForUser($userId, $containerName);
     }
 
+    /**
+     * Roll back one exact permission identity from a failed provisioning.
+     *
+     * Refuses removal when the exact identity does not match. The provisioning
+     * orchestrator must remove and verify its own membership first.
+     */
+    public function rollbackProvisionedIdentity(
+        $userId,
+        $permissionUserId,
+        $containerName = 'database_local'
+    ) {
+        $userId = $this->normaliseLogicalUserId($userId);
+        $permissionUserId = $this->positiveInteger($permissionUserId);
+        $containerName = $this->normaliseContainerName($containerName);
+        if ($userId === null
+            || $permissionUserId === null
+            || $containerName === null) {
+            return false;
+        }
+
+        $rows = $this->getArray(
+            'SELECT perm_user_id FROM tbl_perms_perm_users'
+            . ' WHERE perm_user_id = ' . $permissionUserId
+            . ' AND auth_user_id = ' . $this->quoteValue($userId)
+            . ' AND auth_container_name = ' . $this->quoteValue($containerName)
+            . ' LIMIT 2'
+        );
+        if (!is_array($rows) || count($rows) !== 1) {
+            return false;
+        }
+
+        return $this->delete('perm_user_id', $permissionUserId) !== false;
+    }
+
     private function normaliseLogicalUserId($value)
     {
         if (!is_scalar($value)) {

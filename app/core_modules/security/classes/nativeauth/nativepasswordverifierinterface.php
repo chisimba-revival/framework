@@ -1,7 +1,8 @@
 <?php
 /**
- * Password verification contract supporting gradual migration from legacy
- * hashes to password_hash()-compatible hashes.
+ * Password verification contract for password_hash()-compatible credentials.
+ *
+ * Legacy password formats are outside this contract and are never accepted.
  */
 interface NativePasswordVerifierInterface
 {
@@ -21,7 +22,7 @@ interface NativePasswordVerifierInterface
     public function createHash($plainTextPassword);
 
     /**
-     * Return a stable identifier such as password_hash, md5, sha1, or unknown.
+     * Return password_hash for a supported credential, otherwise unknown.
      *
      * @return string
      */

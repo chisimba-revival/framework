@@ -1,0 +1,23 @@
+V78 ACTIVE NATIVE LOGIN CUTOVER
+
+This is a deliberate hard cut. Do not restore authenticateUser(), ajax_login,
+LDAP/OpenID/OAuth form paths, controller-owned sessions, or enumeration-prone
+failure messages.
+
+Files changed:
+- app/core_modules/security/controller.php
+- app/core_modules/security/classes/logininterface_class_inc.php
+- app/core_modules/security/templates/content/mfa_web_tpl.php
+- app/core_modules/security/register.conf
+
+Files added:
+- app/core_modules/security/classes/nativeauthwebcomposition_class_inc.php
+- tests/nativeauth/guarded_login_controller_test.php
+- tests/nativeauth/guarded_login_no_session_before_mfa_test.php
+- tests/nativeauth/guarded_login_csrf_test.php
+- tests/nativeauth/guarded_login_expiry_cancel_test.php
+
+If V78 must be reversed before further work, use the repository diff to restore
+the four changed files and remove the five added files. Then rerun all
+tests/nativeauth tests. The bridge and four cutover tests are permanent while
+this controller architecture remains active.

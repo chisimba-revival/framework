@@ -1,0 +1,15 @@
+V73 NATIVE AUTH WEB COMPOSITION ROLLBACK AND REMOVAL CHECKLIST
+
+Files added:
+- app/core_modules/security/classes/nativeauth/nativeauthwebcompositionfactory.php
+- tests/nativeauth/native_auth_web_composition_factory_test.php
+
+Rollback before V74:
+1. Remove the two files above.
+2. Run the complete tests/nativeauth suite.
+
+Removal after controller migration:
+- This factory is permanent architecture, not migration scaffolding.
+- Remove it only if another single composition root replaces it.
+- Never move its repository, session, cookie, MFA-secret, or CSRF construction
+  into a controller or template.

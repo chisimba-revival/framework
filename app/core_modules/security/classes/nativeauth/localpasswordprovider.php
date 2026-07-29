@@ -90,8 +90,6 @@ class LocalPasswordProvider implements AuthenticationProviderInterface
         $metadata = array(
             'password_rehash_required' =>
                 $this->passwords->needsRehash($storedHash),
-            'password_hash_scheme' =>
-                $this->passwords->identifyHashScheme($storedHash),
         );
 
         return CanonicalAuthenticationResult::success(

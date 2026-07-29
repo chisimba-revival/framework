@@ -1,0 +1,10 @@
+V75 MFA POLICY CONTEXT RESOLVER ROLLBACK
+
+This is permanent architecture, not compatibility scaffolding.
+
+If V75 must be rolled back before the active login cutover:
+1. Remove app/core_modules/security/classes/nativeauth/mfapolicycontextresolver.php.
+2. Remove tests/nativeauth/mfa_policy_context_resolver_test.php.
+3. Remove this rollback file.
+
+The runtime was not rebuilt or modified by V75.

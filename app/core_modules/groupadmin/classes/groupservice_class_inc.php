@@ -32,6 +32,11 @@ class groupservice extends ChisimbaObject
         $this->objMembershipDb = $this->getObject('groupmembershipdb', 'groupadmin');
     
         $this->objIdentityService = $this->getObject('identityservice', 'security');
+        $this->objSysConfig = $this->getObject(
+            'dbsysconfig',
+            'sysconfig'
+        );
+
 }
 
     /**
@@ -89,14 +94,269 @@ class groupservice extends ChisimbaObject
     }
 
     /**
-     * Resolve a group name to its canonical group identifier.
+     * Idempotently establish a validated set of canonical groups.
+     *
+     * Installation policy is supplied by the caller. GroupService owns only
+     * definition validation and writes to the canonical permissions tables.
+     *
+     * @param array $definitions Declarative group definitions.
+     * @return array Structured provisioning result.
+     */
+    public function ensureGroups($definitions)
+    {
+        if (!is_array($definitions) || count($definitions) === 0) {
+            return array('ok' => false, 'code' => 'group_definitions_empty');
+        }
+
+        $validated = array();
+        $seen = array();
+        foreach ($definitions as $definition) {
+            if (!is_array($definition)
+                || !isset($definition['name'])
+                || !is_scalar($definition['name'])) {
+                return array('ok' => false, 'code' => 'group_definition_invalid');
+            }
+
+            $name = trim((string) $definition['name']);
+            $description = isset($definition['description'])
+                && is_scalar($definition['description'])
+                ? trim((string) $definition['description'])
+                : '';
+            if ($name === ''
+                || strlen($name) > 255
+                || preg_match('/[\x00-\x1F\x7F]/', $name)
+                || strlen($description) > 255
+                || preg_match('/[\x00-\x1F\x7F]/', $description)) {
+                return array(
+                    'ok' => false,
+                    'code' => 'group_definition_invalid',
+                    'group' => $name,
+                );
+            }
+
+            $key = strtolower($name);
+            if (isset($seen[$key])) {
+                return array(
+                    'ok' => false,
+                    'code' => 'group_definition_duplicate',
+                    'group' => $name,
+                );
+            }
+            $seen[$key] = true;
+            $validated[] = array(
+                'name' => $name,
+                'description' => $description,
+            );
+        }
+
+        $groupIds = array();
+        foreach ($validated as $definition) {
+            $result = $this->ensureCanonicalGroup(
+                $definition['name'],
+                $definition['description']
+            );
+            if (!is_array($result) || empty($result['ok'])) {
+                return is_array($result)
+                    ? $result
+                    : array(
+                        'ok' => false,
+                        'code' => 'group_provisioning_failure',
+                        'group' => $definition['name'],
+                    );
+            }
+            $groupIds[$definition['name']] = $result['groupId'];
+        }
+
+        return array(
+            'ok' => true,
+            'code' => 'groups_ready',
+            'groups' => $groupIds,
+        );
+    }
+
+    /**
+     * Establish one exact-name group with a valid canonical identifier.
      *
      * @param string $groupName
-     * @return mixed Group identifier, or the underlying model's not-found value.
+     * @param string $description
+     * @return array Structured provisioning result.
+     */
+    private function ensureCanonicalGroup($groupName, $description)
+    {
+        $rows = $this->exactGroupRows($groupName);
+        if ($rows === false) {
+            return array(
+                'ok' => false,
+                'code' => 'group_lookup_failed',
+                'group' => $groupName,
+            );
+        }
+
+        if (count($rows) === 0) {
+            /*
+             * GroupService is the sole writer for canonical permission
+             * groups. Encode the already validated UTF-8 name as hexadecimal
+             * data so it cannot alter SQL syntax. The generated puid is read
+             * back below and becomes the canonical group_id.
+             *
+             * The manifest description remains installation metadata because
+             * tbl_perms_groups has no description column.
+             */
+            $encodedName = bin2hex($groupName);
+            if ($encodedName === '') {
+                return array(
+                    'ok' => false,
+                    'code' => 'group_create_failed',
+                    'group' => $groupName,
+                );
+            }
+            $this->objUser->_execute(
+                "INSERT INTO tbl_perms_groups"
+                . " (group_type, group_define_name)"
+                . " VALUES (1, UNHEX('" . $encodedName . "'))"
+            );
+            $rows = $this->exactGroupRows($groupName);
+        }
+
+        if (!is_array($rows) || count($rows) !== 1) {
+            return array(
+                'ok' => false,
+                'code' => 'group_duplicate',
+                'group' => $groupName,
+            );
+        }
+
+        $puid = isset($rows[0]['puid'])
+            ? $this->positiveInteger($rows[0]['puid'])
+            : null;
+        $groupId = isset($rows[0]['group_id'])
+            ? $this->positiveInteger($rows[0]['group_id'])
+            : null;
+        if ($puid === null) {
+            return array(
+                'ok' => false,
+                'code' => 'group_row_malformed',
+                'group' => $groupName,
+            );
+        }
+
+        if ($groupId === null) {
+            $this->objUser->_execute(
+                'UPDATE tbl_perms_groups SET group_id = ' . $puid
+                . ' WHERE puid = ' . $puid . ' AND group_id IS NULL'
+            );
+            $rows = $this->exactGroupRows($groupName);
+            $groupId = is_array($rows)
+                && count($rows) === 1
+                && isset($rows[0]['group_id'])
+                ? $this->positiveInteger($rows[0]['group_id'])
+                : null;
+        }
+
+        if ($groupId === null || $groupId !== $puid) {
+            return array(
+                'ok' => false,
+                'code' => 'group_identifier_failed',
+                'group' => $groupName,
+            );
+        }
+
+        return array(
+            'ok' => true,
+            'code' => 'group_ready',
+            'groupId' => $groupId,
+        );
+    }
+
+    /**
+     * Return every exact-name row required for duplicate-safe provisioning.
+     *
+     * @param string $groupName
+     * @return array|boolean Rows, or false on database failure.
+     */
+    private function exactGroupRows($groupName)
+    {
+        if (!is_scalar($groupName)) {
+            return false;
+        }
+        $groupName = trim((string) $groupName);
+        if ($groupName === ''
+            || strlen($groupName) > 255
+            || preg_match('/[\x00-\x1F\x7F]/', $groupName)) {
+            return false;
+        }
+
+        $rows = $this->objUser->getArray(
+            'SELECT puid, group_id, group_define_name'
+            . ' FROM tbl_perms_groups'
+        );
+        if (!is_array($rows)) {
+            return false;
+        }
+
+        $matches = array();
+        foreach ($rows as $row) {
+            if (is_array($row)
+                && isset($row['group_define_name'])
+                && (string) $row['group_define_name'] === $groupName) {
+                $matches[] = $row;
+            }
+        }
+        return $matches;
+    }
+
+    /**
+     * Resolve an exact stored group name to its canonical group identifier.
+
+
+     *
+     * GroupService owns this table lookup and normalizes the legacy database
+     * contract. Missing, duplicate or malformed matches return false.
+     *
+     * @param string $groupName
+     * @return integer|boolean Positive group identifier, or false.
      */
     public function groupIdForName($groupName)
     {
-        return $this->objGroups->getId($groupName);
+        if (!is_scalar($groupName)) {
+            return false;
+        }
+
+        $groupName = trim((string) $groupName);
+        if ($groupName === ''
+            || strlen($groupName) > 255
+            || preg_match('/[\x00-\x1F\x7F]/', $groupName)) {
+            return false;
+        }
+
+        /*
+         * Fetch the two owned columns and compare the validated scalar in PHP.
+         * This avoids depending on an unavailable quoting helper or on the
+         * legacy group model's inconsistent name-lookup return contract.
+         */
+        $rows = $this->objUser->getArray(
+            'SELECT group_id, group_define_name FROM tbl_perms_groups'
+        );
+        if (!is_array($rows)) {
+            return false;
+        }
+
+        $matches = array();
+        foreach ($rows as $row) {
+            if (is_array($row)
+                && isset($row['group_define_name'])
+                && (string) $row['group_define_name'] === $groupName) {
+                $matches[] = $row;
+            }
+        }
+
+        if (count($matches) !== 1 || !isset($matches[0]['group_id'])) {
+            return false;
+        }
+
+        $groupId = $this->positiveInteger($matches[0]['group_id']);
+
+        return $groupId === null ? false : $groupId;
     }
 
     /**
@@ -257,6 +517,33 @@ class groupservice extends ChisimbaObject
             : array('ok' => false, 'code' => 'add_failed');
     }
 
+    /**
+     * Determine whether one logical user has any direct group membership.
+     *
+     * This guard belongs here because GroupService owns membership data.
+     */
+    public function hasAnyMembership($userId)
+    {
+        $userId = $this->normaliseUserId($userId);
+        if ($userId === null) {
+            return true;
+        }
+
+        $permissionUserId = $this->objIdentityService
+            ->permissionUserIdForUser($userId);
+        if ($permissionUserId === null) {
+            return false;
+        }
+
+        $rows = $this->objUser->getArray(
+            'SELECT group_id FROM tbl_perms_groupusers'
+            . ' WHERE perm_user_id = ' . (int) $permissionUserId
+            . ' LIMIT 1'
+        );
+
+        return is_array($rows) && count($rows) > 0;
+    }
+
     public function removeMember($groupId, $userId)
     {
         $this->assertAdministrator();
@@ -293,6 +580,144 @@ class groupservice extends ChisimbaObject
         return $this->objMembershipDb->removeMembership($group['id'], $permissionUserId)
             ? array('ok' => true, 'code' => 'member_removed')
             : array('ok' => false, 'code' => 'remove_failed');
+    }
+
+    /**
+     * Add the first administrator to a manifest-required bootstrap group.
+     *
+     * This is not an unauthenticated group-management API. It is available
+     * only before first registration completes, only for canonical user 1,
+     * and only for the Guest and Site Admin groups.
+     */
+    public function addBootstrapMember($groupId, $userId, $groupName)
+    {
+        $guard = $this->validateBootstrapMembership(
+            $groupId,
+            $userId,
+            $groupName
+        );
+        if ($guard !== null) {
+            return $guard;
+        }
+        return $this->addBootstrapMemberRecord($groupId, $userId);
+    }
+
+    /**
+     * Compensate a bootstrap membership created during failed provisioning.
+     */
+    public function removeBootstrapMember($groupId, $userId, $groupName)
+    {
+        $guard = $this->validateBootstrapMembership(
+            $groupId,
+            $userId,
+            $groupName
+        );
+        if ($guard !== null) {
+            return $guard;
+        }
+        return $this->removeBootstrapMemberRecord($groupId, $userId);
+    }
+
+    private function validateBootstrapMembership($groupId, $userId, $groupName)
+    {
+        $completed = $this->objSysConfig->getValue(
+            'firstreg_run',
+            'modulecatalogue'
+        );
+        if (in_array(strtolower(trim((string) $completed)),
+            array('1', 'true', 'yes', 'on'), true)) {
+            return array('ok' => false, 'code' => 'bootstrap_closed');
+        }
+        if ((string) $userId !== '1') {
+            return array('ok' => false, 'code' => 'invalid_bootstrap_user');
+        }
+        $groupName = trim((string) $groupName);
+        if (!in_array($groupName, array('Guest', 'Site Admin'), true)) {
+            return array('ok' => false, 'code' => 'invalid_bootstrap_group');
+        }
+        $group = $this->findGroup($groupId);
+        if (!is_array($group)
+            || !isset($group['name'])
+            || (string) $group['name'] !== $groupName) {
+            return array('ok' => false, 'code' => 'bootstrap_group_mismatch');
+        }
+        if ($this->objIdentityService->permissionUserIdForUser('1') === null) {
+            return array('ok' => false, 'code' => 'bootstrap_identity_missing');
+        }
+        return null;
+    }
+
+
+
+    private function addBootstrapMemberRecord($groupId, $userId)
+    {
+
+        $group = $this->findGroup($groupId);
+        $userId = $this->normaliseUserId($userId);
+
+        if ($group === null) {
+            return array('ok' => false, 'code' => 'group_not_found');
+        }
+        if ($userId === null) {
+            return array('ok' => false, 'code' => 'invalid_user');
+        }
+
+        $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
+        if ($candidate === null) {
+            return array('ok' => false, 'code' => 'user_not_available');
+        }
+
+        $permissionUserId = $this->objIdentityService->permissionUserIdForUser($userId);
+        if ($permissionUserId === null) {
+            return array('ok' => false, 'code' => 'permission_user_not_found');
+        }
+
+        if ($this->objMembershipDb->membershipExists($group['id'], $permissionUserId)) {
+            return array('ok' => false, 'code' => 'already_member');
+        }
+
+        return $this->objMembershipDb->addMembership($group['id'], $permissionUserId)
+            ? array('ok' => true, 'code' => 'member_added')
+            : array('ok' => false, 'code' => 'add_failed');
+
+    }
+
+    private function removeBootstrapMemberRecord($groupId, $userId)
+    {
+
+        $group = $this->findGroup($groupId);
+        $userId = $this->normaliseUserId($userId);
+
+        if ($group === null) {
+            return array('ok' => false, 'code' => 'group_not_found');
+        }
+        if ($userId === null) {
+            return array('ok' => false, 'code' => 'invalid_user');
+        }
+
+        $member = $this->findUserById($this->getMembers($group['id']), $userId);
+        if ($member === null) {
+            return array('ok' => false, 'code' => 'not_a_member');
+        }
+
+        if (strcasecmp((string) $group['storedName'], 'Site Admin') === 0) {
+            if ((string) $this->objUser->userId() === (string) $userId) {
+                return array('ok' => false, 'code' => 'cannot_remove_self_admin');
+            }
+            if (count($this->getMembers($group['id'])) <= 1) {
+                return array('ok' => false, 'code' => 'cannot_remove_last_admin');
+            }
+        }
+
+        $permissionUserId = $this->objIdentityService->permissionUserIdForUser($userId);
+        if ($permissionUserId === null) {
+            return array('ok' => false, 'code' => 'permission_user_not_found');
+        }
+
+        return $this->objMembershipDb->removeMembership($group['id'], $permissionUserId)
+            ? array('ok' => true, 'code' => 'member_removed')
+            : array('ok' => false, 'code' => 'remove_failed');
+
     }
 
     private function assertAdministrator()

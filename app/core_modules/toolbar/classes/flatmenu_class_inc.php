@@ -28,7 +28,7 @@ class flatmenu extends ChisimbaObject
     function init()
     {
         $this->objLanguage = $this->getObject('language','language');
-        $this->objUser = $this->getObject('user','security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
         $this->objConfig = $this->getObject('altconfig','config');
         
         $this->loadClass('link','htmlelements');
@@ -44,14 +44,13 @@ class flatmenu extends ChisimbaObject
     {
         $homeLabel = $this->objLanguage->languageText('word_home', 'system', 'Home');
         $logoutLabel = $this->objLanguage->languageText('word_logout', 'system', 'Logout');
-        $confirmLabel = $this->objLanguage->languageText('phrase_confirmlogout');
         
         $postlogin = 'cms';//$this->objConfig->getdefaultModuleName();
         $home = $this->objConfig->getPrelogin();
         $showLogout = FALSE;
         
         // Check if the user is logged in
-        if($this->objUser->isLoggedIn()){
+        if($this->securityContext->isAuthenticated()){
             $home = $postlogin;
             $showLogout = TRUE;
         }
@@ -78,12 +77,12 @@ class flatmenu extends ChisimbaObject
         }
 
         if($showLogout){
-            $url = $this->uri(array('action' => 'logoff'), 'security');
-            $objLink = new link("javascript: if(confirm('{$confirmLabel}')) {document.location= '{$url}'};");
-            $objLink->link = $logoutLabel;
-            $link = $objLink->show();
-            
-            $str .= '<li style="background-image: none;">'.$link.'</li>';
+            $str .= '<li style="background-image: none;">'
+                . $this->securityContext->logoutForm(
+                    $logoutLabel,
+                    'toolbar-flat-logout'
+                )
+                . '</li>';
         }
 
         $str .= '</ul><br />';

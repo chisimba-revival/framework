@@ -18,6 +18,8 @@ $this->loadClass("ifauth", "security");
 
 class auth_database extends abauth implements ifauth
 {
+    private $credentialProof = null;
+
     /**
     *
     * Init method. It sets up a connection to the users database table
@@ -39,86 +41,38 @@ class auth_database extends abauth implements ifauth
     */
     public function authenticate($username, $password, $remember = true)
     {
-        if ($this->nativeLoginEnabled()
-            && $password !== '--twitter--'
-            && $password !== '--') {
-            return $this->authenticateNatively($username, $password);
-        }
-        $login = $this->objLu->login($username, $password, $remember);
-
-        if(!$login) {
-            // check if user is inactive
-            if($this->objLu->isInactive()) {
-                throw new customException("User is inactive, please contact site admin");
-            }
-            else {
-                return FALSE;
-            }
+        /*
+         * Preserve the public boolean and _record contract while primary
+         * credential verification is moved behind the transaction boundary.
+         * This method must not establish identity or issue a remembered login.
+         */
+        $this->credentialProof = null;
+        $proof = $this->verifyCredentials($username, $password);
+        if ($proof === false) {
+            return false;
         }
 
-        //Retrieve the users data from the database
-        $line=$this->getUserDataAsArray($username);
-
-        // set the line as a stdClass, serialize and store in session to lower db calls
-        $user = new stdClass();
-        // add the user info to the class
-        $user->username = $line['username'];
-        $user->userid = $line['userid'];
-        $user->title = $line['title'];
-        $user->firstname = $line['firstname'];
-        $user->surname = $line['surname'];
-        $user->pass = NULL;
-        $user->creationdate = $line['creationdate'];
-        $user->emailaddress = $line['emailaddress'];
-        $user->logins = $line['logins'];
-        $user->isactive = $line['isactive'];
-        // serialize the object to preserve structure etc
-        $user = serialize($user);
-        // set it into session to be used elsewhere (objUser mainly)
-        $this->setSession('userprincipal', $user);
-        if ($line) {
-            if ($line['isactive']=='0'){
-                DEFINE('STATUS','inactive');
-                return FALSE;
-            }
-            //LDAP will be handled in chain-of-command
-            if ($line['pass']==sha1('--LDAP--')){
-                return FALSE;
-            } else {
-                $password=sha1(trim($password));
-                // if the login was successful
-                if($this->objLu->isloggedIn() == TRUE) {
-                //if ( strtolower($line['pass'])==strtolower($password) ) {
-                    $this->_record = $line;
-                    return TRUE;
-                }
-            }
-        }
-        return FALSE;
+        $this->credentialProof = $proof;
+        $this->_record = $proof['record'];
+        return true;
     }
 
     /**
-     * Whether the reversible first native-login switch is enabled.
+     * Return the last successful credential proof.
      *
-     * Enable only in the local PHP 8.2 container with:
-     * CHISIMBA_NATIVE_AUTH_LOGIN=1
+     * @return array|null
      */
-    private function nativeLoginEnabled()
+    public function getCredentialProof()
     {
-        $value = getenv('CHISIMBA_NATIVE_AUTH_LOGIN');
-
-        return in_array(
-            strtolower(trim((string) $value)),
-            array('1', 'true', 'yes', 'on'),
-            true
-        );
+        return $this->credentialProof;
     }
 
     /**
-     * Verify local credentials through the native authentication stack while
-     * leaving compatibility session establishment to authenticate/abauth.
+     * Verify primary credentials without creating authenticated state.
+     *
+     * @return array|false Canonical proof and legacy record, or false.
      */
-    private function authenticateNatively($username, $password)
+    public function verifyCredentials($username, $password)
     {
         require_once dirname(__FILE__)
             . '/nativeauth/mdb2nativedatabaseadapter.php';
@@ -133,7 +87,7 @@ class auth_database extends abauth implements ifauth
         require_once dirname(__FILE__)
             . '/nativeauth/nativeauthenticationservice.php';
         require_once dirname(__FILE__)
-            . '/nativeauth/legacyauthsessionbridge.php';
+            . '/nativeauth/nativesessionservice.php';
 
         $database = new Mdb2NativeDatabaseAdapter(
             $this->objEngine->getDbObj()
@@ -145,7 +99,7 @@ class auth_database extends abauth implements ifauth
         );
         $service = new NativeAuthenticationService(
             new AuthenticationProviderRegistry(array($provider)),
-            new LegacyAuthSessionBridge()
+            new NativeSessionService($this)
         );
 
         $result = $service->authenticate(
@@ -174,8 +128,8 @@ class auth_database extends abauth implements ifauth
         }
 
         $record = $database->fetchOne(
-            'SELECT username, userid, title, firstname, surname, pass, '
-            . 'creationdate, emailaddress, logins, isactive, accesslevel '
+            'SELECT username, userid, title, firstname, surname, '
+            . 'emailaddress, logins, isactive, accesslevel '
             . 'FROM tbl_users WHERE username = ?',
             array($result->getUsername())
         );
@@ -187,31 +141,10 @@ class auth_database extends abauth implements ifauth
             return false;
         }
 
-        $this->_record = $record;
-        $this->storeNativeCompatibilityPrincipal($record);
-
-        return true;
-    }
-
-    /**
-     * Preserve the userprincipal contract historically populated by
-     * auth_database::authenticate().
-     */
-    private function storeNativeCompatibilityPrincipal(array $record)
-    {
-        $user = new stdClass();
-        $user->username = $record['username'];
-        $user->userid = $record['userid'];
-        $user->title = $record['title'];
-        $user->firstname = $record['firstname'];
-        $user->surname = $record['surname'];
-        $user->pass = null;
-        $user->creationdate = $record['creationdate'];
-        $user->emailaddress = $record['emailaddress'];
-        $user->logins = $record['logins'];
-        $user->isactive = $record['isactive'];
-
-        $this->setSession('userprincipal', serialize($user));
+        return array(
+            'result' => $result,
+            'record' => $record,
+        );
     }
 
     /**

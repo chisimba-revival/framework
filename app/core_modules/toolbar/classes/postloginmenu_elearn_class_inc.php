@@ -53,7 +53,7 @@ class postloginmenu_elearn extends ChisimbaObject
         $this->objMenu = $this->getObject('dbmenu');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->sideMenu = $this->getObject('sidemenu');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->securityContext = $this->getObject('toolbarsecuritycontext');
     }
     
     /**
@@ -69,11 +69,13 @@ class postloginmenu_elearn extends ChisimbaObject
         
         $header = new htmlHeading();
         $header->type = 2;
-        $header->str = $this->objUser->fullName();
+        $header->str = $this->securityContext->displayName();
         
         $str = '';//$header->show();
         
-        $str .= '<p align="center"><img src="'.$objUserPic->userpicture($this->objUser->userId() ).'" alt="User Image" style="margin-bottom: 2px;" /></p>';
+        $str .= '<p align="center"><img src="'
+            . $objUserPic->userpicture($this->securityContext->userId())
+            . '" alt="User Image" style="margin-bottom: 2px;" /></p>';
         
         //$str .= '<br />';
         // First add user pic

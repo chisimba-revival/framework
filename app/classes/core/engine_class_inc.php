@@ -461,14 +461,20 @@ class engine {
      */
     public function __construct() {
         /*
-		 * we only initiate session handling here if a session already exists;
-		 * the session is only created once a successful login has taken place.
-		 * this has the small security benefit (albeit an obscurity based one)
-		 * of concealing any information about the session id generator from
-		 * unauthenticated users. (see Engine->do_login for session creation)
-		 */
-        if (isset ( $_REQUEST [session_name ()] )) {
-            $this->sessionStart ();
+         * Resume an application session only from Chisimba's cookie.
+         *
+         * sessionStart() owns the PHPSESSION name. Testing session_name()
+         * before calling it observes PHP's PHPSESSID default instead, while
+         * ordinary cookies are not guaranteed to appear in $_REQUEST. That
+         * split discarded a newly authenticated identity on the first
+         * redirected request. Session identifiers are never accepted from
+         * query-string or form input.
+         */
+        if (isset($_COOKIE['PHPSESSION'])
+            && is_string($_COOKIE['PHPSESSION'])
+            && $_COOKIE['PHPSESSION'] !== ''
+        ) {
+            $this->sessionStart();
         }
 
         // Populate the core modules array with the contents of the core_modules directory.
@@ -572,21 +578,11 @@ class engine {
         else { 
             $this->appid = $applications[0]['application_define_name']; 
         } 
-        // Check that the basic groups are installed. 
-        $groups = $this->luAdmin->perm->getGroups(); 
-        if ($groups === false || empty($groups)) { 
-            // add the default groups 
-            $data = array('group_define_name' => 'Site Admin', 'group_type' => LIVEUSER_GROUP_TYPE_ALL); 
-            $groupId = $this->luAdmin->perm->addGroup($data); 
-            $data = array('group_define_name' => 'Lecturers', 'group_type' => LIVEUSER_GROUP_TYPE_ALL); 
-            $groupId = $this->luAdmin->perm->addGroup($data); 
-            $data = array('group_define_name' => 'Students', 'group_type' => LIVEUSER_GROUP_TYPE_ALL); 
-            $groupId = $this->luAdmin->perm->addGroup($data); 
-            $data = array('group_define_name' => 'Guest', 'group_type' => LIVEUSER_GROUP_TYPE_ALL); 
-            $groupId = $this->luAdmin->perm->addGroup($data); 
- 	 
- 	 
-        } 
+        /*
+         * Baseline permission groups are owned by GroupService and are
+         * established transactionally during first-time registration.
+         * Engine startup must not create permission-table rows.
+         */
         /*
          * Initial administrator identity and membership are provisioned once
          * after first-time registration by initialadminprovisioningservice.
@@ -2219,6 +2215,23 @@ class engine {
      * @param  string       $requestedModule
      * @return list(string, string) Template name and module name
      */
+    /**
+     * Determine login state through the canonical native session service.
+     *
+     * @return boolean
+     */
+    private function _hasNativeIdentity()
+    {
+        require_once dirname(dirname(dirname(__FILE__)))
+            . '/core_modules/security/classes/nativeauth/'
+            . 'nativesessionservice.php';
+
+        $sessionService = new NativeSessionService($this);
+
+        return $sessionService->isAuthenticated()
+            && $sessionService->getUserId() !== null;
+    }
+
     private function _dispatch($action, $requestedModule) {
         $this->_action = $action;
         strtolower ( $this->getParam ( 'action', '' ) );
@@ -2250,7 +2263,7 @@ class engine {
 		 *      but it will look decent and not confuse the crap out of users
 		 *      that being said, we should still go for just getMessage() in prod
 		 */
-        if ((! $this->_objActiveController->requiresLogin ( $this->_action )) || ($this->lu->isLoggedIn ())) {
+        if ((! $this->_objActiveController->requiresLogin ( $this->_action )) || $this->_hasNativeIdentity()) {
             return array ($this->_dispatchToModule ( $this->_objActiveController, $this->_action ), $this->_moduleName );
         } else {
             if (! $this->_loadModule ( 'security' )) {
@@ -2274,7 +2287,7 @@ class engine {
     private function _loadModule($moduleName) {
         $moduleName = str_replace ( "/", "", $moduleName );
         if ($moduleName == '_default') {
-            if ($this->lu->isLoggedIn ()) {
+            if ($this->_hasNativeIdentity()) {
                 $moduleName = $this->_objConfig->getdefaultModuleName ();
             } else {
                 $moduleName = $this->_objConfig->getPrelogin ();
