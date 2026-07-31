@@ -124,10 +124,15 @@ permissionAssert(
 );
 
 $grant = new permissionservicefixture();
+$grant->responseQueues = array(
+    'FROM tbl_perms_grouprights WHERE group_id = 2' => array(
+        array(),
+        array(array('id' => 'group-grant')),
+    ),
+);
 $grant->responses = array(
     'FROM tbl_perms_groups WHERE group_id = 2' => array(array('group_id' => 2)),
     'FROM tbl_perms_rights WHERE right_id = 4' => array(array('right_id' => 4)),
-    'FROM tbl_perms_grouprights WHERE group_id = 2' => array(),
 );
 permissionAssert($grant->ensureGroupGrant(2, 4), 'group grant insert failed');
 permissionAssert(count($grant->inserted) === 1, 'group grant was not inserted once');
@@ -182,6 +187,10 @@ $newRight->responseQueues = array(
             'right_define_name' => 'view',
         )),
     ),
+    'FROM tbl_perms_grouprights WHERE group_id = 2' => array(
+        array(),
+        array(array('id' => 'administrator-grant')),
+    ),
 );
 $newRight->responses = array(
     'FROM tbl_perms_areas WHERE area_id = 13' => array(
@@ -196,7 +205,6 @@ $newRight->responses = array(
     'FROM tbl_perms_rights WHERE right_id = 22' => array(
         array('right_id' => 22),
     ),
-    'FROM tbl_perms_grouprights WHERE group_id = 2' => array(),
 );
 permissionAssert(
     $newRight->ensureRight(13, 'view', 2) === 22,

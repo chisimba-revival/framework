@@ -165,6 +165,7 @@ class DbCreateAction extends StepAction
     $this->_installDb32('core_modules/security/sql/tbl_perms_groupusers.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_perm_users.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_right_implied.sql');
+    $this->_installDb32('core_modules/security/sql/tbl_perms_contextrolegrants.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_rights.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_userrights.sql');
 

@@ -1,9 +1,10 @@
 <?php
 /**
- * Canonical authentication and authorization context for toolbar consumers.
+ * Security context exposed through established toolbar-facing methods.
  *
- * Toolbar renderers receive only the state they need. They do not read legacy
- * identity, ACL, group-admin, or generic session objects.
+ * Identity, login, display-name, and group decisions delegate to the existing
+ * security user API. Those established user methods own canonical-service
+ * integration; toolbar consumers do not construct identity or group services.
  *
  * @category  Chisimba
  * @package   toolbar
@@ -13,10 +14,8 @@
  */
 class toolbarsecuritycontext extends ChisimbaObject
 {
-    private $sessions;
     private $csrf;
-    private $users;
-    private $groups;
+    private $user;
     private $permissions;
 
     public function init()
@@ -25,10 +24,8 @@ class toolbarsecuritycontext extends ChisimbaObject
             'nativeauthwebcomposition',
             'security'
         )->build();
-        $this->sessions = $stack['sessions'];
         $this->csrf = $stack['csrf'];
-        $this->users = $this->getObject('userservice', 'security');
-        $this->groups = $this->getObject('groupservice', 'groupadmin');
+        $this->user = $this->getObject('user', 'security');
         $this->permissions = $this->getObject(
             'permissionservice',
             'security'
@@ -37,46 +34,29 @@ class toolbarsecuritycontext extends ChisimbaObject
 
     public function isAuthenticated()
     {
-        return $this->sessions->isAuthenticated();
+        return $this->user->isLoggedIn();
     }
 
     public function userId()
     {
-        return $this->sessions->getUserId();
+        return $this->user->userId();
     }
 
     public function displayName()
     {
-        $userId = $this->userId();
-        if ($userId === null) {
+        if (!$this->isAuthenticated()) {
             return '';
-        }
-        $user = $this->users->findByUserId($userId);
-        if (!is_array($user)) {
-            return '';
-        }
-        $name = trim(
-            (isset($user['firstname']) ? $user['firstname'] : '')
-            . ' '
-            . (isset($user['surname']) ? $user['surname'] : '')
-        );
-        if ($name !== '') {
-            return $name;
         }
 
-        return isset($user['username']) ? trim($user['username']) : '';
+        return $this->user->fullname();
     }
 
     public function isSiteAdministrator()
     {
         $userId = $this->userId();
-        if ($userId === null) {
-            return false;
-        }
-        $groupId = $this->groups->groupIdForName('Site Admin');
 
-        return $groupId !== null
-            && $this->groups->isGroupMember($userId, $groupId);
+        return $userId !== null
+            && $this->user->inAdminGroup($userId, 'Site Admin');
     }
 
     /**
@@ -102,7 +82,11 @@ class toolbarsecuritycontext extends ChisimbaObject
             return '';
         }
         $token = $this->csrf->issue('native_auth_logout');
-        $action = $this->uri(array('action' => 'logout'), 'security');
+        $action = html_entity_decode(
+            $this->uri(array('action' => 'logout'), 'security'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
 
         return '<form method="post" action="'
             . htmlspecialchars($action, ENT_QUOTES, 'UTF-8')

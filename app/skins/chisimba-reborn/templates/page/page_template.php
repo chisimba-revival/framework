@@ -231,11 +231,19 @@ if (!isset($suppressFooter)) {
     if (isset($footerStr)) {
        $footerStr = $footerStr;
     } else if ($objUser->isLoggedIn()) {
-        $this->loadClass('link', 'htmlelements');
-        $link = new link ($this->URI(array('action'=>'logoff'),'security'));
-        $link->link=$objLanguage->languageText("word_logout");
-        $str=$objLanguage->languageText("mod_context_loggedinas", 'context').' <strong>'.$objUser->fullname().'</strong>  ('.$link->show().')';
-        $footerStr= $str;
+        $objToolbarSecurity = $this->getObject(
+            'toolbarsecuritycontext',
+            'toolbar'
+        );
+        $logoutForm = $objToolbarSecurity->logoutForm(
+            $objLanguage->languageText("word_logout"),
+            'chisimba-site-footer__logout'
+        );
+        $str = $objLanguage->languageText(
+            "mod_context_loggedinas",
+            'context'
+        ) . ' <strong>' . $objUser->fullname() . '</strong> ' . $logoutForm;
+        $footerStr = $str;
     } else {
         $footerStr = $objLanguage->languageText("mod_security_poweredby", 'security', 'Powered by ') . ' Chisimba';
     }

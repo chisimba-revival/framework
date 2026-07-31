@@ -102,6 +102,14 @@ class groupAdminModel extends dbTable {
     public $_objGroupUsers;
 
     /**
+     * Shared canonical membership implementation used by this compatibility
+     * adapter.
+     *
+     * @var groupmembershipreader
+     */
+    public $objMembershipReader;
+
+    /**
      * Method to initialize the group admin model object.
      *
      * @access public
@@ -109,9 +117,10 @@ class groupAdminModel extends dbTable {
      * @return void
      */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
-        //if($this->objLuAdmin === null) {
-        //    $this->objLuAdmin = $this->objEngine->getLuAdmin();
-        //}
+        $this->objMembershipReader = $this->getObject(
+            'groupmembershipreader',
+            'groupadmin'
+        );
     }
 
     /**
@@ -591,18 +600,7 @@ class groupAdminModel extends dbTable {
      * @return true|false returns TRUE if user is a member, otherwise FALSE
      */
     public function isGroupMember($userId, $groupId) {
-        $params = array(
-            'filters' => array(
-                'group_id' => $groupId,
-            )
-        );
-        $usersGroup = $this->objLuAdmin->perm->getUsers($params);
-        foreach ($usersGroup as $users) {
-            if ($users['auth_user_id'] == $userId) {
-                return TRUE;
-            }
-        }
-        return FALSE;
+        return $this->objMembershipReader->isGroupMember($userId, $groupId);
     }
 
     /**

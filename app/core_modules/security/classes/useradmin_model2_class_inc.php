@@ -63,6 +63,13 @@ class useradmin_model2 extends dbtable
     private $objLanguage;
 
     /**
+     * Canonical complete-user provisioning service.
+     *
+     * @var object
+     */
+    private $objUserProvisioningService;
+
+    /**
     * Constructor
     */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
@@ -133,68 +140,68 @@ class useradmin_model2 extends dbtable
     */
     public function addUser($userid, $username, $password, $title, $firstname, $surname, $email, $sex, $country, $cellnumber='', $staffnumber='', $accountType='useradmin', $accountstatus='1')
     {
-        if ($accountType == '') {
-            $userArray['howCreated'] = $accountType;
-
-            if ($accountType=='ldap') {
-                $userArray['pass'] = sha1('--LDAP--'); // System indentifier to use LDAP Password
-                $userArray['howCreated'] = 'LDAP'; // Convert to lowercase
-            }
+        /*
+         * LDAP is no longer a core account-creation mode. Refuse the legacy
+         * sentinel password rather than turning it into a valid local login.
+         */
+        if (strtolower((string) $accountType) === 'ldap') {
+            throw new customException('unsupported_external_identity_creation');
         }
-        $id = $this->_serverName . "_" . rand(1000,9999) . "_" . time();
-        $data = array('id' => $id,
-                      'emailAddress' => $email,
-                      'handle' => $username,
-                      'passwd' => $password,
-                      'auth_user_id' => $userid,
-                      'firstName' => $firstname,
-                      'surname' => $surname,
-                      'title' => $title,
-                      'sex' => $sex,
-                      'country' => $country,
-                      'cellnumber' => $cellnumber,
-                      'staffnumber' => $staffnumber,
-                      'howCreated' => $accountType,
-                      'is_active' => $accountstatus,
-                      'cellnumber' => $cellnumber,
-                      'staffnumber' => $staffnumber,
-                      'howCreated' => $accountType,
-                      'perm_type' => 1,
+
+        /*
+         * Resolve this service only when account creation is requested.
+         * Eager construction from init() creates a circular object graph.
+         */
+        $this->objUserProvisioningService = $this->getObject(
+            'userprovisioningservice',
+            'security'
         );
-        $adduser = $this->objLuAdmin->addUser($data);
-        if(!$adduser) { // anonymous    : LIVEUSER_ANONYMOUS_TYPE_ID = 0  (Anon User Perm)
-             $errorArr = $this->objLuAdmin->getErrors();
-             throw new customException($errorArr[0]['params']['reason']);
-             exit(1);
-        }
-        // add the new user to the regular folks group for now
-        $params = array('filters' => array('group_define_name' => 'Guest'));
-        $group = $this->objLuAdmin->perm->getGroups($params);
-        $result = $this->objLuAdmin->perm->addUserToGroup(array('perm_user_id' => $adduser, 'group_id' => $group[0]['group_id']));
-        if(!$result) {
-            $errorArr = $this->objLuAdmin->getErrors();
-            throw new customException($errorArr[0]['params']['reason']);
-            exit(1);
+        $result = $this->objUserProvisioningService->createLocalUser(
+            array(
+                'userId' => $userid,
+                'username' => $username,
+                'title' => $title,
+                'firstName' => $firstname,
+                'surname' => $surname,
+                'emailAddress' => $email,
+                'sex' => $sex,
+                'country' => $country,
+                'cellnumber' => $cellnumber,
+                'staffnumber' => $staffnumber,
+                'howCreated' => $accountType,
+                'isActive' => $accountstatus,
+            ),
+            $password
+        );
+        if (empty($result['ok'])) {
+            $code = isset($result['code'])
+                ? $result['code']
+                : 'user_provisioning_failed';
+            throw new customException($code);
         }
 
-        // finally add a content directory for the new user
+        /*
+         * Preserve the established file-manager side effect. User,
+         * credential, identity and group writes are owned by canonical
+         * services above; this module still owns its content-folder setup.
+         */
         $this->objFolders = $this->getObject('dbfolder', 'filemanager');
         $this->objQuotas = $this->getObject('dbquotas', 'filemanager');
-        $path = $this->objConfig->getcontentBasePath()."users/";
-        mkdir($path.$userid, 0777);
-        touch($path.$userid."/info.txt");
-        $folderId = $this->objFolders->indexFolder($path.$userid);
-//var_dump($folderId);
+        $path = $this->objConfig->getcontentBasePath() . 'users/';
+        if (!is_dir($path . $userid)) {
+            mkdir($path . $userid, 0777, true);
+        }
+        if (!file_exists($path . $userid . '/info.txt')) {
+            touch($path . $userid . '/info.txt');
+        }
+        $folderId = $this->objFolders->indexFolder($path . $userid);
         $folder = $this->objFolders->getFolder($folderId);
-//var_dump($folder);
-        $folderParts = explode('/', $folder['folderpath']);
-//var_dump($folderParts);
-        $quota = $this->objQuotas->getQuota($folder['folderpath']);
-//var_dump($quota);
+        if (is_array($folder) && isset($folder['folderpath'])) {
+            $this->objQuotas->getQuota($folder['folderpath']);
+        }
 
-        return $id;
+        return $result['storageId'];
     }
-
     /**
     * Method to update a user's details on the system
     *

@@ -47,9 +47,6 @@ class postlogin extends controller {
      * @return string Filename of template to be displayed
      */
     public function dispatch($action) {
-        // Method to set the layout template for the given action
-        $this->setLayoutTemplate('contextlayout_tpl.php');
-
         $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.livequery.js', 'jquery'));
 
         /*

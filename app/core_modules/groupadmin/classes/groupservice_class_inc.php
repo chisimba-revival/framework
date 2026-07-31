@@ -22,6 +22,7 @@ class groupservice extends ChisimbaObject
     private $objUser;
     private $objContext;
     private $objMembershipDb;
+    private $objMembershipReader;
 
     public function init()
     {
@@ -30,6 +31,10 @@ class groupservice extends ChisimbaObject
         $this->objUser = $this->getObject('user', 'security');
         $this->objContext = $this->getObject('dbcontext', 'context');
         $this->objMembershipDb = $this->getObject('groupmembershipdb', 'groupadmin');
+        $this->objMembershipReader = $this->getObject(
+            'groupmembershipreader',
+            'groupadmin'
+        );
     
         $this->objIdentityService = $this->getObject('identityservice', 'security');
         $this->objSysConfig = $this->getObject(
@@ -368,7 +373,7 @@ class groupservice extends ChisimbaObject
      */
     public function isGroupMember($userId, $groupId)
     {
-        return (bool) $this->objGroups->isGroupMember($userId, $groupId);
+        return $this->objMembershipReader->isGroupMember($userId, $groupId);
     }
 
     /**

@@ -411,7 +411,7 @@ class permissionservice extends dbTable
             return false;
         }
 
-        return $this->insertInto(
+        $this->insertInto(
             'tbl_perms_grouprights',
             array(
                 'id' => $this->recordId('group', $groupId, $rightId),
@@ -420,6 +420,15 @@ class permissionservice extends dbTable
                 'right_level' => 1,
             )
         );
+
+        $rows = $this->getArray(
+            'SELECT id FROM tbl_perms_grouprights'
+            . ' WHERE group_id = ' . $groupId
+            . ' AND right_id = ' . $rightId
+            . ' LIMIT 2'
+        );
+
+        return is_array($rows) && count($rows) === 1;
     }
 
     /**

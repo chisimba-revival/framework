@@ -212,6 +212,7 @@ class security extends controller
     private function nativeLanding()
     {
         $stack = $this->nativeAuthStack();
+        $this->setVar('pageSuppressToolbar', null);
         if (!$stack['sessions']->isAuthenticated()) {
             return $this->nativeLoginPage();
         }

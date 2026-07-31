@@ -215,6 +215,21 @@ class modulecatalogue extends controller {
         try {
             $this->output = '';
             $action = $this->getParm ( 'action' );
+
+            /*
+             * Bounded canonical-services proof. This branch deliberately
+             * precedes modulecatalogue's legacy administrator/page-shell
+             * authorisation so it tests only the canonical authenticated
+             * session and identity contracts.
+             */
+            if ($action === 'canonicalidentityproof') {
+                $this->setLayoutTemplate(null);
+                $this->setVar('pageSuppressToolbar', true);
+                $proof = $this->getObject('canonicalidentityproof');
+                $this->setVar('canonicalIdentityProof', $proof->resolve());
+                return 'canonical_identity_proof_tpl.php';
+            }
+
             if (($action != 'firsttimeregistration') && (! $this->objUser->isAdmin ())) { //no access to non-admin users
                 return 'noaccess_tpl.php';
             }
@@ -1430,7 +1445,11 @@ EOT;
      */
     public function requiresLogin($action = null) {
         try {
-            if ($this->getParm ( 'action' ) == 'firsttimeregistration') {
+            $action = $this->getParm ( 'action' );
+            if (
+                $action == 'firsttimeregistration'
+                || $action == 'canonicalidentityproof'
+            ) {
                 return FALSE;
             } else {
                 return TRUE;

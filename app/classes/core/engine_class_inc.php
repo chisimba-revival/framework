@@ -2215,23 +2215,6 @@ class engine {
      * @param  string       $requestedModule
      * @return list(string, string) Template name and module name
      */
-    /**
-     * Determine login state through the canonical native session service.
-     *
-     * @return boolean
-     */
-    private function _hasNativeIdentity()
-    {
-        require_once dirname(dirname(dirname(__FILE__)))
-            . '/core_modules/security/classes/nativeauth/'
-            . 'nativesessionservice.php';
-
-        $sessionService = new NativeSessionService($this);
-
-        return $sessionService->isAuthenticated()
-            && $sessionService->getUserId() !== null;
-    }
-
     private function _dispatch($action, $requestedModule) {
         $this->_action = $action;
         strtolower ( $this->getParam ( 'action', '' ) );
@@ -2263,7 +2246,7 @@ class engine {
 		 *      but it will look decent and not confuse the crap out of users
 		 *      that being said, we should still go for just getMessage() in prod
 		 */
-        if ((! $this->_objActiveController->requiresLogin ( $this->_action )) || $this->_hasNativeIdentity()) {
+        if ((! $this->_objActiveController->requiresLogin ( $this->_action )) || $this->_objUser->isLoggedIn()) {
             return array ($this->_dispatchToModule ( $this->_objActiveController, $this->_action ), $this->_moduleName );
         } else {
             if (! $this->_loadModule ( 'security' )) {
@@ -2287,7 +2270,7 @@ class engine {
     private function _loadModule($moduleName) {
         $moduleName = str_replace ( "/", "", $moduleName );
         if ($moduleName == '_default') {
-            if ($this->_hasNativeIdentity()) {
+            if ($this->_objUser->isLoggedIn()) {
                 $moduleName = $this->_objConfig->getdefaultModuleName ();
             } else {
                 $moduleName = $this->_objConfig->getPrelogin ();

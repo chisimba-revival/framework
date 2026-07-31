@@ -56,6 +56,7 @@ class user extends dbTable {
     public $userData = NULL;
     public $objPerms;
     private $nativeSessionService;
+    private $userService;
 
     /**
      * Constructor
@@ -537,23 +538,23 @@ class user extends dbTable {
      * default.
      */
     public function fullname($userId=NULL) { //use NULL as the default and evaluate
-        if ($userId == NULL) {
-            $fullname = $this->getSession('name');
-            if ($fullname == NULL) {
-                $result = $this->objLanguage->languageText("error_notloggedin");
-            } else {
-                $result = $fullname;
-            }
-        } else {
-            //look up third part numeric ID
-            $line = $this->getRow('userid', $userId);
-            if ($line == FALSE) {
-                $result = $this->objLanguage->languageText("error_datanotfound", 'security');
-            } else {
-                $result = $line['firstname'] . ' ' . $line['surname'];
+        if ($userId === NULL) {
+            $userId = $this->nativeSessionService->getUserId();
+            if ($userId === null || $userId === '') {
+                return $this->objLanguage->languageText("error_notloggedin");
             }
         }
-        return $result;
+
+        $service = $this->getObject('userservice', 'security');
+        $record = $service->findByUserId($userId);
+        if (!is_array($record)) {
+            return $this->objLanguage->languageText(
+                "error_datanotfound",
+                'security'
+            );
+        }
+
+        return trim($record['firstname'] . ' ' . $record['surname']);
     }
 
     /**
@@ -673,8 +674,9 @@ class user extends dbTable {
      * is currently logged in
      * This function has been simplified down now that it calls getSession
      */
-    public function userId() {
-        return $this->getSession('userid');
+    public function userId()
+    {
+        return $this->nativeSessionService->getUserId();
     }
 
     /**
