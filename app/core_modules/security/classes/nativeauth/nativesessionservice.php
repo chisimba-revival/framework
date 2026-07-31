@@ -10,6 +10,8 @@ require_once dirname(__FILE__) . '/nativesessionserviceinterface.php';
  */
 class NativeSessionService implements NativeSessionServiceInterface
 {
+    const AUTH_SESSION_MODULE = 'security';
+
     const KEY_AUTHENTICATED = 'isLoggedIn';
     const KEY_USER_ID = 'userid';
     const KEY_USERNAME = 'username';
@@ -149,17 +151,28 @@ class NativeSessionService implements NativeSessionServiceInterface
 
     public function get($name, $default = null)
     {
-        return $this->backend->getSession((string) $name, $default);
+        return $this->backend->getSession(
+            (string) $name,
+            $default,
+            self::AUTH_SESSION_MODULE
+        );
     }
 
     public function set($name, $value)
     {
-        $this->backend->setSession((string) $name, $value);
+        $this->backend->setSession(
+            (string) $name,
+            $value,
+            self::AUTH_SESSION_MODULE
+        );
     }
 
     public function remove($name)
     {
-        $this->backend->unsetSession((string) $name);
+        $this->backend->unsetSession(
+            (string) $name,
+            self::AUTH_SESSION_MODULE
+        );
     }
 
     private function clearAuthenticationKeys()

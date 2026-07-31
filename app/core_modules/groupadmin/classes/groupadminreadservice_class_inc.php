@@ -17,17 +17,17 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 class groupadminreadservice extends ChisimbaObject
 {
     private $objGroupService;
-    private $objUser;
+    private $objAuthorization;
 
     public function init()
     {
         $this->objGroupService = $this->getObject('groupservice', 'groupadmin');
-        $this->objUser = $this->getObject('user', 'security');
+        $this->objAuthorization = $this->getObject('groupadminauthorizationservice', 'groupadmin');
     }
 
     private function assertAdministrator()
     {
-        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
+        if (!$this->objAuthorization->isCurrentUserSiteAdministrator()) {
             throw new Exception('Administrator authorization required.');
         }
     }

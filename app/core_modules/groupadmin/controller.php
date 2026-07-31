@@ -6,12 +6,12 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 class groupadmin extends controller
 {
     public $objLanguage;
-    public $objUser;
+    public $objAuthorization;
     public $objLog;
 
     public function init()
     {
-        $this->objUser = $this->getObject('user', 'security');
+        $this->objAuthorization = $this->getObject('groupadminauthorizationservice', 'groupadmin');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objLog = $this->newObject('logactivity', 'logger');
         $this->objLog->log();
@@ -122,7 +122,7 @@ class groupadmin extends controller
 
     private function assertAdministrator()
     {
-        if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
+        if (!$this->objAuthorization->isCurrentUserSiteAdministrator()) {
             throw new customException(
                 $this->objLanguage->languageText(
                     'mod_groupadmin_insufficientperms',
