@@ -94,7 +94,7 @@ class manageGroups extends ChisimbaObject
         // $this->_objPermissions = $this->getObject('permissions_model','permissions');
         $this->_objUser = $this->getObject('user','security');
         $this->contextCode = $this->_objDBContext->getContextCode ();
-        $this->currentUser = $this->_objUser->PKId();
+        $this->currentUser = $this->_objUser->userId();
         $this->lectGroupId = $this->_objGroupAdmin->getLeafId( array( $this->_objDBContext->getcontextcode(), 'Lecturers' ) );
         $this->studGroupId = $this->_objGroupAdmin->getLeafId( array( $this->_objDBContext->getcontextcode(), 'Students' ) );
         $this->guestGroupId = $this->_objGroupAdmin->getLeafId( array( $this->_objDBContext->getcontextcode(), 'Guest' ) );
@@ -147,39 +147,55 @@ class manageGroups extends ChisimbaObject
     */
     function createGroups( $contextcode, $title )
     {
-        $objGroupOps = $this->getObject('groupops', 'groupadmin');
-								if(class_exists('groupops',false)){
-        // Context node
-        $contextGroupId = $this->_objGroupAdmin->addGroup($contextcode,$title,NULL);
-        // Create the  subgroups
-        $newGroupId = $this->_objGroupAdmin->addSubGroups( $contextcode, $contextGroupId);
-        // Add groupMembers
-        $objGroups = $this->getObject('groupadminmodel', 'groupadmin');
-        $userId = $this->_objUser->userId();
-        // get the permissions id for this user...
-        $permid = $objGroupOps->getUserByUserId($userId);
-        $permid = $permid['perm_user_id'];
-        //get the lecturer groupid
-        $groupId = $this->_objGroupAdmin->getLeafId( array($contextcode, 'Lecturers') );
-        $objGroups->addGroupUser($groupId, $permid);
-        }else{
-		       // Context node
-		       $contextGroupId = $this->_objGroupAdmin->addGroup($contextcode,$title,NULL);
-		       // For each subgroup
-		       foreach( $this->_arrSubGroups as $groupName=>$groupId ) {
-		           $newGroupId = $this->_objGroupAdmin->addGroup(
-		               $groupName,
-		               $contextcode.' '.$groupName,
-		               $contextGroupId);
-		           $this->_arrSubGroups[$groupName]['id'] = $newGroupId;
-		       } // End foreach subgroup
-
-		       // Add groupMembers
-		       $this->addGroupMembers();
-
-		       // Now create the ACLS
-		       $this->createAcls( $contextcode, $title );        
+        $objGroupService = $this->getObject('groupservice', 'groupadmin');
+        $definitions = array(
+            array('name' => $contextcode, 'description' => $title),
+            array(
+                'name' => $contextcode.'^Lecturers',
+                'description' => $contextcode.' Lecturers'
+            ),
+            array(
+                'name' => $contextcode.'^Students',
+                'description' => $contextcode.' Students'
+            ),
+            array(
+                'name' => $contextcode.'^Guest',
+                'description' => $contextcode.' Guest'
+            ),
+        );
+        $created = $objGroupService->ensureGroups($definitions);
+        if (!is_array($created)
+            || empty($created['ok'])
+            || !isset($created['groups'])
+            || !is_array($created['groups'])) {
+            throw new RuntimeException(
+                'Canonical context groups could not be created'
+            );
         }
+
+        $groupIds = $created['groups'];
+        $contextGroupId = isset($groupIds[$contextcode])
+            ? $groupIds[$contextcode]
+            : null;
+        $roleNames = array('Lecturers', 'Students', 'Guest');
+        foreach ($roleNames as $roleName) {
+            $storedName = $contextcode.'^'.$roleName;
+            $roleGroupId = isset($groupIds[$storedName])
+                ? $groupIds[$storedName]
+                : null;
+            if (!$contextGroupId || !$roleGroupId
+                || !$objGroupService->ensureSubgroup(
+                    $contextGroupId,
+                    $roleGroupId
+                )) {
+                throw new RuntimeException(
+                    'Canonical context group hierarchy could not be created'
+                );
+            }
+            $this->_arrSubGroups[$roleName]['id'] = $roleGroupId;
+        }
+
+        $this->addGroupMembers();
 
         $objPermissionService = $this->getObject(
             'permissionservice',
@@ -190,6 +206,7 @@ class manageGroups extends ChisimbaObject
                 'Canonical contextual permission grants could not be created'
             );
         }
+        return true;
     } // End createGroups
 
     /**
@@ -235,9 +252,28 @@ class manageGroups extends ChisimbaObject
     */
     function addGroupMembers( )
     {
+        $objIdentityService = $this->getObject(
+            'identityservice',
+            'security'
+        );
+        $objGroupService = $this->getObject('groupservice', 'groupadmin');
         foreach( $this->_arrSubGroups as $groupName=>$row ) {
-            foreach( $row['members'] as $userPKId ){
-                $this->_objGroupAdmin->addGroupUser( $row['id'], $userPKId );
+            foreach( $row['members'] as $userId ){
+                $permissionUserId = $objIdentityService
+                    ->permissionUserIdForUser($userId);
+                if (!is_int($permissionUserId) || $permissionUserId < 1) {
+                    throw new RuntimeException(
+                        'Canonical Context member identity could not be resolved'
+                    );
+                }
+                if (!$objGroupService->ensureMembership(
+                    $row['id'],
+                    $permissionUserId
+                )) {
+                    throw new RuntimeException(
+                        'Canonical Context group membership could not be created'
+                    );
+                }
             } // End foreach member
         } // End foreach subgroup
     } // End addGroupMembers

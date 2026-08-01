@@ -17,6 +17,27 @@ class groupmembershipdb extends dbTable
         );
     }
 
+    /**
+     * Ensure one direct canonical group membership on the dbTable connection.
+     */
+    public function ensureMembership($groupId, $permissionUserId)
+    {
+        $groupId = $this->positiveInteger($groupId);
+        $permissionUserId = $this->positiveInteger($permissionUserId);
+        if ($groupId === null || $permissionUserId === null) {
+            return false;
+        }
+        if ($this->membershipExists($groupId, $permissionUserId)) {
+            return true;
+        }
+        $inserted = $this->_execute(
+            'INSERT INTO tbl_perms_groupusers (group_id, perm_user_id)'
+            . ' VALUES (' . $groupId . ', ' . $permissionUserId . ')'
+        );
+        return $inserted !== false
+            && $this->membershipExists($groupId, $permissionUserId);
+    }
+
     public function membershipExists($groupId, $permissionUserId)
     {
         $groupId = $this->positiveInteger($groupId);

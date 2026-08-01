@@ -107,6 +107,48 @@ class groupservice extends ChisimbaObject
      * @param array $definitions Declarative group definitions.
      * @return array Structured provisioning result.
      */
+    /**
+     * Ensure one direct parent-child relationship between canonical groups.
+     */
+    public function ensureSubgroup($groupId, $subgroupId)
+    {
+        $groupId = $this->positiveInteger($groupId);
+        $subgroupId = $this->positiveInteger($subgroupId);
+        if ($groupId === null || $subgroupId === null
+            || $groupId === $subgroupId) {
+            return false;
+        }
+
+        $rows = $this->objUser->getArray(
+            'SELECT group_id, subgroup_id'
+            . ' FROM tbl_perms_group_subgroups'
+            . ' WHERE group_id = ' . $groupId
+            . ' AND subgroup_id = ' . $subgroupId
+            . ' LIMIT 2'
+        );
+        if (!is_array($rows) || count($rows) > 1) {
+            return false;
+        }
+        if (count($rows) === 1) {
+            return true;
+        }
+        $inserted = $this->objUser->_execute(
+            'INSERT INTO tbl_perms_group_subgroups (group_id, subgroup_id)'
+            . ' VALUES (' . $groupId . ', ' . $subgroupId . ')'
+        );
+        if ($inserted === false) {
+            return false;
+        }
+        $rows = $this->objUser->getArray(
+            'SELECT group_id, subgroup_id'
+            . ' FROM tbl_perms_group_subgroups'
+            . ' WHERE group_id = ' . $groupId
+            . ' AND subgroup_id = ' . $subgroupId
+            . ' LIMIT 2'
+        );
+        return is_array($rows) && count($rows) === 1;
+    }
+
     public function ensureGroups($definitions)
     {
         if (!is_array($definitions) || count($definitions) === 0) {
@@ -186,6 +228,17 @@ class groupservice extends ChisimbaObject
      * @param string $description
      * @return array Structured provisioning result.
      */
+    /**
+     * Ensure one direct canonical membership without invoking LiveUser writes.
+     */
+    public function ensureMembership($groupId, $permissionUserId)
+    {
+        return $this->objMembershipDb->ensureMembership(
+            $groupId,
+            $permissionUserId
+        );
+    }
+
     private function ensureCanonicalGroup($groupName, $description)
     {
         $rows = $this->exactGroupRows($groupName);
@@ -503,11 +556,6 @@ class groupservice extends ChisimbaObject
             return array('ok' => false, 'code' => 'invalid_user');
         }
 
-        $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
-        if ($candidate === null) {
-            return array('ok' => false, 'code' => 'user_not_available');
-        }
-
         $permissionUserId = $this->objIdentityService->permissionUserIdForUser($userId);
         if ($permissionUserId === null) {
             return array('ok' => false, 'code' => 'permission_user_not_found');
@@ -515,6 +563,11 @@ class groupservice extends ChisimbaObject
 
         if ($this->objMembershipDb->membershipExists($group['id'], $permissionUserId)) {
             return array('ok' => false, 'code' => 'already_member');
+        }
+
+        $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
+        if ($candidate === null) {
+            return array('ok' => false, 'code' => 'user_not_available');
         }
 
         return $this->objMembershipDb->addMembership($group['id'], $permissionUserId)
@@ -667,11 +720,6 @@ class groupservice extends ChisimbaObject
             return array('ok' => false, 'code' => 'invalid_user');
         }
 
-        $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
-        if ($candidate === null) {
-            return array('ok' => false, 'code' => 'user_not_available');
-        }
-
         $permissionUserId = $this->objIdentityService->permissionUserIdForUser($userId);
         if ($permissionUserId === null) {
             return array('ok' => false, 'code' => 'permission_user_not_found');
@@ -679,6 +727,11 @@ class groupservice extends ChisimbaObject
 
         if ($this->objMembershipDb->membershipExists($group['id'], $permissionUserId)) {
             return array('ok' => false, 'code' => 'already_member');
+        }
+
+        $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
+        if ($candidate === null) {
+            return array('ok' => false, 'code' => 'user_not_available');
         }
 
         return $this->objMembershipDb->addMembership($group['id'], $permissionUserId)
@@ -937,5 +990,106 @@ class groupservice extends ChisimbaObject
 
         return (int) $value;
     }
+
+
+    /**
+     * Atomically rename one ordinary canonical group and its descendants.
+     * Context-backed groups must be rejected by the coordinating consumer.
+     */
+    public function renameGroupHierarchy($groupId, $oldName, $newName)
+    {
+        $this->assertAdministrator();
+        $groupId = $this->positiveInteger($groupId);
+        $oldName = trim((string) $oldName);
+        $newName = trim((string) $newName);
+        if ($groupId === null || !$this->validRenameName($oldName)
+            || !$this->validRenameName($newName) || $oldName === $newName) {
+            return array('ok' => false, 'code' => 'invalid_group_rename');
+        }
+
+        $rows = $this->objUser->getArray(
+            'SELECT group_id, group_define_name FROM tbl_perms_groups'
+        );
+        if (!is_array($rows)) {
+            return array('ok' => false, 'code' => 'group_read_failed');
+        }
+        $source = array();
+        $targetNames = array();
+        foreach ($rows as $row) {
+            $name = isset($row['group_define_name'])
+                ? (string) $row['group_define_name'] : '';
+            if ($name === $newName || strpos($name, $newName . '^') === 0) {
+                $targetNames[$name] = true;
+            }
+            if ($name === $oldName || strpos($name, $oldName . '^') === 0) {
+                $source[] = $row;
+            }
+        }
+        $topLevelMatches = 0;
+        foreach ($source as $row) {
+            if ((string) $row['group_define_name'] === $oldName
+                && (int) $row['group_id'] === $groupId) {
+                $topLevelMatches++;
+            }
+        }
+        if ($topLevelMatches !== 1) {
+            return array('ok' => false, 'code' => 'group_source_mismatch');
+        }
+        foreach ($source as $row) {
+            $old = (string) $row['group_define_name'];
+            $replacement = $newName . substr($old, strlen($oldName));
+            if (isset($targetNames[$replacement])) {
+                return array('ok' => false, 'code' => 'group_target_exists');
+            }
+        }
+
+        $this->objUser->beginTransaction();
+        try {
+            foreach ($source as $row) {
+                $old = (string) $row['group_define_name'];
+                $replacement = $newName . substr($old, strlen($oldName));
+                $this->objUser->_execute(
+                    'UPDATE tbl_perms_groups SET group_define_name = UNHEX(\''
+                    . bin2hex($replacement) . '\') WHERE group_id = '
+                    . (int) $row['group_id'] . ' AND group_define_name = UNHEX(\''
+                    . bin2hex($old) . '\')'
+                );
+            }
+
+            $verify = $this->objUser->getArray(
+                'SELECT group_id, group_define_name FROM tbl_perms_groups'
+            );
+            if (!is_array($verify)) {
+                throw new Exception('group_verify_failed');
+            }
+            $renamed = 0;
+            foreach ($verify as $row) {
+                $name = isset($row['group_define_name'])
+                    ? (string) $row['group_define_name'] : '';
+                if ($name === $oldName || strpos($name, $oldName . '^') === 0) {
+                    throw new Exception('group_old_name_remains');
+                }
+                if ($name === $newName || strpos($name, $newName . '^') === 0) {
+                    $renamed++;
+                }
+            }
+            if ($renamed !== count($source)) {
+                throw new Exception('group_verify_mismatch');
+            }
+            $this->objUser->commitTransaction();
+            return array('ok' => true, 'code' => 'group_hierarchy_renamed');
+        } catch (Exception $exception) {
+            $this->objUser->rollbackTransaction();
+            return array('ok' => false, 'code' => $exception->getMessage());
+        }
+    }
+
+    private function validRenameName($name)
+    {
+        return $name !== '' && strpos($name, '^') === false
+            && strlen($name) <= 255
+            && !preg_match('/[\\x00-\\x1F\\x7F]/', $name);
+    }
+
 }
 ?>
