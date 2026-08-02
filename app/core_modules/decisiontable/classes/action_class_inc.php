@@ -105,7 +105,7 @@ class action extends decisionTableAggregate
      * @param  string     Delete object by name( optional )
      * @return true|false Return true if successfull, otherwise false.
      */
-    function delete( $name = NULL )
+    function delete($name = NULL, $pkvalue = null, $tablename = '')
     {
         // Delete by name
         $delObject = $name ? $this->create( $name ) : $this;

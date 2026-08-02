@@ -187,7 +187,7 @@ $GLOBALS['kewl_entry_point_run']) {
      * @param  void  
      * @return bool  
      */
-    public function delete()
+    public function delete($pkfield = NULL, $pkvalue = NULL, $tablename = '')
     {
         foreach( $this->_arrActions as $objAction ) {
             $objAction->delete();

@@ -414,12 +414,23 @@ class user extends dbTable {
      * @returns boolean TRUE or FALSE
      */
     public function lookupAdmin($userId) {
-        $user = $this->objLuAdmin->perm->getUsers(array('filters' => array('auth_user_id' => $userId)));
-        if (empty($user) || !isset($user) || $user[0]['perm_type'] < 5) {
+        if (!is_scalar($userId) || trim((string) $userId) === '') {
             return FALSE;
-        } else {
-            return TRUE;
         }
+        if (!isset($this->objGroupService)) {
+            $this->objGroupService = $this->getObject(
+                'groupservice',
+                'groupadmin'
+            );
+        }
+        $groupId = $this->objGroupService->groupIdForName('Site Admin');
+        if ($groupId === false || (int) $groupId <= 0) {
+            return FALSE;
+        }
+        return (bool) $this->objGroupService->isGroupMember(
+            trim((string) $userId),
+            (int) $groupId
+        );
     }
 
     /**
@@ -1012,31 +1023,6 @@ class user extends dbTable {
     public function getUserDetails($userId) {
         return $this->getRow('userid', $userId);
     }
-
-    public function migrateAdmin() {
-        $user = $this->getUserDetails(1);
-        $this->objUserModel = $this->getObject('useradmin_model2', 'security');
-        $data = array('auth_user_id' => $user['userid'],
-            'handle' => $user['username'],
-            'passwd' => $user['pass'],
-            'title' => $user['title'],
-            'firstname' => $user['firstname'],
-            'surname' => $user['surname'],
-            'emailAddress' => $user['emailaddress'],
-            'sex' => $user['sex'],
-            'country' => $user['country'],
-            'cellnumber' => $user['cellnumber'],
-            'staffnumber' => $user['staffnumber'],
-            'howCreated' => $user['howcreated'],
-            'is_active' => $user['isactive'],
-            'id' => $user['id'],
-        );
-        // delete the user
-        //$this->delete('id', $user['id'], 'tbl_users');
-        $adduser = $this->objLuAdmin->addUser($data);
-        return;
-    }
-
 }
 
 ?>
