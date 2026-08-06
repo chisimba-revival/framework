@@ -1,121 +1,166 @@
 <?php
+// Administration view for tbl_storycategory.
 
-//View template for table: tbl_storycategory
-
-//Set up the button class to make the edit, add and delet icons
-$objButtons =  $this->getObject('navbuttons', 'navigation');
-
-// Create an instance of the css layout class
-$cssLayout =  $this->newObject('csslayout', 'htmlelements');// Set columns to 2
+$cssLayout = $this->newObject('csslayout', 'htmlelements');
 $cssLayout->setNumColumns(2);
 
-//Set the content of the left side column
-$leftSideColumn = $objLanguage->code2Txt("mod_storycategoryadmin_leftinstructions", "storycategoryadmin");
+$escape = static function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
 
-$allowAdmin = True; //You need to write your security here
+$normaliseUri = static function ($value) {
+    return html_entity_decode(
+        (string) $value,
+        ENT_QUOTES | ENT_HTML5,
+        'UTF-8'
+    );
+};
 
-// Add Left column
-$cssLayout->setLeftColumnContent($leftSideColumn);// Add the heading to the content
-$this->objH = $this->getObject('htmlheading', 'htmlelements');
-$this->objH->type=1; //Heading <h1>
+$objIconService = $this->getObject('iconservice', 'ui');
+$iconLink = static function ($href, $iconName, $label) use ($escape, $normaliseUri, $objIconService) {
+    return '<a class="story-admin-page__action" href="' . $escape($normaliseUri($href))
+        . '" title="' . $escape($label) . '">'
+        . $objIconService->render($iconName, array(
+            'label' => $label,
+            'class' => 'story-admin-page__action-icon',
+        )) . '</a>';
+};
+
+$allowAdmin = true;
+$title = $objLanguage->code2Txt(
+    'mod_storycategoryadmin_title',
+    'storycategoryadmin'
+);
+$addLabel = $objLanguage->code2Txt(
+    'mod_storycategoryadmin_addnew',
+    'storycategoryadmin'
+);
+$instructions = $objLanguage->code2Txt(
+    'mod_storycategoryadmin_leftinstructions',
+    'storycategoryadmin'
+);
+$leftSideColumn = '<p class="story-admin-page__instructions">'
+    . $escape($instructions) . '</p>';
+
+$header = '<div class="story-admin-page__header">'
+    . '<h1 class="story-admin-page__title">' . $escape($title) . '</h1>';
 if ($allowAdmin) {
-  $paramArray = array('action' => 'add');
-  $this->objH->str=$objLanguage->code2Txt("mod_storycategoryadmin_title", "storycategoryadmin")."&nbsp;".$objButtons->linkedButton("add", $this->uri($paramArray));
- } else {
-      $this->objH->str=$objLanguage->code2Txt("mod_storycategoryadmin_title", "storycategoryadmin");
-     }
-$rightSideColumn = $this->objH->show();
-
-//Create a table
-$this->Table = $this->newObject('htmltable', 'htmlelements');
-$this->Table->cellspacing="2";
-$this->Table->cellpadding="2";
-$this->Table->width="90%";
-//Create the array for the table header
-$tableRow=array();
-$tableHd[]=$objLanguage->code2Txt("mod_storycategoryadmin_category", "storycategoryadmin");
-$tableHd[]=$objLanguage->code2Txt("mod_storycategoryadmin_titleth", "storycategoryadmin");
-$tableHd[]=$objLanguage->languageText("mod_storycategoryadmin_datecreated", "storycategoryadmin");
-$tableHd[]=$objLanguage->languageText("mod_storycategoryadmin_creatorid", "storycategoryadmin");
-$tableHd[]=$objLanguage->languageText("mod_storycategoryadmin_datemodified", "storycategoryadmin");
-$tableHd[]=$objLanguage->languageText("mod_storycategoryadmin_modifierid", "storycategoryadmin");
-if($allowAdmin){
-$tableHd[]=$objLanguage->languageText("mod_storycategoryadmin_action", "storycategoryadmin");
+    $header .= '<a class="story-admin-page__add" href="'
+        . $escape($normaliseUri($this->uri(array('action' => 'add')))) . '">'
+        . $objIconService->render('plus', array(
+            'decorative' => true,
+            'class' => 'story-admin-page__add-icon',
+        ))
+        . '<span>' . $escape($addLabel) . '</span></a>';
 }
-//Get the icon class and create an add, edit and delete instance
-$objAddIcon = $this->newObject('geticon', 'htmlelements');
-$objEditIcon = $this->newObject('geticon', 'htmlelements');
-$objDelIcon = $this->newObject('geticon', 'htmlelements');
-//Create the table header for display
-$this->Table->addHeader($tableHd, "heading");
+$header .= '</div>';
 
-//Create an instance of the User object
-//$this->objUser =  & $this->getObject("user", "security");
+$this->Table = $this->newObject('htmltable', 'htmlelements');
+$this->Table->cellspacing = '0';
+$this->Table->width = '100%';
+$this->Table->attributes = 'class="story-admin-page__table"';
 
-//Loop through and display the records
+$tableHd = array(
+    $objLanguage->code2Txt(
+        'mod_storycategoryadmin_category',
+        'storycategoryadmin'
+    ),
+    $objLanguage->code2Txt(
+        'mod_storycategoryadmin_titleth',
+        'storycategoryadmin'
+    ),
+    $objLanguage->languageText(
+        'mod_storycategoryadmin_datecreated',
+        'storycategoryadmin'
+    ),
+    $objLanguage->languageText(
+        'mod_storycategoryadmin_creatorid',
+        'storycategoryadmin'
+    ),
+    $objLanguage->languageText(
+        'mod_storycategoryadmin_datemodified',
+        'storycategoryadmin'
+    ),
+    $objLanguage->languageText(
+        'mod_storycategoryadmin_modifierid',
+        'storycategoryadmin'
+    ),
+);
+if ($allowAdmin) {
+    $tableHd[] = $objLanguage->languageText(
+        'mod_storycategoryadmin_action',
+        'storycategoryadmin'
+    );
+}
+$this->Table->addHeader($tableHd, 'heading');
+
 $rowcount = 0;
-if (isset($ar)) {
-    if ((is_countable($ar) ? count($ar) : 0) > 0) {
-        foreach ($ar as $line) {
-            $oddOrEven = ($rowcount == 0) ? "odd" : "even";
-            $tableRow[]=$line['category'];
-            $tableRow[]=$line['title'];
-            $tableRow[]=$line['datecreated'];
-            $tableRow[]=$this->objUser->fullName($line['creatorid']);
-            $tableRow[]=$line['datemodified'];
-            $modifierId = $line['modifierid'];
-            if ($modifierId != "") {
-                $tableRow[]= $this->objUser->fullName($modifierId);
-            } else {
-                $tableRow[]= "";
-            }
+if (isset($ar) && (is_countable($ar) ? count($ar) : 0) > 0) {
+    foreach ($ar as $line) {
+        $oddOrEven = ($rowcount === 0) ? 'odd' : 'even';
+        $tableRow = array(
+            $escape($line['category']),
+            $escape($line['title']),
+            $escape($line['datecreated']),
+            $escape($this->objUser->fullName($line['creatorid'])),
+            $escape($line['datemodified']),
+        );
 
+        $modifierId = $line['modifierid'];
+        $tableRow[] = ($modifierId !== '')
+            ? $escape($this->objUser->fullName($modifierId))
+            : '';
 
-            //The URL for the edit link
-            $editLink=$this->uri(array('action' => 'edit',
-              'id' =>$line['id']));
-            $objEditIcon->alt=$this->objLanguage->languageText("mod_storycategory_editalt", "storycategoryadmin");
-            $ed = $objEditIcon->getEditIcon($editLink);
+        if ($allowAdmin) {
+            $editLabel = $this->objLanguage->code2Txt(
+                'mod_storycategoryadmin_editalt',
+                'storycategoryadmin'
+            );
+            $actions = array(
+                $iconLink(
+                    $this->uri(array('action' => 'edit', 'id' => $line['id'])),
+                    'pencil',
+                    $editLabel
+                ),
+            );
 
-            // The delete icon with link uses confirm delete utility
-            $objDelIcon->setIcon("delete");
-            $objDelIcon->alt=$this->objLanguage->languageText("mod_storycategoryadmin_delalt", "storycategoryadmin");
-            $delLink = $this->uri(array(
-              'action' => 'delete',
-              'confirm' => 'yes',
-              'id' => $line['id']));
-            $objConfirm =  $this->newObject('confirm','utilities');
-            $rep = array('ITEM' => $line['category']);
-            $objConfirm->setConfirm($objDelIcon->show(),
-            $delLink,$this->objLanguage->code2Txt("mod_storycategory_confirm", "storycategoryadmin", $rep));
-            $conf = $objConfirm->show();
-            if($allowAdmin){
-                $tableRow[]=$ed."&nbsp;".$conf;
-            }
-            //Add the row to the table for output
-            $this->Table->addRow($tableRow, $oddOrEven);
-            $tableRow=array(); // clear it out
-            // Set rowcount for bitwise determination of odd or even
-            $rowcount = ($rowcount == 0) ? 1 : 0;
-
+            $deleteLabel = $this->objLanguage->code2Txt(
+                'mod_storycategoryadmin_delalt',
+                'storycategoryadmin'
+            );
+            $deleteLink = $normaliseUri($this->uri(array(
+                'action' => 'delete',
+                'confirm' => 'yes',
+                'id' => $line['id'],
+            )));
+            $objConfirm = $this->newObject('confirm', 'utilities');
+            $objConfirm->setConfirm(
+                $objIconService->render('trash-2', array(
+                    'label' => $deleteLabel,
+                    'class' => 'story-admin-page__action-icon',
+                )),
+                $deleteLink,
+                $this->objLanguage->code2Txt(
+                    'mod_storycategory_confirm',
+                    'storycategoryadmin',
+                    array('ITEM' => $line['category'])
+                )
+            );
+            $actions[] = $objConfirm->show();
+            $tableRow[] = '<span class="story-admin-page__actions">'
+                . implode('', $actions) . '</span>';
         }
+
+        $this->Table->addRow($tableRow, $oddOrEven);
+        $rowcount = ($rowcount === 0) ? 1 : 0;
     }
 }
-//Add the table to the centered layer
-$rightSideColumn .= $this->Table->show();
-//Create add text link
-$objAddLink = $this->getObject('link', 'htmlelements');
-$objAddLink->link($this->uri(array('action'=>'add')));
-$objAddLink->link=$objLanguage->code2Txt("mod_storycategoryadmin_addnew", "storycategoryadmin");
-//Add the link to the centered layer
-$rightSideColumn .= $objAddLink->show();
-// Add Left column
+
+$rightSideColumn = '<section class="story-admin-page">' . $header
+    . '<div class="story-admin-page__table-wrap">'
+    . $this->Table->show() . '</div></section>';
+
 $cssLayout->setLeftColumnContent($leftSideColumn);
-
-// Add Right Column
 $cssLayout->setMiddleColumnContent($rightSideColumn);
-
-//Output the content to the page
 echo $cssLayout->show();
 
-?>

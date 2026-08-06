@@ -299,6 +299,26 @@ class menu extends ChisimbaObject
             $menu='';
         }
 
+        // Keep Logout inside the active menu so desktop and mobile share one
+        // canonical POST/CSRF control. It is deliberately the final item.
+        if ($this->securityContext->isAuthenticated()) {
+            $logoutForm = $this->securityContext->logoutForm(
+                $this->objLanguage->languageText(
+                    'word_logout',
+                    'system',
+                    'Logout'
+                ),
+                'toolbar-menu-logout'
+            );
+            $logoutItem = '<li class="toolbar-logout-item">'
+                . $logoutForm
+                . '</li>';
+            $menuEnd = strrpos($menu, '</ul>');
+            if ($menuEnd !== false) {
+                $menu = substr_replace($menu, $logoutItem, $menuEnd, 0);
+            }
+        }
+
         // get breadcrumbs
         $crumbs=$this->tools->navigation();
 

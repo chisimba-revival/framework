@@ -20,21 +20,29 @@ final class GuardedLoginApplicationService
     private $policy;
     private $policyContext;
     private $flow;
+    private $abuse;
+    private $abusePolicy;
 
     public function __construct(
         $credentials,
         $policy,
         $policyContext,
-        $flow
+        $flow,
+        $abuse,
+        array $abusePolicy = array()
     ) {
         $this->requireMethod($credentials, 'verifyCredentials');
         $this->requireMethod($policy, 'evaluate');
         $this->requireMethod($policyContext, 'resolve');
         $this->requireMethod($flow, 'afterPassword');
+        $this->requireMethod($abuse, 'evaluate');
+        $this->requireMethod($abuse, 'record');
         $this->credentials = $credentials;
         $this->policy = $policy;
         $this->policyContext = $policyContext;
         $this->flow = $flow;
+        $this->abuse = $abuse;
+        $this->abusePolicy = $abusePolicy;
     }
 
     public function begin(
@@ -42,11 +50,34 @@ final class GuardedLoginApplicationService
         $username,
         $password,
         $remember,
-        array $metadata = array()
+        array $metadata = array(),
+        array $evidence = array()
     ) {
         $username = trim((string) $username);
         if ($username === '' || !is_string($password)) {
             return array('status' => self::STATUS_INVALID);
+        }
+
+        $abuseContext = array(
+            'ip' => (string) ($metadata['ip'] ?? ''),
+            'account' => $username,
+            'session' => (string) ($metadata['session'] ?? ''),
+        );
+        $decision = $this->abuse->evaluate(
+            'native.login',
+            $abuseContext,
+            $evidence,
+            $this->abusePolicy
+        );
+        if (!is_object($decision) || !method_exists($decision, 'isAllowed')) {
+            throw new RuntimeException('Abuse-protection decision is invalid.');
+        }
+        if (!$decision->isAllowed()) {
+            return array(
+                'status' => self::STATUS_INVALID,
+                'retry_after' => method_exists($decision, 'getRetryAfter')
+                    ? $decision->getRetryAfter() : 0,
+            );
         }
 
         $proof = $this->credentials->verifyCredentials(
@@ -58,6 +89,7 @@ final class GuardedLoginApplicationService
             || !is_object($proof['result'])
             || !method_exists($proof['result'], 'isSuccess')
             || !$proof['result']->isSuccess()) {
+            $this->abuse->record('native.login', $abuseContext, false);
             return array('status' => self::STATUS_INVALID);
         }
 
@@ -82,6 +114,11 @@ final class GuardedLoginApplicationService
             array('required' => $required),
             $this->safeMetadata($metadata)
         );
+        if (is_array($result)
+            && ($result['status'] ?? self::STATUS_INVALID)
+                !== self::STATUS_INVALID) {
+            $this->abuse->record('native.login', $abuseContext, true);
+        }
         $result['mfa_policy_status'] = $evaluation['status'];
         if (isset($evaluation['deadline'])
             && $evaluation['deadline'] !== null) {

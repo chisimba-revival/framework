@@ -68,7 +68,7 @@ class rule extends decisionTableAggregate
      * @author Jonathan Abrahams
      * @return nothing
      */
-    function init()
+    function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
         $this->_objParts = $this->newObject( 'dbdecisiontablerule','decisiontable'  );
         $this->_objChild = $this->newObject('dbrulecondition','decisiontable' );

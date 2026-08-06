@@ -78,6 +78,9 @@ class useradmin_model2 extends dbtable
         $this->objConfig=$this->getObject('altconfig','config');
         $this->objUser=$this->getObject('user','security');
         $this->objLanguage=$this->getObject('language','language');
+        $this->objUserService=$this->getObject('userservice','security');
+        $this->objAuthenticationService=$this->getObject('authenticationservice','security');
+        $this->objUserAccountLifecycleService=$this->getObject('useraccountlifecycleservice','security');
     }
 
 
@@ -133,7 +136,7 @@ class useradmin_model2 extends dbtable
     * @param string $country       User's Country - two letter code
     * @param string $cellnumber    User's Cell number
     * @param string $staffnumber   User's Staff Number
-    * @param string $accountType   Type of account - either useradmin or ldap
+    * @param string $accountType   Local account source label
     * @param string $accountstatus Whether Active or Inactive - 1 or 0
     *
     * @return string User's Primary Key Id
@@ -216,7 +219,7 @@ class useradmin_model2 extends dbtable
     * @param string $country       User's Country - two letter code
     * @param string $cellnumber    User's Cell number
     * @param string $staffnumber   User's Staff Number
-    * @param string $accountType   Type of account - either useradmin or ldap
+    * @param string $accountType   Local account source label
     * @param string $accountstatus Whether Active or Inactive - 1 or 0
     *
     * @return boolean Result of Update
@@ -224,52 +227,48 @@ class useradmin_model2 extends dbtable
     */
     public function updateUserDetails($id, $username='', $firstname, $surname, $title, $email, $sex, $country, $cellnumber='', $staffnumber='', $password='', $accountType='', $accountstatus='')
     {
-        //echo $accountType;
-        $userArray = array(
-                'handle' => $username,
-                'firstName' => $firstname,
-                'surname' => $surname,
-                'title' => $title,
-                'emailAddress' => $email,
-                'sex' => $sex,
-                'country' => $country,
-                'cellnumber' => $cellnumber,
-                'staffnumber' => $staffnumber
-            );
-
-        if ($username != '') {
-            $userArray['handle'] = $username;
+        // Alternative authentication belongs in provider plugins.
+        if (strtolower((string) $accountType) === 'ldap') {
+            throw new customException('legacy_authentication_mode_removed');
+        }
+        $user = $this->objUserService->findByStorageId($id);
+        if (!is_array($user) || empty($user['userid'])) {
+            throw new customException('user_not_found');
         }
 
+        $userArray = array(
+            'firstName' => $firstname,
+            'surname' => $surname,
+            'title' => $title,
+            'emailAddress' => $email,
+            'sex' => $sex,
+            'country' => $country,
+            'cellnumber' => $cellnumber,
+            'staffnumber' => $staffnumber
+        );
+        if ($username != '') {
+            $userArray['username'] = $username;
+        }
         if ($accountstatus != '') {
-            $userArray['is_active'] = $accountstatus;
+            $userArray['isActive'] = $accountstatus;
+        }
+        if ($accountType != '') {
+            $userArray['howCreated'] = $accountType;
+        }
+
+        $updated = $this->objUserService->updateUser(
+            $user['userid'],
+            $userArray
+        );
+        if (empty($updated['ok'])) {
+            throw new customException(isset($updated['code'])
+                ? $updated['code'] : 'update_failed');
         }
 
         if ($password != '') {
-            $userArray['passwd'] = $password;
+            $this->resetPassword($id, $password);
         }
-
-        if ($accountType != '') {
-            $userArray['howCreated'] = $accountType;
-
-            if ($accountType=='ldap') {
-                $userArray['passwd'] = sha1('--LDAP--'); // System indentifier to use LDAP Password
-                $userArray['howCreated'] = 'LDAP'; // Convert to lowercase
-            }
-        }
-        // get the user that we are interested in...
-        $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-        // now update with the fresh info
-        $updateuser = $user[0]['perm_user_id'];
-        $updated = $this->objLuAdmin->updateUser($userArray, $updateuser);
-        if ($updated === FALSE) {
-            $errarr = $this->objLuAdmin->getErrors();
-            throw new customException($errarr[0]['message']);
-            exit(1);
-        }
-        else {
-            return TRUE;
-        }
+        return TRUE;
     }
 
     /**
@@ -429,35 +428,27 @@ class useradmin_model2 extends dbtable
     */
     private function resetPassword($id, $password)
     {
-        // Lets check for FMP details too, we can update those.
-        $authMeth = $this->objConfig->getValue('MOD_SECURITY_AUTHMETHODS', 'security');
-        if (strstr($authMeth, ',')) {
-            $this->authChainOfCommand = explode(",", $authMeth);
-        } else {
-            $this->authChainOfCommand[] = trim($authMeth);
+        $user = $this->objUserService->findByStorageId($id);
+        if (!is_array($user) || empty($user['userid'])) {
+            throw new customException('user_not_found');
         }
-        if(in_array('fmp', $this->authChainOfCommand)) {
-            // try updating the fmp database first...
-            $objFMPro = $this->getObject('fmpro', 'filemakerpro');
-            // update the field with the new password
 
-            // return;
+        try {
+            $passwordHash = $this->objAuthenticationService
+                ->createPasswordHash($password);
+        } catch (InvalidArgumentException $exception) {
+            throw new customException('invalid_password');
         }
-        // get the user that we are interested in...
-        $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-        // now update with the fresh info
-        $updateuser = $user[0]['perm_user_id'];
-        $userArray = array('passwd' => $password);
-        $updated = $this->objLuAdmin->updateUser($userArray, $updateuser);
-        if(!$updated) {
-            $errarr = $this->objLuAdmin->getErrors();
-            throw new customException($errarr[0]['reason']);
-            exit(1);
+
+        $updated = $this->objUserService->updatePasswordHash(
+            $user['userid'],
+            $passwordHash
+        );
+        if (empty($updated['ok'])) {
+            throw new customException(isset($updated['code'])
+                ? $updated['code'] : 'password_update_failed');
         }
-        else {
-            return TRUE;
-        }
-        // return $this->update('id', $id, array('pass'=>sha1($password)));
+        return TRUE;
     }
 
     /**
@@ -654,7 +645,7 @@ IP Address of Request: '.$_SERVER['REMOTE_ADDR'];
                 case 'active': $function = 'setUserAsActive'; break;
                 case 'inactive': $function = 'setUserAsInActive'; break;
                 case 'delete': $function = 'setUserDelete'; break;
-                case 'ldap': $function = 'setUserLdap'; break;
+
                 default: $function = '';
             }
 
@@ -675,21 +666,7 @@ IP Address of Request: '.$_SERVER['REMOTE_ADDR'];
     */
     private function setUserAsActive($id)
     {
-        // get the user that we are interested in...
-        $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-        // now update with the fresh info
-        $updateuser = $user[0]['perm_user_id'];
-        $userArray = array('is_active' => 1);
-        $updated = $this->objLuAdmin->updateUser($userArray, $updateuser);
-        if(!$updated) {
-            $errarr = $this->objLuAdmin->getErrors();
-            throw new customException($errarr[0]['reason']);
-            exit(1);
-        }
-        else {
-            return TRUE;
-        }
-        // return $this->update('id', $id, array('isactive'=>'1'));
+        return $this->setCanonicalUserActive($id, true);
     }
 
     /**
@@ -698,48 +675,39 @@ IP Address of Request: '.$_SERVER['REMOTE_ADDR'];
     */
     public function setUserAsInActive($id)
     {
-        // get the user that we are interested in...
-        $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-        // now update with the fresh info
-        $updateuser = $user[0]['perm_user_id'];
-        $userArray = array('is_active' => 0);
-        $updated = $this->objLuAdmin->updateUser($userArray, $updateuser);
-        if(!$updated) {
-            $errarr = $this->objLuAdmin->getErrors();
-            throw new customException($errarr[0]['reason']);
-            exit(1);
-        }
-        else {
-            return TRUE;
-        }
+        return $this->setCanonicalUserActive($id, false);
     }
 
     /**
     * Method to Delete an User Account
     * @param string $id User Id of the User
     */
+    private function setCanonicalUserActive($id, $active)
+    {
+        $user = $this->objUserService->findByStorageId($id);
+        if (!is_array($user) || empty($user['userid'])) {
+            throw new customException('user_not_found');
+        }
+
+        $updated = $this->objUserService->setActive(
+            $user['userid'],
+            $active
+        );
+        if (empty($updated['ok'])) {
+            throw new customException(isset($updated['code'])
+                ? $updated['code'] : 'status_update_failed');
+        }
+        return TRUE;
+    }
+
     private function setUserDelete($id)
     {
-        // User cannot delete own account
-        if ($id != $this->objUser->PKid()) {
-            // get the user that we are interested in...
-            $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-            // now update with the fresh info
-            $updateuser = $user[0]['perm_user_id'];
-
-            $updated = $this->objLuAdmin->removeUser($updateuser);
-            if(!$updated) {
-                $errarr = $this->objLuAdmin->getErrors();
-                throw new customException($errarr[0]['reason']);
-                exit(1);
-            }
-            else {
-                return TRUE;
-            }
-            // return $this->delete('id', $id);
-        } else {
+        // User cannot delete own account through the administration interface.
+        if ($id == $this->objUser->PKid()) {
             return FALSE;
         }
+
+        return $this->requestCanonicalUserDeletion($id);
     }
 
    /**
@@ -748,45 +716,28 @@ IP Address of Request: '.$_SERVER['REMOTE_ADDR'];
     */
     public function apiUserDelete($id)
     {
-        // User can delete own account!! Be careful!
-        // get the user that we are interested in...
-        $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-        // now update with the fresh info
-        $updateuser = $user[0]['perm_user_id'];
-
-        $updated = $this->objLuAdmin->removeUser($updateuser);
-        if(!$updated) {
-            $errarr = $this->objLuAdmin->getErrors();
-            throw new customException($errarr[0]['reason']);
-            exit(1);
-        }
-        else {
-            return TRUE;
-        }
+        // Preserve the historical API permission to request deletion of the
+        // current account; the lifecycle boundary still performs preflight.
+        return $this->requestCanonicalUserDeletion($id);
     }
+
+
 
     /**
-    * Method to Set an Account to use Network Id
-    * @param string $id User Id of the User
-    */
-    private function setUserLdap($id)
+     * Translate the canonical lifecycle result to the retained boolean/error
+     * contract used by the legacy administration and API callers.
+     */
+    private function requestCanonicalUserDeletion($storageId)
     {
-        // get the user that we are interested in...
-        $user = $this->objLuAdmin->getUsers(array('container' => 'auth', 'filters' => array('id' => $id)));
-        // now update with the fresh info
-        $updateuser = $user[0]['perm_user_id'];
-        $userArray = array('howCreated' => 'LDAP', 'passwd' => '--LDAP--');
-        $updated = $this->objLuAdmin->updateUser($userArray, $updateuser);
-        if(!$updated) {
-            $errarr = $this->objLuAdmin->getErrors();
-            throw new customException($errarr[0]['reason']);
-            exit(1);
-        }
-        else {
+        $result = $this->objUserAccountLifecycleService
+            ->requestDeletionByStorageId($storageId);
+        if (!empty($result['ok'])) {
             return TRUE;
         }
-        // return $this->update('id', $id, array('howcreated'=>'LDAP', 'pass'=>sha1('--LDAP--')));
+
+        throw new customException(isset($result['code'])
+            ? $result['code'] : 'user_deletion_refused');
     }
-	
+
 } // end of class sqlUsers
 ?>

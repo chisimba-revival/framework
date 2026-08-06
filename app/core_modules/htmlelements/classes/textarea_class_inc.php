@@ -78,12 +78,6 @@ require_once("ifhtml_class_inc.php");
     */
     public $rows;
     /**
-    *
-    * @var string $autoGrow Whether or not to autogrow the textarea
-    *  using jQuery
-    */
-    private $autoGrow=FALSE;
-    /**
      *
      * @var string $characters The number of characters the textarea can take 
      */
@@ -178,14 +172,6 @@ require_once("ifhtml_class_inc.php");
         $this->value=$value;
     }
 
-    /**
-    * Method to set the autogrow function
-    */
-    public function setAutoGrow($value=FALSE)
-    {
-        $this->autoGrow=$value;
-    }
-
      /**
     * Method to show the textarea
     * @return string The formatted link
@@ -208,31 +194,29 @@ require_once("ifhtml_class_inc.php");
             $str.=' cols="'.$this->cols.'"';
         }
 
+        if (!is_null($this->characters)) {
+            $str .= ' maxlength="' . (int) $this->characters . '"';
+        }
+
         if ($this->extra) {
             $str .= ' '.$this->extra;
         }
         $str.='>';
         $str.=$this->value;
         $str.='</textarea>';
-        
-        if (!is_null($this->characters))
-        {
-            $str .= '<div id="' . $this->cssId . '_characters" style="display: none;"><b>' . $this->label . ' </b>' . $this->characters . '</div>';
-            $script = '<script type="text/javascript">';
-            $script .= 'jQuery("#' . $this->cssId . '").live("keyup",function(){';
-            $script .= 'jQuery("#' . $this->cssId . '_characters").show();';
-            $script .= 'var label="<b>"+"' . $this->label . '"+" </b>";';
-            $script .= 'var char=' . $this->characters . ';';
-            $script .= 'var len=jQuery("#' . $this->cssId . '").val().length;';
-            $script .= 'if(len>=char){';
-            $script .= 'return false;';
-            $script .= '}else{';
-            $script .= 'var left=char-len;';
-            $script .= 'jQuery("#' . $this->cssId . '_characters").html(label+left);';
-            $script .= '}';
-            $script .= '});';
-            $script .= '</script>';
-            echo $script;
+
+        if (!is_null($this->characters)) {
+            $counterId = $this->cssId . '_characters';
+            $str .= '<div id="' . $counterId . '" hidden><b>' . $this->label . ' </b>' . $this->characters . '</div>';
+            $str .= '<script type="text/javascript">(function(){'
+                . 'var field=document.getElementById(' . json_encode($this->cssId) . ');'
+                . 'var counter=document.getElementById(' . json_encode($counterId) . ');'
+                . 'if(!field||!counter){return;}'
+                . 'var limit=' . (int) $this->characters . ';'
+                . 'var label=' . json_encode('<b>' . $this->label . ' </b>') . ';'
+                . 'var update=function(){counter.hidden=false;counter.innerHTML=label+Math.max(0,limit-field.value.length);};'
+                . 'field.addEventListener("input",update);'
+                . '})();</script>';
         }
         
         return $str;

@@ -71,10 +71,10 @@ class block_login extends ChisimbaObject
         try {
             $this->objLanguage =  $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
-            if($this->objUser->isLoggedIn()) {
-                $this->blockType="invisible";
+            if ($this->objUser->isLoggedIn()) {
+                $this->title = $this->objLanguage->languageText("word_logout", "system");
             } else {
-                $this->title = $this->objLanguage->languageText("word_login");
+                $this->title = $this->objLanguage->languageText("word_login", "system");
             }
         } catch (customException $e) {
             customException::cleanUp();
@@ -88,15 +88,56 @@ class block_login extends ChisimbaObject
     public function show()
     {
         try {
-            if($this->objUser->isLoggedIn()) {
-                return NULL;
-            } else {
-                $objLogin =  $this->getObject('logininterface', 'security');
-                return $objLogin->renderLoginBox();
+            if ($this->objUser->isLoggedIn()) {
+                return '';
             }
+            $objLogin = $this->getObject('logininterface', 'security');
+            return $objLogin->renderLoginBox();
         } catch (customException $e) {
             customException::cleanUp();
         }
+    }
+
+    /**
+     * Render the sole signed-in logout control inside the account card.
+     *
+     * @return string
+     */
+    public function showLogoutControl()
+    {
+        if (!$this->objUser->isLoggedIn()) {
+            return '';
+        }
+
+        require_once dirname(__FILE__)
+            . '/nativeauth/csrftokenservice.php';
+        $nativeCsrf = new CsrfTokenService($this);
+        $icons = $this->getObject('iconservice', 'ui');
+        $action = html_entity_decode(
+            $this->uri(array('action' => 'logout'), 'security'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $token = htmlspecialchars(
+            $nativeCsrf->issue('native_auth_logout'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $logout = htmlspecialchars(
+            $this->objLanguage->languageText('word_logout', 'system'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        return '<form class="auth-block__logout" method="post" action="'
+            . htmlspecialchars($action, ENT_QUOTES, 'UTF-8') . '">'
+            . '<input type="hidden" name="module" value="security">'
+            . '<input type="hidden" name="action" value="logout">'
+            . '<input type="hidden" name="native_auth_logout" value="'
+            . $token . '">'
+            . '<button type="submit">'
+            . $icons->render('log-out', array('decorative' => true))
+            . '<span>' . $logout . '</span></button></form>';
     }
 }
 ?>

@@ -359,6 +359,12 @@ class Wizard
             $steps=$_SESSION['completed_steps'];
             if (is_array($steps) && (in_array(7,$steps)) ){
                 $path = $_SESSION['sys_root'].'/config/';
+                require_once dirname(__DIR__)
+                    . '/classes/core/installationmasterkeyprovider.php';
+                $installationKey = new InstallationMasterKeyProvider(
+                    $path . 'installation.key'
+                );
+                $installationKey->ensureExists();
                 touch($path . 'installdone.txt');
             }
         }

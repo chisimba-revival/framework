@@ -7,7 +7,7 @@
 
 // security check - must be included in all scripts
 if (!$GLOBALS['kewl_entry_point_run']){
-    die("You cannot view this page directly");
+    die();
 }
 
 /**
@@ -34,9 +34,8 @@ class adminmenu extends ChisimbaObject
         $this->globalTable=$this->newObject('htmltable','htmlelements');
         $this->globalTable->cellpadding=5;
         $this->globalTable->width='99%';
-        $objSkin =  $this->getObject('skin','skin');
-        $this->iconfolder=$objSkin->getSkinUrl()."icons/modules/";
-        $this->icon = $this->getObject('geticon', 'htmlelements');
+        $this->globalTable->cssClass='adminmenu-table';
+        $this->icons = $this->getObject('iconservice', 'ui');
     }
 
     /**
@@ -68,80 +67,74 @@ class adminmenu extends ChisimbaObject
         // Check if contextadmin is registered
         $module = $this->moduleCheck->getModuleInfo('contextadmin');
         if ($module['isreg']) {
-            $this->addNavigationRow(ucwords($module['name']), 'contextadmin', 'contextadmin');
+            $this->addNavigationRow(ucwords($module['name']), 'book-open', 'contextadmin');
         }
         // Check if useradmin is registered
         $module = $this->moduleCheck->getModuleInfo('useradmin');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'useradmin', 'useradmin');
+            $this->addNavigationRow($module['name'], 'user-cog', 'useradmin');
         }
         // Check if groupadmin is registered
         $module = $this->moduleCheck->getModuleInfo('groupadmin');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'groupadmin', 'groupadmin');
+            $this->addNavigationRow($module['name'], 'users-round', 'groupadmin');
         }
         // Check if permissions is registered
         $module = $this->moduleCheck->getModuleInfo('permissions');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'permissions', 'permissions');
+            $this->addNavigationRow($module['name'], 'shield-check', 'permissions');
         }
         // Check if moduleadmin is registered
         $module = $this->moduleCheck->getModuleInfo('moduleadmin');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'moduleadmin', 'moduleadmin');
+            $this->addNavigationRow($module['name'], 'boxes', 'moduleadmin');
         }
         // Check if createlang is registered
         $module = $this->moduleCheck->getModuleInfo('createlang');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'createlang', 'createlang');
+            $this->addNavigationRow($module['name'], 'languages', 'createlang');
         }
         // Check if extensions is registered
         $module = $this->moduleCheck->getModuleInfo('extensions');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'extensions', 'extensions');
+            $this->addNavigationRow($module['name'], 'puzzle', 'extensions');
         }
         // Check if languagetext is registered
         $module = $this->moduleCheck->getModuleInfo('languagetext');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'languagetext', 'languagetext');
+            $this->addNavigationRow($module['name'], 'text', 'languagetext');
         }
         // Check if serverstatus is registered
         $module = $this->moduleCheck->getModuleInfo('serverstatus');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'serverstatus', 'serverstatus');
+            $this->addNavigationRow($module['name'], 'server-cog', 'serverstatus');
         }
         // Check if viewsource is registered
         $module = $this->moduleCheck->getModuleInfo('viewsource');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'viewsource', 'viewsource');
+            $this->addNavigationRow($module['name'], 'code-2', 'viewsource');
         }
 
         return $this->globalTable->show();
     }
 
     /**
-    * This method adds rows to the global table.
+    * Add one translated Site Administration destination.
     *
-    * @param string $moduleName: Name to be displayed
-    * @param string $iconPicture: Icon to be displayed
-    * @param string $moduleId: Module URI
-    * @param array $linkArray: Additional parameters for URI
-    * @param boolean $iconsFolder: If true, get image from icons folder, else get image from the icons/module folder
-    * @param boolean $popup: Create a link or a popup window
+    * @param string $moduleName Translated module name.
+    * @param string $iconName Curated semantic icon name.
+    * @param string $moduleId Destination module.
     */
-    public function addNavigationRow($moduleName, $iconPicture, $moduleId=null, $linkArray=null, $iconsFolder=false, $popup=false)
+    public function addNavigationRow($moduleName, $iconName, $moduleId=null)
     {
         $this->loadClass('link', 'htmlelements');
         $this->globalTable->startRow();
-        if ($iconsFolder) {
-            $this->icon->setIcon($iconPicture);
-        } else {
-            $this->icon->setModuleIcon($iconPicture);
-        }
-        $this->icon->alt = $moduleName;
-        $this->icon->title= $moduleName;
-        $this->globalTable->addCell($this->icon->show(), 20, 'absmiddle', 'center');
-        $moduleLink = new link($this->uri($linkArray, $moduleId));
+        $iconMarkup = $this->icons->render(
+            $iconName,
+            array('decorative' => true, 'class' => 'adminmenu-icon')
+        );
+        $this->globalTable->addCell($iconMarkup, 20, 'absmiddle', 'center');
+        $moduleLink = new link($this->uri(null, $moduleId));
         $moduleLink->link = $moduleName;
         $this->globalTable->addCell($moduleLink->show(), null, 'absmiddle');
         $this->globalTable->endRow();

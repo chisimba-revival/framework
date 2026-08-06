@@ -43,8 +43,8 @@ class postloginmenu extends ChisimbaObject
     {
         //split the side menu into the menu items and the context login and user image
         $menu = '';
-        $menu .= $this->objSideMenu->userDetails();
-        $menu .= $this->objSideMenu->getPostLoginMenuItems().'<br />';
+        $accountActions = $this->objSideMenu->getPostLoginMenuItems();
+        $menu .= $this->objSideMenu->userDetails($accountActions);
         // $menu .= $this->objHcard->hCardUserFooter();
         
         return $menu;

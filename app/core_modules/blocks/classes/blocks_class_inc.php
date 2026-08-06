@@ -434,6 +434,21 @@ class blocks extends ChisimbaObject {
             if (isset($this->objBlock->blockType)) {
                 $blockType = $this->objBlock->blockType;
             }
+
+            // Block producers may declare their presentation intent. The
+            // legacy utility surface remains the safe default for all blocks.
+            $presentationMode = 'utility';
+            if (isset($this->objBlock->presentationMode)) {
+                $requestedMode = strtolower(trim($this->objBlock->presentationMode));
+                if (in_array($requestedMode, array('utility', 'content'), TRUE)) {
+                    $presentationMode = $requestedMode;
+                }
+            }
+            if ($presentationMode === 'content') {
+                $showTitle = FALSE;
+                $showToggle = FALSE;
+                $hidden = 'default';
+            }
             if ($wrapStr) {
                 $objWrap = $this->getObject('trimstr', 'strings');
                 if (!$title == FALSE) {
@@ -455,7 +470,8 @@ class blocks extends ChisimbaObject {
                         $showTitle = FALSE;
                     }
                     return $objFeatureBox->show($title, $this->objBlock->show(),
-                            $block, $hidden, $showToggle, $showTitle, $cssClass, $cssId);
+                            $block, $hidden, $showToggle, $showTitle, $cssClass, $cssId,
+                            $presentationMode);
                 case "tabbedbox" :
                     // Put it all inside a tabbed box
                     $objTab = $this->newObject('tabbedbox', 'htmlelements');

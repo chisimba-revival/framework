@@ -117,11 +117,11 @@ class dbcontext extends dbTable {
 
         $fieldname = strtolower($fieldname);
 
-        if ($line [$fieldname]) {
-            return $line [$fieldname];
-        } else {
-            return FALSE;
+        if (isset($line[$fieldname]) && $line[$fieldname]) {
+            return $line[$fieldname];
         }
+
+        return FALSE;
     }
 
     /**
@@ -147,45 +147,50 @@ class dbcontext extends dbTable {
             $title = $contextCode;
         }
 
-        //check if there is an entry in the database
         if ($this->valueExists('contextcode', $contextCode)) {
-            // If Yes, do not create
             return FALSE;
-        } else {
-            $data = array('contextcode' => $contextCode,
-                'title' => $title,
-                'menutext' => $title,
-                'access' => $access,
-                'alerts' => $alerts,
-                'status' => $status,
-                'about' => $about,
-                'userid' => $this->objUser->userId(),
-                'dateCreated' => date("Y-m-d H:i:s"),
-                'updated' => date("Y-m-d H:i:s"),
-                'lastupdatedby' => $this->objUser->userId(),
-                'goals' => $goals,
-                'showcomment' => $showcomment,
-                'canvas' => $canvas,
-                'lastaccessed' => date("Y-m-d H:i:s"));
-
-            // Insert Record
-            $result = $this->insert($data);
-
-            // If Successful
-            if ($result) {
-                $this->_indexContext($contextCode);
-
-                // Create Groups
-                $contextGroups = $this->getObject('managegroups', 'contextgroups');
-                $contextGroups->createGroups($contextCode, $title);
-
-
-                // Join Context
-                $this->joinContext($contextCode);
-            }
-            // Return Result
-            return $result;
         }
+
+        $data = array('contextcode' => $contextCode,
+            'title' => $title,
+            'menutext' => $title,
+            'access' => $access,
+            'alerts' => $alerts,
+            'status' => $status,
+            'about' => $about,
+            'userid' => $this->objUser->userId(),
+            'dateCreated' => date("Y-m-d H:i:s"),
+            'updated' => date("Y-m-d H:i:s"),
+            'lastupdatedby' => $this->objUser->userId(),
+            'goals' => $goals,
+            'showcomment' => $showcomment,
+            'canvas' => $canvas,
+            'lastaccessed' => date("Y-m-d H:i:s"));
+
+        $this->beginTransaction();
+        try {
+            $result = $this->insert($data);
+            if (!$result) {
+                throw new RuntimeException('Context row could not be created');
+            }
+
+            $contextGroups = $this->getObject('managegroups', 'contextgroups');
+            if (!$contextGroups->createGroups($contextCode, $title)) {
+                throw new RuntimeException(
+                    'Canonical Context provisioning did not complete'
+                );
+            }
+
+            $this->joinContext($contextCode);
+            $this->commitTransaction();
+        } catch (Throwable $failure) {
+            $this->rollbackTransaction();
+            throw $failure;
+        }
+
+        // Search indexing is non-transactional and follows the database commit.
+        $this->_indexContext($contextCode);
+        return $result;
     }
 
     /**
@@ -673,6 +678,9 @@ class dbcontext extends dbTable {
             $objIndexData->luceneIndex($docId, $docDate, $url, $title, $contents, $teaser, $module, $userId, NULL, NULL, 'root', NULL, $permissions, NULL, NULL, $extra);
         }
     }
+
+
+
 
 }
 

@@ -3,6 +3,11 @@ $this->loadClass('link','htmlelements');
 $this->loadClass('textinput','htmlelements');
 $this->loadClass('dropdown','htmlelements');
 $this->loadClass('checkbox','htmlelements');
+$this->appendArrayVar(
+    'headerParams',
+    '<link rel="stylesheet" href="'.htmlspecialchars($this->getResourceUri('modulecatalogue.css', 'modulecatalogue'), ENT_QUOTES, 'UTF-8').'" />'
+);
+$installedOnly = isset($installedOnly) ? (bool) $installedOnly : false;
 $srchStr = $this->getParam('srchstr', NULL);
 $srchType = $this->getParam('srchtype', NULL);
 $lastAction = $this->getParam('action');
@@ -30,22 +35,7 @@ if (!isset($result)) {
      * parameter, then replace this compatibility fallback with an explicit
      * optional repository service.
      */
-    try {
-        $modules = $this->objCatalogueConfig->getCategoryList($activeCat);
-    } catch (Throwable $exception) {
-        $connected = false;
-        $localModuleIds = $this->objModFile->getLocalModuleList();
-        $modules = array();
-
-        foreach ($localModuleIds as $localModuleId) {
-            $modules[$localModuleId] = ucfirst($localModuleId);
-        }
-
-        log_debug(
-            'Module catalogue remote lookup skipped; local-only fallback used: '
-            . $exception->getMessage()
-        );
-    }
+    $modules = $this->objCatalogueConfig->getCategoryList($activeCat);
 } else {
     $modules = $result; //search results
 }
@@ -56,7 +46,8 @@ $icon = $this->getObject('geticon', 'htmlelements');
 $objTable = $this->getObject('htmltable','htmlelements');
 $objTable->cellpadding = 2;
 
-$objTable->id = 'unpadded';
+$objTable->id = 'modulecatalogue-list';
+$objTable->cssClass = 'modcat-table';
 $objTable->width='100%';
 
 $masterCheck = new checkbox('arrayList[]');
@@ -75,9 +66,30 @@ $actiontotake = 'batchinstall';
 $root = $this->objConfig->getsiteRootPath();
 //$defaults = file_get_contents($root.'installer/dbhandlers/default_modules.txt'); TODO: replace this with the xml list of core modules
 $registeredModules = $this->objModule->getAll();
+$rMods = array();
 foreach ($registeredModules as $module) {
     $rMods[]=$module['module_id'];
 }
+
+$filterLink = new Link($this->uri(array(
+    'action' => 'list',
+    'cat' => $activeCat,
+    'installedonly' => $installedOnly ? '0' : '1'
+), 'modulecatalogue'));
+$filterLink->link = $this->objLanguage->languageText(
+    $installedOnly
+        ? 'mod_modulecatalogue_showallmodules'
+        : 'mod_modulecatalogue_showinstalledonly',
+    'modulecatalogue'
+);
+$filterLink->extra = 'class="modcat-filter-toggle'.($installedOnly ? ' is-active' : '').'"';
+$filterControl = '<div class="modcat-filterbar">'.$filterLink->show();
+if ($installedOnly) {
+    $filterControl .= '<span class="modcat-filter-status">'
+        .$this->objLanguage->languageText('mod_modulecatalogue_installedfilteractive', 'modulecatalogue')
+        .'</span>';
+}
+$filterControl .= '</div>';
 
 $alink = new link();
 
@@ -113,20 +125,6 @@ if ($modules) {
         $batchAction = $batchButton->show();
     }
 
-    $objRemoteTable = $this->newObject('htmltable','htmlelements');
-    $objRemoteTable->cellpadding = 2;
-    $rhead = array('&nbsp;','&nbsp;',$this->objLanguage->languageText('mod_modulecatalogue_modname','modulecatalogue'),
-            $this->objLanguage->languageText('mod_modulecatalogue_install','modulecatalogue'));
-    $objRemoteTable->addHeader($rhead,'heading','align="left"');
-    if (!$connected) {
-        $objRemoteTable->startRow();
-        $objRemoteTable->addCell('<i>'.$this->objLanguage->languageText('mod_modulecatalogue_rpcerror','modulecatalogue').'</i>',null,null,'left',null,'colspan="5"');
-        $objRemoteTable->endRow();
-        $objRemoteTable->startRow();
-        $objRemoteTable->addCell('&nbsp;',null,null,'left',null,'colspan="5"');
-        $objRemoteTable->endRow();
-    }
-
     $topTable = $this->newObject('htmltable','htmlelements');
     $topTable->cellpadding = 2;
     $topTable->addRow(array($batchChange),null,'align="right"');
@@ -140,6 +138,10 @@ if ($modules) {
 
     $rClass = 'odd';
     foreach ($modules as $moduleId => $moduleName) {
+        $isInstalled = in_array($moduleId, $rMods, true);
+        if ($installedOnly && !$isInstalled) {
+            continue;
+        }
         //echo $moduleId;
         $icon->setModuleIcon($moduleId);
         $icon->alt = $moduleId;
@@ -174,7 +176,7 @@ if ($modules) {
                 if (!(in_array($moduleId,$rMods))) { //not registered
                     $instButton = new Link($this->uri(array('action'=>'install','mod'=>$moduleId,'cat'=>$activeCat,'srchstr' => $srchStr, 'srchtype' => $srchType, 'lastaction' => $lastAction),'modulecatalogue'));
                     $instButton->link = $this->objLanguage->languageText('word_install');
-                    $instButton->extra = "class=\"pseudobutton\"";
+                    $instButton->extra = "class=\"pseudobutton modcat-action modcat-action--install\"";
                     $instButtonShow = $instButton->show();
                     if (!$batchuninstall) {
                         $checkBox=$objCheck->show();
@@ -182,21 +184,31 @@ if ($modules) {
                         $checkBox='';
                     }
                 } else {//registered
+                    $objMandatoryPolicy = $this->getObject(
+                        'mandatorymodulepolicy',
+                        'modulecatalogue'
+                    );
+                    $isMandatory = $objMandatoryPolicy->isMandatory($moduleId);
                     if ($this->objModFile->findController($moduleId)) {
                         $link = "<a href='{$this->uri(null,$moduleId)}'>$moduleName</a>";
                     }
-                    $instButton = new Link($this->uri(array('action'=>'uninstall','mod'=>$moduleId,'cat'=>$activeCat,'srchstr'=>$srchStr,'srchtype'=>$srchType,'lastaction'=>$lastAction),'modulecatalogue'));
+                    if (!$isMandatory) {
+                        $instButton = new Link($this->uri(array('action'=>'uninstall','mod'=>$moduleId,'cat'=>$activeCat,'srchstr'=>$srchStr,'srchtype'=>$srchType,'lastaction'=>$lastAction),'modulecatalogue'));
                     $instButton->link = $this->objLanguage->languageText('word_uninstall');
-                    $instButton->extra = "class=\"pseudobutton\"";
+                    $instButton->extra = "class=\"pseudobutton modcat-action modcat-action--uninstall\"";
                     $objConfirm = &$this->getObject('confirm','utilities');
                     $objConfirm->setConfirm($this->objLanguage->languageText('word_uninstall'),
                     $this->uri(array('action'=>'uninstall','mod'=>$moduleId,'cat'=>$activeCat,'srchstr'=>$srchStr,'srchtype'=>$srchType,'lastaction'=>$lastAction),'modulecatalogue'),
                     str_replace('MODULE',$moduleId,$this->objLanguage->languageText('mod_modulecatalogue_deregsure','modulecatalogue')));
                     $instButtonShow = $objConfirm->show();
-                    if ($batchuninstall) {
-                        $checkBox=$objCheck->show();
+                        if ($batchuninstall) {
+                            $checkBox=$objCheck->show();
+                        } else {
+                            $checkBox='';
+                        }
                     } else {
-                        $checkBox='';
+                        $instButtonShow = '';
+                        $checkBox = '';
                     }
 
                 }
@@ -208,11 +220,19 @@ if ($modules) {
 
 
             }
+            $stateLabel = $this->objLanguage->languageText(
+                $isInstalled ? 'mod_modulecatalogue_isreg' : 'mod_modulecatalogue_notinstalled',
+                'modulecatalogue'
+            );
+            $stateBadge = '<span class="modcat-state '.($isInstalled ? 'is-installed' : 'is-available').'">'
+                .htmlspecialchars($stateLabel, ENT_QUOTES, 'UTF-8').'</span>';
+            $moduleIcon = '<span class="modcat-module-icon">'.$icon->show().'</span>';
+
             $objTable->startRow();
             $objTable->addCell($checkBox,null,null,'left',$class);
-            $objTable->addCell($icon->show(),null,null,'left',$class);
-            $objTable->addCell('<strong>'.$link.'</strong>',null,null,'left',$class);
-            $objTable->addCell('<em>'.ucwords($status).'</em>',null,null,'left',$class);
+            $objTable->addCell($moduleIcon,null,null,'left',$class);
+            $objTable->addCell('<strong>'.$link.'</strong><br />'.$stateBadge,null,null,'left',$class);
+            $objTable->addCell('<span class="modcat-stability">'.ucwords($status).'</span>',null,null,'left',$class);
             $objTable->addCell($instButtonShow,null,null,'left',$class);
             $objTable->addCell($texts,null,null,'left',$class);
             $objTable->addCell($info,null,null,'left',$class);
@@ -225,43 +245,9 @@ if ($modules) {
 
             $objTable->endRow();
         } else {
+            // The module is named by local catalogue metadata but is not present
+            // in this installation. Remote executable-code retrieval was retired.
             $missingModules = true;
-            if (!$connected) {
-                $moduleName = ucfirst($moduleId);
-                $desc = $this->objLanguage->languageText('mod_modulecatalogue_nodesc','modulecatalogue');
-                $actions = false;
-            } else {
-                $doc = simplexml_load_string($this->objRPCClient->getModuleDescription($moduleId));
-                if (is_object($doc)) {
-                    $moduleName = ucfirst((string)$doc->array->data->value[0]->string);
-                    $desc = (string)$doc->array->data->value[1]->string;
-
-                    $alink->link('javascript:;');
-                    $alink->extra = "onclick = 'javascript:downloadModule(\"$moduleId\",\"$moduleName\");'";
-                    $alink->link = $this->objLanguage->languageText('mod_modulecatalogue_dlandinstall','modulecatalogue');
-                    $actions = $alink->show();
-
-                    if ($moduleName == '') {
-                        $moduleName = ucfirst($moduleId);
-                        $desc = $this->objLanguage->languageText('mod_modulecatalogue_nodesc','modulecatalogue');
-                        $actions = false;
-                    }
-                }
-            }
-
-            $rClass = ($rClass == 'odd')? 'even' : 'odd';
-            if (!isset($actions)) $actions = '';
-            $objRemoteTable->startRow();
-            $objRemoteTable->addCell('&nbsp;',20,null,'left',$rClass);
-            $objRemoteTable->addCell($icon->show(),30,null,'left',$rClass);
-            $objRemoteTable->addCell("<div id='link_$moduleId'><strong>".$moduleName.'</strong></div>',null,null,'left',$rClass);
-            $objRemoteTable->addCell("<div id='download_$moduleId'>$actions</div>",'40%',null,'left',$rClass);
-            $objRemoteTable->endRow();
-            $objRemoteTable->startRow();
-            $objRemoteTable->addCell('&nbsp;',20,null,'left',$rClass);
-            $objRemoteTable->addCell('&nbsp;',30,null,'left',$rClass);
-            $objRemoteTable->addCell($desc.'<br />&nbsp;',null,null,'left',$rClass, 'colspan="2"');
-            $objRemoteTable->endRow();
         }
     }
 } else {
@@ -294,6 +280,7 @@ if (($output=$this->getSession('output'))!=null) {
 $objForm = new form('batchform',$this->uri(array('action'=>$actiontotake,'cat'=>$activeCat),'modulecatalogue'));
 $objForm->displayType = 3;
 $objForm->addToForm($notice);
+$objForm->addToForm($filterControl);
 $objForm->addToForm($top);
 $objForm->addToForm($objTable->show());
 $objForm->addToForm($bot);
@@ -324,11 +311,9 @@ $hTable->addCell($srch,null,'top','right');
 $hTable->endRow();
 $searchForm->addToForm($hTable->show());
 
-$this->appendArrayVar('headerParams',"<script type='text/javascript' src='core_modules/modulecatalogue/resources/remote.js'></script>");
-
 $objSelectFile = new textinput('archive',null,'file',30);
 $uploadSize = new textinput('MAX_FILE_SIZE','8000000','hidden');
-$fButton = new button('bupload',$this->objLanguage->languageText('word_upload'));//,"javascript:uploadArchive($('form_fupload').archive.value,'$moduleId');");
+$fButton = new button('bupload',$this->objLanguage->languageText('word_upload'));
 $fButton->setToSubmit();
 $objUForm = new form('fupload',$this->uri(array('action'=>'uploadarchive','cat'=>$activeCat)));
 $objUForm->extra = 'enctype="multipart/form-data"';
@@ -342,16 +327,9 @@ $objUploadTable->addCell('&nbsp;');
 $objUploadTable->addCell($this->objLanguage->languageText('mod_modulecatalogue_uploadmod','modulecatalogue')."<br />".$objUForm->show(),null,null,'right');
 $objUploadTable->endRow();
 
-if ($modules && $missingModules) {
-    $remoteEx = new htmlHeading();
-    $remoteEx->type = 4;
-    $remoteEx->str = $this->objLanguage->languageText('mod_modulecatalogue_rpcex','modulecatalogue');
-    $remote = $remoteEx->show()."<br />".$objUploadTable->show().$objRemoteTable->show();
-} else {
-    $remote ='';
-}
+$localUpload = ($modules && $missingModules) ? $objUploadTable->show() : '';
 
-echo $searchForm->show().$objForm->show().$remote;
+echo $searchForm->show().$objForm->show().$localUpload;
 //$content = $objH->show().$notice.$topTable->show().$objTable->show().$bottomTable->show();
 //echo $content;
 ?>

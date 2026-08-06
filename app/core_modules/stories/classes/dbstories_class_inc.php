@@ -33,7 +33,8 @@ class dbStories extends dbTable
         }
         $language = TRIM($this->getParam('language', NULL));
         $title = TRIM($this->getParam('title', NULL));
-        $abstract  = TRIM($this->getParam('abstract', NULL));
+        $abstractParam = $this->getParam('abstract', NULL);
+        $abstract = ($abstractParam === NULL) ? NULL : TRIM($abstractParam);
         $mainText = TRIM($this->getParam('mainText', NULL));
         $isSticky = TRIM($this->getParam('isSticky', NULL));
         $forceOrder = TRIM($this->getParam('forceOrder', NULL));
@@ -46,12 +47,16 @@ class dbStories extends dbTable
                 'language'=>$language,
                 'isActive'=>$isActive,
                 'title'=>$title,
-                'abstract'=>$abstract,
                 'mainText'=>$mainText,
                 'isSticky'=>$isSticky,
                 'modifierId'=>$userId,
                 'dateModified'=>date('Y-m-d H:m:s'),
                 'expirationDate'=>$expirationDate);
+            // Missing input must not erase stored content. A submitted empty
+            // value remains deliberate and therefore still clears it.
+            if ($abstract !== NULL) {
+                $rsArray['abstract'] = $abstract;
+            }
             $id = TRIM($this->getParam('id', NULL));
             $this->update("id", $id, $rsArray);
         } elseif ($mode=="add" || $mode="translate") {

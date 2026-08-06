@@ -145,8 +145,6 @@ class buildcanvas extends ChisimbaObject {
         // We are going to create a dynamic block based interface.
         $this->objContextBlocks = $this->getObject('dbcontextblocks', 'context');
         $this->objDynamicBlocks = $this->getObject('dynamicblocks', 'blocks');
-        // Load the livequery that works with blocks.
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.livequery.js', 'jquery'));
         // Guess the user whose profile we are on.
         $objGuessUser = $this->getObject('bestguess', 'utilities');
         $this->userId = $objGuessUser->guessUserId();

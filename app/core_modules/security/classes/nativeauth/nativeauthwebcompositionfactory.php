@@ -40,6 +40,12 @@ foreach (array(
 ) as $dependency) {
     require_once dirname(__FILE__) . '/' . $dependency;
 }
+require_once dirname(__FILE__)
+    . '/../../../abuseprotection/classes/abuseprotectionservice.php';
+require_once dirname(__FILE__)
+    . '/../../../abuseprotection/classes/mdb2abuseeventrepository.php';
+require_once dirname(__FILE__)
+    . '/../../../abuseprotection/classes/installationabusekeyprovider.php';
 
 final class NativeAuthWebCompositionFactory
 {
@@ -52,7 +58,8 @@ final class NativeAuthWebCompositionFactory
         $userService,
         $groupService,
         $sysconfig,
-        $rememberDays = 30
+        $rememberDays = 30,
+        array $abusePolicy = array()
     ) {
         self::requireSessionBackend($sessionBackend);
 
@@ -107,16 +114,23 @@ final class NativeAuthWebCompositionFactory
             array($policyReaders, 'hasActiveFactor'),
             array($policyReaders, 'policyEnabledAt')
         );
+        $abuse = new AbuseProtectionService(
+            new Mdb2AbuseEventRepository($connection),
+            (new InstallationAbuseKeyProvider())->getKey()
+        );
         $guardedLogin = new GuardedLoginApplicationService(
             $credentialVerifier,
             $mfaPolicy,
             $policyContext,
-            $flow
+            $flow,
+            $abuse,
+            $abusePolicy
         );
 
         return array(
             'adapter' => new MfaWebControllerAdapter($flow, $csrf),
             'guarded_login' => $guardedLogin,
+            'abuse' => $abuse,
             'csrf' => $csrf,
             'flow' => $flow,
             'factors' => $factors,

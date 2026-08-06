@@ -416,6 +416,15 @@ ul#menuList li li a img {
     border: 0;
 }
 
+ul#menuList li li a .mainmenu-icon {
+    display: block;
+    flex: 0 0 auto;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin: 0 0.55rem 0 0;
+    color: currentColor;
+}
+
 ul#menuList li li a span {
     display: block;
     margin: 0;
@@ -1206,12 +1215,16 @@ h6 {
     text-wrap: balance;
 }
 
+/* CHISIMBA-REBORN COMPACT GLOBAL H1
+ * Module page titles retain their semantic rank without dominating the canvas.
+ */
 h1 {
-    font-size: var(--chisimba-font-size-3xl);
+    font-size: var(--chisimba-font-size-xl, 1.25rem);
+    line-height: 1.3;
 }
 
 h2 {
-    font-size: var(--chisimba-font-size-2xl);
+    font-size: var(--chisimba-font-size-lg, 1.125rem);
 }
 
 h3 {
@@ -2173,3 +2186,825 @@ h5.featureboxheader,
     padding-top: 10px;
 }
 /* END CHISIMBA-REBORN SITE-BANNER TOP SPACING */
+
+/* Shared multi-step workflow presentation */
+#stepmenu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--chisimba-space-2);
+    width: 100%;
+    min-height: 0;
+    height: auto;
+    margin: 0 0 var(--chisimba-space-5);
+    padding: 0;
+    overflow: visible;
+    list-style: none;
+}
+
+#stepmenu > li {
+    float: none;
+    position: static;
+    width: auto;
+    min-width: 0;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    background: none;
+    list-style: none;
+}
+
+#stepmenu > li > a {
+    display: block;
+    position: static;
+    width: auto;
+    height: 100%;
+    min-height: 0;
+    padding: var(--chisimba-space-3);
+    overflow: visible;
+    color: var(--chisimba-text);
+    background: var(--chisimba-surface-muted);
+    border: 1px solid var(--chisimba-border);
+    border-top: 0.25rem solid var(--chisimba-grey-blue);
+    border-radius: var(--chisimba-region-radius);
+    text-decoration: none;
+}
+
+#stepmenu > li.current > a {
+    background: var(--chisimba-surface);
+    border-top-color: var(--chisimba-primary);
+}
+
+#stepmenu > li > a em,
+#stepmenu > li > a span {
+    display: block;
+    float: none;
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    background: none;
+}
+
+#stepmenu > li > a em {
+    font-size: var(--chisimba-font-size-sm);
+    font-style: normal;
+    font-weight: var(--chisimba-font-weight-semibold);
+    line-height: var(--chisimba-line-height-normal);
+}
+
+#stepmenu > li > a span {
+    margin-top: var(--chisimba-space-1);
+    font-size: var(--chisimba-font-size-xs);
+    line-height: var(--chisimba-line-height-normal);
+}
+
+.chisimba-wizard-heading h1 {
+    font-size: var(--chisimba-font-size-2xl);
+}
+
+/* BEGIN CHISIMBA-REBORN COURSE CARD AND DELETE REFINEMENT */
+
+/* Legacy step-menu rules set these descendants to white independently. */
+#stepmenu > li > a em,
+#stepmenu > li > a span,
+#stepmenu > li.current > a em,
+#stepmenu > li.current > a span {
+    color: var(--chisimba-text) !important;
+}
+
+.chisimba-context-card .featureboxheader {
+    color: var(--chisimba-text-inverse) !important;
+    background: var(--chisimba-primary-dark) !important;
+}
+
+.chisimba-context-card .featureboxheader a.contexttitle,
+.chisimba-context-card .featureboxheader a.contexttitle:visited {
+    color: var(--chisimba-text-inverse) !important;
+    text-decoration: none;
+}
+
+.chisimba-context-card .featureboxheader a.contexttitle:hover,
+.chisimba-context-card .featureboxheader a.contexttitle:focus-visible {
+    color: var(--chisimba-primary-soft) !important;
+    text-decoration: underline;
+}
+
+.chisimba-context-actions {
+    display: inline-flex;
+    float: right;
+    align-items: center;
+    gap: var(--chisimba-space-3, 0.75rem);
+    margin-left: var(--chisimba-space-4, 1rem);
+}
+
+.chisimba-context-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--chisimba-text-inverse) !important;
+    border-radius: 0.25rem;
+}
+
+.chisimba-context-action:hover,
+.chisimba-context-action:focus-visible {
+    color: var(--chisimba-primary-soft) !important;
+    background: rgba(255, 255, 255, 0.13);
+}
+
+.chisimba-context-action svg {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+.chisimba-context-card .featureboxcontent img.roundcorners_small {
+    width: auto;
+    max-width: 7.5rem;
+    max-height: 7.5rem;
+    object-fit: cover;
+}
+
+.chisimba-delete-confirmation {
+    max-width: 42rem;
+    padding: var(--chisimba-space-5, 1.25rem);
+    background: var(--chisimba-surface);
+    border: 1px solid var(--chisimba-border);
+    border-left: 0.3rem solid var(--chisimba-danger, #b42318);
+    border-radius: var(--chisimba-region-radius, 0.5rem);
+    box-shadow: var(--chisimba-shadow);
+}
+
+.chisimba-delete-confirmation h2 {
+    margin-top: 0;
+    color: var(--chisimba-text);
+    font-size: var(--chisimba-font-size-2xl, 1.5rem);
+}
+
+.chisimba-delete-question {
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+}
+
+.chisimba-delete-options {
+    margin: var(--chisimba-space-4, 1rem) 0;
+    line-height: 2;
+}
+
+.chisimba-delete-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--chisimba-space-2, 0.5rem);
+    margin-top: var(--chisimba-space-4, 1rem);
+}
+
+/* END CHISIMBA-REBORN COURSE CARD AND DELETE REFINEMENT */
+
+/* BEGIN CHISIMBA-REBORN CHAPTER CONTENT UI */
+
+.chisimba-page-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--chisimba-space-3, 0.75rem);
+    margin-bottom: var(--chisimba-space-4, 1rem);
+}
+
+.chisimba-page-title-row h1 {
+    margin: 0;
+}
+
+.chisimba-page-title-actions,
+.chisimba-chapter-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--chisimba-space-3, 0.75rem);
+}
+
+.chisimba-chapter-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--chisimba-space-3, 0.75rem);
+    margin: 0 0 var(--chisimba-space-2, 0.5rem);
+    font-size: var(--chisimba-font-size-lg, 1.125rem);
+    line-height: 1.35;
+}
+
+.chisimba-chapter-heading-text {
+    min-width: 0;
+}
+
+.chisimba-chapter-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--chisimba-primary-dark, #174a78);
+    border: 1px solid transparent;
+    border-radius: var(--chisimba-radius-sm, 0.3rem);
+    text-decoration: none;
+}
+
+.chisimba-chapter-action:hover,
+.chisimba-chapter-action:focus-visible {
+    color: var(--chisimba-primary, #1261a0);
+    background: var(--chisimba-primary-soft, #e8f3fb);
+    border-color: var(--chisimba-border, #cbd5e1);
+}
+
+.chisimba-chapter-action svg {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+.chisimba-chapter-contents-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--chisimba-space-2, 0.5rem);
+    margin-top: var(--chisimba-space-2, 0.5rem);
+    padding: var(--chisimba-space-1, 0.25rem) var(--chisimba-space-2, 0.5rem);
+    color: var(--chisimba-link, var(--chisimba-primary-dark, #174a78));
+    background: transparent;
+    border: 0;
+    border-radius: var(--chisimba-radius-sm, 0.3rem);
+    font: inherit;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    cursor: pointer;
+}
+
+.chisimba-chapter-contents-toggle::before {
+    content: "▸";
+    transition: transform 120ms ease;
+}
+
+.chisimba-chapter-contents-toggle[aria-expanded="true"]::before {
+    transform: rotate(90deg);
+}
+
+.chisimba-chapter-contents-toggle:hover,
+.chisimba-chapter-contents-toggle:focus-visible {
+    background: var(--chisimba-primary-soft, #e8f3fb);
+    text-decoration: underline;
+}
+
+.chisimba-chapter-contents {
+    margin-top: var(--chisimba-space-2, 0.5rem);
+    padding: var(--chisimba-space-3, 0.75rem);
+    background: var(--chisimba-surface-muted, #f7f9fb);
+    border: 1px solid var(--chisimba-border, #cbd5e1);
+    border-radius: var(--chisimba-region-radius, 0.5rem);
+}
+
+.chisimba-chapter-order-actions {
+    margin-top: var(--chisimba-space-2, 0.5rem);
+    font-size: var(--chisimba-font-size-sm, 0.875rem);
+}
+
+/* END CHISIMBA-REBORN CHAPTER CONTENT UI */
+
+/* BEGIN CHISIMBA-REBORN CURRENT PAGE MARKER */
+
+/*
+ * The current content page is identified by an icon, not a block highlight.
+ * This keeps the page list quiet while retaining an unambiguous location cue.
+ */
+.htmlliststyle .chisimba-current-page {
+    display: inline-flex;
+    align-items: center;
+    color: var(--chisimba-primary-dark, #174a78);
+    background: transparent;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+}
+
+.htmlliststyle .chisimba-current-page-icon {
+    flex: 0 0 auto;
+    width: 1em;
+    height: 1em;
+    margin-inline-end: var(--chisimba-space-2, 0.5rem);
+    color: currentColor;
+}
+
+/* END CHISIMBA-REBORN CURRENT PAGE MARKER */
+
+/* BEGIN CHISIMBA-REBORN CONTEXT GROUPS */
+
+.contextgroups-manager {
+    width: min(100%, 76rem);
+    margin-inline: auto;
+}
+
+.contextgroups-header {
+    margin-block-end: var(--chisimba-space-6, 1.5rem);
+}
+
+.contextgroups-header h1,
+.contextgroups-section-heading h2,
+.contextgroups-search-results h3,
+.contextgroups-role-card h3 {
+    margin-block-start: 0;
+}
+
+.contextgroups-eyebrow {
+    margin: 0 0 var(--chisimba-space-1, 0.25rem);
+    color: var(--chisimba-primary-dark, #174a78);
+    font-size: 0.8rem;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.contextgroups-course-code,
+.contextgroups-intro,
+.contextgroups-section-heading p,
+.contextgroups-search-hint {
+    color: var(--chisimba-text-muted, #5d6772);
+}
+
+.contextgroups-course-code {
+    margin-block: var(--chisimba-space-2, 0.5rem);
+}
+
+.contextgroups-intro {
+    max-width: 48rem;
+    margin-block-end: 0;
+}
+
+.contextgroups-notice {
+    margin-block: var(--chisimba-space-4, 1rem);
+    padding: var(--chisimba-space-3, 0.75rem) var(--chisimba-space-4, 1rem);
+    border: 1px solid;
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+}
+
+.contextgroups-notice-success {
+    border-color: #86c79a;
+    color: #165b2b;
+    background: #edf8f0;
+}
+
+.contextgroups-notice-error {
+    border-color: #e1a1a1;
+    color: #8a2020;
+    background: #fff2f2;
+}
+
+.contextgroups-search,
+.contextgroups-members {
+    margin-block: var(--chisimba-space-6, 1.5rem);
+}
+
+.contextgroups-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--chisimba-space-4, 1rem);
+    margin-block-end: var(--chisimba-space-4, 1rem);
+}
+
+.contextgroups-section-heading h2,
+.contextgroups-section-heading p {
+    margin-block-end: 0;
+}
+
+.contextgroups-search-form {
+    max-width: 46rem;
+    padding: var(--chisimba-space-5, 1.25rem);
+    border: 1px solid var(--chisimba-border, #d8dee5);
+    border-radius: var(--chisimba-radius-lg, 0.75rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.contextgroups-search-form label {
+    display: block;
+    margin-block-end: var(--chisimba-space-2, 0.5rem);
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+}
+
+.contextgroups-search-controls {
+    display: flex;
+    gap: var(--chisimba-space-3, 0.75rem);
+}
+
+.contextgroups-search-controls input[type='search'] {
+    flex: 1 1 20rem;
+    min-width: 0;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--chisimba-border-strong, #aeb8c2);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: inherit;
+    background: #fff;
+}
+
+.contextgroups-search-controls input[type='search']:focus {
+    outline: 3px solid color-mix(in srgb, var(--chisimba-primary, #2368a2) 25%, transparent);
+    outline-offset: 1px;
+    border-color: var(--chisimba-primary, #2368a2);
+}
+
+.contextgroups-button {
+    min-height: 2.4rem;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--chisimba-primary, #2368a2);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: var(--chisimba-primary-dark, #174a78);
+    background: #fff;
+    font: inherit;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.contextgroups-button:hover,
+.contextgroups-button:focus-visible {
+    color: #fff;
+    background: var(--chisimba-primary, #2368a2);
+}
+
+.contextgroups-button:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--chisimba-primary, #2368a2) 30%, transparent);
+    outline-offset: 2px;
+}
+
+.contextgroups-button-primary {
+    color: #fff;
+    background: var(--chisimba-primary, #2368a2);
+}
+
+.contextgroups-button-current,
+.contextgroups-button:disabled {
+    border-color: var(--chisimba-border, #d8dee5);
+    color: var(--chisimba-text-muted, #5d6772);
+    background: var(--chisimba-surface-muted, #f3f5f7);
+    cursor: default;
+}
+
+.contextgroups-button-remove {
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem;
+    border-color: #c65a5a;
+    color: #9a2626;
+}
+
+.contextgroups-button-remove:hover,
+.contextgroups-button-remove:focus-visible {
+    color: #fff;
+    background: #a72d2d;
+}
+
+.contextgroups-search-results {
+    margin-block-start: var(--chisimba-space-5, 1.25rem);
+}
+
+.contextgroups-search-results h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--chisimba-space-2, 0.5rem);
+}
+
+.contextgroups-result-list,
+.contextgroups-member-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.contextgroups-result-list {
+    display: grid;
+    gap: var(--chisimba-space-3, 0.75rem);
+}
+
+.contextgroups-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--chisimba-space-4, 1rem);
+    padding: var(--chisimba-space-4, 1rem);
+    border: 1px solid var(--chisimba-border, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.contextgroups-person {
+    min-width: 0;
+}
+
+.contextgroups-person strong,
+.contextgroups-person > span {
+    display: block;
+}
+
+.contextgroups-person > span {
+    margin-block-start: 0.15rem;
+    overflow-wrap: anywhere;
+    color: var(--chisimba-text-muted, #5d6772);
+    font-size: 0.9rem;
+}
+
+.contextgroups-current-role {
+    color: var(--chisimba-primary-dark, #174a78) !important;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+}
+
+.contextgroups-role-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--chisimba-space-2, 0.5rem);
+}
+
+.contextgroups-role-actions form,
+.contextgroups-member-list form {
+    margin: 0;
+}
+
+.contextgroups-role-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--chisimba-space-4, 1rem);
+}
+
+.contextgroups-role-card {
+    min-width: 0;
+    padding: var(--chisimba-space-4, 1rem);
+    border: 1px solid var(--chisimba-border, #d8dee5);
+    border-radius: var(--chisimba-radius-lg, 0.75rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.contextgroups-role-card > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--chisimba-space-3, 0.75rem);
+    margin-block-end: var(--chisimba-space-3, 0.75rem);
+}
+
+.contextgroups-role-card h3 {
+    margin-block-end: 0;
+}
+
+.contextgroups-count,
+.contextgroups-you {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    padding-inline: 0.45rem;
+    border-radius: 999px;
+    color: var(--chisimba-primary-dark, #174a78);
+    background: var(--chisimba-primary-soft, #e7f0f8);
+    font-size: 0.82rem;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+}
+
+.contextgroups-member-list > li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--chisimba-space-3, 0.75rem);
+    padding-block: var(--chisimba-space-3, 0.75rem);
+    border-block-start: 1px solid var(--chisimba-border-subtle, #e8ecf0);
+}
+
+.contextgroups-member-list > li:first-child {
+    border-block-start: 0;
+}
+
+.contextgroups-empty {
+    margin: 0;
+    padding: var(--chisimba-space-3, 0.75rem);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: var(--chisimba-text-muted, #5d6772);
+    background: var(--chisimba-surface-muted, #f3f5f7);
+}
+
+@media (max-width: 68rem) {
+    .contextgroups-role-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 48rem) {
+    .contextgroups-search-controls,
+    .contextgroups-result {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .contextgroups-role-actions {
+        justify-content: flex-start;
+    }
+
+    .contextgroups-role-actions form,
+    .contextgroups-role-actions .contextgroups-button {
+        width: 100%;
+    }
+}
+
+/* END CHISIMBA-REBORN CONTEXT GROUPS */
+
+/* BEGIN CHISIMBA-REBORN CONTEXT GROUPS BULK */
+.contextgroups-bulk {
+    margin-block: var(--chisimba-space-6, 1.5rem);
+    padding: var(--chisimba-space-5, 1.25rem);
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-lg, 0.75rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.contextgroups-bulk-search {
+    margin-block: var(--chisimba-space-4, 1rem);
+}
+
+.contextgroups-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+}
+
+.contextgroups-bulk-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.contextgroups-bulk-table th,
+.contextgroups-bulk-table td {
+    padding: 0.7rem 0.8rem;
+    border-block-end: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.contextgroups-bulk-table tbody tr:last-child td {
+    border-block-end: 0;
+}
+
+.contextgroups-bulk-table tbody tr:hover {
+    background: var(--chisimba-surface-muted, #f3f5f7);
+}
+
+.contextgroups-bulk-check {
+    width: 5.5rem;
+    text-align: center !important;
+}
+
+.contextgroups-bulk-check input[type="checkbox"],
+.contextgroups-confirm-line input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--chisimba-accent, #1769aa);
+}
+
+.contextgroups-role-tag {
+    display: inline-block;
+    margin: 0.1rem 0.25rem 0.1rem 0;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    color: var(--chisimba-text-muted, #5d6772);
+    background: var(--chisimba-surface-muted, #f3f5f7);
+    font-size: 0.82rem;
+}
+
+.contextgroups-muted {
+    color: var(--chisimba-text-muted, #5d6772);
+}
+
+.contextgroups-bulk-actions,
+.contextgroups-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--chisimba-space-3, 0.75rem);
+    margin-block-start: var(--chisimba-space-4, 1rem);
+}
+
+.contextgroups-bulk-actions > div,
+.contextgroups-pagination {
+    flex-wrap: wrap;
+}
+
+.contextgroups-bulk-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--chisimba-space-4, 1rem);
+    margin-block-start: var(--chisimba-space-6, 1.5rem);
+}
+
+.contextgroups-bulk-secondary > section {
+    padding: var(--chisimba-space-4, 1rem);
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+}
+
+.contextgroups-stack-form {
+    display: grid;
+    gap: var(--chisimba-space-3, 0.75rem);
+    align-items: start;
+}
+
+.contextgroups-stack-form .contextgroups-button {
+    justify-self: start;
+}
+
+.contextgroups-danger-zone {
+    border-color: #e8b7b7 !important;
+    background: #fff8f8;
+}
+
+.contextgroups-button-danger {
+    border-color: #a82323;
+    color: #fff;
+    background: #a82323;
+}
+
+.contextgroups-confirm-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+
+.contextgroups-visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+@media (max-width: 58rem) {
+    .contextgroups-bulk-secondary {
+        grid-template-columns: 1fr;
+    }
+
+    .contextgroups-bulk-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+/* END CHISIMBA-REBORN CONTEXT GROUPS BULK */
+
+
+/* BEGIN CHISIMBA-REBORN SITE ADMIN ICONS */
+.adminmenu-table .adminmenu-icon {
+    display: block;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: currentColor;
+}
+/* END CHISIMBA-REBORN SITE ADMIN ICONS */
+
+/* Canonical toolbar Logout button */
+#navigation #nav > .toolbar-logout-item {
+    margin-inline-start: auto;
+}
+
+#navigation .toolbar-menu-logout {
+    display: inline-flex;
+    margin: 0;
+}
+
+#navigation .toolbar-menu-logout button {
+    appearance: none;
+    border: 1px solid currentColor;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 0.5rem 0.85rem;
+}
+
+#navigation .toolbar-menu-logout button:hover,
+#navigation .toolbar-menu-logout button:focus-visible {
+    background: rgba(255, 255, 255, 0.16);
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    #navigation #nav > .toolbar-logout-item {
+        margin-inline-start: 0;
+    }
+
+    #navigation .toolbar-menu-logout,
+    #navigation .toolbar-menu-logout button {
+        width: 100%;
+    }
+
+    #navigation .toolbar-menu-logout button {
+        text-align: start;
+    }
+}
+

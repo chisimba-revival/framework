@@ -1,449 +1,486 @@
 <?php
-// Show message if available.
-$objConfirm = $this->newObject('timeoutmessage','htmlelements');
-if(!is_null($message = $this->getParam('message'))){
-    $objConfirm->setMessage($message);
-    $objConfirm->setTimeout(0);
-    echo $objConfirm->show().'<br />';
-}
-// Javascript files.
-$headerParams=$this->getJavascriptFile('new_sorttable.js','htmlelements');
-$this->appendArrayVar('headerParams',$headerParams);
-$headerParams=$this->getJavascriptFile('selectall.js','htmlelements');
-$this->appendArrayVar('headerParams',$headerParams);
-$headerParams=$this->getJavascriptFile('getselectcount.js','contextgroups');
-$this->appendArrayVar('headerParams',$headerParams);
+/**
+ * One-page course membership manager with scalable student operations.
+ *
+ * @package contextgroups
+ */
 
-$this->loadClass('form', 'htmlelements');
-$this->loadClass('dropdown', 'htmlelements');
-$this->loadClass('htmlheading', 'htmlelements');
-$this->loadClass('textinput', 'htmlelements');
-$this->loadClass('label', 'htmlelements');
-$this->loadClass('button', 'htmlelements');
-$this->loadClass('link', 'htmlelements');
-$this->loadClass('checkbox', 'htmlelements');
-$objTabbedbox=&$this->newObject('tabbedbox','htmlelements');
-
-$objIcon = $this->getObject('geticon', 'htmlelements');
-
-$header = new htmlheading();
-$header->type = 1;
-$header->str = $this->objContext->getTitle();
-
-if ($this->isValid('addusers')) {
-    $objIcon->setIcon('add');
-
-    $link = new link($this->uri(array('action'=>'viewsearchresults')));
-    $link->link = $objIcon->show();
-
-    $header->str .= ' '.$link->show();
-}
-
-echo $header->show();
-
-// Lecturers
-
-$header = new htmlheading();
-$header->type = 3;
-$header->str = ucwords($this->objLanguage->code2Txt('word_lecturers', 'system', NULL, '[-authors-]'));
-//$header->align = 'center';
-
-//echo $header->show();
-
-$objTable = $this->newObject('htmltable', 'htmlelements');
-$objTable->cellpadding = 5;
-$objTable->cellspacing = 1;
-$objTable->id="lecturerTable";
-$objTable->css_class="sorttable";
-
-$objTable->startRow();
-if ($this->isValid('removeallusers') && (is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 0) {
-    $objTable->addCell('', 30, '', '', 'heading', '');
-}
-$objTable->addCell($this->objLanguage->languageText('word_userid'), 100, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('mod_security_staffstudentnumber', 'security', 'Staff/Student Number'), 100, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('word_title'), 30, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('phrase_firstName'), '20%', '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('word_surname'), '20%', '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('phrase_emailaddress'), '', '', '', 'heading', '');
-if ($this->isValid('removeuser') && (is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 0) {
-    $objTable->addCell('', 30, '', '', 'heading', '');
-}
-$objTable->endRow();
-
-if ((is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 0) {
-
-    $objTable->row_attributes='onmouseover="this.className=\'tbl_ruler\';" onmouseout="this.className=\'none\'; "';
-
-    foreach ($lecturerDetails as $lecturer)
-    {
-        $objCheck=new checkbox('lecturerId[]');
-        $objCheck->value=$lecturer['userid'];
-
-        $objTable->startRow();
-        if($this->isValid('removeallusers') && $lecturer['userid'] != $this->userId){
-            $objTable->addCell($objCheck->show());
-        }
-        else {
-            $objTable->addCell('');
-        }
-        $objTable->addCell($lecturer['userid']);
-        $objTable->addCell($lecturer['staffnumber']);
-        $objTable->addCell($lecturer['title']);
-        $objTable->addCell($lecturer['firstname']);
-        $objTable->addCell($lecturer['surname']);
-        $objTable->addCell($lecturer['emailaddress']);
-        if ($this->isValid('removeuser') && $lecturer['userid'] != $this->userId) {
-            $string = str_replace(
-                '[-user-]',
-                /*$lecturer['title'].' '.*/$lecturer['firstname'].' '.$lecturer['surname'],
-                $this->objLanguage->languageText('mod_contextgroups_confirmdeleteuser', 'contextgroups')
-            ); //ucwords($this->objLanguage->code2txt('word_lecturer', 'system', NULL, '[-author-]'))
-
-            $deleteicon = $objIcon->getDeleteIconWithConfirm(NULL, array('action'=>'removeuser', 'userid'=>$lecturer['userid'], 'group'=>'Lecturers'), 'contextgroups', $string);
-
-            $objTable->addCell($deleteicon);
-        }
-        else {
-            $objTable->addCell('&nbsp;');
-        }
-        $objTable->endRow();
+$escape = function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
+$message = trim((string) $this->getParam('message', ''));
+$error = trim((string) $this->getParam('error', ''));
+$contextName = trim((string) $contextTitle) !== ''
+    ? (string) $contextTitle
+    : (string) $contextCode;
+$formatText = function ($text, array $replacements = array()) {
+    $tokens = array();
+    foreach ($replacements as $tag => $value) {
+        $tokens['[-' . strtoupper((string) $tag) . '-]'] = (string) $value;
     }
-} else {
-    $objTable->startRow();
-        $objTable->addCell($this->objLanguage->code2txt('mod_contextgroups_nolecturers', 'contextgroups'), NULL, NULL, NULL, 'noRecordsMessage', 'colspan="6"');
-    $objTable->endRow();
-}
 
-
-
-$objButton = new button('select', $this->objLanguage->languageText('phrase_selectall'));
-$objButton->extra='onclick="javascript:SetAllCheckBoxes(\'removelecturers\', \'lecturerId[]\', true)"';
-$buttons = $objButton->show();
-
-$objButton = new button('unselect', $this->objLanguage->languageText('mod_contextgroups_unselectall', 'contextgroups', 'Unselect All'));
-$objButton->extra='onclick="javascript:SetAllCheckBoxes(\'removelecturers\', \'lecturerId[]\', false)"';
-$buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
-
-$objButton = new button('delete', $this->objLanguage->languageText('mod_contextgroups_deleteselected', 'contextgroups', 'Delete Selected'));
-$objButton->extra='onclick="javascript:if(confirm(\''.$this->objLanguage->code2Txt('mod_contextgroups_confirmlecturer', 'contextgroups', NULL, 'Are you sure you want to delete these [-authors-]?').' \'+getSelectCount(\'removelecturers\', \'lecturerId[]\')+\' '.$this->objLanguage->languageText('mod_contextgroups_membersselected','contextgroups').'.\')){document.removelecturers.submit();}else{return false;}"';
-$buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
-
-$objForm = new form('removelecturers', $this->uri(array('action'=>'removeallusers', 'mode'=>'lecturer')));
-$objForm->addToForm($objTable->show());
-if ((is_countable($lecturerDetails) ? count($lecturerDetails) : 0) > 1) {
-    $objForm->addToForm($buttons);
-}
-//echo $objForm->show();
-
-
-$objTabbedbox=new tabbedbox();
-$objTabbedbox->addTabLabel("<b>".ucfirst(strtolower($this->objLanguage->code2Txt('word_lecturers', 'system', NULL, '[-authors-]')))."</b>");
-if ($this->isValid('removeallusers')) {
-    $objTabbedbox->addBoxContent($objForm->show());
-} else {
-    $objTabbedbox->addBoxContent($objTable->show());
-}
-echo $objTabbedbox->show();
-
-
-
-
-
-// Students
-
-$header = new htmlheading();
-$header->type = 3;
-$header->str = ucwords($this->objLanguage->code2Txt('word_students', 'system', NULL, '[-readonlys-]'));
-//$header->align = 'center';
-
-//echo $header->show();
-
-$objTable = $this->newObject('htmltable', 'htmlelements');
-$objTable->cellpadding = 5;
-$objTable->cellspacing = 1;
-$objTable->id="studentTable";
-$objTable->css_class="sorttable";
-$objTable->startRow();
-if ($this->isValid('removeallusers') && (is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
-    $objTable->addCell('', 30, '', '', 'heading', '');
-}
-$objTable->addCell($this->objLanguage->languageText('word_userid'), 100, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('mod_security_staffstudentnumber', 'security', 'Staff/Student Number'), 100, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('word_title'), 30, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('phrase_firstName'), '20%', '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('word_surname'), '20%', '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('phrase_emailaddress'), '', '', '', 'heading', '');
-if ($this->isValid('removeuser') && (is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
-    $objTable->addCell('', 30, '', '', 'heading', '');
-}
-$objTable->endRow();
-
-if ((is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
-
-    $objTable->row_attributes='onmouseover="this.className=\'tbl_ruler\';" onmouseout="this.className=\'none\'; "';
-
-    foreach ($studentDetails as $student)
-    {
-        $objCheck=new checkbox('studentId[]');
-        $objCheck->value=$student['userid'];
-
-        $objTable->startRow();
-        if($this->isValid('removeallusers')){
-            //if($student['userid'] != $this->userId){
-            $objTable->addCell($objCheck->show());
-            //}else{
-            //    $objTable->addCell('');
-            //}
-        }
-        $objTable->addCell($student['userid']);
-        $objTable->addCell($student['staffnumber']);
-        $objTable->addCell($student['title']);
-        $objTable->addCell($student['firstname']);
-        $objTable->addCell($student['surname']);
-        $objTable->addCell($student['emailaddress']);
-        if ($this->isValid('removeuser')) {
-            $string = str_replace(
-                '[-user-]',
-                /*$student['title'].' '.*/$student['firstname'].' '.$student['surname'],
-                $this->objLanguage->languageText('mod_contextgroups_confirmdeleteuser', 'contextgroups')
-            ); //ucwords($this->objLanguage->code2txt('word_student', 'system', NULL, '[-readonly-]'))
-            $deleteicon = $objIcon->getDeleteIconWithConfirm(NULL, array('action'=>'removeuser', 'userid'=>$student['userid'], 'group'=>'Students'), 'contextgroups', $string);
-
-            $objTable->addCell($deleteicon);
-        }
-        $objTable->endRow();
+    return strtr((string) $text, $tokens);
+};
+$displayName = function (array $person) use ($pageTexts) {
+    if (!empty($person['displayName'])) {
+        return (string) $person['displayName'];
     }
-} else {
-    $objTable->startRow();
-        $objTable->addCell($this->objLanguage->code2txt('mod_contextgroups_nostudents', 'contextgroups'), NULL, NULL, NULL, 'noRecordsMessage', 'colspan="6"');
-    $objTable->endRow();
-}
-
-$objButton = new button('select', $this->objLanguage->languageText('phrase_selectall'));
-$objButton->extra='onclick="javascript:SetAllCheckBoxes(\'removestudents\', \'studentId[]\', true)"';
-$buttons = $objButton->show();
-
-$objButton = new button('unselect', $this->objLanguage->languageText('mod_contextgroups_unselectall', 'contextgroups', 'Unselect All'));
-$objButton->extra='onclick="javascript:SetAllCheckBoxes(\'removestudents\', \'studentId[]\', false)"';
-$buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
-
-$objButton = new button('delete', $this->objLanguage->languageText('mod_contextgroups_deleteselected', 'contextgroups', 'Delete Selected'));
-$objButton->extra='onclick="javascript:if(confirm(\''.$this->objLanguage->code2Txt('mod_contextgroups_confirmstudent', 'contextgroups', NULL, 'Are you sure you want to delete these [-readonlys-]?').' \'+getSelectCount(\'removestudents\', \'studentId[]\')+\' '.$this->objLanguage->languageText('mod_contextgroups_membersselected','contextgroups').'.\')){document.removestudents.submit();}else{return false;}"';
-$buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
-
-$objForm = new form('removestudents', $this->uri(array('action'=>'removeallusers', 'mode'=>'student')));
-$objForm->addToForm($objTable->show());
-if ((is_countable($studentDetails) ? count($studentDetails) : 0) > 0) {
-    $objForm->addToForm($buttons);
-}
-//echo $objForm->show();
-
-
-$objTabbedbox=new tabbedbox();
-$objTabbedbox->addTabLabel("<b>".ucfirst(strtolower($this->objLanguage->code2Txt('word_students', 'system', NULL, '[-readonlys-]')))."</b>");
-if ($this->isValid('removeallusers')) {
-    $objTabbedbox->addBoxContent($objForm->show());
-} else {
-    $objTabbedbox->addBoxContent($objTable->show());
-}
-echo $objTabbedbox->show();
-
-
-
-// Guests
-
-$header = new htmlheading();
-$header->type = 3;
-$header->str = ucwords($this->objLanguage->languageText('mod_contextadmin_guests', 'contextadmin', 'Guests'));
-//$header->align = 'center';
-
-//echo $header->show();
-
-$objTable = $this->newObject('htmltable', 'htmlelements');
-$objTable->cellpadding = 5;
-$objTable->cellspacing = 1;
-$objTable->id="guestsTable";
-$objTable->css_class="sorttable";
-
-$objTable->startRow();
-if ($this->isValid('removeallusers') && (is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
-    $objTable->addCell('', 30, '', '', 'heading', '');
-}
-$objTable->addCell($this->objLanguage->languageText('word_userid'), 100, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('mod_security_staffstudentnumber', 'security', 'Staff/Student Number'), 100, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('word_title'), 30, '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('phrase_firstName'), '20%', '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('word_surname'), '20%', '', '', 'heading', '');
-$objTable->addCell($this->objLanguage->languageText('phrase_emailaddress'), '', '', '', 'heading', '');
-if ($this->isValid('removeuser') && (is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
-    $objTable->addCell('', 30, '', '', 'heading', '');
-}
-$objTable->endRow();
-
-if ((is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
-
-    $objTable->row_attributes='onmouseover="this.className=\'tbl_ruler\';" onmouseout="this.className=\'none\'; "';
-
-    foreach ($guestDetails as $guest)
-    {
-        $objCheck=new checkbox('guestId[]');
-        $objCheck->value=$guest['userid'];
-
-        $objTable->startRow();
-        if($this->isValid('removeallusers')){
-            //if($guest['userid'] != $this->userId){
-            $objTable->addCell($objCheck->show());
-            //}else{
-            //    $objTable->addCell('');
-            //}
-        }
-        $objTable->addCell($guest['userid']);
-        $objTable->addCell($guest['staffnumber']);
-        $objTable->addCell($guest['title']);
-        $objTable->addCell($guest['firstname']);
-        $objTable->addCell($guest['surname']);
-        $objTable->addCell($guest['emailaddress']);
-        if ($this->isValid('removeuser')) {
-            $string = str_replace(
-                '[-user-]',
-                /*$guest['title'].' '.*/$guest['firstname'].' '.$guest['surname'],
-                $this->objLanguage->languageText('mod_contextgroups_confirmdeleteuser', 'contextgroups')
-            ); //ucwords($this->objLanguage->languageText('word_guest', 'system', 'guest'))
-            $deleteicon = $objIcon->getDeleteIconWithConfirm(NULL, array('action'=>'removeuser', 'userid'=>$guest['userid'], 'group'=>'Guest'), 'contextgroups', $string);
-
-            $objTable->addCell($deleteicon);
-        }
-        $objTable->endRow();
+    $name = trim(
+        (isset($person['firstName']) ? (string) $person['firstName'] : '')
+        . ' '
+        . (isset($person['surname']) ? (string) $person['surname'] : '')
+    );
+    if ($name !== '') {
+        return $name;
     }
-} else {
-    $objTable->startRow();
-        $objTable->addCell($this->objLanguage->code2txt('mod_contextgroups_noguests', 'contextgroups'), NULL, NULL, NULL, 'noRecordsMessage', 'colspan="6"');
-    $objTable->endRow();
-}
+    if (!empty($person['username'])) {
+        return (string) $person['username'];
+    }
 
-$objButton = new button('select', $this->objLanguage->languageText('phrase_selectall'));
-$objButton->extra='onclick="javascript:SetAllCheckBoxes(\'removeguests\', \'guestId[]\', true)"';
-$buttons = $objButton->show();
-
-$objButton = new button('unselect', $this->objLanguage->languageText('mod_contextgroups_unselectall', 'contextgroups', 'Unselect All'));
-$objButton->extra='onclick="javascript:SetAllCheckBoxes(\'removeguests\', \'guestId[]\', false)"';
-$buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
-
-$objButton = new button('delete', $this->objLanguage->languageText('mod_contextgroups_deleteselected', 'contextgroups', 'Delete Selected'));
-$objButton->extra='onclick="javascript:if(confirm(\''.$this->objLanguage->languageText('mod_contextgroups_confirmguest', 'contextgroups', 'Are you sure you want to delete these guests?').' \'+getSelectCount(\'removeguests\', \'guestId[]\')+\' '.$this->objLanguage->languageText('mod_contextgroups_membersselected','contextgroups').'.\')){document.removeguests.submit();}else{return false;}"';
-$buttons .= '&nbsp;&nbsp;&nbsp;&nbsp;'.$objButton->show();
-
-$objForm = new form('removeguests', $this->uri(array('action'=>'removeallusers', 'mode'=>'guest')));
-$objForm->addToForm($objTable->show());
-if ((is_countable($guestDetails) ? count($guestDetails) : 0) > 0) {
-    $objForm->addToForm($buttons);
-}
-//echo $objForm->show();
-
-$objTabbedbox=new tabbedbox();
-$objTabbedbox->addTabLabel("<b>".ucfirst(strtolower($this->objLanguage->languageText('mod_contextadmin_guests', 'contextadmin', 'Guests')))."</b>");
-if ($this->isValid('removeallusers')) {
-    $objTabbedbox->addBoxContent($objForm->show());
-} else {
-    $objTabbedbox->addBoxContent($objTable->show());
-}
-echo $objTabbedbox->show();
-
-
-// echo '<pre>';
-// print_r($studentDetails);
-// echo '<pre>';
-
-if ($this->isValid('addusers')) {
-
-    $header = new htmlheading();
-    $header->type = 3;
-    $header->str = $this->objLanguage->code2Txt('phrase_searchforuserstoadd', 'contextgroups');
-
-    echo $header->show();
-
-    $table = $this->getObject('htmltable', 'htmlelements');
-    $table->cellpadding = 5;
-
-    $table->startRow();
-
-    $searchLabel = new label ($this->objLanguage->languageText('mod_contextgroups_searchby', 'contextgroups').': ', 'input_field');
-    $searchdropdown = new dropdown('field');
-    $searchdropdown->addOption('firstname', $this->objLanguage->languageText('phrase_firstName'));
-    $searchdropdown->addOption('surname', $this->objLanguage->languageText('word_surname'));
-    $searchdropdown->addOption('userid', $this->objLanguage->languageText('word_userid'));
-    $searchdropdown->setSelected($field);
-   //$table->addCell();
-
-
-    $label = new label ($this->objLanguage->languageText('mod_contextgroups_startswith', 'contextgroups').': ', 'input_search');
-    $input = new textinput ('search');
-    $input->value = htmlentities(stripslashes($searchfor));
-    $input->size = 20;
-    $table->addCell($searchLabel->show().$searchdropdown->show()."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$label->show().$input->show());
-
-
-
-    $table->endRow();
-
-    $table->startRow();
-
-        //Ehb-added-begin
-            $label=new label($this->objLanguage->languageText('mod_contextgroups_choosecourse', 'contextgroups'),'input_course');
-            $courseDropdown=new dropdown('course');
-            $courseDropdown->addOption('all',$this->objLanguage->languageText('mod_contextgroups_allcourses', 'contextgroups'));
-            for($i=0; $i<(is_countable($data) ? count($data) : 0); $i++){
-          $courseDropdown->addOption($data[$i]['contextcode'], $data[$i]['title']);
-        }
-        $courseDropdown->setSelected($course);
-
-            $label2=new label($this->objLanguage->languageText('mod_contextgroups_choosegroup', 'contextgroups'),'input_group');
-            $groupDropdown=new dropdown('group');
-            $groupDropdown->addOption('all','All groups');
-            $groups=array("Lecturers","Students","Guest");
-
-                for($i=0; $i<(is_countable($groups) ? count($groups) : 0); $i++){
-          $groupDropdown->addOption($groups[$i],$groups[$i]);
-        }
-
-        $groupDropdown->setSelected($group);
-
-        $table->addCell($label2->show().$groupDropdown->show()."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$label->show().$courseDropdown->show());
-        $table->endRow();
-   //Ehb-added-End
-
-            $table->startRow();
-
-        $orderLabel = new label ($this->objLanguage->languageText('mod_contextgroups_orderresultsby', 'contextgroups').': ', 'input_order');
-    $searchdropdown->name = 'order';
-    $searchdropdown->cssId = 'input_order';
-    //$table->addCell($orderLabel->show().$searchdropdown->show());
-
-
-     $label = new label ($this->objLanguage->languageText('mod_contextgroups_noofresults', 'contextgroups').': ', 'input_results');
-    $dropdown = new dropdown('results');
-    $dropdown->addOption('20', '20');
-    $dropdown->addOption('30', '30');
-    $dropdown->addOption('50', '50');
-    $dropdown->addOption('75', '75');
-    $dropdown->addOption('100', '100');
-    //$dropdown->addOption('all', 'All Results');
-    $table->addCell($orderLabel->show().$searchdropdown->show()."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$label->show().$dropdown->show());
-        $table->endRow();
-
-    $button = new button ('searchbutton');
-    $button->value = $this->objLanguage->languageText('word_search');
-    $button->setToSubmit();
-    $table->addCell ($button->show());
-
-    $table->addCell('&nbsp;');
-    $table->endRow();
-
-    $form = new form ('searchforusers', $this->uri(array('action'=>'searchforusers')));
-    $form->addToForm($table->show());
-    echo $form->show();
-}
-
-
+    return $pageTexts['unnameduser'];
+};
+$pageUrl = function ($page) use ($bulkSearch) {
+    return 'index.php?' . http_build_query(array(
+        'module' => 'contextgroups',
+        'bulksearch' => (string) $bulkSearch,
+        'bulkpage' => (int) $page,
+    )) . '#contextgroups-bulk-students';
+};
+$bulkFirst = $bulkTotal === 0 ? 0 : $bulkOffset + 1;
+$bulkLast = min($bulkOffset + count($bulkUsers), $bulkTotal);
 ?>
+
+<section class="contextgroups-manager" aria-labelledby="contextgroups-page-title">
+    <header class="contextgroups-header">
+        <p class="contextgroups-eyebrow"><?php echo $escape($pageTexts['membershipeyebrow']); ?></p>
+        <h1 id="contextgroups-page-title"><?php echo $escape($formatText($pageTexts['managetitle'], array('NAME' => $contextName))); ?></h1>
+        <p class="contextgroups-course-code">
+            <?php echo $escape($pageTexts['contextcode']); ?>: <code><?php echo $escape($contextCode); ?></code>
+        </p>
+        <p class="contextgroups-intro">
+            <?php echo $escape($pageTexts['intro']); ?>
+        </p>
+    </header>
+
+    <?php if ($message !== ''): ?>
+        <div class="contextgroups-notice contextgroups-notice-success" role="status">
+            <?php echo $escape($message); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error !== ''): ?>
+        <div class="contextgroups-notice contextgroups-notice-error" role="alert">
+            <?php echo $escape($error); ?>
+        </div>
+    <?php endif; ?>
+
+    <section class="contextgroups-search" aria-labelledby="contextgroups-search-heading">
+        <div class="contextgroups-section-heading">
+            <div>
+                <p class="contextgroups-eyebrow"><?php echo $escape($pageTexts['individualmembership']); ?></p>
+                <h2 id="contextgroups-search-heading"><?php echo $escape($pageTexts['findmember']); ?></h2>
+            </div>
+        </div>
+
+        <form method="get" action="index.php" class="contextgroups-search-form">
+            <input type="hidden" name="module" value="contextgroups" />
+            <input type="hidden" name="action" value="searchforusers" />
+            <label for="contextgroups-user-search"><?php echo $escape($pageTexts['searchlabel']); ?></label>
+            <div class="contextgroups-search-controls">
+                <input
+                    type="search"
+                    id="contextgroups-user-search"
+                    name="search"
+                    value="<?php echo $escape($search); ?>"
+                    maxlength="120"
+                    required
+                />
+                <button type="submit" class="contextgroups-button contextgroups-button-primary">
+                    <?php echo $escape($pageTexts['search']); ?>
+                </button>
+            </div>
+        </form>
+
+        <?php if ($search !== ''): ?>
+            <div class="contextgroups-search-results" aria-live="polite">
+                <div class="contextgroups-section-heading">
+                    <h3><?php echo $escape($pageTexts['searchresults']); ?></h3>
+                    <span class="contextgroups-count"><?php echo count($searchResults); ?></span>
+                </div>
+                <?php if ($searchLimited): ?>
+                    <p class="contextgroups-search-hint">
+                        <?php echo $escape($pageTexts['searchlimited']); ?>
+                    </p>
+                <?php endif; ?>
+                <?php if ($searchResults === array()): ?>
+                    <p class="contextgroups-empty"><?php echo $escape($pageTexts['nomatches']); ?></p>
+                <?php else: ?>
+                    <ul class="contextgroups-result-list">
+                        <?php foreach ($searchResults as $result): ?>
+                            <?php
+                            $resultUserId = isset($result['userId'])
+                                ? (string) $result['userId']
+                                : '';
+                            $resultRoles = isset($result['courseRoles'])
+                                && is_array($result['courseRoles'])
+                                ? $result['courseRoles']
+                                : array();
+                            ?>
+                            <li class="contextgroups-result">
+                                <div class="contextgroups-person">
+                                    <strong><?php echo $escape($displayName($result)); ?></strong>
+                                    <?php if (!empty($result['username'])): ?>
+                                        <span>@<?php echo $escape($result['username']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($result['email'])): ?>
+                                        <span><?php echo $escape($result['email']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if ($resultRoles !== array()): ?>
+                                        <span class="contextgroups-current-role">
+                                            <?php echo $escape($pageTexts['currentrole']); ?>:
+                                            <?php
+                                            $resultRoleLabels = array();
+                                            foreach ($resultRoles as $resultRole) {
+                                                if (isset($roles[$resultRole])) {
+                                                    $resultRoleLabels[] = $roles[$resultRole]['singular'];
+                                                }
+                                            }
+                                            echo $escape(implode(', ', $resultRoleLabels));
+                                            ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="contextgroups-current-role"><?php echo $escape($pageTexts['notincontext']); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="contextgroups-role-actions" aria-label="<?php echo $escape($pageTexts['chooserole']); ?>">
+                                    <?php foreach ($roles as $role => $definition): ?>
+                                        <?php $isCurrentRole = in_array($role, $resultRoles, true); ?>
+                                        <form method="post" action="index.php">
+                                            <input type="hidden" name="module" value="contextgroups" />
+                                            <input type="hidden" name="action" value="addusers" />
+                                            <input type="hidden" name="context" value="<?php echo $escape($contextCode); ?>" />
+                                            <input type="hidden" name="membershiptoken" value="<?php echo $escape($membershipToken); ?>" />
+                                            <input type="hidden" name="userid" value="<?php echo $escape($resultUserId); ?>" />
+                                            <input type="hidden" name="role" value="<?php echo $escape($role); ?>" />
+                                            <button
+                                                type="submit"
+                                                class="contextgroups-button<?php echo $isCurrentRole ? ' contextgroups-button-current' : ''; ?>"
+                                                <?php echo $isCurrentRole ? 'disabled' : ''; ?>
+                                            >
+                                                <?php
+                                                echo $escape($formatText(
+                                                    $isCurrentRole
+                                                        ? $pageTexts['alreadyrole']
+                                                        : $pageTexts['addas'],
+                                                    array('ROLE' => $definition['singular'])
+                                                ));
+                                                ?>
+                                            </button>
+                                        </form>
+                                    <?php endforeach; ?>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <section
+        id="contextgroups-bulk-students"
+        class="contextgroups-bulk"
+        aria-labelledby="contextgroups-bulk-heading"
+    >
+        <div class="contextgroups-section-heading">
+            <div>
+                <p class="contextgroups-eyebrow"><?php echo $escape($pageTexts['largecontexts']); ?></p>
+                <h2 id="contextgroups-bulk-heading"><?php echo $escape($pageTexts['bulkheading']); ?></h2>
+                <p>
+                    <?php echo $escape($pageTexts['bulkintro']); ?>
+                </p>
+            </div>
+            <span class="contextgroups-count"><?php echo (int) $bulkTotal; ?></span>
+        </div>
+
+        <form method="get" action="index.php" class="contextgroups-search-form contextgroups-bulk-search">
+            <input type="hidden" name="module" value="contextgroups" />
+            <label for="contextgroups-bulk-search"><?php echo $escape($pageTexts['filteraccounts']); ?></label>
+            <div class="contextgroups-search-controls">
+                <input
+                    type="search"
+                    id="contextgroups-bulk-search"
+                    name="bulksearch"
+                    value="<?php echo $escape($bulkSearch); ?>"
+                    maxlength="120"
+                />
+                <button type="submit" class="contextgroups-button contextgroups-button-primary"><?php echo $escape($pageTexts['filter']); ?></button>
+                <?php if ($bulkSearch !== ''): ?>
+                    <a class="contextgroups-button" href="index.php?module=contextgroups#contextgroups-bulk-students"><?php echo $escape($pageTexts['clear']); ?></a>
+                <?php endif; ?>
+            </div>
+        </form>
+
+        <?php if ($bulkUsers === array()): ?>
+            <p class="contextgroups-empty"><?php echo $escape($pageTexts['nofiltermatches']); ?></p>
+        <?php else: ?>
+            <form method="post" action="index.php" class="contextgroups-bulk-form">
+                <input type="hidden" name="module" value="contextgroups" />
+                <input type="hidden" name="action" value="bulkupdatestudents" />
+                <input type="hidden" name="context" value="<?php echo $escape($contextCode); ?>" />
+                <input type="hidden" name="membershiptoken" value="<?php echo $escape($membershipToken); ?>" />
+                <input type="hidden" name="bulksearch" value="<?php echo $escape($bulkSearch); ?>" />
+                <input type="hidden" name="bulkpage" value="<?php echo (int) $bulkPage; ?>" />
+
+                <details class="contextgroups-account-table" id="contextgroups-account-table" open>
+                    <summary class="contextgroups-button"><?php echo $escape($pageTexts['accounttabletoggle']); ?></summary>
+                    <div class="contextgroups-table-wrap">
+                    <table class="contextgroups-bulk-table">
+                        <thead>
+                            <tr>
+                                <th scope="col"><?php echo $escape($roles['student']['singular']); ?></th>
+                                <th scope="col"><?php echo $escape($pageTexts['account']); ?></th>
+                                <th scope="col"><?php echo $escape($pageTexts['currentcontextrole']); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($bulkUsers as $bulkUser): ?>
+                                <?php
+                                $bulkUserId = isset($bulkUser['userId'])
+                                    ? (string) $bulkUser['userId']
+                                    : '';
+                                $bulkRoles = isset($bulkUser['courseRoles'])
+                                    && is_array($bulkUser['courseRoles'])
+                                    ? $bulkUser['courseRoles']
+                                    : array();
+                                $protected = !empty($bulkUser['protectLecturer']);
+                                ?>
+                                <tr>
+                                    <td class="contextgroups-bulk-check">
+                                        <input type="hidden" name="listedids[]" value="<?php echo $escape($bulkUserId); ?>" />
+                                        <input
+                                            type="checkbox"
+                                            class="contextgroups-student-checkbox"
+                                            id="student-<?php echo $escape($bulkUserId); ?>"
+                                            name="studentids[]"
+                                            value="<?php echo $escape($bulkUserId); ?>"
+                                            <?php echo !empty($bulkUser['isStudent']) ? 'checked' : ''; ?>
+                                            <?php echo $protected ? 'disabled' : ''; ?>
+                                        />
+                                        <label class="contextgroups-visually-hidden" for="student-<?php echo $escape($bulkUserId); ?>">
+                                            <?php echo $escape($formatText($pageTexts['studentmembership'], array('NAME' => $displayName($bulkUser)))); ?>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <div class="contextgroups-person">
+                                            <strong><?php echo $escape($displayName($bulkUser)); ?></strong>
+                                            <?php if (!empty($bulkUser['username'])): ?>
+                                                <span>@<?php echo $escape($bulkUser['username']); ?></span>
+                                            <?php endif; ?>
+                                            <?php if (!empty($bulkUser['email'])): ?>
+                                                <span><?php echo $escape($bulkUser['email']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?php if ($protected): ?>
+                                            <span class="contextgroups-role-tag"><?php echo $escape($formatText($pageTexts['youraccount'], array('ROLE' => $roles['lecturer']['singular']))); ?></span>
+                                        <?php elseif ($bulkRoles === array()): ?>
+                                            <span class="contextgroups-muted"><?php echo $escape($pageTexts['notincontext']); ?></span>
+                                        <?php else: ?>
+                                            <?php foreach ($bulkRoles as $bulkRole): ?>
+                                                <?php if (isset($roles[$bulkRole])): ?>
+                                                    <span class="contextgroups-role-tag"><?php echo $escape($roles[$bulkRole]['singular']); ?></span>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <div class="contextgroups-bulk-actions">
+                    <p><?php echo $escape(html_entity_decode($formatText($pageTexts['showing'], array('FIRST' => $bulkFirst, 'LAST' => $bulkLast, 'TOTAL' => $bulkTotal)), ENT_QUOTES | ENT_HTML5, 'UTF-8')); ?></p>
+                    <div>
+                        <button type="button" class="contextgroups-button" id="contextgroups-select-displayed"><?php echo $escape($pageTexts['selectdisplayed']); ?></button>
+                        <button type="button" class="contextgroups-button" id="contextgroups-clear-displayed"><?php echo $escape($pageTexts['cleardisplayed']); ?></button>
+                        <button type="submit" class="contextgroups-button contextgroups-button-primary"><?php echo $escape($pageTexts['savedisplayed']); ?></button>
+                    </div>
+                    </div>
+                </details>
+            </form>
+            <script>
+            (function contextgroupsAccountTableState() {
+                'use strict';
+                var table = document.getElementById('contextgroups-account-table');
+                if (!table || typeof window.sessionStorage === 'undefined') {
+                    return;
+                }
+                var contextInput = document.querySelector(
+                    '#contextgroups-account-table input[name="context"]'
+                ) || document.querySelector('input[name="context"]');
+                var contextCode = contextInput ? contextInput.value : '';
+                var storageKey = 'contextgroups.accountTable.open.' + contextCode;
+                try {
+                    var storedState = window.sessionStorage.getItem(storageKey);
+                    if (storedState !== null) {
+                        table.open = storedState === '1';
+                    }
+                    table.addEventListener('toggle', function () {
+                        window.sessionStorage.setItem(
+                            storageKey,
+                            table.open ? '1' : '0'
+                        );
+                    });
+                } catch (error) {
+                    // The disclosure remains fully usable when storage is unavailable.
+                }
+            }());
+            </script>
+
+            <?php if ($bulkPages > 1): ?>
+                <nav class="contextgroups-pagination" aria-label="<?php echo $escape($pageTexts['accountpages']); ?>">
+                    <?php if ($bulkPage > 1): ?>
+                        <a class="contextgroups-button" href="<?php echo $escape($pageUrl($bulkPage - 1)); ?>"><?php echo $escape($pageTexts['previous']); ?></a>
+                    <?php endif; ?>
+                    <span><?php echo $escape($formatText($pageTexts['pageof'], array('PAGE' => $bulkPage, 'PAGES' => $bulkPages))); ?></span>
+                    <?php if ($bulkPage < $bulkPages): ?>
+                        <a class="contextgroups-button" href="<?php echo $escape($pageUrl($bulkPage + 1)); ?>"><?php echo $escape($pageTexts['next']); ?></a>
+                    <?php endif; ?>
+                </nav>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <div class="contextgroups-bulk-secondary">
+            <section aria-labelledby="contextgroups-import-heading">
+                <h3 id="contextgroups-import-heading"><?php echo $escape($pageTexts['uploadheading']); ?></h3>
+                <p>
+                    <?php echo $escape($pageTexts['uploadhelp']); ?>
+                </p>
+                <form method="post" action="index.php" enctype="multipart/form-data" class="contextgroups-stack-form">
+                    <input type="hidden" name="module" value="contextgroups" />
+                    <input type="hidden" name="action" value="importstudents" />
+                    <input type="hidden" name="context" value="<?php echo $escape($contextCode); ?>" />
+                    <input type="hidden" name="membershiptoken" value="<?php echo $escape($membershipToken); ?>" />
+                    <label for="contextgroups-student-file"><?php echo $escape($pageTexts['csvfile']); ?></label>
+                    <input type="file" id="contextgroups-student-file" name="studentfile" accept=".csv,text/csv" required />
+                    <button type="submit" class="contextgroups-button contextgroups-button-primary"><?php echo $escape($pageTexts['uploadadd']); ?></button>
+                </form>
+            </section>
+
+            <section class="contextgroups-danger-zone" aria-labelledby="contextgroups-remove-all-heading">
+                <h3 id="contextgroups-remove-all-heading"><?php echo $escape($pageTexts['removeall']); ?></h3>
+                <p><?php echo $escape($pageTexts['removeallhelp']); ?></p>
+                <form method="post" action="index.php" class="contextgroups-stack-form">
+                    <input type="hidden" name="module" value="contextgroups" />
+                    <input type="hidden" name="action" value="removeallstudents" />
+                    <input type="hidden" name="context" value="<?php echo $escape($contextCode); ?>" />
+                    <input type="hidden" name="membershiptoken" value="<?php echo $escape($membershipToken); ?>" />
+                    <label class="contextgroups-confirm-line">
+                        <input type="checkbox" name="confirmremoveall" value="yes" required />
+                        <?php echo $escape($pageTexts['removeallconfirm']); ?>
+                    </label>
+                    <button type="submit" class="contextgroups-button contextgroups-button-danger"><?php echo $escape($pageTexts['removeall']); ?></button>
+                </form>
+            </section>
+        </div>
+    </section>
+
+    <section class="contextgroups-members" aria-labelledby="contextgroups-current-heading">
+        <div class="contextgroups-section-heading">
+            <div>
+                <p class="contextgroups-eyebrow"><?php echo $escape($pageTexts['currentmembership']); ?></p>
+                <h2 id="contextgroups-current-heading"><?php echo $escape($pageTexts['currentmembers']); ?></h2>
+            </div>
+        </div>
+
+        <div class="contextgroups-role-grid">
+            <?php foreach ($memberSections as $role => $section): ?>
+                <section class="contextgroups-role-card" aria-labelledby="contextgroups-role-<?php echo $escape($role); ?>">
+                    <div class="contextgroups-section-heading">
+                        <h3 id="contextgroups-role-<?php echo $escape($role); ?>">
+                            <?php echo $escape($section['label']); ?>
+                        </h3>
+                        <span class="contextgroups-count" aria-label="<?php echo $escape($formatText($pageTexts['membercount'], array('COUNT' => $section['count']))); ?>">
+                            <?php echo (int) $section['count']; ?>
+                        </span>
+                    </div>
+
+                    <?php if ($section['members'] === array()): ?>
+                        <p class="contextgroups-empty"><?php echo $escape($formatText($pageTexts['norole'], array('ROLE' => $section['label']))); ?></p>
+                    <?php else: ?>
+                        <ul class="contextgroups-member-list">
+                            <?php foreach ($section['members'] as $member): ?>
+                                <?php
+                                $memberUserId = isset($member['userId'])
+                                    ? (string) $member['userId']
+                                    : '';
+                                $isCurrentUser = $memberUserId === (string) $currentUserId;
+                                $protectLecturer = $role === 'lecturer' && $isCurrentUser;
+                                ?>
+                                <li>
+                                    <div class="contextgroups-person">
+                                        <strong><?php echo $escape($displayName($member)); ?></strong>
+                                        <?php if (!empty($member['username'])): ?>
+                                            <span>@<?php echo $escape($member['username']); ?></span>
+                                        <?php endif; ?>
+                                        <?php if (!empty($member['email'])): ?>
+                                            <span><?php echo $escape($member['email']); ?></span>
+                                        <?php endif; ?>
+                                        <?php if ($isCurrentUser): ?>
+                                            <span class="contextgroups-you"><?php echo $escape($pageTexts['you']); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php if (!$protectLecturer): ?>
+                                        <form method="post" action="index.php">
+                                            <input type="hidden" name="module" value="contextgroups" />
+                                            <input type="hidden" name="action" value="removeuser" />
+                                            <input type="hidden" name="context" value="<?php echo $escape($contextCode); ?>" />
+                                            <input type="hidden" name="membershiptoken" value="<?php echo $escape($membershipToken); ?>" />
+                                            <input type="hidden" name="userid" value="<?php echo $escape($memberUserId); ?>" />
+                                            <input type="hidden" name="role" value="<?php echo $escape($role); ?>" />
+                                            <button type="submit" class="contextgroups-button contextgroups-button-remove"><?php echo $escape($pageTexts['remove']); ?></button>
+                                        </form>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <?php if (!empty($section['truncated'])): ?>
+                            <p class="contextgroups-search-hint">
+                                <?php echo $escape($formatText($pageTexts['showingfirst'], array('FIRST' => count($section['members']), 'TOTAL' => $section['count']))); ?>
+                                <?php if ($role === 'student'): ?>
+                                    <?php echo $escape($pageTexts['usebulk']); ?>
+                                <?php endif; ?>
+                            </p>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </section>
+            <?php endforeach; ?>
+        </div>
+    </section>
+</section>
+
+<script>
+(function () {
+    'use strict';
+    var checkboxes = function () {
+        return document.querySelectorAll('.contextgroups-student-checkbox:not(:disabled)');
+    };
+    var setDisplayed = function (checked) {
+        var items = checkboxes();
+        for (var index = 0; index < items.length; index += 1) {
+            items[index].checked = checked;
+        }
+    };
+    var selectButton = document.getElementById('contextgroups-select-displayed');
+    var clearButton = document.getElementById('contextgroups-clear-displayed');
+    if (selectButton) {
+        selectButton.addEventListener('click', function () { setDisplayed(true); });
+    }
+    if (clearButton) {
+        clearButton.addEventListener('click', function () { setDisplayed(false); });
+    }
+}());
+</script>

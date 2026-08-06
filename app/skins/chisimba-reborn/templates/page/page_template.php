@@ -1,6 +1,6 @@
 <?php
 /*
- * chisimba-reborn canvase page template
+ * chisimba-reborn canvas page template
  *
  * This is the page template in the chisimba-reborn skin
  * 
@@ -9,7 +9,7 @@
  *
  */
 // Add navigation back to top of page.
-define("PAGETOP", '<a name="pagetop"></a>');
+define("PAGETOP", '<span id="pagetop"></span>');
 define("GOTOTOP", '<a href="#pagetop">Top</a>'); // @todo change this to an icon
 
 
@@ -44,7 +44,7 @@ $skinName = "chisimba-reborn";
 // Define the valid canvases for this skin as an array.
 $validCanvases = array_map('basename', glob('skins/' . $skinName . '/canvases/*', GLOB_ONLYDIR));
 
-// Settings that are needed so that canvase-aware code can function.
+// Settings needed so that canvas-aware code can function.
 $this->setSession('skinName', $skinName);
 $_SESSION['skinName'] = $skinName;
 $_SESSION['isCanvas'] = TRUE;
@@ -86,7 +86,7 @@ if (!isset($og_title)) {
     $og_title = $pageTitle;
 }
 if (!isset($og_image)) {
-    $og_image = $helperJs = 'skins/' . $skinName . '/default.png';
+    $og_image = 'skins/' . $skinName . '/default.png';
 }
 if (!isset($og_content)) {
     $og_content = 'Chisimba is a PHP framework for building web applications 
@@ -109,11 +109,11 @@ if (!isset($og_content)) {
 // blank lines between the PHP closing tag and the HTML head tag. It must be
 // exactly as below.
 ?><head>
-    <meta property="og:title" content="<?php echo $og_title; ?>" />
-    <meta property="og:image" content="<?php echo $og_image; ?>" />
-    <meta property="og:description" content="<?php echo $og_content; ?>" />
+    <meta property="og:title" content="<?php echo htmlspecialchars($og_title, ENT_QUOTES, 'UTF-8'); ?>" />
+    <meta property="og:image" content="<?php echo htmlspecialchars($og_image, ENT_QUOTES, 'UTF-8'); ?>" />
+    <meta property="og:description" content="<?php echo htmlspecialchars($og_content, ENT_QUOTES, 'UTF-8'); ?>" />
     <title>
-        <?php echo $pageTitle; ?>
+        <?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?>
     </title>
     <?php
     // Get the skin version 2 base CSS for all skins.
@@ -143,7 +143,6 @@ if (!isset($og_content)) {
        <link rel="stylesheet" type="text/css" href="' . $canvas . '/stylesheet.css">
 
         ';
-       //<script type="text/javascript" src="skins/' . $skinName . '/js/jquery.equalHeightColumns.js" />
     }
     ?>
 </head>
@@ -159,7 +158,7 @@ if (isset($bodyParams)) {
 // Render the container & canvas elements unless it is suppressed.
 if (!isset($pageSuppressContainer)) { ?>
     <div id='OutermostWrapper'>
-        <div class='ChisimbaCanvas' id='_default'>
+        <div class='ChisimbaCanvas' id='<?php echo htmlspecialchars($canvasName ?? '_default', ENT_QUOTES, 'UTF-8'); ?>'>
             <div id='Canvas_Content'>
                 <div id='Canvas_BeforeContainer'></div>
                 <div id='container'>
@@ -185,11 +184,11 @@ if (!isset($pageSuppressBanner)) {
             id="header">
             <?php
             echo '<a class="sitename_link chisimba-site-banner__brand" '
-                . 'href="' . $objConfig->getSiteRoot() . '">';
+                . 'href="' . htmlspecialchars($objConfig->getSiteRoot(), ENT_QUOTES, 'UTF-8') . '">';
             ?>
             <span class="chisimba-site-banner__identity" aria-hidden="true"></span>
             <span class="chisimba-site-banner__name" id="sitename">
-                <?php echo $objConfig->getsiteName(); ?>
+                <?php echo htmlspecialchars($objConfig->getsiteName(), ENT_QUOTES, 'UTF-8'); ?>
             </span>
             <?php echo '</a>'; ?>
         </div>
@@ -228,23 +227,15 @@ echo "<div class='Canvas_Content_Body_Before'></div>\n"
 // If the footer is not suppressed, render it out.
 if (!isset($suppressFooter)) {
     // Add the footer string if it is set
-    if (isset($footerStr)) {
-       $footerStr = $footerStr;
-    } else if ($objUser->isLoggedIn()) {
-        $objToolbarSecurity = $this->getObject(
-            'toolbarsecuritycontext',
-            'toolbar'
-        );
-        $logoutForm = $objToolbarSecurity->logoutForm(
-            $objLanguage->languageText("word_logout"),
-            'chisimba-site-footer__logout'
-        );
+    if ($objUser->isLoggedIn()) {
+        // The authenticated footer is status only. Logout belongs solely to
+        // the toolbar and must not be inherited from a legacy footer string.
         $str = $objLanguage->languageText(
             "mod_context_loggedinas",
             'context'
-        ) . ' <strong>' . $objUser->fullname() . '</strong> ' . $logoutForm;
+        ) . ' <strong>' . $objUser->fullname() . '</strong>';
         $footerStr = $str;
-    } else {
+    } elseif (!isset($footerStr)) {
         $footerStr = $objLanguage->languageText("mod_security_poweredby", 'security', 'Powered by ') . ' Chisimba';
     }
     /*
@@ -281,14 +272,7 @@ if (!isset($pageSuppressContainer)) {
 // Render any messages available.
 $this->putMessages();
 
-// Close up the body and HTML and finish up.
-echo '
-<script type="text/javascript" src="' . $canvas . '/js/jquery.imageScale.js"></script>
-<script type="text/javascript" src="' . $canvas . '/js/helper.js"></script>
-';
-
-
-
+// Close the body and HTML.
 ?>
 
 </body>

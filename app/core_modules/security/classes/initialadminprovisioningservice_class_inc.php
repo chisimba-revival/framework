@@ -130,7 +130,14 @@ class initialadminprovisioningservice extends ChisimbaObject
             || (empty($membership['ok'])
                 && (!isset($membership['code'])
                     || $membership['code'] !== 'already_member'))) {
-            return $this->result(false, 'site_admin_membership_failed');
+            $membershipCode = is_array($membership)
+                && isset($membership['code'])
+                ? (string) $membership['code']
+                : 'unknown_failure';
+            return $this->result(
+                false,
+                'site_admin_membership_failed:' . $membershipCode
+            );
         }
 
         if (!$this->objPermissionService

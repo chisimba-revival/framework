@@ -20,6 +20,7 @@ class useradmin extends controller
     public $objUser;
     public $objUserService;
     public $objUserProvisioning;
+    public $objBatchUserRegistration;
 
     public function init()
     {
@@ -29,6 +30,10 @@ class useradmin extends controller
         $this->objUserProvisioning = $this->getObject(
             'userprovisioningservice',
             'security'
+        );
+        $this->objBatchUserRegistration = $this->getObject(
+            'batchuserregistrationservice',
+            'useradmin'
         );
     }
 
@@ -43,6 +48,14 @@ class useradmin extends controller
                 return $this->updateUser();
             case 'setstatus':
                 return $this->setStatus();
+            case 'batchimport':
+                return $this->batchImport();
+            case 'batchpreview':
+                return $this->batchPreview();
+            case 'batchconfirm':
+                return $this->batchConfirm();
+            case 'batchcancel':
+                return $this->batchCancel();
             default:
                 return $this->nativeInterface();
         }
@@ -157,6 +170,97 @@ class useradmin extends controller
             isset($result['code']) ? $result['code'] : 'status_update_failed',
             $userId
         );
+    }
+
+    private function batchImport()
+    {
+        $preview = $this->getSession('useradmin_batch_preview', array());
+        $result = $this->getSession('useradmin_batch_result', array());
+        $this->setSession('useradmin_batch_result', array());
+
+        $this->setVar(
+            'batchUserPreview',
+            is_array($preview) ? $preview : array()
+        );
+        $this->setVar(
+            'batchUserResult',
+            is_array($result) ? $result : array()
+        );
+        $this->setVar('batchUserCsrfToken', $this->csrfToken());
+        $this->setVar(
+            'batchUserError',
+            (string) $this->getParam('error', '')
+        );
+        return 'batch_import_tpl.php';
+    }
+
+    private function batchPreview()
+    {
+        $this->assertMutationRequest();
+        $this->setSession('useradmin_batch_preview', array());
+        $this->setSession('useradmin_batch_result', array());
+
+        if (!isset($_FILES['userfile'])
+            || !is_array($_FILES['userfile'])
+            || !isset($_FILES['userfile']['error'])
+            || (int) $_FILES['userfile']['error'] !== UPLOAD_ERR_OK
+            || empty($_FILES['userfile']['tmp_name'])) {
+            return $this->nextAction(
+                'batchimport',
+                array('error' => 'upload_failed'),
+                'useradmin'
+            );
+        }
+
+        $preview = $this->objBatchUserRegistration->previewCsv(
+            (string) $_FILES['userfile']['tmp_name'],
+            isset($_FILES['userfile']['name'])
+                ? (string) $_FILES['userfile']['name'] : ''
+        );
+        if (empty($preview['ok'])) {
+            return $this->nextAction(
+                'batchimport',
+                array(
+                    'error' => isset($preview['code'])
+                        ? $preview['code'] : 'preview_failed'
+                ),
+                'useradmin'
+            );
+        }
+
+        $preview['createdAt'] = time();
+        $this->setSession('useradmin_batch_preview', $preview);
+        return $this->nextAction('batchimport', array(), 'useradmin');
+    }
+
+    private function batchConfirm()
+    {
+        $this->assertMutationRequest();
+        $preview = $this->getSession('useradmin_batch_preview', array());
+        if (!is_array($preview)
+            || empty($preview['batchId'])
+            || empty($preview['createdAt'])
+            || time() - (int) $preview['createdAt'] > 600) {
+            $this->setSession('useradmin_batch_preview', array());
+            return $this->nextAction(
+                'batchimport',
+                array('error' => 'preview_expired'),
+                'useradmin'
+            );
+        }
+
+        $result = $this->objBatchUserRegistration->ingest($preview);
+        $this->setSession('useradmin_batch_preview', array());
+        $this->setSession('useradmin_batch_result', $result);
+        return $this->nextAction('batchimport', array(), 'useradmin');
+    }
+
+    private function batchCancel()
+    {
+        $this->assertMutationRequest();
+        $this->setSession('useradmin_batch_preview', array());
+        $this->setSession('useradmin_batch_result', array());
+        return $this->nextAction('batchimport', array(), 'useradmin');
     }
 
     private function userInput($userId, $creating)

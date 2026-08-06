@@ -123,6 +123,11 @@ class treenode
     *                       for the 'onexpand', 'oncollapse' and 'ontoggle' events which will be fired
     *                       whenever a node is collapsed and/or expanded.
     */
+        public function __construct($options = array(), $events = array())
+        {
+            $this->treenode($options, $events);
+        }
+
         function treenode($options = array(), $events = array())
     {
         $this->text          = '';
@@ -172,10 +177,10 @@ class treenode
     * @access public
     * @param  object $node The new node
     */
-    function &addItem(&$node)
+    function &addItem($node)
     {
         $node->parent  = &$this;
-        $this->items[] = &$node;
+        $this->items[] = $node;
 
         /**
         * If the subnode has ensureVisible set it needs

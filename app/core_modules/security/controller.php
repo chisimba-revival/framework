@@ -32,7 +32,7 @@ class security extends controller
 
     public function requiresLogin($action)
     {
-        return false;
+        return in_array($action, array('authenticated', 'logout'), true);
     }
 
     public function dispatch($action)
@@ -78,6 +78,10 @@ class security extends controller
             'nativeAuthBeginToken',
             $stack['csrf']->issue(self::LOGIN_CSRF_CONTEXT)
         );
+        $this->setVar(
+            'nativeAbuseEvidence',
+            $stack['abuse']->issueFormEvidence('native.login')
+        );
         $this->setVar('nativeLoginLabels', array(
             'title' => $this->text('mod_security_nativelogintitle'),
             'username' => $this->text('word_username', 'system'),
@@ -99,6 +103,14 @@ class security extends controller
         }
 
         $stack = $this->nativeAuthStack();
+        $returnTo = $this->validatedReturnTo(
+            $this->getParam('return_to', '')
+        );
+        if ($returnTo !== null) {
+            $this->setSession('native_auth_return_to', $returnTo);
+        } else {
+            $this->unsetSession('native_auth_return_to');
+        }
         $result = $stack['guarded_login']->begin(
             $this->getParam('native_auth_begin', ''),
             $this->getParam('username', ''),
@@ -107,6 +119,13 @@ class security extends controller
             array(
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
                 'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+                'session' => session_id(),
+            ),
+            array(
+                'issued_at' => $this->getParam('abuse_issued_at', ''),
+                'nonce' => $this->getParam('abuse_nonce', ''),
+                'signature' => $this->getParam('abuse_signature', ''),
+                'website' => $this->getParam('website', ''),
             )
         );
         $status = isset($result['status'])
@@ -114,7 +133,7 @@ class security extends controller
             : 'invalid_request';
 
         if ($status === 'complete') {
-            return $this->nativeLanding();
+            return $this->returnAfterAuthentication();
         }
         if ($status === 'mfa_required') {
             return $this->nativeMfaPage($stack['adapter']->challengePage());
@@ -176,9 +195,10 @@ class security extends controller
         }
 
         if (($result['status'] ?? '') === 'complete') {
-            return $this->nativeLanding();
+            return $this->returnAfterAuthentication();
         }
         if (($result['status'] ?? '') === 'cancelled') {
+            $this->unsetSession('native_auth_return_to');
             return $this->nativeLoginPage(
                 'mod_security_mfacancelled'
             );
@@ -207,6 +227,65 @@ class security extends controller
         ));
 
         return 'mfa_web_tpl.php';
+    }
+
+    /**
+     * Complete an authentication transaction at its validated local origin.
+     */
+    private function returnAfterAuthentication()
+    {
+        $returnTo = $this->getSession('native_auth_return_to');
+        $this->unsetSession('native_auth_return_to');
+        $returnTo = $this->validatedReturnTo($returnTo);
+        if ($returnTo === null) {
+            return $this->nativeLanding();
+        }
+
+        header('Location: ' . $returnTo, true, 303);
+        exit;
+    }
+
+    /**
+     * Accept only a local path within this Chisimba installation.
+     */
+    private function validatedReturnTo($candidate)
+    {
+        if (is_array($candidate) || is_object($candidate)) {
+            return null;
+        }
+        $candidate = trim((string) $candidate);
+        if ($candidate === '' || strlen($candidate) > 2048
+            || preg_match('/[\x00-\x1F\x7F\\]/', $candidate)
+            || strncmp($candidate, '//', 2) === 0) {
+            return null;
+        }
+        $parts = parse_url($candidate);
+        if ($parts === false || isset($parts['scheme']) || isset($parts['host'])
+            || isset($parts['user']) || isset($parts['pass'])
+            || isset($parts['port']) || isset($parts['fragment'])) {
+            return null;
+        }
+        $path = isset($parts['path']) ? $parts['path'] : '';
+        $base = rtrim(str_replace('\\', '/', dirname(
+            isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/'
+        )), '/');
+        if ($base === '') {
+            $base = '/';
+        }
+        $prefix = $base === '/' ? '/' : $base . '/';
+        if ($path !== $base && strncmp($path, $prefix, strlen($prefix)) !== 0) {
+            return null;
+        }
+        parse_str(isset($parts['query']) ? $parts['query'] : '', $query);
+        if (($query['module'] ?? '') === 'security'
+            && in_array(($query['action'] ?? ''), array(
+                'login', 'showlogin', 'authenticated', 'logout',
+                'mfa_enrol_start', 'mfa_enrol_confirm', 'mfa_totp',
+                'mfa_recovery', 'mfa_cancel',
+            ), true)) {
+            return null;
+        }
+        return $candidate;
     }
 
     private function nativeLanding()
@@ -258,9 +337,20 @@ class security extends controller
             );
         }
 
-        return $this->nativeLoginPage(
-            'mod_security_nativelogoutcomplete'
+        $scriptPath = str_replace(
+            '\\',
+            '/',
+            isset($_SERVER['SCRIPT_NAME'])
+                ? $_SERVER['SCRIPT_NAME']
+                : '/index.php'
         );
+        $basePath = rtrim(dirname($scriptPath), '/');
+        $frontPage = ($basePath === '' || $basePath === '.')
+            ? '/'
+            : $basePath . '/';
+
+        header('Location: ' . $frontPage, true, 303);
+        exit;
     }
 
     private function nativeFailure($key)

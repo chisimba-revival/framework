@@ -1,21 +1,27 @@
 <script type="text/javascript">
 //<![CDATA[
-function init () {
-    $('input_redraw').onclick = function () {
-        redraw();
-    }
-}
 function redraw () {
-    var url = 'index.php';
-    var pars = 'module=security&action=generatenewcaptcha';
-    var myAjax = new Ajax.Request( url, {method: 'get', parameters: pars, onComplete: showResponse} );
-}
-function showLoad () {
-    $('load').style.display = 'block';
-}
-function showResponse (originalRequest) {
-    var newData = originalRequest.responseText;
-    $('captchaDiv').innerHTML = newData;
+    fetch('index.php?module=security&action=generatenewcaptcha', {
+        method: 'GET',
+        credentials: 'same-origin'
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('CAPTCHA redraw failed with HTTP ' + response.status);
+            }
+            return response.text();
+        })
+        .then(function (newData) {
+            var captchaDiv = document.getElementById('captchaDiv');
+            if (captchaDiv) {
+                captchaDiv.innerHTML = newData;
+            }
+        })
+        .catch(function (error) {
+            if (window.console && console.error) {
+                console.error(error);
+            }
+        });
 }
 //]]>
 </script>

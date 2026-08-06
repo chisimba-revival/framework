@@ -28,6 +28,13 @@ class block_stories extends ChisimbaObject
     public $title;
 
     /**
+     * Render as primary content rather than a compact utility block.
+     *
+     * @var string
+     */
+    public $presentationMode = 'content';
+
+    /**
     * Standard init function to instantiate language object
     * and create title, etc
     */

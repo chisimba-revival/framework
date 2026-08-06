@@ -26,7 +26,7 @@ class groupservice extends ChisimbaObject
 
     public function init()
     {
-        $this->objGroups = $this->getObject('groupadminmodel', 'groupadmin');
+        // Hierarchy reads are owned directly by GroupService (p202).
         $this->objUserAdmin = $this->getObject('useradmin_model2', 'security');
         $this->objUser = $this->getObject('user', 'security');
         $this->objContext = $this->getObject('dbcontext', 'context');
@@ -53,7 +53,7 @@ class groupservice extends ChisimbaObject
      */
     public function listGroups()
     {
-        $topGroups = $this->objGroups->getTopLevelGroups();
+        $topGroups = $this->legacyTopLevelGroupRows();
         if (!is_array($topGroups)) {
             return array();
         }
@@ -239,6 +239,237 @@ class groupservice extends ChisimbaObject
         );
     }
 
+    /**
+     * Idempotently remove one direct canonical membership.
+     *
+     * Authorization belongs to the calling application boundary, just as it
+     * does for ensureMembership(). This method owns only the canonical write.
+     */
+    public function removeMembership($groupId, $permissionUserId)
+    {
+        // CHISIMBA_GROUPSERVICE_IDEMPOTENT_REMOVE
+        if (!$this->objMembershipDb->membershipExists(
+            $groupId,
+            $permissionUserId
+        )) {
+            return true;
+        }
+
+        return $this->objMembershipDb->removeMembership(
+            $groupId,
+            $permissionUserId
+        );
+    }
+
+    /**
+     * Create one ordinary administrator-defined canonical group.
+     *
+     * The description is accepted for compatibility but remains metadata:
+     * tbl_perms_groups has no description column. If a parent is supplied,
+     * creation and the subgroup relationship are one transaction.
+     */
+    /**
+     * Create one canonical group with a controlled namespaced identifier.
+     *
+     * The namespace and local name are validated independently. The caret is
+     * introduced only by this method for compatibility with active Chisimba
+     * identifiers; ordinary createGroup() remains deliberately strict.
+     */
+    public function createNamespacedGroup($namespace, $localName,
+        $description = null, $parentId = null)
+    {
+        $this->assertAdministrator();
+        $namespace = trim((string) $namespace);
+        $localName = trim((string) $localName);
+        if (!$this->validRenameName($namespace)
+            || !$this->validRenameName($localName)) {
+            return array('ok' => false, 'code' => 'group_namespace_invalid');
+        }
+
+        $groupName = $namespace . '^' . $localName;
+        if (strlen($groupName) > 255) {
+            return array('ok' => false, 'code' => 'group_name_invalid');
+        }
+        $rows = $this->exactGroupRows($groupName);
+        if ($rows === false) {
+            return array('ok' => false, 'code' => 'group_lookup_failed');
+        }
+        if (count($rows) !== 0) {
+            return array('ok' => false, 'code' => 'group_already_exists');
+        }
+
+        if ($parentId !== null) {
+            $parentId = $this->positiveInteger($parentId);
+            if ($parentId === null || $this->findGroup($parentId) === null) {
+                return array('ok' => false, 'code' => 'parent_group_not_found');
+            }
+        }
+
+        $this->objUser->beginTransaction();
+        try {
+            $created = $this->ensureCanonicalGroup($groupName, $description);
+            if (!is_array($created) || empty($created['ok'])
+                || empty($created['groupId'])) {
+                $code = is_array($created) && isset($created['code'])
+                    ? $created['code'] : 'group_create_failed';
+                throw new Exception($code);
+            }
+            $groupId = $this->positiveInteger($created['groupId']);
+            if ($groupId === null) {
+                throw new Exception('group_identifier_failed');
+            }
+            if ($parentId !== null && !$this->ensureSubgroup($parentId, $groupId)) {
+                throw new Exception('subgroup_assign_failed');
+            }
+            $verify = $this->exactGroupRows($groupName);
+            if (!is_array($verify) || count($verify) !== 1
+                || $this->positiveInteger($verify[0]['group_id']) !== $groupId
+                || $this->positiveInteger($verify[0]['puid']) !== $groupId) {
+                throw new Exception('group_create_verify_failed');
+            }
+            $this->objUser->commitTransaction();
+            return array('ok' => true, 'code' => 'group_created', 'groupId' => $groupId);
+        } catch (Exception $exception) {
+            $this->objUser->rollbackTransaction();
+            return array('ok' => false, 'code' => $exception->getMessage());
+        }
+    }
+
+    public function createGroup($groupName, $description = null, $parentId = null)
+    {
+        $this->assertAdministrator();
+        $groupName = trim((string) $groupName);
+        if (!$this->validRenameName($groupName)) {
+            return array('ok' => false, 'code' => 'group_name_invalid');
+        }
+
+        $rows = $this->exactGroupRows($groupName);
+        if ($rows === false) {
+            return array('ok' => false, 'code' => 'group_lookup_failed');
+        }
+        if (count($rows) !== 0) {
+            return array('ok' => false, 'code' => 'group_already_exists');
+        }
+
+        if ($parentId !== null) {
+            $parentId = $this->positiveInteger($parentId);
+            if ($parentId === null || $this->findGroup($parentId) === null) {
+                return array('ok' => false, 'code' => 'parent_group_not_found');
+            }
+        }
+
+        $this->objUser->beginTransaction();
+        try {
+            $created = $this->ensureCanonicalGroup($groupName, $description);
+            if (!is_array($created) || empty($created['ok'])
+                || empty($created['groupId'])) {
+                $code = is_array($created) && isset($created['code'])
+                    ? $created['code'] : 'group_create_failed';
+                throw new Exception($code);
+            }
+
+            $groupId = $this->positiveInteger($created['groupId']);
+            if ($groupId === null) {
+                throw new Exception('group_identifier_failed');
+            }
+            if ($parentId !== null && !$this->ensureSubgroup($parentId, $groupId)) {
+                throw new Exception('subgroup_assign_failed');
+            }
+
+            $verify = $this->exactGroupRows($groupName);
+            if (!is_array($verify) || count($verify) !== 1
+                || $this->positiveInteger($verify[0]['group_id']) !== $groupId
+                || $this->positiveInteger($verify[0]['puid']) !== $groupId) {
+                throw new Exception('group_create_verify_failed');
+            }
+
+            $this->objUser->commitTransaction();
+            return array(
+                'ok' => true,
+                'code' => 'group_created',
+                'groupId' => $groupId,
+            );
+        } catch (Exception $exception) {
+            $this->objUser->rollbackTransaction();
+            return array('ok' => false, 'code' => $exception->getMessage());
+        }
+    }
+
+    /**
+     * Delete one ordinary canonical group and its owned canonical relations.
+     *
+     * Child groups make deletion fail explicitly. Legacy tbl_permissions_acl
+     * rows are deliberately preserved until their mixed identifier contract
+     * is migrated into the canonical permission architecture.
+     */
+    public function deleteGroup($groupId)
+    {
+        $this->assertAdministrator();
+        $groupId = $this->positiveInteger($groupId);
+        if ($groupId === null) {
+            return array('ok' => false, 'code' => 'group_id_invalid');
+        }
+
+        $group = $this->findGroup($groupId);
+        if ($group === null) {
+            return array('ok' => false, 'code' => 'group_not_found');
+        }
+        if (strcasecmp((string) $group['storedName'], 'Site Admin') === 0) {
+            return array('ok' => false, 'code' => 'protected_group');
+        }
+
+        $children = $this->objUser->getArray(
+            'SELECT subgroup_id FROM tbl_perms_group_subgroups'
+            . ' WHERE group_id = ' . $groupId
+        );
+        if (!is_array($children)) {
+            return array('ok' => false, 'code' => 'group_children_lookup_failed');
+        }
+        if (count($children) !== 0) {
+            return array('ok' => false, 'code' => 'group_has_children');
+        }
+
+        $this->objUser->beginTransaction();
+        try {
+            $this->objUser->_execute(
+                'DELETE FROM tbl_perms_groupusers WHERE group_id = ' . $groupId
+            );
+            $this->objUser->_execute(
+                'DELETE FROM tbl_perms_group_subgroups'
+                . ' WHERE subgroup_id = ' . $groupId
+            );
+            $this->objUser->_execute(
+                'DELETE FROM tbl_perms_grouprights WHERE group_id = ' . $groupId
+            );
+            $this->objUser->_execute(
+                'DELETE FROM tbl_perms_groups WHERE group_id = ' . $groupId
+            );
+
+            $remaining = $this->objUser->getArray(
+                'SELECT group_id FROM tbl_perms_groups WHERE group_id = ' . $groupId
+            );
+            if (!is_array($remaining) || count($remaining) !== 0) {
+                throw new Exception('group_delete_verify_failed');
+            }
+            $relations = $this->objUser->getArray(
+                'SELECT group_id FROM tbl_perms_groupusers WHERE group_id = ' . $groupId
+                . ' UNION ALL SELECT subgroup_id FROM tbl_perms_group_subgroups'
+                . ' WHERE subgroup_id = ' . $groupId
+                . ' UNION ALL SELECT group_id FROM tbl_perms_grouprights'
+                . ' WHERE group_id = ' . $groupId
+            );
+            if (!is_array($relations) || count($relations) !== 0) {
+                throw new Exception('group_relations_remain');
+            }
+
+            $this->objUser->commitTransaction();
+            return array('ok' => true, 'code' => 'group_deleted');
+        } catch (Exception $exception) {
+            $this->objUser->rollbackTransaction();
+            return array('ok' => false, 'code' => $exception->getMessage());
+        }
+    }
+
     private function ensureCanonicalGroup($groupName, $description)
     {
         $rows = $this->exactGroupRows($groupName);
@@ -374,6 +605,151 @@ class groupservice extends ChisimbaObject
      * @param string $groupName
      * @return integer|boolean Positive group identifier, or false.
      */
+    /**
+     * Return the exact row shape required by the legacy unfiltered facade.
+     *
+     * This is a compatibility read contract. GroupService owns the database
+     * read and does not call back into groupadminmodel.
+     */
+    /**
+     * Return descendant group rows in deterministic breadth-first order.
+     *
+     * This compatibility read is owned entirely by GroupService. It returns
+     * FALSE when the identifier is invalid, missing, or has no descendants.
+     */
+    public function legacySubgroupRows($parentId)
+    {
+        if (!is_scalar($parentId) || !preg_match('/^[0-9]+$/', (string) $parentId)) {
+            return false;
+        }
+        $parentId = (string) $parentId;
+        if ($this->legacyStoredNameForGroupId($parentId) === null) {
+            return false;
+        }
+        $queue = array($parentId);
+        $seen = array($parentId => true);
+        $result = array();
+        while (!empty($queue)) {
+            $current = array_shift($queue);
+            $rows = $this->objUser->getArray(
+                'SELECT g.group_id, g.group_type, g.group_define_name'
+                . ' FROM tbl_perms_group_subgroups r'
+                . ' INNER JOIN tbl_perms_groups g ON g.group_id=r.subgroup_id'
+                . ' WHERE r.group_id=' . (int) $current
+                . ' ORDER BY r.subgroup_id'
+            );
+            if (!is_array($rows)) {
+                return false;
+            }
+            foreach ($rows as $row) {
+                $childId = (string) $row['group_id'];
+                if (isset($seen[$childId])) {
+                    continue;
+                }
+                $seen[$childId] = true;
+                $result[] = $row;
+                $queue[] = $childId;
+            }
+        }
+        return empty($result) ? false : $result;
+    }
+
+    /**
+     * Return the direct parent's stored group name, or NULL.
+     */
+    public function legacyParentStoredName($subgroupId)
+    {
+        if (!is_scalar($subgroupId) || !preg_match('/^[0-9]+$/', (string) $subgroupId)) {
+            return null;
+        }
+        $rows = $this->objUser->getArray(
+            'SELECT g.group_define_name'
+            . ' FROM tbl_perms_group_subgroups r'
+            . ' INNER JOIN tbl_perms_groups g ON g.group_id=r.group_id'
+            . ' WHERE r.subgroup_id=' . (int) $subgroupId
+            . ' ORDER BY r.group_id LIMIT 1'
+        );
+        if (!is_array($rows) || empty($rows) || !isset($rows[0]['group_define_name'])) {
+            return null;
+        }
+        return (string) $rows[0]['group_define_name'];
+    }
+
+    /**
+     * Return groups which are not registered as subgroups.
+     *
+     * This compatibility-shaped read is owned by GroupService and preserves
+     * the deterministic fields and ordering used by the canonical group list.
+     */
+    public function legacyTopLevelGroupRows()
+    {
+        $rows = $this->objUser->getArray(
+            'SELECT g.group_id, g.group_type, g.group_define_name'
+            . ' FROM tbl_perms_groups g'
+            . ' WHERE NOT EXISTS ('
+            . 'SELECT 1 FROM tbl_perms_group_subgroups r'
+            . ' WHERE r.subgroup_id=g.group_id)'
+            . ' ORDER BY g.group_id'
+        );
+        return is_array($rows) ? $rows : false;
+    }
+
+    public function legacyGroupRows()
+    {
+        $rows = $this->objUser->getArray(
+            'SELECT group_id, group_type, group_define_name'
+            . ' FROM tbl_perms_groups'
+        );
+        if (!is_array($rows) || empty($rows)) {
+            return false;
+        }
+        return $rows;
+    }
+
+    /**
+     * Return a stored group name's legacy string identifier, or NULL.
+     */
+    public function legacyGroupIdForStoredName($groupName)
+    {
+        if (!is_scalar($groupName)) {
+            return null;
+        }
+        $groupName = (string) $groupName;
+        $rows = $this->legacyGroupRows();
+        if (!is_array($rows)) {
+            return null;
+        }
+        foreach ($rows as $row) {
+            if (isset($row['group_define_name'], $row['group_id'])
+                && (string) $row['group_define_name'] === $groupName) {
+                return (string) $row['group_id'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return an identifier's stored group name, or NULL.
+     */
+    public function legacyStoredNameForGroupId($groupId)
+    {
+        if (!is_scalar($groupId)) {
+            return null;
+        }
+        $groupId = (string) $groupId;
+        $rows = $this->legacyGroupRows();
+        if (!is_array($rows)) {
+            return null;
+        }
+        foreach ($rows as $row) {
+            if (isset($row['group_id'], $row['group_define_name'])
+                && (string) $row['group_id'] === $groupId) {
+                return (string) $row['group_define_name'];
+            }
+        }
+        return null;
+    }
+
     public function groupIdForName($groupName)
     {
         if (!is_scalar($groupName)) {
@@ -787,18 +1163,21 @@ class groupservice extends ChisimbaObject
 
     private function findGroup($groupId)
     {
-        $groupId = $this->positiveInteger($groupId);
-        if ($groupId === null) {
+        $rows = $this->objUser->getArray(
+            'SELECT group_id, group_type, group_define_name'
+            . ' FROM tbl_perms_groups WHERE group_id = ' . (int) $groupId
+        );
+        if (!is_array($rows) || count($rows) !== 1) {
             return null;
         }
 
-        foreach ($this->listGroups() as $group) {
-            if ((int) $group['id'] === $groupId) {
-                return $group;
-            }
-        }
-
-        return null;
+        $row = $rows[0];
+        return array(
+            'id' => (string) $row['group_id'],
+            'type' => (string) $row['group_type'],
+            'name' => (string) $row['group_define_name'],
+            'storedName' => (string) $row['group_define_name'],
+        );
     }
 
     private function findUserById(array $users, $userId)
@@ -831,7 +1210,7 @@ class groupservice extends ChisimbaObject
 
     private function directSubgroups($parentId)
     {
-        $payload = $this->objGroups->getSubgroups($parentId);
+        $payload = $this->legacySubgroupRows($parentId);
         if (!is_array($payload)
             || !isset($payload[0])
             || !is_array($payload[0])) {

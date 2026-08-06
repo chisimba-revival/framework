@@ -89,9 +89,9 @@ class treemenu
     * @return object       Returns a reference to the new node inside
     *                      the tree.
     */
-    function &addItem(&$node)
+    function &addItem($node)
     {
-        $this->items[] = &$node;
+        $this->items[] = $node;
         return $this->items[count($this->items) - 1];
     }
 

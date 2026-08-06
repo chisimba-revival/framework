@@ -156,8 +156,6 @@ class modulecatalogue extends controller {
     public function init() {
         try {
             set_time_limit ( 0 );
-            $this->objRPCServer = $this->getObject ( 'rpcserver', 'packages' );
-            $this->objRPCClient = $this->getObject ( 'rpcclient', 'packages' );
             $this->objUser = $this->getObject ( 'user', 'security' );
             $this->objConfig = $this->getObject ( 'altconfig', 'config' );
             $this->objLanguage = $this->getObject ( 'language', 'language' );
@@ -176,7 +174,7 @@ class modulecatalogue extends controller {
             if(extension_loaded('zip') && function_exists('zip_open')) {
                 $this->extzip = TRUE;
             }
-            $this->objSideMenu->addNodes ( array ('local updates', 'remote updates', 'all', 'skins', 'languages' ) );
+            $this->objSideMenu->addNodes ( array ('local updates', 'all', 'languages' ) );
             $sysTypes = $this->objCatalogueConfig->getCategories ();
             //$xmlCat = $this->objCatalogueConfig->getNavParam('category');
             //get list of categories
@@ -197,9 +195,6 @@ class modulecatalogue extends controller {
             $this->objPOFile = $this->getObject ( 'pofile', 'modulecatalogue' );
             $this->objLog = $this->getObject ( 'logactivity', 'logger' );
             $this->objLog->log ();
-            // Load scriptaclous since we can no longer guarantee it is there
-            $scriptaculous = $this->getObject('scriptaculous', 'prototype');
-            $this->appendArrayVar('headerParams', $scriptaculous->show('text/javascript'));
         } catch ( customException $e ) {
             $this->errorCallback ( 'Caught exception: ' . $e->getMessage () );
             exit ();
@@ -237,19 +232,38 @@ class modulecatalogue extends controller {
                 $activeCat = $this->getParm ( 'cat', 'Local Updates' );
             }
             $this->setVar ( 'activeCat', $activeCat );
-            if ($activeCat == 'remote updates') {
-                $action = 'remote';
+
+            /*
+             * Remember the catalogue view independently of category and
+             * install/uninstall actions. Supplying installedonly=0 is the
+             * deliberate way to return to the complete local catalogue.
+             */
+            $installedOnlyParam = $this->getParam('installedonly', null);
+            if ($installedOnlyParam !== null) {
+                $installedOnly = ((string) $installedOnlyParam === '1');
+                $this->setSession('modulecatalogue_installed_only', $installedOnly);
+            } else {
+                $installedOnly = (bool) $this->getSession('modulecatalogue_installed_only', false);
             }
+            $this->setVar('installedOnly', $installedOnly);
+
+            /*
+             * Remember the catalogue view independently of category and
+             * install/uninstall actions. Supplying installedonly=0 is the
+             * deliberate way to return to the complete local catalogue.
+             */
+            $installedOnlyParam = $this->getParam('installedonly', null);
+            if ($installedOnlyParam !== null) {
+                $installedOnly = ((string) $installedOnlyParam === '1');
+                $this->setSession('modulecatalogue_installed_only', $installedOnly);
+            } else {
+                $installedOnly = (bool) $this->getSession('modulecatalogue_installed_only', false);
+            }
+            $this->setVar('installedOnly', $installedOnly);
             //$this->setVar('letter',$this->getParam('letter','none'));
             $this->setLayoutTemplate ( 'cat_layout.php' );
-            $connected = TRUE; // $this->objRPCClient->checkConnection ();
-            $this->setVar ( 'connected', $connected );
+            $this->setVar ( 'connected', false );
             switch ($action) { //check action
-                case 'xml' :
-                    $ret = $this->objRPCServer->getModuleDetails ();
-                    var_dump ( $ret );
-                    die ();
-                    break;
                 case 'updatedeps' :
                     $this->updateDeps ( $this->getParam ( 'modname' ) );
                     return $this->nextAction ( 'list', array ('cat' => 'Updates', 'message' => $this->objLanguage->languageText ( 'mod_modulecatalogue_installeddeps', 'modulecatalogue' ) ) );
@@ -316,31 +330,6 @@ class modulecatalogue extends controller {
                     if (strtolower ( $activeCat ) == 'local updates') {
                         $this->setVar ( 'patchArray', $this->objPatch->checkModules () );
                         return 'updates_tpl.php';
-                    } elseif (strtolower ( $activeCat == 'skins' )) {
-                        $s = microtime ( true );
-                        $skins = $this->objRPCClient->getSkinList ();
-                        $doc = simplexml_load_string ( $skins );
-                        $skins = $doc->string;
-                        $skins = explode ( "|", $skins );
-                        $skins = array_filter ( $skins );
-                        if (! empty ( $skins )) {
-                            foreach ( $skins as $skin ) {
-                                if ($skin == 'CVS' || $skin == 'CVSROOT' || $skin == '_common' || $skin == 'cache.config' || $skin == 'error_log') {
-                                    unset ( $skin );
-                                    continue;
-                                }
-                                $skinner [] = $skin;
-                            }
-                        } else {
-                            $skinner = array ();
-                        }
-                        $skinner = array_filter ( $skinner );
-                        $count = (is_countable($skinner) ? count($skinner) : 0);
-                        $this->setVarByRef ( 'skins', $skinner );
-                        $t = microtime ( true ) - $s;
-                        log_debug ( "Web service discovered $count skins in $t seconds" );
-                        //$this->setLayoutTemplate('cat_layout');
-                        return 'skins_tpl.php';
                     } else if (strtolower ( $activeCat == 'languages' )) {
                         return 'languages_tpl.php';
                     } else {
@@ -378,7 +367,7 @@ class modulecatalogue extends controller {
                     $lastAction = $this->getParam ( 'lastaction' );
                     $srchType = $this->getParam ( 'srchtype' );
                     $ins = $this->getPatchObject ( $mod );
-                    if (method_exists ( $ins, 'preinstall' )) {
+                    if ($ins !== null && method_exists ( $ins, 'preinstall' )) {
                         $ins->preinstall ();
                     }
 
@@ -394,7 +383,7 @@ class modulecatalogue extends controller {
                         }
                     }
                     // run the postinstall script(s)
-                    if (method_exists ( $ins, 'postinstall' )) {
+                    if ($ins !== null && method_exists ( $ins, 'postinstall' )) {
                         $ins->postinstall ();
                     }
 
@@ -539,7 +528,7 @@ class modulecatalogue extends controller {
                     $patchver = $this->getParam ( 'patchver' );
                     $modname = $this->getParam ( 'mod' );
                     $ins = $this->getPatchObject ( $modname );
-                    if (method_exists ( $ins, 'preinstall' )) {
+                    if ($ins !== null && method_exists ( $ins, 'preinstall' )) {
                         $ins->preinstall ($patchver);
                     }
                     if (($this->output = $this->objPatch->applyUpdates ( $modname )) === FALSE) {
@@ -549,7 +538,7 @@ class modulecatalogue extends controller {
                     }
                     // postinstall
                     $ins = $this->getPatchObject ( $modname );
-                    if (method_exists ( $ins, 'postinstall' )) {
+                    if ($ins !== null && method_exists ( $ins, 'postinstall' )) {
                         $ins->postinstall ($patchver);
                     }
 
@@ -596,369 +585,6 @@ class modulecatalogue extends controller {
                 case 'updatexml' :
                     $this->objCatalogueConfig->writeCatalogue ();
                     return $this->nextAction ( null, array ('message' => $this->objLanguage->languageText ( 'mod_modulecatalogue_xmlupdated', 'modulecatalogue' ) ) );
-
-                case 'remote' :
-                    //$modules = $this->objRPCClient->getModuleList();
-                    $s = microtime ( true );
-                    $modules = $this->objRPCClient->getModuleDetails ();
-                    $doc = simplexml_load_string ( $modules );
-                    $count = count ( $doc->array->data->value );
-                    $i = 0;
-                    while ( $i <= $count ) {
-                        $modobj = $doc->array->data->value [$i];
-                        if (is_object ( $modobj )) {
-                            $modulesarray [$i] ['id'] = ( string ) $modobj->array->data->value [0]->string;
-                            $modulesarray [$i] ['name'] = ( string ) $modobj->array->data->value [1]->string;
-                            $modulesarray [$i] ['desc'] = ( string ) $modobj->array->data->value [2]->string;
-                            $modulesarray [$i] ['ver'] = ( string ) $modobj->array->data->value [3]->string;
-                            $modulesarray [$i] ['status'] = ( string ) $modobj->array->data->value [4]->string;
-                        }
-                        $i ++;
-                    }
-                    $this->setVarByRef ( 'modules', $modulesarray );
-                    $t = microtime ( true ) - $s;
-                    log_debug ( "Web service discovered $count modules in $t seconds" );
-                    //echo $t."<br />";
-                    return 'remote_tpl.php';
-
-                case 'ajaxdownload' :
-                    $start = microtime ( true );
-                    $modName = $this->getParam ( 'moduleId' );
-                    if ($modName == 'core') {
-                        log_debug ( "Downloading $modName from remote..." );
-                        if (! file_exists ( $modName.".zip" )) {
-                            if (! $encodedZip = $this->objRPCClient->getCoreZip ( $modName )) {
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_rpcerror', 'modulecatalogue' );
-                                break;
-                            }
-                            if (! $zipContents = base64_decode ( strip_tags ( $encodedZip ) )) {
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_rpcerror', 'modulecatalogue' );
-                                break;
-                            }
-                            if (! $fh = fopen ( $modName.".zip", 'wb' )) {
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_fileerror', 'modulecatalogue' );
-                                break;
-                            }
-                            if (! fwrite ( $fh, $zipContents )) {
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_fileerror', 'modulecatalogue' );
-                                break;
-                            }
-                            fclose ( $fh );
-                        }
-                        @chmod ( $modName . ".zip", 0777 );
-                        echo $this->objLanguage->languageText ( 'phrase_unzipping' );
-                        break;
-                    }
-                    log_debug ( "Downloading module $modName from remote..." );
-                    if (! file_exists ( $modName.".zip" )) {
-                        if (! $encodedZip = $this->objRPCClient->getModuleZip ( $modName )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_rpcerror', 'modulecatalogue' );
-                            break;
-                        }
-                        if (! $zipContents = base64_decode ( strip_tags ( $encodedZip ) )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_rpcerror', 'modulecatalogue' );
-                            break;
-                        }
-                        if (! $fh = fopen ( $modName.".zip", 'wb' )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_fileerror', 'modulecatalogue' );
-                            break;
-                        }
-                        if (! fwrite ( $fh, $zipContents )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_fileerror', 'modulecatalogue' );
-                            break;
-                        }
-                        fclose ( $fh );
-                    }
-                    @chmod ( $modName . ".zip", 0777 );
-                    echo $this->objLanguage->languageText ( 'phrase_unzipping' );
-                    break;
-
-                case 'ajaxunzipcore' :
-                    $modName = $this->getParam ( 'moduleId' );
-                    if ($modName != 'core') {
-                        echo $this->objLanguage->languageText ( 'mod_modulecatalogue_notcore', 'modulecatalogue' );
-                        break;
-                    }
-                    /*$zip = new ZipArchive;
-                    $zip->open("core.zip");
-                    if (! $zip->extractTo( $this->objConfig->getsiteRootPath ()."classes/" )) {
-                        log_debug ( "Unzipping new core..." );
-                        header ( 'HTTP/1.0 500 Internal Server Error' );
-                        echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                        echo "<br /> $objZip->error";
-                        break;
-                    }*/
-                    if($this->handleZip('core.zip', 'core') === FALSE) {
-                        log_debug ( "Unzipping new core failed..." );
-                        header ( 'HTTP/1.0 500 Internal Server Error' );
-                        echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                        break;
-                    }
-                    echo $this->objLanguage->languageText ( 'phrase_installing' );
-                    break;
-
-                case 'ajaxunzip' :
-                    $modName = $this->getParam ( 'moduleId' );
-                    @chmod ( $this->objConfig->getModulePath (), 0777 );
-                    if (in_array ( $modName, $this->objEngine->coremods )) {
-                        if (! $this->handleZip($modName, 'core_modules')) {
-                            log_debug("Unzip failed!");
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                            break;
-                        }
-                    }
-                    else {
-                        if (! $this->handleZip($modName, 'modules')) {
-                            log_debug ( "unzipping failed!" );
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                            break;
-                        }
-                    }
-                        /* log_debug("Unzipping replacement core module $modName");
-                        $zip = new ZipArchive;
-                        $zip->open($modName.".zip");
-                        if (! $zip->extractTo($this->objConfig->getsiteRootPath () . 'core_modules/'.$modName )) {
-                            $zip->close();
-                            log_debug("Unzip failed!");
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                            //echo "<br /> $objZip->error";
-                            //unlink("$modName.zip");
-                            break;
-                        }
-                        $zip->close();
-                    } elseif (is_dir ( $this->objConfig->getModulePath () . $modName )) {
-                        $zip = new ZipArchive;
-                        $zip->open($modName.".zip");
-
-                        if (! $zip->extractTo($this->objConfig->getModulePath ().$modName )) {
-                            log_debug ( "unzipping failed!" );
-                            $zip->close();
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                            break;
-                        }
-                        $zip->close();
-                    } else {
-                        if (! is_dir ( $this->objConfig->getModulePath () . $modName )) {
-                            log_debug ( "New module $modName from remote." );
-                            $zip = new ZipArchive;
-                            $zip->open($modName.".zip");
-
-                            if (! $zip->extractTo($this->objConfig->getModulePath ().$modName )) {
-                                log_debug ( "unzipping failed!" );
-                                $zip->close();
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                                break;
-                            }
-                            $zip->close();
-                        }
-                    }
-                    //$zip->close(); */
-
-                    echo $this->objLanguage->languageText ( 'phrase_installing' );
-                    break;
-
-                case 'ajaxinstall' :
-                    $modName = $this->getParam ( 'moduleId' );
-                    log_debug ( "Prepping to install $modName" );
-                    // if (!$this->installModule($modName)) {
-                    if (! $this->smartRegister ( $modName )) {
-                        header ( 'HTTP/1.0 500 Internal Server Error' );
-                        $this->objModuleAdmin->output = strip_tags ( $this->objModuleAdmin->output );
-                        echo "$this->output\n{$this->objModuleAdmin->output}";
-                        break;
-                    }
-                    unlink ( $modName.".zip" );
-                    echo "<b>" . $this->objLanguage->languageText ( 'word_installed' ) . "</b>";
-                    break;
-
-                case 'ajaxinstallcore' :
-                    $modName = $this->getParam ( 'moduleId' );
-                    log_debug ( "Prepping to install $modName" );
-                    unlink ( $modName.".zip" );
-                    echo "<b>" . $this->objLanguage->languageText ( 'word_installed' ) . "</b>";
-                    break;
-
-                case 'ajaxupgrade' :
-                    $modName = $this->getParam ( 'moduleId' );
-                    log_debug ( "Preparing to upgrade $modName" );
-                    if (! $this->installModule ( $modName, TRUE )) {
-                        header ( 'HTTP/1.0 500 Internal Server Error' );
-                        $this->objModuleAdmin->output = strip_tags ( $this->objModuleAdmin->output );
-                        echo "$this->output\n{$this->objModuleAdmin->output}";
-                        break;
-                    }
-                    unlink ( $modName.".zip" );
-                    echo "<b>" . $this->objLanguage->languageText ( 'word_upgraded', "modulecatalogue" ) . "</b>";
-                    //sleep(5);
-                    //$this->nextAction(array());
-                    break;
-
-                case 'ajaxunzipskin' :
-                    $skin = $this->getParam ( 'skinname' );
-                    //$objZip = $this->getObject ( 'wzip', 'utilities' );
-                    /*$zip = new ZipArchive;
-                    $zip->open($skin.".zip");
-                    if (! $zip->extractTo($this->objConfig->getSkinRoot ().$skin )) {
-                        log_debug ( "unzipping failed!" );
-                        header ( 'HTTP/1.0 500 Internal Server Error' );
-                        echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                        //echo "<br /> $objZip->error";
-                        //unlink("$modName.zip");
-                        break;
-                    }*/
-                    if (! $this->handleZip( $skin, 'skin' )) {
-                        log_debug ( "Skin unzipping failed!" );
-                        header ( 'HTTP/1.0 500 Internal Server Error' );
-                        echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                        break;
-                    }
-                    echo $this->objLanguage->languageText ( 'phrase_installing' );
-                    break;
-
-                case 'ajaxinstallskin' :
-                    $skin = $this->getParam ( 'skinname' );
-                    unlink ( $skin.".zip" );
-                    // this doesn't seem to work correctly...
-                    $this->objConfig->setdefaultSkin ( $skin );
-                    echo "<b>" . $this->objLanguage->languageText ( 'word_installed' ) . "</b>";
-                    break;
-
-                case 'ajaxdownloadskin' :
-                    $start = microtime ( true );
-                    $skinName = $this->getParam ( 'skinname' );
-                    log_debug ( "Downloading $skinName from remote..." );
-                    if (! file_exists ( $skinName.".zip" )) {
-                        if (! $encodedZip = $this->objRPCClient->getSkinZip ( $skinName )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_rpcerror', 'modulecatalogue' );
-                            break;
-                        }
-                        if (! $zipContents = base64_decode ( strip_tags ( $encodedZip ) )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_rpcerror', 'modulecatalogue' );
-                            break;
-                        }
-                        if (! $fh = fopen ( $skinName.".zip", 'wb' )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_fileerror', 'modulecatalogue' );
-                            break;
-                        }
-                        if (! fwrite ( $fh, $zipContents )) {
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_fileerror', 'modulecatalogue' );
-                            break;
-                        }
-                        fclose ( $fh );
-                    }
-                    chmod ( $skinName . ".zip", 0777 );
-                    echo $this->objLanguage->languageText ( 'phrase_unzipping' );
-                    break;
-
-                case 'updatesystypes' :
-                    $newfile = $this->objRPCClient->updateSysTypes ();
-                    $file = simplexml_load_string ( $newfile );
-                    $repfile = base64_decode ( $file->string );
-                    // delete the old and replace it with the new...
-                    unlink ( $this->objConfig->getsiteRootPath () . 'config/systemtypes.xml' );
-                    file_put_contents ( $this->objConfig->getsiteRootPath () . 'config/systemtypes.xml', $repfile );
-                    $this->nextAction ( '' );
-                    break;
-
-                case 'downloadsystemtype' :
-                    $type = $this->getParam ( 'type' );
-                    // make sure that the systemtypes.xml doc is up to date for dependencies
-                    $newfile = $this->objRPCClient->updateSysTypes ();
-                    $file = simplexml_load_string ( $newfile );
-                    $repfile = base64_decode ( $file->string );
-                    // delete the old and replace it with the new...
-                    unlink ( $this->objConfig->getsiteRootPath () . 'config/systemtypes.xml' );
-                    file_put_contents ( $this->objConfig->getsiteRootPath () . 'config/systemtypes.xml', $repfile );
-
-                    // read the systemtypes doc for modules needed...
-                    $mods = $this->objCatalogueConfig->getCategoryList ( $type );
-                    //$objZip = $this->getObject ( 'wzip', 'utilities' );
-                    // loop through the found modules and download them.
-                    $modules = array_keys ( $mods );
-                    foreach ( $modules as $dls ) {
-                        log_debug ( "getting $dls from remote..." );
-                        $encodedZip = $this->objRPCClient->getModuleZip ( $dls );
-                        $zipContents = base64_decode ( strip_tags ( $encodedZip ) );
-                        file_put_contents ( $dls . ".zip", $zipContents );
-                        log_debug ( "Unzipping $dls..." );
-                        if (in_array ( $dls, $this->objEngine->coremods )) {
-                            log_debug ( "upgrading core module $dls as part of system type..." );
-                            if (! $this->handleZip($dls, 'core_modules')) {
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                                //echo "<br /> $objZip->error";
-                                break;
-                            }
-                        }
-                        else {
-                            if (! $this->handleZip($dls, 'modules')) {
-                                log_debug ( "unzipping failed!" );
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                                break;
-                            }
-                        }
-
-                        /* $zip = new ZipArchive;
-                        $zip->open($this->objConfig->getModulePath ().$dls.".zip");
-                        // check for core modules and install them where they should go
-                        if (in_array ( $dls, $this->objEngine->coremods )) {
-                            log_debug ( "upgrading core module $dls as part of system type..." );
-                            //                      if (!$objZip->unPackFilesFromZip("$dls.zip", $this->objConfig->getsiteRootPath().'core_modules/')) {
-
-
-                            if (! $zip->extractTo($this->objConfig->getsiteRootPath () . 'core_modules/'.$dls )) {
-                                header ( 'HTTP/1.0 500 Internal Server Error' );
-                                echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                                //echo "<br /> $objZip->error";
-                                break;
-                            }
-
-                        } elseif (! $zip->extractTo($this->objConfig->getModulePath ().$dls )) {
-                            log_debug ( "unzipping failed!" );
-                            header ( 'HTTP/1.0 500 Internal Server Error' );
-                            echo $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' );
-                            //echo "<br /> $objZip->error";
-                            //unlink("$modName.zip");
-                            break;
-                        } */
-                    }
-
-                    log_debug("About to batch register: ");
-                    //log_debug($modules);
-                    // finally install all of the mods
-                    $this->batchRegister ( $modules );
-                    /*foreach($modules as $installables)
-                    {
-                    log_debug("Installing module $installables as part of system");
-                    $this->smartRegister($installables);
-                    }*/
-                    // clean up after ourselves
-                    foreach ( $modules as $deleteables ) {
-                        unlink ( $deleteables . ".zip" );
-                    }
-                    // echo $this->objLanguage->languageText('phrase_installing');
-                    // now set the system type to this type in the config.xml
-                    $this->objConfig->setSystemType ( $type );
-                    $this->nextAction ( '' );
-                    break;
 
                 case 'uploadarchive' :
                     $file = $_FILES ['archive'] ['name'];
@@ -1368,6 +994,27 @@ EOT;
             // << END
             // Set step to zero.
             $this->set_progess_step(0);
+            /*
+             * Provision the canonical administrator identity and baseline
+             * groups before module registration. This deliberately creates
+             * no login session; normal authentication remains mandatory.
+             */
+            $objInitialAdminProvisioning = $this->getObject(
+                'initialadminprovisioningservice',
+                'security'
+            );
+            $adminProvisioning = $objInitialAdminProvisioning
+                ->ensureInitialAdministrator('1');
+            if (!is_array($adminProvisioning) || empty($adminProvisioning['ok'])) {
+                $code = is_array($adminProvisioning)
+                    && isset($adminProvisioning['code'])
+                    ? $adminProvisioning['code']
+                    : 'unknown_failure';
+                throw new customException(
+                    'Initial administrator baseline provisioning failed: ' . $code
+                );
+            }
+
             log_debug ( 'Installing core modules' );
             $this->update_progess("Installing core modules\n");
             $coreList = $objXml->xpath ( "//category[categoryname='Basic System Only']" );

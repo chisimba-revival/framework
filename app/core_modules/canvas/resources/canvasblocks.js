@@ -29,15 +29,15 @@
         setUpSide('right');
         setUpSide('middle');
 
-        jQuery(".moveup").livequery('click', function() {
+        jQuery(document).on('click', '.moveup', function() {
             moveBlock(jQuery(this).parent().parent().attr('id'), 'up');
         });
 
-        jQuery(".movedown").livequery('click', function() {
+        jQuery(document).on('click', '.movedown', function() {
             moveBlock(jQuery(this).parent().parent().attr('id'), 'down');
         });
 
-        jQuery(".deleteblock").livequery('click', function() {
+        jQuery(document).on('click', '.deleteblock', function() {
             if (confirm(deleteConfirm)) {
                 removeBlock(jQuery(this).parent().parent().attr('id'));
             }
@@ -46,28 +46,31 @@
 
     function setUpSide(side)
     {
-        jQuery("#dd"+side+"blocks").bind('change', function() {
-            getPreview(jQuery("#dd"+side+"blocks").attr('value'), side);
+        jQuery("#dd"+side+"blocks").on('change', function() {
+            getPreview(jQuery(this).val(), side);
         });
 
 
-        jQuery("#"+side+"button").bind('click', function() {
+        jQuery("#"+side+"button").on('click', function() {
             addBlock(window[side+'Block'], side)
         });
 
-        jQuery("#"+side+"blocks > :first-child").livequery(function() {
-            jQuery("#"+side+"blocks .moveup").show();
-            jQuery("#"+side+"blocks .movedown").show();
-            jQuery("#"+side+"blocks > :first-child a.moveup").hide();
-            jQuery("#"+side+"blocks > :last-child a.movedown").hide();
-        });
+        updateMoveControls(side);
+    }
 
-        jQuery("#"+side+"blocks > :last-child").livequery(function() {
-            jQuery("#"+side+"blocks .moveup").show();
-            jQuery("#"+side+"blocks .movedown").show();
-            jQuery("#"+side+"blocks > :last-child a.movedown").hide();
-            jQuery("#"+side+"blocks > :first-child a.moveup").hide();
-        });
+    function updateMoveControls(side)
+    {
+        var blocks = jQuery("#"+side+"blocks");
+        blocks.find(".moveup, .movedown").show();
+        blocks.children().first().find("a.moveup").hide();
+        blocks.children().last().find("a.movedown").hide();
+    }
+
+    function updateAllMoveControls()
+    {
+        updateMoveControls('left');
+        updateMoveControls('right');
+        updateMoveControls('middle');
     }
 
 
@@ -84,6 +87,7 @@
                     } else {
                         var div = jQuery('#'+blockId).insertAfter(jQuery('#'+blockId).next());
                     }
+                    updateAllMoveControls();
                 } else {
                     alert(unableMoveBlock);
                 }
@@ -103,6 +107,7 @@
 
                 if (msg == 'ok') {
                     jQuery('#'+blockId).remove();
+                    updateAllMoveControls();
                 } else {
                     alert(unableDeleteBlock);
                 }
@@ -131,6 +136,7 @@
 
                     // Then Attach
                     jQuery("#"+side+"previewcontent .block").appendTo("#"+side+"blocks");
+                    updateMoveControls(side);
                     jQuery("#"+side+"button").hide();
 
 

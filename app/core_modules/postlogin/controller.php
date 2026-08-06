@@ -47,7 +47,6 @@ class postlogin extends controller {
      * @return string Filename of template to be displayed
      */
     public function dispatch($action) {
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.livequery.js', 'jquery'));
 
         /*
          * Convert the action into a method (alternative to

@@ -167,18 +167,29 @@ class sidemenu extends ChisimbaObject {
      * with the user's images
      * @return string
      */
-    function userDetails() {
+    function userDetails($additionalContent = '') {
         $objFeature = $this->newObject('featurebox', 'navigation');
         $head = NULL;
         //$head .= '<div class="vcard">'."\n";
         $displayName = $this->securityContext->displayName();
-        $head .= '<span class="fn">' . $displayName . '</span>' . "\n";
-        $body = '<p align="center"><img class="photo" src="'
-            . $this->objUserPic->userpicture(
-                $this->securityContext->userId()
-            )
-            . '" alt="' . $displayName . '" /></p>' . "\n";
+        $objUser = $this->getObject('user', 'security');
+        $username = $objUser->userName();
+        $head .= '<span class="fn">'
+            . htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8')
+            . ' (' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . ')'
+            . '</span>' . "\n";
+        $picture = $this->objUserPic->userpicture(
+            $this->securityContext->userId()
+        );
+        $fallbackClass = substr($picture, -14) === 'user-round.svg'
+            ? ' account-card__avatar--fallback'
+            : '';
+        $body = '<div class="account-card__avatar-wrap"><img class="photo account-card__avatar'
+            . $fallbackClass . '" src="'
+            . htmlspecialchars($picture, ENT_QUOTES, 'UTF-8')
+            . '" alt="" /></div>' . "\n";
 
+        $body .= $additionalContent;
         return $objFeature->show($head, $body);
     }
 

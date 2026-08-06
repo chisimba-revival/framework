@@ -180,12 +180,8 @@ class block_register extends ChisimbaObject
     public function setScripts(){
         $objSysConfig  = $this->getObject('altconfig','config');
         //$this->setVar('SUPPRESS_PROTOTYPE', true);
-		 $this->setVar('SUPPRESS_JQUERY', true);
 		 //$this->appendArrayVar('headerParams',$css);
-		 $this->appendArrayVar('headerParams','<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>');
-		 $this->appendArrayVar('headerParams','<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js" type="text/javascript"></script>');
 		// $this->appendArrayVar('headerParams','<link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" />');
-		 $this->appendArrayVar('headerParams','<link rel="stylesheet" href="http://jquery-ui.googlecode.com/svn/tags/latest/themes/base/jquery-ui.css" type="text/css" media="all" />');
 		 $this->appendArrayVar('headerParams',$this->getJavascriptFile('register.js', 'userregistration'));
 		 $str = '<script type="text/javascript">
 		  registrationUrl = "'.$this->uri(array('action'=>'register')).'";

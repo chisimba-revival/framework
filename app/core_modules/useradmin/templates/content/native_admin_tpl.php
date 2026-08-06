@@ -51,7 +51,10 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             <h1 id="ua-title">Users</h1>
             <p>Manage local user profiles and account status.</p>
         </div>
-        <a class="ua-button ua-button-primary" href="<?php echo $escape($url(array('userid' => '', 'page' => $page))); ?>#ua-editor">Add user</a>
+        <div class="ua-form-actions">
+            <a class="ua-button" href="<?php echo $this->uri(array('action' => 'batchimport'), 'useradmin'); ?>"><?php echo $escape($this->objLanguage->languageText('mod_useradmin_batchregister', 'useradmin')); ?></a>
+            <a class="ua-button ua-button-primary" href="<?php echo $escape($url(array('userid' => '', 'page' => $page))); ?>#ua-editor"><?php echo $escape($this->objLanguage->languageText('mod_useradmin_adduseraction', 'useradmin')); ?></a>
+        </div>
     </header>
 
     <?php if ($message !== ''): ?>

@@ -44,8 +44,22 @@ class featurebox extends ChisimbaObject
     public function show($title = null, $content = null, $id = null, 
       $hidden = 'default', $showToggle = TRUE, 
       $showTitle = TRUE, $cssClass = 'featurebox', 
-      $cssId = '')
+      $cssId = '', $presentationMode = 'utility')
     {
+
+        $presentationMode = strtolower(trim($presentationMode));
+        if (!in_array($presentationMode, array('utility', 'content'), TRUE)) {
+            $presentationMode = 'utility';
+        }
+
+        if ($presentationMode === 'content') {
+            $outerId = trim($cssId) === '' ? '' : ' id="' . htmlspecialchars($cssId, ENT_QUOTES, 'UTF-8') . '"';
+            $contentId = $id === null || $id === '' ? '' : ' id="' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '"';
+            return '<section class="featurebox featurebox--content block-content"' . $outerId . '>'
+                . '<div class="block-content__body"' . $contentId . '>'
+                . $content
+                . '</div></section>';
+        }
 
         $objIcon = $this->newObject('geticon', 'htmlelements');
         if (trim($cssId) != '') {

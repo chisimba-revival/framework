@@ -447,32 +447,42 @@ class modulesadmin extends dbTableManager
                         $actionList = explode( ',', $array[0] );
                         //$conditionList = explode( ',', $array[1] );
                         // create the rules (rights).
-                        foreach($actionList as $action) {
-                            if(isset($areaId)) {
-                                $data = array(
-                                    'area_id' => $areaId,
-                                    'right_define_name' => $action,
+                        $objPermissionService = $this->getObject(
+                            'permissionservice',
+                            'security'
+                        );
+                        $areaId = $objPermissionService->ensureArea(
+                            'chisimba',
+                            $moduleId
+                        );
+                        if (!is_int($areaId) || $areaId < 1) {
+                            throw new RuntimeException(
+                                'Canonical module permission area creation failed'
+                            );
+                        }
+                        foreach ($actionList as $action) {
+                            $rightId = $objPermissionService->ensureRight(
+                                $areaId,
+                                trim($action)
+                            );
+                            if (!is_int($rightId) || $rightId < 1) {
+                                throw new RuntimeException(
+                                    'Canonical module permission right creation failed'
                                 );
                             }
-                            else {
-                                $data = array(
-                                    'application_id' => $this->appid,
-                                    'area_define_name' => $moduleId,
-                                );
-                                $areaId  = $this->objLuAdmin->perm->addArea($data);
-                            }
-                            $rightId = $this->objLuAdmin->perm->addRight($data);
-                            if($this->grId == null) {
+                            if ($this->grId == null) {
                                 $this->grId = $objGroups->getId($moduleId);
                             }
-                            // add the rights to the groups now
-
-                            $data = array(
-                                'group_id' => $this->grId,
-                                'right_id' => $rightId,
-                            );
-                            $granted = $this->objLuAdmin->perm->grantGroupRight($data);
-                            // var_dump($this->objLuAdmin->getErrors());
+                            if (is_numeric($this->grId)
+                                && (int) $this->grId > 0
+                                && !$objPermissionService->ensureGroupGrant(
+                                    (int) $this->grId,
+                                    $rightId
+                                )) {
+                                throw new RuntimeException(
+                                    'Canonical module permission group grant failed'
+                                );
+                            }
                         }
 
 
@@ -673,6 +683,19 @@ class modulesadmin extends dbTableManager
             $this->_lastError = 0;
             if (is_null($moduleId)) {
                 $moduleId=$registerdata['MODULE_ID'];
+            }
+
+            // Mandatory baseline modules define a valid Chisimba installation
+            // and may never enter the destructive uninstall sequence.
+            $objMandatoryPolicy = $this->getObject(
+                'mandatorymodulepolicy',
+                'modulecatalogue'
+            );
+            if ($objMandatoryPolicy->isMandatory($moduleId)) {
+                $this->output = 'Mandatory core module cannot be uninstalled: '
+                    . $moduleId;
+                $this->_lastError = 1007;
+                return FALSE;
             }
             $this->objModuleBlocks->deleteModuleBlocks($moduleId);
             $modTitle="mod_{$moduleId}_name";

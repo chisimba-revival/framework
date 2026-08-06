@@ -102,20 +102,44 @@ class loginInterface extends ChisimbaObject {
             $this->loadClass('label', 'htmlelements');
             $this->loadClass('fieldset', 'htmlelements');
             $objBox = $this->newObject('alertbox', 'htmlelements');
-            $objIcon = $this->getObject('geticon', 'htmlelements');
+            $authIcons = $this->getObject('iconservice', 'ui');
 
             // prepare the link for the oAuth providers 
             $box = $this->oauthDisp();
             $fb = $this->fbButton(); //fbConnect();
-            require_once dirname(__FILE__)
-                . '/nativeauth/csrftokenservice.php';
-            $nativeCsrf = new CsrfTokenService($this);
+            // Use the canonical web composition so this embedded form receives
+            // the same CSRF and signed abuse evidence as the native login page.
+            $nativeAuthStack = $this->getObject(
+                'nativeauthwebcomposition',
+                'security'
+            )->build();
+            $nativeCsrf = $nativeAuthStack['csrf'];
+            $nativeAbuseEvidence = $nativeAuthStack['abuse']
+                ->issueFormEvidence('native.login');
+            $escapeAuthValue = static function ($value) {
+                return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+            };
             // Create the native, CSRF-protected login form.
             $objForm = new form('loginform', $formAction);
             $objForm->addToForm('<input type="hidden" '
                 . 'name="native_auth_begin" value="'
                 . htmlspecialchars($nativeCsrf->issue('native_auth_begin'),
                     ENT_QUOTES, 'UTF-8') . '">');
+            $currentRequest = isset($_SERVER['REQUEST_URI'])
+                ? (string) $_SERVER['REQUEST_URI']
+                : '';
+            $objForm->addToForm('<input type="hidden" name="return_to" value="'
+                . $escapeAuthValue($currentRequest) . '">');
+            $objForm->addToForm('<input type="hidden" name="abuse_issued_at" value="'
+                . $escapeAuthValue($nativeAbuseEvidence['issued_at'] ?? '') . '">');
+            $objForm->addToForm('<input type="hidden" name="abuse_nonce" value="'
+                . $escapeAuthValue($nativeAbuseEvidence['nonce'] ?? '') . '">');
+            $objForm->addToForm('<input type="hidden" name="abuse_signature" value="'
+                . $escapeAuthValue($nativeAbuseEvidence['signature'] ?? '') . '">');
+            $objForm->addToForm('<div hidden aria-hidden="true">'
+                . '<label for="block-login-website">Website</label>'
+                . '<input id="block-login-website" name="website" type="text" '
+                . 'tabindex="-1" autocomplete="off"></div>');
             $objFields = new fieldset();
             $objFields->setLegend(' ');
 
@@ -127,9 +151,9 @@ class loginInterface extends ChisimbaObject {
             $objForm->addRule('username', $this->objLanguage->languageText("mod_login_unrequired", 'security', 'Please enter a username. A username is required in order to login.'), 'required');
 
             //Add the username box to the form
-            $this->objIcon->setIcon('user');
-            $objFields->addContent($this->objIcon->show());
-            $objFields->addContent($objInput->show() . '<br />');
+            $objFields->addContent('<div class="auth-field">'
+                . $authIcons->render('user', array('decorative' => true))
+                . $objInput->show() . '</div>');
             //$objForm->addToForm();
             //--- Create an element for the password
             $objInput = new textinput('password', '', 'password', '15');
@@ -137,10 +161,9 @@ class loginInterface extends ChisimbaObject {
             $objLabel = new label($this->objLanguage->languageText('word_password') . ': ', 'input_password');
             //Add the password box to the form
             //$objForm->addToForm();
-            $this->objIcon->setIcon('key');
-            $objFields->addContent($this->objIcon->show());
-//                        $objFields->addContent($objLabel->show() . '<br />');
-            $objFields->addContent($objInput->show());
+            $objFields->addContent('<div class="auth-field">'
+                . $authIcons->render('key-round', array('decorative' => true))
+                . $objInput->show() . '</div>');
             //--- Create an element for the network login radio
             $objElement = new checkbox("useLdap");
             $objElement->setCSS("transparentbgnb");
@@ -158,16 +181,21 @@ class loginInterface extends ChisimbaObject {
             $objRElement->label = $this->objLanguage->languageText("phrase_rememberme", "security");
             $rem = $objRElement->show() . "<br />";
 
-            //--- Create a submit button
-            $objButton = new button('submit', $this->objLanguage->languageText("word_login"));
-            // Add the login icon
-            $objButton->setIconClass("user");
-            // Set the button type to submit
-            $objButton->setToSubmit();
+            // Render a semantic button because the legacy button helper escapes
+            // rich content supplied as its value.
+            $loginLabel = htmlspecialchars(
+                $this->objLanguage->languageText("word_login", "system"),
+                ENT_QUOTES,
+                'UTF-8'
+            );
+            $loginButton = '<button type="submit" name="submit" value="Login" '
+                . 'class="auth-submit">'
+                . $authIcons->render('log-in', array('decorative' => true))
+                . '<span>' . $loginLabel . '</span></button>';
             // Add the button to the form
             $objFields->addContent($rem
                     . "<div class='loginbuttonwrap'>"
-                    . $objButton->show() . '</div>');
+                    . $loginButton . '</div>');
 
             $notice = $this->objLanguage->languageText('mod_security_forgotpassword');
             $helpText = strtoupper($this->objLanguage->languageText('mod_security_helpmelogin', 'security', 'Yes, please help me to login'));

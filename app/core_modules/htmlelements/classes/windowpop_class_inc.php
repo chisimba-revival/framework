@@ -158,7 +158,15 @@ class windowPop implements ifhtml
     /**
     * Method to establish the default values
     */
-        public function windowPop()
+    public function __construct()
+    {
+        $this->windowPop();
+    }
+
+    /**
+     * Retain the historical initializer for callers that invoke it directly.
+     */
+    public function windowPop()
     {
         $this->title = "";
         $this->window_name = "new";

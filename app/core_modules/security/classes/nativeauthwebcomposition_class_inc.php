@@ -41,7 +41,24 @@ class nativeauthwebcomposition extends ChisimbaObject
             $policy,
             $this->getObject('userservice', 'security'),
             $this->getObject('groupservice', 'groupadmin'),
-            $settings
+            $settings,
+            (int) $settings->getValue(
+                'persistent_login_lifetime_days', 'security', 30
+            ),
+            array(
+                'minimum_seconds' => (int) $settings->getValue(
+                    'login_abuse_minimum_seconds', 'security', 1
+                ),
+                'maximum_seconds' => (int) $settings->getValue(
+                    'login_abuse_maximum_seconds', 'security', 3600
+                ),
+                'window_seconds' => (int) $settings->getValue(
+                    'login_abuse_window_seconds', 'security', 900
+                ),
+                'failure_limit' => (int) $settings->getValue(
+                    'login_abuse_failure_limit', 'security', 5
+                ),
+            )
         );
         return $this->stack;
     }

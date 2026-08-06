@@ -200,7 +200,11 @@ class userservice extends dbTable
             || !isset($record['id'], $record['userid'], $record['howcreated'])
             || (string) $record['id'] !== $storageId
             || (string) $record['userid'] !== $userId
-            || (string) $record['howcreated'] !== 'useradmin'
+            || !in_array(
+                (string) $record['howcreated'],
+                array('useradmin', 'batch_user_registration'),
+                true
+            )
             || (isset($record['logins']) && (int) $record['logins'] !== 0)) {
             return $this->result(false, 'rollback_guard_rejected', $userId);
         }
@@ -246,6 +250,30 @@ class userservice extends dbTable
         return $updated === false
             ? $this->result(false, 'update_failed')
             : $this->result(true, 'user_updated', $userId);
+    }
+
+    /**
+     * Persist a credential hash already created by AuthenticationService.
+     */
+    public function updatePasswordHash($userId, $passwordHash)
+    {
+        $userId = $this->normaliseUserId($userId);
+        if ($userId === null || $this->findByUserId($userId) === null) {
+            return $this->result(false, 'user_not_found');
+        }
+        $passwordHash = $this->normaliseText($passwordHash, 255);
+        if ($passwordHash === null) {
+            return $this->result(false, 'invalid_password_hash');
+        }
+
+        $updated = $this->update(
+            'userid',
+            $userId,
+            array('pass' => $passwordHash, 'updated' => date('Y-m-d'))
+        );
+        return $updated === false
+            ? $this->result(false, 'password_update_failed')
+            : $this->result(true, 'password_updated', $userId);
     }
 
     public function setActive($userId, $active)

@@ -12,6 +12,9 @@ $labels = isset($nativeLoginLabels) && is_array($nativeLoginLabels)
     ? $nativeLoginLabels
     : array();
 $token = isset($nativeAuthBeginToken) ? $nativeAuthBeginToken : '';
+$abuse = isset($nativeAbuseEvidence) && is_array($nativeAbuseEvidence)
+    ? $nativeAbuseEvidence
+    : array();
 $esc = function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -25,6 +28,17 @@ $esc = function ($value) {
     <input type="hidden" name="action" value="login">
     <input type="hidden" name="native_auth_begin"
       value="<?php echo $esc($token); ?>">
+    <input type="hidden" name="abuse_issued_at"
+      value="<?php echo $esc($abuse['issued_at'] ?? ''); ?>">
+    <input type="hidden" name="abuse_nonce"
+      value="<?php echo $esc($abuse['nonce'] ?? ''); ?>">
+    <input type="hidden" name="abuse_signature"
+      value="<?php echo $esc($abuse['signature'] ?? ''); ?>">
+    <div hidden aria-hidden="true">
+      <label for="native-login-website">Website</label>
+      <input id="native-login-website" name="website" type="text"
+        tabindex="-1" autocomplete="off">
+    </div>
     <p>
       <label for="native-login-username"><?php
           echo $esc($labels['username']);

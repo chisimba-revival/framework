@@ -41,17 +41,18 @@
 
 
 
-        jQuery(".moveup").livequery('click', function() {
-
+        jQuery(document).on('click', '.moveup', function(event) {
+            event.preventDefault();
             moveBlock(jQuery(this).parent().parent().attr('id'), 'up');
         });
 
-        jQuery(".movedown").livequery('click', function() {
+        jQuery(document).on('click', '.movedown', function(event) {
+            event.preventDefault();
             moveBlock(jQuery(this).parent().parent().attr('id'), 'down');
         });
 
-
-        jQuery(".deleteblock").livequery('click', function() {
+        jQuery(document).on('click', '.deleteblock', function(event) {
+            event.preventDefault();
             if (confirm(deleteConfirm)) {
                 removeBlock(jQuery(this).parent().parent().attr('id'));
             }
@@ -77,19 +78,22 @@
             addBlock(window[side+'Block'], side)
         });
 
-        jQuery("#"+side+"blocks > :first-child").livequery(function() {
-            jQuery("#"+side+"blocks .moveup").show();
-            jQuery("#"+side+"blocks .movedown").show();
-            jQuery("#"+side+"blocks > :first-child a.moveup").hide();
-            jQuery("#"+side+"blocks > :last-child a.movedown").hide();
-        });
+        updateSideControls(side);
+    }
 
-        jQuery("#"+side+"blocks > :last-child").livequery(function() {
-            jQuery("#"+side+"blocks .moveup").show();
-            jQuery("#"+side+"blocks .movedown").show();
-            jQuery("#"+side+"blocks > :last-child a.movedown").hide();
-            jQuery("#"+side+"blocks > :first-child a.moveup").hide();
-        });
+    function updateSideControls(side)
+    {
+        var blocks = jQuery("#"+side+"blocks");
+        blocks.find(".moveup, .movedown").show();
+        blocks.children(":first-child").find("a.moveup").hide();
+        blocks.children(":last-child").find("a.movedown").hide();
+    }
+
+    function updateAllSideControls()
+    {
+        updateSideControls('left');
+        updateSideControls('right');
+        updateSideControls('middle');
     }
 
 
@@ -108,7 +112,7 @@
                     } else {
                         var div = jQuery('#'+blockId).insertAfter(jQuery('#'+blockId).next());
                     }
-
+                    updateAllSideControls();
 
                 } else {
                     alert(unableMoveBlock);
@@ -131,6 +135,7 @@
 
                 if (msg == 'ok') {
                     jQuery('#'+blockId).remove();
+                    updateAllSideControls();
                 } else {
                     alert(unableDeleteBlock);
                 }
@@ -163,6 +168,7 @@
                     // Then Attach
                     jQuery("#"+side+"previewcontent .block").appendTo("#"+side+"blocks");
                     jQuery("#"+side+"button").hide();
+                    updateSideControls(side);
 
 
                 }

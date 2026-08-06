@@ -80,6 +80,8 @@ class groupops extends ChisimbaObject {
      */
     public function init() {
         $this->objUser = $this->getObject('user', 'security');
+        $this->objUserService = $this->getObject('userservice', 'security');
+        $this->objIdentityService = $this->getObject('identityservice', 'security');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objGroups = $this->getObject('groupadminmodel');
         $this->objDBContext = $this->getObject('dbcontext', 'context');
@@ -332,29 +334,19 @@ class groupops extends ChisimbaObject {
     }
 
     public function jsonEditGroup($id, $newgroupname, $oldgroupname) {
-
-        $this->updateSubGroup($newgroupname, $oldgroupname);
-        $sql = "UPDATE tbl_context SET contextcode = '" . $newgroupname . "' WHERE contextcode = '" . $oldgroupname . "'";
-        $this->objDBContext->getArray($sql);
-
-        $sql = "UPDATE tbl_perms_groups SET group_define_name = '" . $newgroupname . "' WHERE group_id = " . $id;
-        $this->objDBContext->getArray($sql);
-
-        return json_encode(array('success' => 'true'));
-    }
-
-    public function updateSubGroup($newgroupname, $oldgroupname) {
-        $sql = "SELECT group_define_name FROM tbl_perms_groups WHERE group_define_name LIKE '" . $oldgroupname . "^%'";
-        $subgrp = $this->objDBContext->getArray($sql);
-
-        foreach ($subgrp as $grp) {
-            $pieces = explode("^", $grp['group_define_name']);
-            $sql = "UPDATE tbl_perms_groups SET group_define_name = '" . $newgroupname . "^" . $pieces[1] . "' WHERE group_define_name = '" . $grp['group_define_name'] . "'";
-            $this->objDBContext->getArray($sql);
+        if ($this->objDBContext->contextExists($oldgroupname)) {
+            return json_encode(array(
+                'success' => false,
+                'errors' => 'context_group_rename_forbidden',
+            ));
         }
-        //error_log(var_export($sql, true));
-        //$sql = "UPDATE tbl_perms_groups SET group_define_name = '".$newgroupname."' WHERE group_id = ".$id;
-        //$this->objDBContext->getArray($sql);
+        $result = $this->objGroupService->renameGroupHierarchy(
+            $id, $oldgroupname, $newgroupname
+        );
+        return json_encode(array(
+            'success' => !empty($result['ok']),
+            'errors' => isset($result['code']) ? $result['code'] : null,
+        ));
     }
 
     public function jsonGetGroup($id) {
@@ -692,28 +684,12 @@ class groupops extends ChisimbaObject {
      * Method to get first groupd Id
      */
     public function getFirstGroupId() {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getFirstGroupId))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getFirstGroupId));
-                $ret = unserialize($cache);
-            } else {
-                $groups = $this->objLuAdmin->perm->getGroups();
-                $ret = $groups[0]['group_id'];
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getFirstGroupId), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getFirstGroupId);
-            if ($ret == FALSE) {
-                $groups = $this->objLuAdmin->perm->getGroups();
-                $ret = $groups[0]['group_id'];
-                apc_store($this->cachePrefix . getFirstGroupId, $ret, $this->cacheTTL);
-            }
-        } else {
-            $groups = $this->objLuAdmin->perm->getGroups();
-            $ret = $groups[0]['group_id'];
+        $groups = $this->objGroupService->legacyGroupRows();
+        if (!is_array($groups) || !isset($groups[0]['group_id'])) {
+            return null;
         }
 
-        return $ret;
+        return $groups[0]['group_id'];
     }
 
     /**
@@ -861,150 +837,72 @@ class groupops extends ChisimbaObject {
 
 
     public function getAllGroups() {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getAllGroups))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getAllGroups));
-                $ret = unserialize($cache);
-            } else {
-                $ret = $this->objLuAdmin->perm->getGroups();
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getAllGroups), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getAllGroups);
-            if ($ret == FALSE) {
-                $ret = $this->objLuAdmin->perm->getGroups();
-                apc_store($this->cachePrefix . getAllGroups, $ret, $this->cacheTTL);
-            }
-        } else {
-            $ret = $this->objLuAdmin->getGroups();
-        }
-
-        return $ret;
+        return $this->objGroupService->legacyGroupRows();
     }
 
     public function getAllUsers() {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getAllUsers))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getAllUsers));
-                $ret = unserialize($cache);
-            } else {
-                $ret = $this->objLuAdmin->getUsers();
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getAllUsers), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getAllUsers);
-            if ($ret == FALSE) {
-                $ret = $this->objLuAdmin->getUsers();
-                apc_store($this->cachePrefix . getAllUsers, $ret, $this->cacheTTL);
-            }
-        } else {
-            $ret = $this->objLuAdmin->getUsers();
-        }
-
-        return $ret;
+        return $this->objUserService->listUsers('', true);
     }
 
     public function getAllPermUsers() {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getAllPermUsers))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getAllPermUsers));
-                $ret = unserialize($cache);
-            } else {
-                $ret = $this->objLuAdmin->perm->getUsers();
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getAllPermUsers), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
+        $rows = array();
+        foreach ($this->objUserService->listUsers('', true) as $user) {
+            if (!is_array($user) || !isset($user['userid'])) {
+                continue;
             }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getAllPermUsers);
-            if ($ret == FALSE) {
-                $ret = $this->objLuAdmin->perm->getUsers();
-                apc_store($this->cachePrefix . getAllPermUsers, $ret, $this->cacheTTL);
+
+            $permissionUserId = $this->objIdentityService
+                ->permissionUserIdForUser($user['userid']);
+            if ($permissionUserId === null) {
+                continue;
             }
-        } else {
-            $ret = $this->objLuAdmin->perm->getUsers();
+
+            $user['auth_user_id'] = $user['userid'];
+            $user['perm_user_id'] = $permissionUserId;
+            $user['handle'] = isset($user['username']) ? $user['username'] : '';
+            $rows[] = $user;
         }
 
-        return $ret;
+        return $rows;
     }
 
     public function getNonGrpUsers() {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getNonGrpUsers))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getNonGrpUsers));
-                $ret = unserialize($cache);
-            } else {
-                $ret = $this->objLuAdmin->getUsers(array('container' => 'auth'));
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getNonGrpUsers), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getNonGrpUsers);
-            if ($ret == FALSE) {
-                $ret = $this->objLuAdmin->getUsers(array('container' => 'auth'));
-                apc_store($this->cachePrefix . getNonGrpUsers, $ret, $this->cacheTTL);
-            }
-        } else {
-            $ret = $this->objLuAdmin->getUsers(array('container' => 'auth'));
-        }
-
-        return $ret;
+        return $this->objUserService->listUsers('', true);
     }
 
     public function getUserByUserId($userId) {
-        $params = array(
-                'filters' => array(
-                        'auth_user_id' => $userId,
-                )
-        );
-
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getUserByUserId . $userId))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getUserByUserId . $userId));
-                $ret = unserialize($cache);
-            } else {
-                $user = $this->objLuAdmin->perm->getUsers($params);
-                $ret = $user[0];
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getUserByUserId . $userId), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getUserByUserId . $userId);
-            if ($ret == FALSE) {
-                $user = $this->objLuAdmin->perm->getUsers($params);
-                $ret = $user[0];
-                apc_store($this->cachePrefix . getUserByUserId . $userId, $ret, $this->cacheTTL);
-            }
-        } else {
-            $user = $this->objLuAdmin->perm->getUsers($params);
-            $ret = $user[0];
+        $user = $this->objUserService->findByUserId($userId);
+        if (!is_array($user) || !isset($user['userid'])) {
+            return array();
         }
 
-        return $ret;
+        $permissionUserId = $this->objIdentityService
+            ->permissionUserIdForUser($user['userid']);
+        if ($permissionUserId === null) {
+            return array();
+        }
+
+        $user['auth_user_id'] = $user['userid'];
+        $user['perm_user_id'] = $permissionUserId;
+        $user['handle'] = isset($user['username']) ? $user['username'] : '';
+        return $user;
     }
 
     public function getUsersInGroup($groupid) {
-        $params = array(
-                'filters' => array(
-                        'group_id' => $groupid,
-                )
-        );
+        $rows = array();
+        foreach ($this->objGroupService->getMembers($groupid) as $member) {
+            if (!is_array($member) || !isset($member['userId'])) {
+                continue;
+            }
 
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getUsersInGroup . $groupid))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getUsersInGroup . $groupid));
-                $ret = unserialize($cache);
-            } else {
-                $ret = $this->objLuAdmin->perm->getUsers($params);
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getUsersInGroup . $groupid), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getUsersInGroup . $groupid);
-            if ($ret == FALSE) {
-                $ret = $this->objLuAdmin->perm->getUsers($params);
-                apc_store($this->cachePrefix . getUsersInGroup . $groupid, $ret, $this->cacheTTL);
-            }
-        } else {
-            $ret = $this->objLuAdmin->perm->getUsers($params);
+            $member['auth_user_id'] = $member['userId'];
+            $member['userid'] = $member['userId'];
+            $member['perm_user_id'] = isset($member['id']) ? $member['id'] : null;
+            $member['handle'] = isset($member['username']) ? $member['username'] : '';
+            $rows[] = $member;
         }
 
-        return $ret;
+        return $rows;
     }
 
     public function layoutGroups($groups, $numperRow = 5) {
@@ -1077,25 +975,19 @@ class groupops extends ChisimbaObject {
     }
 
     public function getGroupInfo($groupid) {
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem()->get(md5($this->cachePrefix . getGroupInfo . $groupid))) {
-                $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . getGroupInfo . $groupid));
-                $ret = unserialize($cache);
-            } else {
-                $ret = $this->objLuAdmin->perm->getGroups(array('filters' => array('group_id' => $groupid)));
-                chisimbacache::getMem()->set(md5($this->cachePrefix . getGroupInfo . $groupid), serialize($ret), MEMCACHE_COMPRESSED, $this->cacheTTL);
-            }
-        } elseif ($this->objAPC == TRUE) {
-            $ret = apc_fetch($this->cachePrefix . getGroupInfo . $groupid);
-            if ($ret == FALSE) {
-                $ret = $this->objLuAdmin->perm->getGroups(array('filters' => array('group_id' => $groupid)));
-                apc_store($this->cachePrefix . getGroupInfo . $groupid, $ret, $this->cacheTTL);
-            }
-        } else {
-            $ret = $this->objLuAdmin->perm->getGroups(array('filters' => array('group_id' => $groupid)));
+        $groups = $this->objGroupService->legacyGroupRows();
+        if (!is_array($groups)) {
+            return array();
         }
 
-        return $ret;
+        foreach ($groups as $group) {
+            if (isset($group['group_id'])
+                && (string) $group['group_id'] === (string) $groupid) {
+                return array($group);
+            }
+        }
+
+        return array();
     }
 
     public function addUserForm($grpId) {

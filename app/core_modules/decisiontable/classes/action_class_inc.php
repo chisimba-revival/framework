@@ -65,7 +65,7 @@ class action extends decisionTableAggregate
      * @param  void  
      * @return void  
      */
-    public function init()
+    public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback")
     {
         $this->_objParts= $this->newObject( 'dbdecisiontableaction','decisiontable'  );
         $this->_objChild = $this->newObject('dbactionrule','decisiontable');

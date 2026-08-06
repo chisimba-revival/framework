@@ -78,20 +78,21 @@ class contextimage extends ChisimbaObject {
      */
     public function getContextImage($contextCode)
     {
-        if (file_exists ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.jpg'))
-        {
-            return $this->objCleanUrl->cleanUpUrl ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.jpg');
-        }
-        elseif (file_exists ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.png'))
-        {
-            return $this->objCleanUrl->cleanUpUrl ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.png');
-        }
-        else
-        {
-            return FALSE;
-        }
-    }
+        // All filesystem operations use getcontentBasePath().
+        $basePath = rtrim($this->objConfig->getcontentBasePath(), '/');
+        $contentPath = rtrim($this->objConfig->getcontentPath(), '/');
 
+        foreach (array('jpg', 'png') as $extension) {
+            $filename = $contextCode . '.' . $extension;
+            if (is_file($basePath . '/contextimage/' . $filename)) {
+                return $this->objCleanUrl->cleanUpUrl(
+                    $contentPath . '/contextimage/' . $filename
+                );
+            }
+        }
+
+        return FALSE;
+    }
     /**
      * Method to set a context image
      *
@@ -99,33 +100,70 @@ class contextimage extends ChisimbaObject {
      * @param string $fileId Record Id of the file from file manager
      */
     public function setContextImage($contextCode, $fileId) {
-        $this->checkContextImageFolder ();
-
-        $filename = $this->objFiles->getFileName ( $fileId );
-
-        if ($filename == FALSE) {
+        if (!$this->checkContextImageFolder()) {
             return FALSE;
-        } else {
-            $image = $this->objThumbnails->getThumbnail ( $fileId, $filename );
+        }
 
-            $extension = $this->objFileParts->getExtension($image);
-            
-            if ($image != FALSE) {
-                $destination = $this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.' . $extension;
+        $filename = $this->objFiles->getFileName($fileId);
+        $sourceFile = $this->objFiles->getFilePath($fileId);
 
-                if (file_exists ( $destination )) {
-                    $canCopy = unlink ( $destination );
-                } else {
-                    $canCopy = TRUE;
-                }
+        if ($filename == FALSE || $sourceFile == FALSE || !is_file($sourceFile)) {
+            return FALSE;
+        }
 
-                if ($canCopy) {
-                    copy ( $image, $destination );
+        $basePath = rtrim($this->objConfig->getcontentBasePath(), '/');
+        $thumbnail = FALSE;
+        $thumbnailFolders = array(
+            '/filemanager_thumbnails/',
+            '/filemanager_thumbnails/medium/',
+            '/filemanager_thumbnails/large/'
+        );
+
+        foreach ($thumbnailFolders as $folder) {
+            foreach (array('jpg', 'png') as $extension) {
+                $candidate = $basePath . $folder . $fileId . '.' . $extension;
+                if (is_file($candidate)) {
+                    $thumbnail = $candidate;
+                    break 2;
                 }
             }
         }
-    }
 
+        if ($thumbnail == FALSE) {
+            $this->objThumbnails->createThumbailFromFile($sourceFile, $fileId);
+
+            foreach ($thumbnailFolders as $folder) {
+                foreach (array('jpg', 'png') as $extension) {
+                    $candidate = $basePath . $folder . $fileId . '.' . $extension;
+                    if (is_file($candidate)) {
+                        $thumbnail = $candidate;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        if ($thumbnail == FALSE) {
+            return FALSE;
+        }
+
+        $extension = strtolower(pathinfo($thumbnail, PATHINFO_EXTENSION));
+        if (!in_array($extension, array('jpg', 'png'), TRUE)) {
+            return FALSE;
+        }
+
+        $destinationFolder = $basePath . '/contextimage';
+        $destination = $destinationFolder . '/' . $contextCode . '.' . $extension;
+
+        foreach (array('jpg', 'png') as $oldExtension) {
+            $oldImage = $destinationFolder . '/' . $contextCode . '.' . $oldExtension;
+            if ($oldImage !== $destination && is_file($oldImage) && !unlink($oldImage)) {
+                return FALSE;
+            }
+        }
+
+        return copy($thumbnail, $destination);
+    }
     /**
      * Method to remove an existing context image
      *
@@ -134,20 +172,18 @@ class contextimage extends ChisimbaObject {
      */
     public function removeContextImage($contextCode)
     {
-        if (file_exists ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.jpg'))
-        {
-            return unlink ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.jpg');
-        }
-        elseif (file_exists ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.png'))
-        {
-            return unlink ($this->objConfig->getcontentPath () . '/contextimage/' . $contextCode . '.png');
-        }
-        else
-        {
-            return TRUE;
-        }
-    }
+        $basePath = rtrim($this->objConfig->getcontentBasePath(), '/');
+        $success = TRUE;
 
+        foreach (array('jpg', 'png') as $extension) {
+            $image = $basePath . '/contextimage/' . $contextCode . '.' . $extension;
+            if (is_file($image) && !unlink($image)) {
+                $success = FALSE;
+            }
+        }
+
+        return $success;
+    }
     /**
      * Method to check that the user folder for uploads, and subfolders exist
      *

@@ -36,7 +36,7 @@ if (!
 * @name   $kewl_entry_point_run
 */
 $GLOBALS['kewl_entry_point_run']) {
-die("You cannot view this page directly");
+die();
 }
 // end security check
 
@@ -94,7 +94,7 @@ class block_contextmembers extends ChisimbaObject
 	//$str .= $link->show();       
         if ($objModules->checkIfRegistered('userimport') && $this->objUser->isAdmin()) {
             $link = new link ($this->uri(NULL, 'userimport'));
-            $link->link = $this->objLanguage->languageText('mod_contextgroups_importusers', 'contextgroups', 'Import Users');
+            $link->link = $this->objLanguage->languageText('mod_contextgroups_importusers', 'contextgroups');
             
             $str .= $link->show();
         }        
@@ -110,21 +110,21 @@ class block_contextmembers extends ChisimbaObject
         	<script type="text/javascript">
         	var pageSize = 500;
         	var lang = new Array();
-        	lang["mycontext"] =   "'.ucWords($this->objLanguage->code2Txt('phrase_mycourses', 'system', NULL, 'My [-contexts-]')).'";
-        	lang["contexts"] =   "'.ucWords($this->objLanguage->code2Txt('wordcontext', 'system', NULL, '[-contexts-]')).'";
-        	lang["context"] =   "'.ucWords($this->objLanguage->code2Txt('wordcontext', 'system', NULL, '[-context-]')).'";
-        	lang["othercontext"] =   "'.ucWords($this->objLanguage->code2Txt('phrase_othercourses', 'system', NULL, 'Other [-contexts-]')).'";
-        	lang["searchcontext"] =   "'.ucWords($this->objLanguage->code2Txt('phrase_allcourses', 'system', NULL, 'Search [-contexts-]')).'";
-        	lang["contextcode"] =   "'.ucWords($this->objLanguage->code2Txt('mod_context_contextcode', 'system', NULL, '[-contexts-] Code')).'";
-        	lang["lecturers"] =   "'.ucWords($this->objLanguage->code2Txt('word_lecturers', 'system', NULL, '[-authors-]')).'";
-        	lang["students"] =   "'.ucWords($this->objLanguage->code2Txt('word_students', 'system', NULL, '[-readonly-]')).'";
+        	lang["mycontext"] =   "'.ucWords($this->objLanguage->code2Txt('phrase_mycourses', 'system')).'";
+        	lang["contexts"] =   "'.ucWords($this->objLanguage->code2Txt('wordcontext', 'system')).'";
+        	lang["context"] =   "'.ucWords($this->objLanguage->code2Txt('wordcontext', 'system')).'";
+        	lang["othercontext"] =   "'.ucWords($this->objLanguage->code2Txt('phrase_othercourses', 'system')).'";
+        	lang["searchcontext"] =   "'.ucWords($this->objLanguage->code2Txt('phrase_allcourses', 'system')).'";
+        	lang["contextcode"] =   "'.ucWords($this->objLanguage->code2Txt('mod_context_contextcode', 'system')).'";
+        	lang["lecturers"] =   "'.ucWords($this->objLanguage->code2Txt('word_lecturers', 'system')).'";
+        	lang["students"] =   "'.ucWords($this->objLanguage->code2Txt('word_students', 'system')).'";
         	var baseUri = "'.$objSysConfig->getsiteRoot().'index.php";
 			var uri = "'.str_replace('&amp;','&',$this->uri(array('module' => 'context', 'action' => 'jsonlistcontext'))).'"; 
         	var usercontexturi = "'.str_replace('&amp;','&',$this->uri(array('module' => 'context', 'action' => 'jsonusercontexts'))).'"; 
 			var othercontexturi = "'.str_replace('&amp;','&',$this->uri(array('module' => 'context', 'action' => 'jsonusercontexts'))).'"; 
         		
         		
-        		contextPrivateMessage="'.$this->objLanguage->code2Txt('mod_context_privatecontextexplanation', 'context', NULL, 'This is a closed [-context-] only accessible to members').'"; </script>');
+        		contextPrivateMessage="'.$this->objLanguage->code2Txt('mod_context_privatecontextexplanation', 'context').'"; </script>');
    }
    
    /**
@@ -185,7 +185,7 @@ class block_contextmembers extends ChisimbaObject
         
         if ($objModules->checkIfRegistered('userimport') && $this->objUser->isAdmin()) {
             $link = new link ($this->uri(NULL, 'userimport'));
-            $link->link = $this->objLanguage->languageText('mod_contextgroups_importusers', 'contextgroups', 'Import Users');
+            $link->link = $this->objLanguage->languageText('mod_contextgroups_importusers', 'contextgroups');
             
             $str .= ' /'.$link->show();
         }

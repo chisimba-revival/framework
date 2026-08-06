@@ -40,10 +40,9 @@
 #Canvas_Content_Body_Region3 {
     min-width: 0;
     padding: var(--chisimba-region-padding);
-    background: var(--chisimba-surface-muted);
-    border: 1px solid var(--chisimba-border);
-    border-top: 0.3rem solid var(--chisimba-grey-blue);
-    border-radius: var(--chisimba-region-radius);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
 }
 
 #Canvas_Content_Body img,
@@ -619,3 +618,421 @@
 }
 
 /* END CHISIMBA-REBORN: REGION COMPONENT BASELINE ALIGNMENT */
+
+/* CHISIMBA-REBORN CANVAS REGION SPACING CONTRACT — p365
+ * Canvas regions own inter-component spacing. A structural block around a
+ * complete featurebox must not create a second visible surface or inset.
+ */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block:has(> .featurebox) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block > .featurebox,
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) > .featurebox {
+    margin-inline: 0;
+    margin-block-start: 0;
+    width: 100%;
+}
+
+/* CHISIMBA-REBORN READING SURFACE — p367
+ * A quiet, reusable surface for stories and similar text-heavy content.
+ * Regions own outer placement; the surface owns only its reading area.
+ */
+.reading-list .reading-surface {
+    background: rgba(255, 255, 255, 0.84);
+    border: 0;
+    border-radius: 2px;
+    box-shadow: none;
+    padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.reading-list .reading-surface + .reading-surface {
+    margin-block-start: 1rem;
+}
+
+.reading-surface > :first-child,
+.reading-surface :is(.abstract, .storycontent, .storyauthor) > :first-child {
+    margin-block-start: 0;
+}
+
+.reading-surface > :last-child,
+.reading-surface :is(.abstract, .storycontent, .storyauthor) > :last-child {
+    margin-block-end: 0;
+}
+
+.reading-surface .storyauthor {
+    margin-block-start: 1rem;
+}
+
+/* CHISIMBA LUCIDE ICON SERVICE AND STORIES CONSOLIDATION — p372
+ * Modules own icon meaning; the skin owns icon presentation.
+ */
+.chisimba-icon {
+    display: inline-block;
+    flex: 0 0 auto;
+    overflow: visible;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    vertical-align: -0.125em;
+}
+
+.reading-surface .abstract {
+    margin-block-end: 0.5rem;
+}
+
+.reading-surface .story-status {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: 0.5rem;
+    color: currentColor;
+}
+
+.reading-surface .story-status .chisimba-icon {
+    font-size: 1rem;
+}
+
+/* CHISIMBA STORIES PRESENTATION CORRECTION — p373
+ * A Stories list is a complete reading component, not a legacy side block.
+ * TinyMCE-authored abstracts retain their own block markup in the producer.
+ */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block:has(> .reading-list),
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block:has(> #stories > .reading-list) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
+.reading-surface .story-status {
+    vertical-align: middle;
+}
+
+.reading-surface .story-status .chisimba-icon {
+    display: block;
+}
+
+/* CHISIMBA STORIES CONTENT AND EDITOR FINISH — p378
+ * Content-mode blocks align to their region rather than inheriting utility
+ * block insets. Reading lists then present each item as a distinct surface.
+ * Abstracts are introductory copy and remain visually secondary.
+ */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block:has(> .featurebox--content),
+.featurebox--content,
+.featurebox--content > .block-content__body {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.featurebox--content .reading-list {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+}
+
+.featurebox--content .reading-list .reading-surface {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(31, 45, 52, 0.10);
+    border-radius: 0.375rem;
+}
+
+.featurebox--content .reading-list .reading-surface + .reading-surface {
+    margin-block-start: 0;
+}
+
+.reading-surface .abstract {
+    color: #59666d;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+}
+
+/* CHISIMBA CONTENT WIDTH FINISH — p379
+ * The middle-block collection is a placement wrapper. When it contains a
+ * content-mode block, it must not add the utility-block horizontal inset.
+ * Story bodies use their reading surface's available width; authored child
+ * content retains any intentional sizing of its own.
+ */
+#Canvas_Content_Body_Region2
+    > #middleblocks:has(> .block > .featurebox--content) {
+    margin-inline: 0;
+    padding-inline: 0;
+    width: 100%;
+}
+
+.reading-surface .storycontent {
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: none;
+    max-width: none;
+    width: 100%;
+}
+
+/* CHISIMBA ADAPTIVE LOGIN BLOCK — p382
+ * Login and signed-in states share one compact, accessible auth surface.
+ * SVG icons inherit colour and remain decorative beside visible text.
+ */
+#form_loginform fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+#form_loginform .auth-field {
+    align-items: center;
+    background: var(--chisimba-surface, #fff);
+    border: 1px solid var(--chisimba-border, #cbd5e1);
+    border-radius: .5rem;
+    display: grid;
+    gap: .55rem;
+    grid-template-columns: 1.15rem minmax(0, 1fr);
+    margin-block-end: .7rem;
+    padding-inline: .7rem;
+}
+
+#form_loginform .auth-field:focus-within {
+    border-color: var(--chisimba-primary, #2563eb);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
+}
+
+#form_loginform .auth-field input {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    inline-size: 100%;
+    margin: 0;
+    min-width: 0;
+    padding: .7rem 0;
+}
+
+#form_loginform .chisimba-icon,
+.auth-block .chisimba-icon {
+    color: var(--chisimba-muted, #64748b);
+    flex: 0 0 auto;
+}
+
+#form_loginform .loginbuttonwrap button,
+.auth-block__logout button {
+    align-items: center;
+    display: inline-flex;
+    gap: .45rem;
+    justify-content: center;
+}
+
+.auth-block--signed-in {
+    display: grid;
+    gap: .85rem;
+}
+
+.auth-block__identity {
+    align-items: center;
+    display: flex;
+    gap: .55rem;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.auth-block__logout,
+.auth-block__logout button {
+    inline-size: 100%;
+    margin: 0;
+}
+
+
+/* P393 account card: one surface, deliberate avatar, natural geometry. */
+.account-card__avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 0.25rem 0 1rem;
+}
+
+.account-card__avatar {
+    display: block;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.account-card__avatar--fallback {
+    box-sizing: border-box;
+    padding: 1.15rem;
+    border: 1px solid #cbd7e1;
+    background: #f1f5f8;
+}
+
+.auth-block__logout {
+    margin-top: 1rem;
+}
+
+/* CHISIMBA-REBORN STORY ADMINISTRATION ICONS — p398
+ * Modules own icon meaning and translated labels; the skin owns layout,
+ * sizing, colour and interaction states for both story administration pages.
+ */
+.story-admin-page {
+    min-width: 0;
+}
+
+.story-admin-page__header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    justify-content: flex-start;
+    margin-block-end: 1rem;
+}
+
+.story-admin-page__title {
+    margin: 0;
+}
+
+.story-admin-page__add {
+    align-items: center;
+    background: var(--chisimba-primary, #2563eb);
+    border: 1px solid var(--chisimba-primary, #2563eb);
+    border-radius: 0.45rem;
+    color: #fff;
+    display: inline-flex;
+    font-weight: 600;
+    gap: 0.45rem;
+    line-height: 1.2;
+    padding: 0.55rem 0.8rem;
+    text-decoration: none;
+}
+
+.story-admin-page__add:hover,
+.story-admin-page__add:focus-visible {
+    background: var(--chisimba-primary-dark, #1d4ed8);
+    border-color: var(--chisimba-primary-dark, #1d4ed8);
+    color: #fff;
+    text-decoration: none;
+}
+
+.story-admin-page__add-icon {
+    font-size: 1.05rem;
+}
+
+.story-admin-page__instructions {
+    color: var(--chisimba-muted, #64748b);
+    line-height: 1.55;
+    margin-block: 0;
+}
+
+.story-admin-page__table-wrap {
+    inline-size: 100%;
+}
+
+.story-admin-page__table {
+    border-collapse: collapse;
+    inline-size: 100%;
+}
+
+.story-admin-page__table th,
+.story-admin-page__table td {
+    overflow-wrap: anywhere;
+    padding: 0.4rem 0.45rem;
+    text-align: start;
+    vertical-align: middle;
+}
+
+.story-admin-page__actions {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.story-admin-page__actions a,
+.story-admin-page__action {
+    align-items: center;
+    border-radius: 0.35rem;
+    color: var(--chisimba-primary, #2563eb);
+    display: inline-flex;
+    inline-size: 2rem;
+    justify-content: center;
+    min-block-size: 2rem;
+    text-decoration: none;
+}
+
+.story-admin-page__actions a:hover,
+.story-admin-page__actions a:focus-visible,
+.story-admin-page__action:hover,
+.story-admin-page__action:focus-visible {
+    background: rgb(37 99 235 / 10%);
+    color: var(--chisimba-primary-dark, #1d4ed8);
+    text-decoration: none;
+}
+
+.story-admin-page__action-icon,
+.story-admin-page__status-icon {
+    font-size: 1.1rem;
+}
+
+.story-admin-page__status,
+.story-admin-page__date {
+    align-items: center;
+    display: inline-flex;
+}
+
+.story-admin-page__date {
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.story-admin-page__status--active {
+    color: #15803d;
+}
+
+.story-admin-page__status--inactive {
+    color: var(--chisimba-muted, #64748b);
+}
+
+.story-admin-page__status--pinned {
+    color: var(--chisimba-primary, #2563eb);
+}
+
+.story-admin-page__status--expired {
+    color: #b45309;
+}
+
+@media (max-width: 760px) {
+    .story-admin-page__header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

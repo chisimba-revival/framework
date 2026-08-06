@@ -101,43 +101,86 @@ class imageresize extends ChisimbaObject
     */
     function setImg($sourceFile)
     {
-        // Check if File Exists
-        if (file_exists($sourceFile))
-        {
-            // Get Image Type
-            $imagetype = $this->getImageType($sourceFile);
-            
-            // Default set to True
-            $this->canCreateFromSouce = TRUE;
-            
-            // Set Image Type to Global Variable
-            $this->filetype = $imagetype;
-            
-            switch ($imagetype) // Check which function to use
-            {
-                // PHP can only create thumbnails from GIF, JPG, PNG, WBMP and XBM formats
-                // For all others, it will return a 100x100 image that says, unable to create thumbnail
-                case 'gif': $this->image = imagecreatefromgif($sourceFile); break;
-                case 'jpg': $this->image = imagecreatefromjpeg($sourceFile); break;
-                case 'png': $this->image = imagecreatefrompng($sourceFile); break;
-                case 'wbmp': $this->image = imagecreatefromwbmp($sourceFile); break;
-                case 'xbm': $this->image = imagecreatefromxbm($sourceFile); break;
-                case 'bmp': $this->image = ImageCreateFromBMP($sourceFile); break;
-                case 'psd': $this->image = imagecreatefrompsd($sourceFile); break;
-                default : 
-                    // Cannot create from source
-                    $this->canCreateFromSouce = FALSE;
-                    
-                    // Create Blank Image with White Background
-                    $this->image = imagecreatetruecolor(100, 100);
-                    $bgc = imagecolorallocate ($this->image, 255, 255, 255);
-                    imagefilledrectangle ($this->image, 0, 0, 100, 100, $bgc);
-                    break;
-            }
-        } else {
+        $this->image = '';
+        $this->temp = '';
+        $this->canCreateFromSouce = TRUE;
+
+        if (!is_file($sourceFile) || !is_readable($sourceFile)) {
             return FALSE;
         }
 
+        $imagetype = $this->getImageType($sourceFile);
+        $this->filetype = $imagetype;
+        $image = FALSE;
+
+        switch ($imagetype) {
+            case 'gif':
+                $image = @imagecreatefromgif($sourceFile);
+                break;
+            case 'jpg':
+                $image = @imagecreatefromjpeg($sourceFile);
+                break;
+            case 'png':
+                $image = @imagecreatefrompng($sourceFile);
+                break;
+            case 'wbmp':
+                $image = @imagecreatefromwbmp($sourceFile);
+                break;
+            case 'xbm':
+                $image = @imagecreatefromxbm($sourceFile);
+                break;
+            case 'bmp':
+                $image = @ImageCreateFromBMP($sourceFile);
+                break;
+            case 'psd':
+                $image = @imagecreatefrompsd($sourceFile);
+                break;
+            case 'webp':
+                if (function_exists('imagecreatefromwebp')) {
+                    $image = @imagecreatefromwebp($sourceFile);
+                }
+                break;
+            case 'avif':
+                if (function_exists('imagecreatefromavif')) {
+                    $image = @imagecreatefromavif($sourceFile);
+                }
+                break;
+        }
+
+        if ($this->_isGdImage($image)) {
+            $this->image = $image;
+            return TRUE;
+        }
+
+        $this->canCreateFromSouce = FALSE;
+        return $this->_createFallbackImage();
+    }
+
+    /**
+     * Method to determine whether a value is a valid GD image.
+     * Supports both PHP 7 resources and PHP 8 GdImage objects.
+     */
+    private function _isGdImage($image)
+    {
+        return is_resource($image)
+            || (class_exists('GdImage', FALSE) && $image instanceof GdImage);
+    }
+
+    /**
+     * Create the existing safe placeholder used for unsupported image types.
+     */
+    private function _createFallbackImage()
+    {
+        $image = imagecreatetruecolor(100, 100);
+        if (!$this->_isGdImage($image)) {
+            $this->image = '';
+            return FALSE;
+        }
+
+        $bgc = imagecolorallocate($image, 255, 255, 255);
+        imagefilledrectangle($image, 0, 0, 99, 99, $bgc);
+        $this->image = $image;
+        return TRUE;
     }
     
     /**
@@ -174,9 +217,9 @@ class imageresize extends ChisimbaObject
                 case '14': return 'iff'; break;
                 case '15': return 'wbmp'; break;
                 case '16': return 'xbm'; break;
-                // There are no other types that PHP recognizes besides the above 16
-                // The line below is added just in case
-                default: return $this->objFileParts->getExtension($sourceFile);
+                case '18': return 'webp'; break;
+                case '19': return 'avif'; break;
+                default: return strtolower($this->objFileParts->getExtension($sourceFile));
             }
         } else {
             // Should be false, but here it return the extension to create an image
@@ -193,6 +236,13 @@ class imageresize extends ChisimbaObject
     */
     function resize($width = 100, $height = 100, $aspectratio = TRUE)
     {
+        if (!$this->_isGdImage($this->image)) {
+            $this->canCreateFromSouce = FALSE;
+            if (!$this->_createFallbackImage()) {
+                return FALSE;
+            }
+        }
+
         // Get Original Width and Height
         $o_wd = imagesx($this->image);
         $o_ht = imagesy($this->image);
@@ -253,8 +303,7 @@ class imageresize extends ChisimbaObject
     */
     function sync()
     {
-        $this->image =& $this->temp;
-        unset($this->temp);
+        $this->image = $this->temp;
         $this->temp = '';
         return;
     }
@@ -302,11 +351,18 @@ class imageresize extends ChisimbaObject
         if ($appendExtension) {
             $file .= $this->filetype == 'jpg' ? '.jpg' : '.png';
         }
-        if ($this->filetype == 'gif' || $this->filetype == 'png') {
-            return @imagepng($this->image, $file);
-        } else {
-            return @imagejpeg($this->image, $file);
+        if (!$this->_isGdImage($this->image)) {
+            return FALSE;
         }
+
+        $destinationType = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        if ($destinationType == 'png'
+            || ($destinationType == '' && ($this->filetype == 'gif' || $this->filetype == 'png'))
+        ) {
+            return @imagepng($this->image, $file);
+        }
+
+        return @imagejpeg($this->image, $file);
     }
     
     /*

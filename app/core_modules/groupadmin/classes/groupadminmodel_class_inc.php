@@ -84,6 +84,8 @@ if (!
  * @filesource
  */
 class groupAdminModel extends dbTable {
+    private $objGroupService;
+
 
     /**
      * $_objUsers an association to the userDb object.
@@ -121,7 +123,7 @@ class groupAdminModel extends dbTable {
             'groupmembershipreader',
             'groupadmin'
         );
-    }
+        }
 
     /**
      * Method to insert a group into group hierachy.
@@ -135,22 +137,34 @@ class groupAdminModel extends dbTable {
      * @return string|false the newly generated unique id for this group if successful, otherwise false.
      */
     public function addGroup($name, $description = NULL, $parentId = null) {
-        $data = array('group_define_name' => $name, 'group_type' => LIVEUSER_GROUP_TYPE_ALL);
-        $groupId = $this->objLuAdmin->perm->addGroup($data);
-        return $groupId;
+        $result = $this->getCanonicalGroupService()->createGroup($name, $description, $parentId);
+        return is_array($result)
+            && !empty($result['ok'])
+            && isset($result['groupId'])
+            ? $result['groupId']
+            : false;
+    }
+
+    /**
+     * Assign one canonical group as a direct child of another.
+     *
+     * Storage callers use GroupService; this method is its model adapter.
+     */
+    public function assignCanonicalSubGroup($groupId, $subgroupId)
+    {
+        return (bool) $this->getCanonicalGroupService()->ensureSubgroup($groupId, $subgroupId);
     }
 
     public function addSubGroups($contextCode, $contextGroupId) {
-        // create the subgroups first
+        // Preserve sequential partial-success and void-return legacy behaviour.
         $grps = array("Lecturers", "Students", "Guest");
         foreach ($grps as $grp) {
-            $grpid = $this->addGroup($contextCode . "^" . $grp);
-            // then add them as subGroups of the parent Group.
-            $data = array(
-                'group_id' => $contextGroupId,
-                'subgroup_id' => $grpid
+            $this->getCanonicalGroupService()->createNamespacedGroup(
+                $contextCode,
+                $grp,
+                null,
+                $contextGroupId
             );
-            $assign = $this->objLuAdmin->perm->assignSubGroup($data);
         }
     }
 
@@ -163,14 +177,8 @@ class groupAdminModel extends dbTable {
      * @return boolean    true if successful, otherwise false.
      */
     public function deleteGroup($groupId) {
-        $filters = array('group_id' => $groupId);
-        $removed = $this->objLuAdmin->perm->removeGroup($filters);
-        if ($removed === false) {
-            log_debug($admin->getErrors());
-            return FALSE;
-        } else {
-            return TRUE;
-        }
+        $result = $this->getCanonicalGroupService()->deleteGroup($groupId);
+        return is_array($result) && !empty($result['ok']);
     }
 
     /**
@@ -186,18 +194,8 @@ class groupAdminModel extends dbTable {
             parent::init('tbl_perms_groups ');
             $groups = $this->getArray($sql, 'tbl_perms_groups');
             return $groups;
-        } else {
-            $groups = $this->objLuAdmin->perm->getGroups();
         }
-        if ($groups === false) {
-            log_debug($admin->getErrors());
-            return FALSE;
-        } elseif (empty($groups)) {
-            log_debug('No groups were found');
-            return FALSE;
-        } else {
-            return $groups;
-        }
+        return $this->getCanonicalGroupService()->legacyGroupRows();
     }
 
     /**
@@ -262,12 +260,7 @@ class groupAdminModel extends dbTable {
      * @return string the unique id
      */
     public function getId($name = 'name') {
-        $groups = $this->objLuAdmin->perm->getGroups(array('filters' => array('group_define_name' => $name)));
-        if (empty($groups) || !isset($groups[0])) {
-            return NULL;
-        } else {
-            return $groups[0]['group_id'];
-        }
+        return $this->getCanonicalGroupService()->legacyGroupIdForStoredName($name);
     }
 
     /**
@@ -293,12 +286,7 @@ class groupAdminModel extends dbTable {
      * @return string the group name
      */
     public function getName($groupId) {
-        $groups = $this->objLuAdmin->perm->getGroups(array('filters' => array('group_id' => $groupId)));
-        if (empty($groups) || !isset($groups[0])) {
-            return NULL;
-        } else {
-            return $groups[0]['group_define_name'];
-        }
+        return $this->getCanonicalGroupService()->legacyStoredNameForGroupId($groupId);
     }
 
     /**
@@ -311,26 +299,7 @@ class groupAdminModel extends dbTable {
      * @return array  the list of all subgroups inclusive of given group.
      */
     public function getSubgroups($groupId) {
-        $subgroups = FALSE;
-        $groups = $this->objLuAdmin->perm->getGroups(
-                array(
-                    'select' => 'all',
-                    'rekey' => true,
-                    'filters' => array('group_id' => $groupId),
-                    'hierarchy' => true,
-                )
-        );
-
-
-        foreach ($groups as $grps) {
-            if (array_key_exists('subgroups', $grps)) {
-                $subgroups[] = $grps['subgroups'];
-            } else {
-                $subgroups = NULL;
-            }
-        }
-
-        return $subgroups;
+        return $this->getCanonicalGroupService()->legacySubgroupRows($groupId);
     }
 
     public function getTopLevelGroups($filters = null) {
@@ -388,7 +357,6 @@ class groupAdminModel extends dbTable {
     				WHERE group_define_name not like '%^%'" .
                 $hasFilters;
         //var_dump($sql);
-        //$groups = $this->objLuAdmin->perm->getGroups($params);
         parent::init('tbl_perms_groups');
         $groups = $this->getArray($sql); //, 'tbl_perms_groups'
         return $groups;
@@ -448,10 +416,8 @@ class groupAdminModel extends dbTable {
      * @return object
      */
     public function addGroupUser($groupId, $userId) {
-        // add the user with perm_user_id $userId to group with $grpId
-        $ret = $this->objLuAdmin->perm->addUserToGroup(array('perm_user_id' => $userId, 'group_id' => $groupId));
-
-        return $ret;
+        $result = $this->getCanonicalGroupService()->addMember($groupId, $userId);
+        return is_array($result) && !empty($result['ok']);
     }
 
     /**
@@ -465,13 +431,8 @@ class groupAdminModel extends dbTable {
      * @return true   |false TRUE on success, FALSE on failure
      */
     public function deleteGroupUser($groupId, $userId) {
-        $filters = array(
-            'group_id' => $groupId,
-            'perm_user_id' => $userId,
-        );
-        $removed = $this->objLuAdmin->perm->removeUserFromGroup($filters);
-
-        return $removed;
+        $result = $this->getCanonicalGroupService()->removeMember($groupId, $userId);
+        return is_array($result) && !empty($result['ok']);
     }
 
     /**
@@ -486,22 +447,27 @@ class groupAdminModel extends dbTable {
      * @return array|false The user rows as an array of associate arrays, or FALSE on failure
      */
     public function getGroupUsers($groupId, $fields = null, $filter = null) {
-        $params = array(
-            'filters' => array(
-                'group_id' => $groupId,
-            )
-        );
-        $usersGroup = $this->objLuAdmin->perm->getUsers($params);
+        $usersGroup = $this->getCanonicalGroupService()->getMembers($groupId);
+
         if ($fields) {
             $objUser = $this->getObject('user', 'security');
             $newArr = array();
             foreach ($usersGroup as $user) {
-                $newArr[] = $objUser->getUserDetails($user['auth_user_id']);
+                $newArr[] = $objUser->getUserDetails($user['userId']);
             }
 
             return $newArr;
         }
-        return $usersGroup;
+
+        // Preserve the legacy facade keys expected by existing GroupAdmin callers.
+        $legacyRows = array();
+        foreach ($usersGroup as $user) {
+            $user['perm_user_id'] = $user['id'];
+            $user['auth_user_id'] = $user['userId'];
+            $legacyRows[] = $user;
+        }
+
+        return $legacyRows;
     }
 
     /**
@@ -613,41 +579,28 @@ class groupAdminModel extends dbTable {
      * @return true|false returns TRUE if user is a member, otherwise FALSE
      */
     public function isSubGroupMember($userId, $groupId) {
-        $params = array(
-            'filters' => array(
-                'group_id' => $groupId,
-            )
-        );
-        $usersGroup = $this->objLuAdmin->perm->getUsers($params);
+        $groupService = $this->getCanonicalGroupService();
+        if ($groupService->isGroupMember($userId, $groupId)) {
+            return true;
+        }
 
-        foreach ($usersGroup as $group) {
-            //var_dump($group);
-            if ($userId == $group['auth_user_id']) {
+        $subGroups = $this->getSubgroups($groupId);
+        if (!isset($subGroups[0]) || !is_array($subGroups[0])) {
+            return false;
+        }
+
+        foreach ($subGroups[0] as $subGroup) {
+            if (!isset($subGroup['group_define_name'])) {
+                continue;
+            }
+            $subGroupId = $this->getId($subGroup['group_define_name']);
+            if ($subGroupId !== false && $subGroupId !== null
+                && $groupService->isGroupMember($userId, $subGroupId)) {
                 return true;
             }
         }
 
-        //try the subgroups
-        $subGroups = $this->getSubgroups($groupId);
-
-        if (count($subGroups[0]) > 0) {
-            foreach ($subGroups[0] as $subGroup) {
-                $params = array(
-                    'filters' => array(
-                        'group_id' => $this->getId($subGroup['group_define_name'])
-                    )
-                );
-                $usersGroup = $this->objLuAdmin->perm->getUsers($params);
-                foreach ($usersGroup as $group) {
-
-                    if ($userId == $group['auth_user_id']) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            return False;
-        }
+        return false;
     }
 
     /**
@@ -700,22 +653,7 @@ class groupAdminModel extends dbTable {
      * @return array|false The parent group rows as an array of associate arrays, or FALSE on failure
      */
     public function getParent($subGroupId) {
-        $subgroups = FALSE;
-        $parentgroup = Null;
-        $groups = $this->objLuAdmin->perm->getGroups(
-                array(
-                    'select' => 'all',
-                    'rekey' => true,
-                    'filters' => array('subgroup_id' => $subGroupId),
-                    'hierarchy' => true,
-                )
-        );
-
-        foreach ($groups as $grps) {
-            $parentgroup = $grps["group_define_name"];
-        }
-
-        return $parentgroup;
+        return $this->getCanonicalGroupService()->legacyParentStoredName($subGroupId);
     }
 
     /**
@@ -786,6 +724,22 @@ class groupAdminModel extends dbTable {
         }
     }
 
+
+    /**
+     * Lazily acquire the canonical group service.
+     *
+     * GroupService retains legacy groupadminmodel read dependencies, so eager
+     * construction from init() creates a reciprocal construction cycle.
+     *
+     * @return object
+     */
+    private function getCanonicalGroupService()
+    {
+        if ($this->objGroupService === null) {
+            $this->objGroupService = $this->getObject('groupservice', 'groupadmin');
+        }
+        return $this->objGroupService;
+    }
 }
 
 ?>

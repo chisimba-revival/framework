@@ -1,533 +1,1017 @@
 <?php
-
 /**
- * Controller class for the context groups module.
+ * Clear and scalable course-membership management.
  *
- * Purpose of this module is to allow for context member management.
- * It should hide the group information from the user.
- * Target user: Lecturers.
- * Precondition : User must be in a context.
- * Tasks: Add/remove Lecturers, students, or guests.
+ * Membership reads and writes use the canonical Group and Identity services.
  *
- * PHP versions 4 and 5
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the
- * Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- * @category  Chisimba
- * @package   contextgroups
- * @author    Tohir Solomons <tsolomons@uwc.ac.za>
- * @copyright 2008 Tohir Solomons
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
- * @version   $Id$
- * @link      http://avoir.uwc.ac.za
- * @see       core
+ * @category Chisimba
+ * @package  contextgroups
+ * @author   Derek Keats
+ * @license  http://www.gnu.org/licenses/gpl-2.0.txt GNU GPL v2 or later
  */
-// security check - must be included in all scripts
-if (!
-        /**
-         * Description for $GLOBALS
-         * @global string $GLOBALS['kewl_entry_point_run']
-         * @name   $kewl_entry_point_run
-         */
-        $GLOBALS['kewl_entry_point_run']) {
-    die("You cannot view this page directly");
+
+if (empty($GLOBALS['kewl_entry_point_run'])) {
+    die();
 }
 
-/**
- * Controller class for the context groups module.
- *
- * Purpose of this module is to allow for context member management.
- * It should hide the group information from the user.
- * Target user: Lecturers.
- * Precondition : User must be in a context.
- * Tasks: Add/remove Lecturers, students, or guests.
- *
- * @category  Chisimba
- * @package   contextgroups
- * @author    Tohir Solomons <tsolomons@uwc.ac.za>
- * @copyright 2008 Tohir Solomons
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
- * @version   Release: @package_version@
- * @link      http://avoir.uwc.ac.za
- * @see       core
- */
-class contextgroups extends controller {
+class contextgroups extends controller
+{
+    // CHISIMBA_CONTEXTGROUPS_REBORN
+    // CHISIMBA_CONTEXTGROUPS_INHERITED_PROPERTIES_FIXED
+    // CHISIMBA_CONTEXTGROUPS_BULK_STUDENTS
+    const BULK_PAGE_SIZE = 50;
+    const CSV_MAX_BYTES = 2097152;
+    const CSV_MAX_ROWS = 5000;
 
-    /**
-     * Method to initialise the module.
-     */
-    public function init() {
-        $this->objContextUsers = $this->getObject('contextusers');
-        $this->objContext = $this->getObject('dbcontext', 'context');
+    private $contextStore;
+    private $objGroupService;
+    private $objIdentityService;
+    private $languageService;
+    private $securityUser;
+    private $userId;
 
-        // Load the Group Admin Model
-        $this->objGroups = $this->getObject('groupAdminModel', 'groupadmin');
-        $this->objGroupUsers = $this->getObject('groupusersdb', 'groupadmin');
-        $this->objGroupsOps = $this->getObject('groupops', 'groupadmin');
-
-        $this->objManageGroups = $this->getObject('managegroups', 'contextgroups');
-
-        $this->objUser = $this->getObject('user', 'security');
-        $this->userId = $this->objUser->userId();
-        $this->objLanguage = $this->getObject('language', 'language');
-        $this->studentGroupId = $this->objGroups->getLeafId(array($this->objContext->getContextCode(), 'Students'));
-        $this->lecturerGroupId = $this->objGroups->getLeafId(array($this->objContext->getContextCode(), 'Lecturers'));
+    public function init()
+    {
+        $this->contextStore = $this->getObject('dbcontext', 'context');
+        $this->objGroupService = $this->getObject('groupservice', 'groupadmin');
+        $this->objIdentityService = $this->getObject(
+            'identityservice',
+            'security'
+        );
+        $this->securityUser = $this->getObject('user', 'security');
+        $this->languageService = $this->getObject('language', 'language');
+        $this->userId = $this->securityUser->userId();
     }
 
-    /**
-     * Dispatch Method
-     * @param string $action Action to be taken
-     */
-    public function dispatch($action) {
-        // Check if User is in a Context
-        if ($this->objContext->getContextCode() == '') {
-            return $this->nextAction(NULL, NULL, '_default');
+    public function dispatch($action)
+    {
+        if ($this->contextStore->getContextCode() === '') {
+            return $this->nextAction(null, null, '_default');
         }
 
-        // Set Layout Template
         $this->setLayoutTemplate('contextgroups_layout_tpl.php');
 
-        switch ($action) {
+        switch ((string) $action) {
+            case 'addusers':
+                return $this->addMember();
+
+            case 'removeuser':
+                return $this->removeMember();
+
+            case 'bulkupdatestudents':
+                return $this->bulkUpdateStudents();
+
+            case 'removeallstudents':
+                return $this->removeAllStudents();
+
+            case 'importstudents':
+                return $this->importStudents();
+
+            case 'importusers':
+            case 'searchforusers':
+            case 'viewsearchresults':
             default:
                 return $this->groupsHome();
-            case 'searchforusers':
-                return $this->searchForUsers();
-            case 'viewsearchresults';
-                return $this->getResults($this->getParam('page', 1));
-            case 'addusers':
-                return $this->updateUserRoles();
-            case 'removeuser':
-                return $this->removeUserFromGroup($this->getParam('userid'), $this->getParam('group'));
-            case 'removeallusers':
-                return $this->removeAllUsersFromGroup();
-
-            ///json stuff
-            case 'json_getlecturers':
-                if ($this->getParam('start') != "") {
-                    echo $this->objGroupsOps->getJsonGroupUsers($this->lecturerGroupId, $this->getParam('start'), $this->getParam('limit'));
-                } else {
-                    echo $this->objGroupsOps->getJsonGroupUsers($this->lecturerGroupId);
-                }
-                exit(0);
-                break;
-
-            case 'json_getstudents':
-                if ($this->getParam('start') != "") {
-                    echo $this->objGroupsOps->getJsonGroupUsers($this->studentGroupId, $this->getParam('start'), $this->getParam('limit'));
-                } else {
-                    echo $this->objGroupsOps->getJsonGroupUsers($this->studentGroupId);
-                }
-                exit(0);
-                break;
-
-            case 'json_removestudents':
-                echo $this->objGroupsOps->jsonRemoveUsers($this->studentGroupId, $this->getParam('ids'));
-                exit(0);
-                break;
-
-            case 'json_addstudents':
-                echo $this->objGroupsOps->jsonAddUsers($this->studentGroupId, $this->getParam('ids'));
-                exit(0);
-                break;
-
-            case 'json_removelecturers':
-                echo $this->objGroupsOps->jsonRemoveUsers($this->lecturerGroupId, $this->getParam('ids'));
-                exit(0);
-                break;
-
-            case 'json_addlecturers':
-                echo $this->objGroupsOps->jsonAddUsers($this->lecturerGroupId, $this->getParam('ids'));
-                exit(0);
-                break;
-            case 'json_allusers':
-                echo $this->objGroupsOps->jsonGetAllUsers($this->getParam('groupid'), $this->getParam('start'), $this->getParam('limit'));
-                exit(0);
-                break;
         }
     }
 
-    /**
-     * Method to place permissions handling
-     * @param string $action Action to be taken
-     * @return boolean Whether user has permission to access or not.
-     */
-    public function isValid($action, $default = true) {
-        $needPermissions = array('searchforusers', 'viewsearchresults', 'addusers', 'removeuser', 'removeallusers');
+    public function isValid($action, $default = true)
+    {
+        $action = $action === null ? '' : (string) $action;
+        $allowed = array(
+            '',
+            'default',
+            'searchforusers',
+            'viewsearchresults',
+            'addusers',
+            'removeuser',
+            'bulkupdatestudents',
+            'removeallstudents',
+            'importstudents',
+            'importusers',
+        );
 
-        if (in_array($action, $needPermissions)) {
-            if ($this->objUser->isAdmin() || $this->objUser->isContextLecturer($this->objUser->userId(), $this->objContext->getContextCode())) {
-                return TRUE;
-            } else {
-                return FALSE;
+        return in_array($action, $allowed, true)
+            && $this->canManageMembers();
+    }
+
+    private function canManageMembers()
+    {
+        return $this->securityUser->isAdmin()
+            || $this->securityUser->isContextLecturer(
+                $this->userId,
+                $this->contextStore->getContextCode()
+            );
+    }
+
+    private function groupsHome()
+    {
+        $contextCode = $this->contextStore->getContextCode();
+        $contextTitle = $this->contextStore->getTitle();
+        $roles = $this->roleDefinitions();
+        $groupIds = $this->contextRoleGroupIds();
+        $memberSections = array();
+        $membersByRole = array();
+        $rolesByUser = array();
+
+        foreach ($roles as $role => $definition) {
+            $members = $this->objGroupService->getMembers($groupIds[$role]);
+            $membersByRole[$role] = $members;
+            $displayLimit = $role === 'student' ? 20 : 100;
+            $memberSections[$role] = array(
+                'label' => $definition['plural'],
+                'singular' => $definition['singular'],
+                'members' => array_slice($members, 0, $displayLimit),
+                'count' => count($members),
+                'truncated' => count($members) > $displayLimit,
+            );
+
+            foreach ($members as $member) {
+                $memberUserId = $this->userIdFromRecord($member);
+                if ($memberUserId === '') {
+                    continue;
+                }
+                if (!isset($rolesByUser[$memberUserId])) {
+                    $rolesByUser[$memberUserId] = array();
+                }
+                $rolesByUser[$memberUserId][] = $role;
             }
-        } else {
-            return FALSE;
         }
-    }
 
-    /**
-     * Method to show the list of users in a context
-     */
-    private function groupsHome() {
-        // Generate an array of users in the context, and send it to page template
-        //$this->prepareContextUsersArray();
-        // Default Values for Search
-        $searchFor = $this->getSession('searchfor', '');
-        $this->setVar('searchfor', $searchFor);
+        $search = trim((string) $this->getParam('search', ''));
+        $searchResults = array();
+        $searchLimited = false;
+        if ($search !== '') {
+            $allUsers = $this->allSystemUsers($groupIds['student']);
+            $searchResults = $this->filterUsers(
+                $allUsers,
+                $search,
+                $rolesByUser,
+                100,
+                $searchLimited
+            );
+        }
 
-        $field = $this->getSession('field', 'firstName');
-        $course = $this->getSession('course', 'all');
-        $group = $this->getSession('group', 'all');
-        $this->setVar('field', $field);
-        $this->setVar('course', $course);
-        $this->setVar('group', $group);
+        $bulkSearch = trim((string) $this->getParam('bulksearch', ''));
+        $bulkPage = $this->positiveInteger($this->getParam('bulkpage', 1), 1);
+        $allBulkUsers = $this->allSystemUsers($groupIds['student']);
+        $unusedLimited = false;
+        $bulkUsers = $this->filterUsers(
+            $allBulkUsers,
+            $bulkSearch,
+            $rolesByUser,
+            null,
+            $unusedLimited
+        );
+        $bulkTotal = count($bulkUsers);
+        $bulkPages = max(1, (int) ceil($bulkTotal / self::BULK_PAGE_SIZE));
+        $bulkPage = min($bulkPage, $bulkPages);
+        $bulkOffset = ($bulkPage - 1) * self::BULK_PAGE_SIZE;
+        $bulkUsers = array_slice($bulkUsers, $bulkOffset, self::BULK_PAGE_SIZE);
+        $studentIds = array();
+        foreach ($membersByRole['student'] as $student) {
+            $studentId = $this->userIdFromRecord($student);
+            if ($studentId !== '') {
+                $studentIds[$studentId] = true;
+            }
+        }
+        foreach ($bulkUsers as &$bulkUser) {
+            $bulkUserId = $this->userIdFromRecord($bulkUser);
+            $bulkUser['isStudent'] = isset($studentIds[$bulkUserId]);
+            $bulkUser['courseRoles'] = isset($rolesByUser[$bulkUserId])
+                ? $rolesByUser[$bulkUserId]
+                : array();
+            $bulkUser['protectLecturer'] = $bulkUserId === (string) $this->userId
+                && in_array('lecturer', $bulkUser['courseRoles'], true);
+        }
+        unset($bulkUser);
 
-        //Ehb-added-begin
-        $currentContextCode = $this->objContext->getContextCode();
-        $where = "where contextCode<>" . "'" . $currentContextCode . "'";
-        $data = $this->objContext->getAll($where);
-        $this->setVarByRef('data', $data);
-        //Ehb-added-End
+        $membershipToken = $this->membershipToken(true);
+        $currentUserId = (string) $this->userId;
+
+        $this->setVarByRef('contextCode', $contextCode);
+        $this->setVarByRef('contextTitle', $contextTitle);
+        $this->setVarByRef('roles', $roles);
+        $this->setVarByRef('memberSections', $memberSections);
+        $this->setVarByRef('search', $search);
+        $this->setVarByRef('searchResults', $searchResults);
+        $this->setVarByRef('searchLimited', $searchLimited);
+        $this->setVarByRef('bulkSearch', $bulkSearch);
+        $this->setVarByRef('bulkUsers', $bulkUsers);
+        $this->setVarByRef('bulkTotal', $bulkTotal);
+        $this->setVarByRef('bulkPage', $bulkPage);
+        $this->setVarByRef('bulkPages', $bulkPages);
+        $this->setVarByRef('bulkOffset', $bulkOffset);
+        $this->setVarByRef('membershipToken', $membershipToken);
+        $this->setVarByRef('currentUserId', $currentUserId);
+        $pageTexts = $this->pageTexts();
+        $this->setVarByRef('pageTexts', $pageTexts);
 
         return 'home_tpl.php';
     }
 
-    /**
-     * Method to search for Users
-     * This function sets them as a session and then redirects to the results
-     */
-    private function searchForUsers() {
-        $searchFor = $this->getParam('search');
-        $this->setSession('searchfor', $searchFor);
+    private function allSystemUsers($studentGroupId)
+    {
+        $users = array();
+        $records = array_merge(
+            $this->objGroupService->getMembers($studentGroupId),
+            $this->objGroupService->getAvailableUsers($studentGroupId)
+        );
 
-        $field = $this->getParam('field');
-        $this->setSession('field', $field);
-
-        //Ehb-added-begin
-        $course = $this->getParam('course');
-        $this->setSession('course', $course);
-
-        $group = $this->getParam('group');
-        $this->setSession('group', $group);
-        //Ehb-added-End
-
-        $order = $this->getParam('order');
-        $this->setSession('order', $order);
-
-        $numResults = $this->getParam('results');
-        $this->setSession('numresults', $numResults);
-
-        return $this->nextAction('viewsearchresults');
-    }
-
-    /**
-     * Method to Show the Results for a Search
-     * @param int $page - Page of Results to show
-     */
-    private function getResults($page = 1) {
-        $searchFor = $this->getSession('searchfor', '');
-        $field = $this->getSession('field', 'firstName');
-
-        //Ehb-added-begin
-        $course = $this->getSession('course', 'all');
-        $group = $this->getSession('group', 'all');
-        //Ehb-added-End
-        $order = $this->getSession('order', 'firstName');
-        $numResults = $this->getSession('numresults', 20);
-
-        $this->setVar('searchfor', $searchFor);
-        $this->setVar('field', $field);
-        $this->setVar('order', $order);
-        $this->setVar('numresults', $numResults);
-        //Ehb-added-begin
-        $this->setVar('course', $course);
-        $this->setVar('group', $group);
-        //Ehb-added-End
-        // Prevent Corruption of Page Value - Negative Values
-        if ($page < 1) {
-            $page = 1;
-        }
-        $currentContextCode = $this->objContext->getContextCode();
-        $results = $this->objContextUsers->searchUsers($searchFor, $field, $order, $numResults, ($page - 1), $course, $group);
-
-        $this->setVarByRef('results', $results);
-        $countResults = $this->objContextUsers->countResults();
-        $this->setVarByRef('countResults', $countResults);
-        $this->setVarByRef('page', $page);
-
-
-        $paging = $this->objContextUsers->generatePaging($searchFor, $field, $order, $numResults, ($page - 1));
-        $this->setVarByRef('paging', $paging);
-        $contextCode = $this->objContext->getContextCode();
-        $this->setVarByRef('contextCode', $contextCode);
-
-        //Ehb-added-begin
-        $currentContextCode = $this->objContext->getContextCode();
-        $where = "where contextCode<>" . "'" . $currentContextCode . "'";
-        $data = $this->objContext->getAll($where);
-        $this->setVarByRef('data', $data);
-        //Ehb-added-End
-        // Get Users into Arrays
-        $this->prepareContextUsersArray();
-
-        return 'searchresults_tpl.php';
-    }
-
-    /**
-     * Method to Update User Roles
-     */
-    private function updateUserRoles() {
-        $contextCode = $_POST['context'];
-
-        if ($contextCode != $this->objContext->getContextCode()) {
-            //return $this->nextAction('error');
-            trigger_error('Internal Error::Joined another Context. Adding Users in this way is forbidden. Please start all over again.', E_USER_ERROR);
-            exit;
-        }
-
-        $changedItems = $_POST['changedItems'];
-
-        $changedItems = explode(',', $changedItems);
-        array_shift($changedItems);
-        $changedItems = array_unique($changedItems);
-
-        $groups = $this->objGroups->getTopLevelGroups();
-        $contextGroupId = $this->objGroups->getId($contextCode);
-        $subGroups = $this->objGroups->getSubgroups($contextGroupId);
-
-        foreach ($subGroups[0] as $subGroup) {
-            $groupName = $this->objGroupsOps->formatGroupName($subGroup['group_define_name']);
-            switch ($groupName) {
-                case 'Lecturers':
-                    $lecturerGroupId = $this->objGroups->getId($subGroup['group_define_name']);
-                    break;
-                case 'Students':
-                    $studentGroupId = $this->objGroups->getId($subGroup['group_define_name']);
-                    break;
-                case 'Guest':
-                    $guestGroupId = $this->objGroups->getId($subGroup['group_define_name']);
-                    break;
+        foreach ($records as $record) {
+            $recordUserId = $this->userIdFromRecord($record);
+            if ($recordUserId !== '') {
+                $record['userId'] = $recordUserId;
+                $users[$recordUserId] = $record;
             }
         }
 
-        foreach ($changedItems as $item) {
-            $permid = $this->objGroupsOps->getUserByUserId($item);
-            $pkId = $permid['perm_user_id'];
+        $users = array_values($users);
+        usort($users, array($this, 'compareUsers'));
 
-            //remove users
-            $this->objGroupsOps->removeUser($lecturerGroupId, $pkId);
-            $this->objGroupsOps->removeUser($studentGroupId, $pkId);
-            $this->objGroupsOps->removeUser($guestGroupId, $pkId);
-
-            switch ($_POST[$item]) {
-                case 'none': // Already Removed from system
-                    break;
-                case 'lecturer': // add as lecturer
-                    $this->objGroups->addGroupUser($lecturerGroupId, $pkId);
-                    break;
-                case 'student': // add as student
-                    $this->objGroups->addGroupUser($studentGroupId, $pkId);
-                    break;
-                case 'guest': // add as guest
-                    $this->objGroups->addGroupUser($guestGroupId, $pkId);
-                    break;
-                default:
-                    break; // Should be impossible to get out here
-            }
-        }
-        // die;
-        return $this->nextAction(NULL, array('message' => $this->objLanguage->languageText('mod_contextgroups_usersupdated', 'contextgroups')));
+        return $users;
     }
 
-    /**
-     * Method to remove a user from a group
-     * @param string $userId User Id of the User
-     * @param string $group Group to be deleted from - either lecturers, students or guest
-     */
-    private function removeUserFromGroup($userId=NULL, $group=NULL) {
-        if (is_null($userId) || $userId == '') {
-            //return $this->nextAction(NULL, array('message'=>'nouseridprovidedfordelete'));
-            trigger_error('Internal Error::No userId provided for delete.', E_USER_ERROR);
-            exit;
+    private function filterUsers(
+        array $users,
+        $search,
+        array $rolesByUser,
+        $limit,
+        &$limited
+    ) {
+        $search = trim((string) $search);
+        $matches = array();
+        $limited = false;
+
+        foreach ($users as $candidate) {
+            $candidateUserId = $this->userIdFromRecord($candidate);
+            if ($candidateUserId === '') {
+                continue;
+            }
+            if ($search !== '') {
+                $haystack = implode(' ', array(
+                    isset($candidate['displayName'])
+                        ? (string) $candidate['displayName']
+                        : '',
+                    isset($candidate['username'])
+                        ? (string) $candidate['username']
+                        : '',
+                    isset($candidate['email'])
+                        ? (string) $candidate['email']
+                        : '',
+                ));
+                if (stripos($haystack, $search) === false) {
+                    continue;
+                }
+            }
+
+            $candidate['userId'] = $candidateUserId;
+            $candidate['courseRoles'] = isset($rolesByUser[$candidateUserId])
+                ? $rolesByUser[$candidateUserId]
+                : array();
+            $matches[] = $candidate;
         }
-        $group = ucfirst(strtolower($group));
-        if (!in_array($group, array('Lecturers', 'Students', 'Guest'))) {
-            //return $this->nextAction(NULL, array('message'=>'nopropergroupprovidedfordelete'));
-            trigger_error('Internal Error::No proper group provided for delete.', E_USER_ERROR);
-            exit;
+
+        if ($limit !== null && count($matches) > $limit) {
+            $limited = true;
+            $matches = array_slice($matches, 0, $limit);
         }
-// Old code
-//        $groupId=$this->objGroups->getLeafId(array($this->objContext->getContextCode(), $group));
-//        $pkId = $this->objUser->PKId($userId);
-//        $this->objGroupUsers->deleteGroupUser($groupId, $pkId);
-        // Get group Id.
-        $contextCode = $this->objContext->getContextCode();
-        $groupDefineName = "{$contextCode}^{$group}";
-        $groupId = $this->objGroups->getId($groupDefineName);
-        /*
-          $contextCode = $this->objContext->getContextCode();
-          $contextGroupId = $this->objGroups->getId($contextCode);
-          $subGroups = $this->objGroups->getSubgroups($contextGroupId);
-          $groupId = NULL;
-          foreach($subGroups[0] as $subGroup)
-          {
-          $groupName =  $this->objGroupsOps->formatGroupName($subGroup['group_define_name']);
-          if ($groupName == $group) {
-          $groupId = $this->objGroups->getId($subGroup['group_define_name']);
-          break;
-          }
-          }
-          if (is_null($groupId)) {
-          trigger_error('Internal Error::Invalid subgroup.', E_USER_ERROR);
-          exit;
-          }
-         */
-        // Get user pkId.
-        $permid = $this->objGroupsOps->getUserByUserId($userId);
-        $pkId = $permid['perm_user_id'];
-        // Remove the user.
-        $this->objGroupsOps->removeUser($groupId, $pkId);
-        // Get user name.
-        $userFullName = $this->objUser->fullname($userId);
-        return $this->nextAction(NULL, array('message' => $this->objLanguage->code2Txt('mod_contextgroups_userdeletedfromgroup', 'contextgroups', array('USER' => $userFullName, 'GROUP' => $group))
+
+        return $matches;
+    }
+
+    private function compareUsers(array $left, array $right)
+    {
+        $leftName = isset($left['displayName'])
+            ? (string) $left['displayName']
+            : '';
+        $rightName = isset($right['displayName'])
+            ? (string) $right['displayName']
+            : '';
+        $comparison = strcasecmp($leftName, $rightName);
+        if ($comparison !== 0) {
+            return $comparison;
+        }
+
+        return strcasecmp(
+            isset($left['username']) ? (string) $left['username'] : '',
+            isset($right['username']) ? (string) $right['username'] : ''
+        );
+    }
+
+    private function addMember()
+    {
+        $validationError = $this->mutationValidationError();
+        if ($validationError !== null) {
+            return $this->redirectWithError($validationError);
+        }
+
+        $role = $this->normaliseRole($this->getParam('role'));
+        $targetUserId = $this->normaliseUserId($this->getParam('userid'));
+        if ($role === null || $targetUserId === null) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_invalidselection')
+            );
+        }
+
+        $groupIds = $this->contextRoleGroupIds();
+        $desired = $this->currentRoleState(array($targetUserId), $groupIds);
+        if ($role !== 'lecturer'
+            && $targetUserId === (string) $this->userId
+            && $desired[$targetUserId]['lecturer']) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_selflecturer')
+            );
+        }
+        foreach (array_keys($desired[$targetUserId]) as $roleName) {
+            $desired[$targetUserId][$roleName] = $roleName === $role;
+        }
+
+        $error = $this->reconcileRoleStates($desired, $groupIds);
+        if ($error !== null) {
+            return $this->redirectWithError($error);
+        }
+
+        return $this->nextAction(null, array(
+            'message' => $this->text(
+                'mod_contextgroups_msg_memberadded',
+                array('ROLE' => $this->roleDefinitions()[$role]['singular'])
+            ),
         ));
     }
 
-    /**
-     * Method to Prepare a List of Users in a Context sorted by lecturer, student, guest
-     * The results are sent to the template
-     */
-    private function prepareContextUsersArray() {
-        // Get Context Code
-        $contextCode = $this->objContext->getContextCode();
-        $filter = " ORDER BY surname ";
+    private function removeMember()
+    {
+        $validationError = $this->mutationValidationError();
+        if ($validationError !== null) {
+            return $this->redirectWithError($validationError);
+        }
 
-        // Lecturers
-        $gid = $this->objGroups->getLeafId(array($contextCode, 'Lecturers'));
-        $lecturers = $this->objGroups->getGroupUsers($gid, array('userid', 'firstName', 'surname', 'title', 'emailAddress', 'country', 'sex', 'staffnumber'), $filter);
+        $role = $this->normaliseRole($this->getParam('role'));
+        $targetUserId = $this->normaliseUserId($this->getParam('userid'));
+        if ($role === null || $targetUserId === null) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_invalidselection')
+            );
+        }
+        if ($role === 'lecturer'
+            && $targetUserId === (string) $this->userId) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_selflecturer')
+            );
+        }
 
-        $lecturersArray = array();
-        if ((is_countable($lecturers) ? count($lecturers) : 0) > 0) {
-            foreach ($lecturers as $lecturer) {
-                $lecturersArray[] = $lecturer['userid'];
-            }
+        $groupIds = $this->contextRoleGroupIds();
+        $desired = $this->currentRoleState(array($targetUserId), $groupIds);
+        $desired[$targetUserId][$role] = false;
+        $error = $this->reconcileRoleStates($desired, $groupIds);
+        if ($error !== null) {
+            return $this->redirectWithError($error);
         }
-        // Students
-        $gid = $this->objGroups->getLeafId(array($contextCode, 'Students'));
-        $students = $this->objGroups->getGroupUsers($gid, array('userid', 'firstName', 'surname', 'title', 'emailAddress', 'country', 'sex', 'staffnumber'), $filter);
-        $studentsArray = array();
-        if ((is_countable($students) ? count($students) : 0) > 0) {
-            foreach ($students as $student) {
-                $studentsArray[] = $student['userid'];
-            }
-        }
-        // Guests
-        $gid = $this->objGroups->getLeafId(array($contextCode, 'Guest'));
-        $guests = $this->objGroups->getGroupUsers($gid, array('userid', 'firstName', 'surname', 'title', 'emailAddress', 'country', 'sex', 'staffnumber'), $filter);
-        $guestsArray = array();
-        if ((is_countable($guests) ? count($guests) : 0) > 0) {
-            foreach ($guests as $guest) {
-                $guestsArray[] = $guest['userid'];
-            }
-        }
-        // Send to Template
-        $this->setVarByRef('lecturers', $lecturersArray);
-        $this->setVarByRef('lecturerDetails', $lecturers);
-        $this->setVarByRef('students', $studentsArray);
-        $this->setVarByRef('studentDetails', $students);
-        $this->setVarByRef('guests', $guestsArray);
-        $this->setVarByRef('guestDetails', $guests);
-    }
 
-    /**
-     * Method to remove all users from a group
-     */
-    private function removeAllUsersFromGroup() {
-// Old code
-//        if($mode == 'lecturer'){
-//            $userIds = $this->getParam('lecturerId');
-//            $groupId=$this->objGroups->getLeafId(array($this->objContext->getContextCode(), 'Lecturers'));
-//        }elseif($mode == 'student'){
-//            $userIds = $this->getParam('studentId');
-//            $groupId=$this->objGroups->getLeafId(array($this->objContext->getContextCode(), 'Students'));
-//        }else{
-//            $userIds = $this->getParam('guestId');
-//            $groupId=$this->objGroups->getLeafId(array($this->objContext->getContextCode(), 'Guest'));
-//        }
-//        if((is_countable($userIds) ? count($userIds) : 0) > 0){
-//            foreach($userIds as $userId){
-//                $pkId = $this->objUser->PKId($userId);
-//                $this->objGroupUsers->deleteGroupUser($groupId, $pkId);
-//            }
-//        }
-        $mode = $this->getParam('mode');
-        switch ($mode) {
-            case 'lecturer':
-                $group = 'Lecturers';
-                $userIds = $this->getParam('lecturerId');
-                break;
-            case 'student':
-                $group = 'Students';
-                $userIds = $this->getParam('studentId');
-                break;
-            case 'guest':
-                $group = 'Guest';
-                $userIds = $this->getParam('guestId');
-                break;
-            default:
-                trigger_error('Internal Error::Invalid mode.', E_USER_ERROR);
-                exit;
-        }
-        // Get group Id.
-        $contextCode = $this->objContext->getContextCode();
-        $groupDefineName = "{$contextCode}^{$group}";
-        $groupId = $this->objGroups->getId($groupDefineName);
-        /*
-          $contextCode = $this->objContext->getContextCode();
-          $contextGroupId = $this->objGroups->getId($contextCode);
-          $subGroups = $this->objGroups->getSubgroups($contextGroupId);
-          $groupId = NULL;
-          foreach($subGroups[0] as $subGroup)
-          {
-          $groupName =  $this->objGroupsOps->formatGroupName($subGroup['group_define_name']);
-          if ($groupName == $group) {
-          $groupId = $this->objGroups->getId($subGroup['group_define_name']);
-          break;
-          }
-          }
-          if (is_null($groupId)) {
-          trigger_error('Internal Error::Invalid subgroup.', E_USER_ERROR);
-          exit;
-          }
-         */
-        // Iterate through the selected users.
-        $count = 0;
-        if (!empty($userIds)) {
-            foreach ($userIds as $userId) {
-                ++$count;
-                // Get user pkId.
-                $permid = $this->objGroupsOps->getUserByUserId($userId);
-                $pkId = $permid['perm_user_id'];
-                // Remove the user.
-                $this->objGroupsOps->removeUser($groupId, $pkId);
-            }
-        }
-        //return $this->nextAction(NULL);
-        return $this->nextAction(NULL, array('message' => $this->objLanguage->code2Txt('mod_contextgroups_usersdeletedfromgroup', 'contextgroups', array('COUNT' => $count, 'GROUP' => $group))
+        return $this->nextAction(null, array(
+            'message' => $this->text(
+                'mod_contextgroups_msg_memberremoved',
+                array('ROLE' => $this->roleDefinitions()[$role]['plural'])
+            ),
         ));
     }
 
+    private function bulkUpdateStudents()
+    {
+        $validationError = $this->mutationValidationError();
+        if ($validationError !== null) {
+            return $this->redirectWithError($validationError);
+        }
+
+        $listedValue = isset($_POST['listedids']) ? $_POST['listedids'] : array();
+        $selectedValue = isset($_POST['studentids']) ? $_POST['studentids'] : array();
+        $listedIds = $this->normaliseUserIdList($listedValue);
+        $selectedIds = $this->normaliseUserIdList($selectedValue);
+        if ($listedIds === null || $selectedIds === null
+            || count($listedIds) > self::BULK_PAGE_SIZE) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_bulkselection')
+            );
+        }
+
+        $listedMap = array_fill_keys($listedIds, true);
+        foreach ($selectedIds as $selectedId) {
+            if (!isset($listedMap[$selectedId])) {
+                return $this->redirectWithError(
+                    $this->text('mod_contextgroups_err_bulkpage')
+                );
+            }
+        }
+
+        $groupIds = $this->contextRoleGroupIds();
+        $knownUsers = array();
+        foreach ($this->allSystemUsers($groupIds['student']) as $user) {
+            $knownUsers[$this->userIdFromRecord($user)] = true;
+        }
+        foreach ($listedIds as $listedId) {
+            if (!isset($knownUsers[$listedId])) {
+                return $this->redirectWithError(
+                    $this->text('mod_contextgroups_err_accountmissing')
+                );
+            }
+        }
+
+        $desired = $this->currentRoleState($listedIds, $groupIds);
+        $selectedMap = array_fill_keys($selectedIds, true);
+        foreach ($listedIds as $listedId) {
+            $makeStudent = isset($selectedMap[$listedId]);
+            if ($makeStudent
+                && $listedId === (string) $this->userId
+                && $desired[$listedId]['lecturer']) {
+                return $this->redirectWithError(
+                    $this->text('mod_contextgroups_err_selfstudent')
+                );
+            }
+            $desired[$listedId]['student'] = $makeStudent;
+            if ($makeStudent) {
+                $desired[$listedId]['lecturer'] = false;
+                $desired[$listedId]['guest'] = false;
+            }
+        }
+
+        $error = $this->reconcileRoleStates($desired, $groupIds);
+        if ($error !== null) {
+            return $this->redirectWithError($error);
+        }
+
+        return $this->nextAction(null, $this->bulkReturnParams(
+            $this->text('mod_contextgroups_msg_bulkupdated')
+        ));
+    }
+
+    private function removeAllStudents()
+    {
+        $validationError = $this->mutationValidationError();
+        if ($validationError !== null) {
+            return $this->redirectWithError($validationError);
+        }
+        if ((string) $this->getParam('confirmremoveall', '') !== 'yes') {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_removeallconfirm')
+            );
+        }
+
+        $groupIds = $this->contextRoleGroupIds();
+        $studentIds = array();
+        foreach ($this->objGroupService->getMembers($groupIds['student']) as $student) {
+            $studentId = $this->userIdFromRecord($student);
+            if ($studentId !== '') {
+                $studentIds[] = $studentId;
+            }
+        }
+        if ($studentIds === array()) {
+            return $this->nextAction(null, array(
+                'message' => $this->text('mod_contextgroups_msg_nostudents'),
+            ));
+        }
+
+        $desired = $this->currentRoleState($studentIds, $groupIds);
+        foreach ($studentIds as $studentId) {
+            $desired[$studentId]['student'] = false;
+        }
+        $error = $this->reconcileRoleStates($desired, $groupIds);
+        if ($error !== null) {
+            return $this->redirectWithError($error);
+        }
+
+        return $this->nextAction(null, array(
+            'message' => $this->text(
+                'mod_contextgroups_msg_studentsremoved',
+                array('COUNT' => count($studentIds))
+            ),
+        ));
+    }
+
+    private function importStudents()
+    {
+        $validationError = $this->mutationValidationError();
+        if ($validationError !== null) {
+            return $this->redirectWithError($validationError);
+        }
+
+        if (!isset($_FILES['studentfile'])
+            || !is_array($_FILES['studentfile'])) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_choosecsv')
+            );
+        }
+        $upload = $_FILES['studentfile'];
+        $uploadError = isset($upload['error']) ? (int) $upload['error'] : -1;
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            return $this->redirectWithError(
+                $this->text(
+                    'mod_contextgroups_err_csvupload',
+                    array('ERROR' => $uploadError)
+                )
+            );
+        }
+        $uploadSize = isset($upload['size']) ? (int) $upload['size'] : 0;
+        $uploadName = isset($upload['name']) ? (string) $upload['name'] : '';
+        $uploadPath = isset($upload['tmp_name']) ? (string) $upload['tmp_name'] : '';
+        if ($uploadSize < 1 || $uploadSize > self::CSV_MAX_BYTES
+            || strtolower(pathinfo($uploadName, PATHINFO_EXTENSION)) !== 'csv'
+            || !is_uploaded_file($uploadPath)) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_csvinvalid')
+            );
+        }
+
+        $groupIds = $this->contextRoleGroupIds();
+        $users = $this->allSystemUsers($groupIds['student']);
+        $indexes = $this->userIndexes($users);
+        $parseResult = $this->parseStudentCsv($uploadPath, $indexes);
+        if ($parseResult['error'] !== null) {
+            return $this->redirectWithError($parseResult['error']);
+        }
+        $studentIds = $parseResult['userIds'];
+        if ($studentIds === array()) {
+            return $this->redirectWithError(
+                $this->text('mod_contextgroups_err_csvnousers')
+            );
+        }
+
+        $desired = $this->currentRoleState($studentIds, $groupIds);
+        $alreadyStudents = 0;
+        foreach ($studentIds as $studentId) {
+            if ($desired[$studentId]['student']) {
+                $alreadyStudents++;
+            }
+            if ($studentId === (string) $this->userId
+                && $desired[$studentId]['lecturer']) {
+                return $this->redirectWithError(
+                    $this->text('mod_contextgroups_err_csvselflecturer')
+                );
+            }
+            $desired[$studentId]['student'] = true;
+            $desired[$studentId]['lecturer'] = false;
+            $desired[$studentId]['guest'] = false;
+        }
+
+        $error = $this->reconcileRoleStates($desired, $groupIds);
+        if ($error !== null) {
+            return $this->redirectWithError($error);
+        }
+
+        return $this->nextAction(null, array(
+            'message' => $this->text(
+                'mod_contextgroups_msg_csvresult',
+                array(
+                    'MATCHED' => count($studentIds),
+                    'ADDED' => count($studentIds) - $alreadyStudents,
+                    'EXISTING' => $alreadyStudents,
+                )
+            ),
+        ));
+    }
+
+    private function parseStudentCsv($path, array $indexes)
+    {
+        $handle = fopen($path, 'rb');
+        if ($handle === false) {
+            return array(
+                'userIds' => array(),
+                'error' => $this->text('mod_contextgroups_err_csvunreadable'),
+            );
+        }
+
+        $header = fgetcsv($handle);
+        if (!is_array($header)) {
+            fclose($handle);
+            return array(
+                'userIds' => array(),
+                'error' => $this->text('mod_contextgroups_err_csvempty'),
+            );
+        }
+        if (isset($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
+        }
+        $columns = array();
+        foreach ($header as $index => $name) {
+            $normalised = strtolower(trim((string) $name));
+            if ($normalised === 'user_id') {
+                $normalised = 'userid';
+            }
+            if ($normalised === 'emailaddress') {
+                $normalised = 'email';
+            }
+            if (in_array($normalised, array('userid', 'username', 'email'), true)) {
+                $columns[$normalised] = $index;
+            }
+        }
+        if ($columns === array()) {
+            fclose($handle);
+            return array(
+                'userIds' => array(),
+                'error' => $this->text('mod_contextgroups_err_csvheader'),
+            );
+        }
+
+        $resolved = array();
+        $errors = array();
+        $lineNumber = 1;
+        while (($row = fgetcsv($handle)) !== false) {
+            $lineNumber++;
+            if ($lineNumber > self::CSV_MAX_ROWS + 1) {
+                $errors[] = $this->text(
+                    'mod_contextgroups_err_csvrows',
+                    array('MAX' => self::CSV_MAX_ROWS)
+                );
+                break;
+            }
+            $values = array();
+            foreach ($columns as $column => $index) {
+                $value = isset($row[$index]) ? trim((string) $row[$index]) : '';
+                if ($value !== '') {
+                    $values[$column] = $value;
+                }
+            }
+            if ($values === array()) {
+                continue;
+            }
+
+            $rowMatches = array();
+            foreach ($values as $column => $value) {
+                $lookup = $column === 'userid' ? $value : strtolower($value);
+                if (!isset($indexes[$column][$lookup])) {
+                    $errors[] = $this->text(
+                        'mod_contextgroups_err_csvnomatch',
+                        array(
+                            'LINE' => $lineNumber,
+                            'COLUMN' => $column,
+                            'VALUE' => $value,
+                        )
+                    );
+                    continue 2;
+                }
+                if (count($indexes[$column][$lookup]) !== 1) {
+                    $errors[] = $this->text(
+                        'mod_contextgroups_err_csvambiguous',
+                        array(
+                            'LINE' => $lineNumber,
+                            'COLUMN' => $column,
+                            'VALUE' => $value,
+                        )
+                    );
+                    continue 2;
+                }
+                $rowMatches[] = $indexes[$column][$lookup][0];
+            }
+            if (count(array_unique($rowMatches)) !== 1) {
+                $errors[] = $this->text(
+                    'mod_contextgroups_err_csvdifferentusers',
+                    array('LINE' => $lineNumber)
+                );
+                continue;
+            }
+            $resolved[$rowMatches[0]] = true;
+        }
+        fclose($handle);
+
+        if ($errors !== array()) {
+            $visibleErrors = array_slice($errors, 0, 8);
+            if (count($errors) > count($visibleErrors)) {
+                $visibleErrors[] = $this->text(
+                    'mod_contextgroups_err_csvmore',
+                    array(
+                        'COUNT' => count($errors) - count($visibleErrors),
+                    )
+                );
+            }
+            return array(
+                'userIds' => array(),
+                'error' => implode(' ', $visibleErrors) . ' '
+                    . $this->text('mod_contextgroups_err_nochanges'),
+            );
+        }
+
+        return array('userIds' => array_keys($resolved), 'error' => null);
+    }
+
+    private function userIndexes(array $users)
+    {
+        $indexes = array('userid' => array(), 'username' => array(), 'email' => array());
+        foreach ($users as $user) {
+            $values = array(
+                'userid' => $this->userIdFromRecord($user),
+                'username' => isset($user['username'])
+                    ? strtolower(trim((string) $user['username']))
+                    : '',
+                'email' => isset($user['email'])
+                    ? strtolower(trim((string) $user['email']))
+                    : '',
+            );
+            foreach ($values as $column => $value) {
+                if ($value === '') {
+                    continue;
+                }
+                if (!isset($indexes[$column][$value])) {
+                    $indexes[$column][$value] = array();
+                }
+                $indexes[$column][$value][] = $values['userid'];
+            }
+        }
+
+        return $indexes;
+    }
+
+    private function currentRoleState(array $userIds, array $groupIds)
+    {
+        $state = array();
+        foreach ($userIds as $userId) {
+            $state[$userId] = array_fill_keys(array_keys($groupIds), false);
+        }
+        foreach ($groupIds as $role => $groupId) {
+            foreach ($this->objGroupService->getMembers($groupId) as $member) {
+                $memberId = $this->userIdFromRecord($member);
+                if (isset($state[$memberId])) {
+                    $state[$memberId][$role] = true;
+                }
+            }
+        }
+
+        return $state;
+    }
+
+    private function reconcileRoleStates(array $desired, array $groupIds)
+    {
+        $userIds = array_keys($desired);
+        $before = $this->currentRoleState($userIds, $groupIds);
+        $permissionIds = array();
+        foreach ($userIds as $userId) {
+            $permissionId = $this->objIdentityService
+                ->permissionUserIdForUser($userId);
+            if ($permissionId === null) {
+                return $this->text('mod_contextgroups_err_noidentity');
+            }
+            $permissionIds[$userId] = $permissionId;
+        }
+
+        foreach ($desired as $userId => $roleState) {
+            foreach ($roleState as $role => $shouldBelong) {
+                if ($before[$userId][$role] === (bool) $shouldBelong) {
+                    continue;
+                }
+                $success = $shouldBelong
+                    ? $this->objGroupService->ensureMembership(
+                        $groupIds[$role],
+                        $permissionIds[$userId]
+                    )
+                    : $this->objGroupService->removeMembership(
+                        $groupIds[$role],
+                        $permissionIds[$userId]
+                    );
+                if (!$success) {
+                    $rollbackOk = $this->restoreRoleStates(
+                        $before,
+                        $groupIds,
+                        $permissionIds
+                    );
+                    return $rollbackOk
+                        ? $this->text('mod_contextgroups_err_updaterolledback')
+                        : $this->text('mod_contextgroups_err_rollbackfailed');
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function restoreRoleStates(
+        array $state,
+        array $groupIds,
+        array $permissionIds
+    ) {
+        $ok = true;
+        foreach ($state as $userId => $roleState) {
+            foreach ($roleState as $role => $shouldBelong) {
+                $result = $shouldBelong
+                    ? $this->objGroupService->ensureMembership(
+                        $groupIds[$role],
+                        $permissionIds[$userId]
+                    )
+                    : $this->objGroupService->removeMembership(
+                        $groupIds[$role],
+                        $permissionIds[$userId]
+                    );
+                $ok = $result && $ok;
+            }
+        }
+
+        return $ok;
+    }
+
+    private function mutationValidationError()
+    {
+        $method = isset($_SERVER['REQUEST_METHOD'])
+            ? strtoupper((string) $_SERVER['REQUEST_METHOD'])
+            : '';
+        if ($method !== 'POST') {
+            return $this->text('mod_contextgroups_err_postrequired');
+        }
+
+        $submittedContext = (string) $this->getParam('context', '');
+        if ($submittedContext !== $this->contextStore->getContextCode()) {
+            return $this->text('mod_contextgroups_err_contextchanged');
+        }
+
+        $submittedToken = (string) $this->getParam('membershiptoken', '');
+        $storedToken = $this->membershipToken(false);
+        if ($storedToken === '' || $submittedToken === ''
+            || !hash_equals($storedToken, $submittedToken)) {
+            return $this->text('mod_contextgroups_err_formexpired');
+        }
+
+        return null;
+    }
+
+    private function membershipToken($create)
+    {
+        $token = (string) $this->getSession('membershipToken', '');
+        if (preg_match('/^[a-f0-9]{64}$/', $token)) {
+            return $token;
+        }
+        if (!$create) {
+            return '';
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $this->setSession('membershipToken', $token);
+
+        return $token;
+    }
+
+    private function contextRoleGroupIds()
+    {
+        $contextCode = $this->contextStore->getContextCode();
+        $groupIds = array();
+        foreach ($this->roleDefinitions() as $role => $definition) {
+            $groupId = $this->objGroupService->groupIdForName(
+                $contextCode . '^' . $definition['storedName']
+            );
+            if ($groupId === false) {
+                throw new RuntimeException($this->text(
+                    'mod_contextgroups_err_rolegroup',
+                    array('ROLE' => $definition['storedName'])
+                ));
+            }
+            $groupIds[$role] = $groupId;
+        }
+
+        return $groupIds;
+    }
+
+    private function roleDefinitions()
+    {
+        return array(
+            'lecturer' => array(
+                'storedName' => 'Lecturers',
+                'singular' => $this->text('mod_contextgroups_rolelecturer'),
+                'plural' => $this->text('mod_contextgroups_rolelecturers'),
+            ),
+            'student' => array(
+                'storedName' => 'Students',
+                'singular' => $this->text('mod_contextgroups_rolestudent'),
+                'plural' => $this->text('mod_contextgroups_rolestudents'),
+            ),
+            'guest' => array(
+                'storedName' => 'Guest',
+                'singular' => $this->text('mod_contextgroups_roleguest'),
+                'plural' => $this->text('mod_contextgroups_roleguests'),
+            ),
+        );
+    }
+
+    private function text($code, array $replacements = array())
+    {
+        $text = $this->languageService->code2Txt(
+            (string) $code,
+            'contextgroups'
+        );
+        if ($replacements === array()) {
+            return $text;
+        }
+
+        $tokens = array();
+        foreach ($replacements as $tag => $value) {
+            $tokens['[-' . strtoupper((string) $tag) . '-]'] = (string) $value;
+        }
+
+        return strtr($text, $tokens);
+    }
+
+    private function pageTexts()
+    {
+        $keys = array(
+            'unnameduser', 'membershipeyebrow', 'managetitle', 'contextcode',
+            'intro', 'individualmembership', 'findmember', 'searchlabel',
+            'search', 'searchresults', 'searchlimited', 'nomatches',
+            'currentrole', 'notincontext', 'chooserole', 'alreadyrole',
+            'addas', 'largecontexts',
+            'bulkheading', 'bulkintro', 'filteraccounts', 'filter', 'clear',
+            'nofiltermatches', 'account', 'currentcontextrole',
+            'studentmembership', 'youraccount', 'showing', 'accounttabletoggle',
+            'selectdisplayed', 'cleardisplayed', 'savedisplayed',
+            'accountpages', 'previous', 'next', 'pageof', 'uploadheading',
+            'uploadhelp', 'csvfile', 'uploadadd', 'removeall',
+            'removeallhelp', 'removeallconfirm', 'currentmembership',
+            'currentmembers', 'membercount', 'norole', 'you', 'remove',
+            'showingfirst', 'usebulk',
+        );
+        $texts = array();
+        foreach ($keys as $key) {
+            $texts[$key] = $this->text('mod_contextgroups_ui_' . $key);
+        }
+
+        return $texts;
+    }
+
+    private function normaliseRole($value)
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+        $value = strtolower(trim((string) $value));
+
+        return array_key_exists($value, $this->roleDefinitions())
+            ? $value
+            : null;
+    }
+
+    private function normaliseUserId($value)
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+        $value = trim((string) $value);
+        if ($value === '' || strlen($value) > 255
+            || preg_match('/[\x00-\x1F\x7F]/', $value)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function normaliseUserIdList($value)
+    {
+        if ($value === null || $value === '') {
+            return array();
+        }
+        if (!is_array($value)) {
+            return null;
+        }
+        $result = array();
+        foreach ($value as $item) {
+            $userId = $this->normaliseUserId($item);
+            if ($userId === null) {
+                return null;
+            }
+            $result[$userId] = true;
+        }
+
+        return array_keys($result);
+    }
+
+    private function positiveInteger($value, $fallback)
+    {
+        if (!is_scalar($value) || !preg_match('/^[0-9]+$/', (string) $value)) {
+            return $fallback;
+        }
+        $integer = (int) $value;
+
+        return $integer > 0 ? $integer : $fallback;
+    }
+
+    private function userIdFromRecord(array $record)
+    {
+        if (!array_key_exists('userId', $record)
+            || !is_scalar($record['userId'])) {
+            return '';
+        }
+
+        return trim((string) $record['userId']);
+    }
+
+    private function bulkReturnParams($message)
+    {
+        return array(
+            'message' => (string) $message,
+            'bulksearch' => trim((string) $this->getParam('bulksearch', '')),
+            'bulkpage' => $this->positiveInteger(
+                $this->getParam('bulkpage', 1),
+                1
+            ),
+        );
+    }
+
+    private function redirectWithError($message)
+    {
+        return $this->nextAction(null, array('error' => (string) $message));
+    }
 }
-
 ?>

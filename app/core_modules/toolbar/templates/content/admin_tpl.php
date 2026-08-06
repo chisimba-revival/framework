@@ -13,7 +13,7 @@ $this->setLayoutTemplate('admin_layout_tpl.php');
 $this->objLanguage = $this->getObject('language','language');
 $tab = $this->newObject('tabber', 'htmlelements');
 $tab->tabId = TRUE;
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$objIcon = $this->getObject('iconservice', 'ui');
 $objLink = $this->newObject('link', 'htmlelements');
 $objTable = $this->newObject('htmltable', 'htmlelements');
 $objHead = $this->newObject('htmlheading', 'htmlelements');
@@ -30,7 +30,23 @@ $objHead->type = 1;
 $objHead->str = $head;
 echo $objHead->show().'<br />';
 
-$objIcon->extra=' height="25" width="25" ';
+$adminIconMap = array(
+    'contextadmin' => 'book-open',
+    'contextgroups' => 'users-round',
+    'useradmin' => 'user-cog',
+    'groupadmin' => 'users-round',
+    'permissions' => 'shield-check',
+    'moduleadmin' => 'boxes',
+    'modulecatalogue' => 'boxes',
+    'createlang' => 'languages',
+    'language' => 'languages',
+    'extensions' => 'puzzle',
+    'languagetext' => 'text',
+    'systext' => 'text',
+    'serverstatus' => 'server-cog',
+    'sysconfig' => 'server-cog',
+    'viewsource' => 'code-2',
+);
 
 if(!empty($modules)){
     $langArray = array('context'=>'course', 'contexts'=>'courses', 'author'=>'lecturer', 'authors'=>'lecturers', 'readonly'=>'student', 'readonlys'=>'students');
@@ -39,6 +55,7 @@ if(!empty($modules)){
         // set up table and column widths
         $objTable->init();
         $objTable->width='99%';
+        $objTable->cssClass='adminmenu-table';
 
         $objTable->startRow();
         $objTable->addCell('', '33%');
@@ -57,14 +74,19 @@ if(!empty($modules)){
                     $objTable->startRow();
                 }
 
-                // If the icon is specified.
-                if(isset($line['icon']) && !empty($line['icon'])){
-                    $icon = $line['icon'];
-                }else{
-                    $icon = $line['module'];
+                $iconKey = isset($line['icon']) && !empty($line['icon'])
+                    ? $line['icon'] : $line['module'];
+                if (isset($adminIconMap[$iconKey])) {
+                    $iconName = $adminIconMap[$iconKey];
+                } elseif (isset($adminIconMap[$line['module']])) {
+                    $iconName = $adminIconMap[$line['module']];
+                } else {
+                    $iconName = 'puzzle';
                 }
-                // No need to check if the icon exists, done by geticon class.
-                $objIcon->setModuleIcon($icon);
+                $iconMarkup = $objIcon->render(
+                    $iconName,
+                    array('decorative' => true, 'class' => 'adminmenu-icon')
+                );
 
                 // if an action is specified for the link
                 $action = array();
@@ -81,7 +103,7 @@ if(!empty($modules)){
                     $name = ucwords($this->objLanguage->code2Txt('mod_'.$line['module'].'_name',$line['module']));
                 }
 
-                $objLink->link = $objIcon->show().'<br />'.$name;
+                $objLink->link = $iconMarkup.'<br />'.$name;
                 $objTable->addCell($objLink->show(), '', 'bottom', 'center');
             }
             

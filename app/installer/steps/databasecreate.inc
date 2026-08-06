@@ -172,6 +172,7 @@ class DbCreateAction extends StepAction
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules_dependencies.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules_owned_tables.sql');
+    $this->_installDb32('core_modules/abuseprotection/sql/tbl_abuse_events.sql');
     $this->_installDb32('core_modules/systext/sql/tbl_systext_system.sql');
     $this->_installDb32('core_modules/systext/sql/tbl_systext_text.sql');
     $this->_installDb32('core_modules/systext/sql/tbl_systext_abstract.sql');

@@ -210,14 +210,6 @@ class tools extends ChisimbaObject
         $login = $this->objLanguage->languageText ( 'mod_toolbar_loggedin', 'toolbar' );
         $role = $this->objLanguage->languageText ( 'mod_toolbar_role', 'toolbar' );
         $user = $this->securityContext->displayName();
-        $logout = $this->securityContext->logoutForm(
-            $this->objLanguage->languageText(
-                'word_logout',
-                'system',
-                'Logout'
-            ),
-            'toolbar-role-logout'
-        );
         $roleName = $this->objLanguage->languageText ( 'mod_toolbar_guest', 'toolbar' );
         if ($this->securityContext->isSiteAdministrator()) {
             $roleName = $this->objLanguage->languageText ( 'mod_toolbar_administrator', 'toolbar' );
@@ -229,7 +221,7 @@ class tools extends ChisimbaObject
             );
         }
 
-        return "$login <b>$user</b> ($logout) | $role <b>$roleName</b>";
+        return "$login <b>$user</b> | $role <b>$roleName</b>";
     }
 
     /**

@@ -29,10 +29,9 @@ class cssmenu extends ChisimbaObject {
                 $this->objLanguage = $this->getObject('language', 'language');
                 $this->objSkin = $this->getObject('skin', 'skin');
                 $this->objConfig = $this->getObject('altconfig', 'config');
-                $this->securityContext = $this->getObject('toolbarsecuritycontext');
 
                 $this->loadClass('link', 'htmlelements');
-                $this->toolbarIcon = $this->newObject('geticon', 'htmlelements');
+                $this->iconService = $this->getObject('iconservice', 'ui');
                 //$this->objLayer = $this->loadClass('layer','htmlelements');
         }
 
@@ -46,9 +45,22 @@ class cssmenu extends ChisimbaObject {
          */
         public function show() {
                 $homeLabel = $this->objLanguage->languageText('word_home', 'system', 'Home');
-                $logoutLabel = $this->objLanguage->languageText('word_logout', 'system', 'Logout');
 
                 $home = $this->objConfig->getdefaultModuleName();
+
+                $menuIconMap = array(
+                        'calendar' => 'calendar',
+                        'contextadmin' => 'book-open',
+                        'contextcontent' => 'library',
+                        'contextgroups' => 'users-round',
+                        'filemanager' => 'folder-open',
+                        'groupadmin' => 'users-round',
+                        'logger' => 'scroll-text',
+                        'modulecatalogue' => 'boxes',
+                        'toolbar' => 'server-cog',
+                        'useradmin' => 'user-cog',
+                        'userdetails' => 'user',
+                );
 
                 $str = '<ul id="menuList" class="adxm">'; //this is not using this javascript menu. its using the css one
                 $str .= '<li id="home" class="navigation-list first" ><a href="' . $this->uri(NULL, $home) . '">' . $homeLabel . '</a></li>';
@@ -59,11 +71,15 @@ class cssmenu extends ChisimbaObject {
                         $counter = 1;
                         $numitems = (is_countable($item) ? count($item) : 0);
                         foreach ($item as $link => $val) {
-                                $this->toolbarIcon->setIcon($link, null, 'icons/modules/');
-                                $this->toolbarIcon->title = $val;
-                                $this->toolbarIcon->align = 'left';
-                                $this->toolbarIcon->extra = ' vspace="3" hspace="5" width="17" height="17"';
-                                $icon = $this->toolbarIcon->show();
+                                $iconName = isset($menuIconMap[$link])
+                                        ? $menuIconMap[$link] : 'puzzle';
+                                $icon = $this->iconService->render(
+                                        $iconName,
+                                        array(
+                                                'decorative' => true,
+                                                'class' => 'mainmenu-icon',
+                                        )
+                                );
 
                                 $objLink = new link($this->uri(NULL, $link));
                                 $objLink->link = $icon . '<div class="menulinktext">' . $val . '</div>';
@@ -82,14 +98,6 @@ class cssmenu extends ChisimbaObject {
                                 $counter++;
                         }
                         $str.="</ul></li>\n";
-                }
-                if ($this->securityContext->isAuthenticated()) {
-                        $str .= '<li id="logout" class="navigation-list last">'
-                                . $this->securityContext->logoutForm(
-                                        $logoutLabel,
-                                        'toolbar-css-logout'
-                                )
-                                . '</li>';
                 }
                 $str .="</ul>";
 

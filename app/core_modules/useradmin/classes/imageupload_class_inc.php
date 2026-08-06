@@ -84,7 +84,13 @@ class imageupload extends ChisimbaObject
             $grav_email = md5(strtolower($this->objUser->email()));
             $grav_default = urlencode($this->objConfig->getsiteRoot().$this->imageUri."default.jpg");
             $grav_size = 130;
-            $grav_url = "http://www.gravatar.com/avatar/".$grav_email."?default=".$grav_default."&size=".$grav_size;
+            // A missing uploaded avatar must remain local and deterministic.
+            // The curated Lucide asset avoids mixed content, network failure,
+            // tracking, and a broken user_images/default.jpg fallback.
+            $grav_url = $this->getResourceUri(
+                'icons/user-round.svg',
+                'useradmin'
+            );
             return $grav_url;
         }
         else {

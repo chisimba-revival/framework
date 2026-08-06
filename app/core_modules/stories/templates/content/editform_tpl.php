@@ -236,6 +236,8 @@ $objFmTable->endRow();
 $objFmTable->startRow();
 $objFmTable->addCell($objLanguage->languageText("word_abstract").":&nbsp;", NULL, "top", "right");
 $objTextArea = new textarea('abstract', $abstract);
+// Explicitly populate the legacy textarea when editing an existing story.
+$objTextArea->value = $abstract;
 $objTextArea->cols=77;
 $objFmTable->addCell($objTextArea->show(), NULL, "top", "left");
 $objFmTable->endRow();

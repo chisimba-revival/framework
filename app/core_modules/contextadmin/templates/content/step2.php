@@ -32,7 +32,7 @@ $header = new htmlheading();
 $header->type = 1;
 $header->str = ucwords($headerTitle);
 
-echo '<br />'.$header->show();
+echo '<div class="chisimba-wizard-heading">'.$header->show().'</div>';
 
 
 
