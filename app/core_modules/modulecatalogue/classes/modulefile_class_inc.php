@@ -427,6 +427,7 @@ class modulefile extends ChisimbaObject {
                         case 'MODULE_AUTHORS':
                         case 'MODULE_VERSION':
                         case 'MODULE_PATH':
+                        case 'MODULE_ICON':
                         case 'MODULE_ISADMIN':
                         case 'MODULE_ISVISIBLE':
                         case 'MODULE_HASADMINPAGE':

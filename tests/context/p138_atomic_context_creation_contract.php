@@ -20,8 +20,10 @@ $method = substr($context, $start, $end - $start);
 
 p138Assert($start !== false && $end !== false,
     'Context creation method is present');
+p138Assert(strpos($method, 'if ($manageTransaction)') !== false,
+    'Context creation permits a wider orchestration transaction');
 p138Assert(substr_count($method, '$this->beginTransaction();') === 1,
-    'Context creation begins exactly one shared database transaction');
+    'standalone Context creation begins one shared database transaction');
 p138Assert(substr_count($method, '$this->commitTransaction();') === 1,
     'Context creation has exactly one commit boundary');
 p138Assert(substr_count($method, '$this->rollbackTransaction();') === 1,
@@ -36,12 +38,12 @@ $insert = strpos($method, '$this->insert($data);');
 $groupsCall = strpos($method, '$contextGroups->createGroups');
 $join = strpos($method, '$this->joinContext($contextCode);');
 $commit = strpos($method, '$this->commitTransaction();');
-$index = strpos($method, '$this->_indexContext($contextCode);');
+$index = strpos($method, '$this->indexCreatedContext($contextCode);');
 p138Assert($begin < $insert && $insert < $groupsCall
     && $groupsCall < $join && $join < $commit,
     'row, groups, membership, and grants complete before commit');
 p138Assert($index !== false && $index > $commit,
-    'non-transactional search indexing occurs only after commit');
+    'standalone non-transactional search indexing occurs only after commit');
 p138Assert(strpos($groups, "return true;\n    } // End createGroups") !== false,
     'canonical Context group provisioning reports explicit success');
 

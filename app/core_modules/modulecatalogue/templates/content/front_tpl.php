@@ -41,7 +41,7 @@ if (!isset($result)) {
 }
 
 $missingModules = false;
-$icon = $this->getObject('geticon', 'htmlelements');
+$moduleIconResolver = $this->getObject('moduleiconresolver', 'modulecatalogue');
 
 $objTable = $this->getObject('htmltable','htmlelements');
 $objTable->cellpadding = 2;
@@ -143,8 +143,7 @@ if ($modules) {
             continue;
         }
         //echo $moduleId;
-        $icon->setModuleIcon($moduleId);
-        $icon->alt = $moduleId;
+        $resolvedModuleIcon = $moduleIconResolver->render($moduleId, $moduleName);
         if (in_array($moduleId,$localModules)) { //dont display downloadable modules until that functionality is complete
             $textButton = new Link($this->uri(array('action'=>'textelements','mod'=>$moduleId,'cat'=>$activeCat),'modulecatalogue'));
             $textButton->link = $this->objLanguage->languageText('mod_modulecatalogue_textelement','modulecatalogue');
@@ -226,7 +225,7 @@ if ($modules) {
             );
             $stateBadge = '<span class="modcat-state '.($isInstalled ? 'is-installed' : 'is-available').'">'
                 .htmlspecialchars($stateLabel, ENT_QUOTES, 'UTF-8').'</span>';
-            $moduleIcon = '<span class="modcat-module-icon">'.$icon->show().'</span>';
+            $moduleIcon = '<span class="modcat-module-icon">'.$resolvedModuleIcon.'</span>';
 
             $objTable->startRow();
             $objTable->addCell($checkBox,null,null,'left',$class);

@@ -141,7 +141,16 @@ $header = new htmlheading();
 $header->type = 1;
 $header->str = ucwords($headerTitle);
 
-echo '<br />' . $header->show();
+echo '<div class="contextadmin-course-creation"><br />' . $header->show();
+
+if ($mode == 'add' && is_array($fixup) && !empty($fixup['creation_error'])) {
+    $isCpdFailure = strpos((string) $fixup['creation_error'], 'cpd_') === 0
+        || strpos((string) $fixup['creation_error'], 'invalid_cpd_') === 0;
+    $message = $isCpdFailure
+        ? $this->objLanguage->languageText('mod_contextadmin_cpdcreatefailed', 'contextadmin', 'The course was not created because its CPD settings could not be saved. Check the CPD fields and try again.')
+        : $this->objLanguage->languageText('mod_contextadmin_coursecreatefailed', 'contextadmin', 'The course could not be created. Check the fields and try again.');
+    echo '<div class="error">' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</div>';
+}
 
 
 // CREATE FORM
@@ -229,6 +238,10 @@ if ($objSysConfig->getValue('context_access_private_only', 'context', 'false') =
 }
 
 $table = $this->newObject('htmltable', 'htmlelements');
+$table->cssClass = 'contextadmin-course-form';
+$table->startRow();
+$table->addCell('<h2 class="contextadmin-form-section-heading">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_coursedetails', 'contextadmin', 'Course details'), ENT_QUOTES, 'UTF-8') . '</h2>', NULL, NULL, 2);
+$table->endRow();
 
 if ($mode == 'edit') {
     $table->startRow();
@@ -249,6 +262,69 @@ $table->addCell($titleLabel->show());
 $table->addCell($title->show());
 $table->endRow();
 
+$selectedFormat = 'standard';
+$selectedNavigation = 'free';
+if ($mode == 'add' && is_array($fixup)) {
+    $selectedFormat = isset($fixup['delivery_format']) ? $fixup['delivery_format'] : 'standard';
+    $selectedNavigation = isset($fixup['navigation_mode']) && $fixup['navigation_mode'] !== ''
+        ? $fixup['navigation_mode'] : ($selectedFormat === 'microlearning' ? 'backward' : 'free');
+} elseif ($mode == 'edit') {
+    $selectedFormat = !empty($context['delivery_format']) ? $context['delivery_format'] : 'standard';
+    $selectedNavigation = !empty($context['navigation_mode']) ? $context['navigation_mode'] : 'free';
+}
+
+$format = new dropdown('delivery_format');
+$format->addOption('standard', $this->objLanguage->languageText('mod_contextadmin_format_standard', 'contextadmin', 'Standard course'));
+$format->addOption('microlearning', $this->objLanguage->languageText('mod_contextadmin_format_microlearning', 'contextadmin', 'Microlearning course'));
+$format->setSelected($selectedFormat);
+$navigation = new dropdown('navigation_mode');
+$navigation->addOption('sequential', $this->objLanguage->languageText('mod_contextadmin_navigation_sequential', 'contextadmin', 'Sequential only'));
+$navigation->addOption('backward', $this->objLanguage->languageText('mod_contextadmin_navigation_backward', 'contextadmin', 'Backward allowed'));
+$navigation->addOption('free', $this->objLanguage->languageText('mod_contextadmin_navigation_free', 'contextadmin', 'Free navigation'));
+$navigation->setSelected($selectedNavigation);
+
+$table->startRow();
+$table->addCell('<h2 class="contextadmin-form-section-heading">' . $this->objLanguage->languageText('mod_contextadmin_learningdesign', 'contextadmin', 'Learning design') . '</h2>');
+$table->addCell($this->objLanguage->languageText('mod_contextadmin_learningdesign_help', 'contextadmin', 'Choose the course format and how learners may move through its content. The format supplies a default, which you may change.'));
+$table->endRow();
+$table->startRow();
+$table->addCell($this->objLanguage->languageText('mod_contextadmin_deliveryformat', 'contextadmin', 'Course format'));
+$table->addCell($format->show());
+$table->endRow();
+$table->startRow();
+$table->addCell($this->objLanguage->languageText('mod_contextadmin_navigationmode', 'contextadmin', 'Learner navigation'));
+$table->addCell($navigation->show());
+$table->endRow();
+
+if ($mode == 'add' && !empty($contextAdminCpdAvailable)) {
+    $cpdChecked = is_array($fixup) && !empty($fixup['cpd_enabled']);
+    $cpdScheme = is_array($fixup) ? ($fixup['cpd_scheme_id'] ?? '') : '';
+    $cpdCategory = is_array($fixup) ? ($fixup['cpd_category_id'] ?? '') : '';
+    $cpdHtml = '<label><input type="checkbox" name="cpd_enabled" id="cpd_enabled" value="1"' . ($cpdChecked ? ' checked="checked"' : '') . ' /> '
+        . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_enablecpd', 'contextadmin', 'Enable CPD recognition for this course'), ENT_QUOTES, 'UTF-8') . '</label>';
+    $cpdHtml .= '<div id="cpd_creation_settings"><p><label for="cpd_scheme_id">'
+        . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdscheme', 'contextadmin', 'CPD scheme'), ENT_QUOTES, 'UTF-8') . '</label> <select name="cpd_scheme_id" id="cpd_scheme_id"><option value="">--</option>';
+    foreach ($contextAdminCpdSchemes as $scheme) {
+        $cpdHtml .= '<option value="' . htmlspecialchars($scheme['id'], ENT_QUOTES, 'UTF-8') . '"' . ($cpdScheme === $scheme['id'] ? ' selected="selected"' : '') . '>' . htmlspecialchars($scheme['name'], ENT_QUOTES, 'UTF-8') . '</option>';
+    }
+    $cpdHtml .= '</select></p><p><label for="cpd_category_id">'
+        . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdcategory', 'contextadmin', 'CPD category'), ENT_QUOTES, 'UTF-8') . '</label> <select name="cpd_category_id" id="cpd_category_id"><option value="">--</option>';
+    foreach ($contextAdminCpdCategories as $schemeId => $schemeCategories) {
+        foreach ($schemeCategories as $category) {
+            $cpdHtml .= '<option data-scheme="' . htmlspecialchars($schemeId, ENT_QUOTES, 'UTF-8') . '" value="' . htmlspecialchars($category['id'], ENT_QUOTES, 'UTF-8') . '"' . ($cpdCategory === $category['id'] ? ' selected="selected"' : '') . '>' . htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') . '</option>';
+        }
+    }
+    $cpdHtml .= '</select></p><p><label for="cpd_points">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdpoints', 'contextadmin', 'Points on completion'), ENT_QUOTES, 'UTF-8') . '</label> <input type="number" min="0.01" step="0.01" name="cpd_points" id="cpd_points" value="' . htmlspecialchars(is_array($fixup) ? ($fixup['cpd_points'] ?? '') : '', ENT_QUOTES, 'UTF-8') . '" /></p>';
+    $cpdHtml .= '<p><label for="cpd_valid_from">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdvalidfrom', 'contextadmin', 'CPD recognition starts (DD-MM-YYYY)'), ENT_QUOTES, 'UTF-8') . '</label> <input type="text" name="cpd_valid_from" id="cpd_valid_from" value="' . htmlspecialchars(is_array($fixup) ? ($fixup['cpd_valid_from'] ?? '') : '', ENT_QUOTES, 'UTF-8') . '" /><br /><span class="caption">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdvalidfromhelp', 'contextadmin', 'The first date on which completing this course can earn CPD points. Leave blank if recognition starts immediately.'), ENT_QUOTES, 'UTF-8') . '</span></p>';
+    $cpdHtml .= '<p><label for="cpd_valid_until">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdvaliduntil', 'contextadmin', 'CPD recognition ends (DD-MM-YYYY)'), ENT_QUOTES, 'UTF-8') . '</label> <input type="text" name="cpd_valid_until" id="cpd_valid_until" value="' . htmlspecialchars(is_array($fixup) ? ($fixup['cpd_valid_until'] ?? '') : '', ENT_QUOTES, 'UTF-8') . '" /><br /><span class="caption">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdvaliduntilhelp', 'contextadmin', 'The final date on which completing this course can earn CPD points. Leave blank if recognition has no end date.'), ENT_QUOTES, 'UTF-8') . '</span></p>';
+    $cpdHtml .= '<p><label for="cpd_reason">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdreference', 'contextadmin', 'Administrative reason or reference'), ENT_QUOTES, 'UTF-8') . '</label> <input type="text" name="cpd_reason" id="cpd_reason" value="' . htmlspecialchars(is_array($fixup) ? ($fixup['cpd_reason'] ?? '') : '', ENT_QUOTES, 'UTF-8') . '" /></p><p class="caption">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_cpdprivatehelp', 'contextadmin', 'CPD courses are private so learner identity, enrolment and completion can be verified.'), ENT_QUOTES, 'UTF-8') . '</p></div>';
+    $table->startRow();
+    $table->addCell('<h2 class="contextadmin-form-section-heading">' . $this->objLanguage->languageText('mod_contextadmin_cpdrecognition', 'contextadmin', 'CPD recognition') . '</h2>');
+    $table->addCell($cpdHtml);
+    $table->endRow();
+    $this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){var previousAccess=null;function cpdToggle(){var on=jQuery("#cpd_enabled").is(":checked"),access=jQuery("input[name=access]");jQuery("#cpd_creation_settings").toggle(on);jQuery("#cpd_scheme_id,#cpd_category_id,#cpd_points,#cpd_reason").prop("required",on);if(on){if(previousAccess===null){previousAccess=access.filter(":checked").val()||null;}access.filter("[value=Private]").prop("checked",true);}else if(previousAccess!==null){access.filter("[value="+previousAccess+"]").prop("checked",true);previousAccess=null;}}function categoryFilter(){var scheme=jQuery("#cpd_scheme_id").val();jQuery("#cpd_category_id option[data-scheme]").each(function(){jQuery(this).prop("hidden",jQuery(this).data("scheme")!==scheme);});if(jQuery("#cpd_category_id option:selected").data("scheme")!==scheme){jQuery("#cpd_category_id").val("");}}jQuery("#cpd_enabled").on("change",cpdToggle);jQuery("#cpd_scheme_id").on("change",categoryFilter);cpdToggle();categoryFilter();jQuery("#input_delivery_format").on("change",function(){jQuery("#input_navigation_mode").val(jQuery(this).val()==="microlearning"?"backward":"free");});});</script>');
+}
+
 
 $uploadlink = new link($this->uri(array("action" => "uploadtheme")));
 $uploadlink->link = '<strong>' . $this->objLanguage->languageText('mod_contextadmin_upload', 'contextadmin', 'Upload') . '</strong>';
@@ -261,8 +337,7 @@ if ($mode == 'edit') {
 $table->endRow();
 
 $table->startRow();
-$table->addCell('&nbsp;');
-$table->addCell('&nbsp;');
+$table->addCell('<h2 class="contextadmin-form-section-heading">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_availability', 'contextadmin', 'Availability and participation'), ENT_QUOTES, 'UTF-8') . '</h2>', NULL, NULL, 2);
 $table->endRow();
 
 $table->startRow();
@@ -270,14 +345,9 @@ $table->addCell($this->objLanguage->languageText('word_status', 'system', 'Statu
 $table->addCell($status->show());
 $table->endRow();
 
-$table->startRow();
-$table->addCell('&nbsp;');
-$table->addCell('&nbsp;');
-$table->endRow();
-
 $showcomment = new dropdown('showcomment');
 //$status->setBreakSpace('<br />');
-$showcomment->addOption('1', $this->objLanguage->languageText('word_yes', 'system', 'No') . " ");
+$showcomment->addOption('1', $this->objLanguage->languageText('word_yes', 'system', 'Yes') . " ");
 $showcomment->addOption('0', $this->objLanguage->languageText('word_no', 'system', 'No') . " ");
 
 if ($mode == 'add' && is_array($fixup)) {
@@ -288,12 +358,7 @@ if ($mode == 'add' && is_array($fixup)) {
 
 $table->startRow();
 $table->addCell($this->objLanguage->languageText('mod_contextadmin_comment', 'contextadmin', 'Comment'));
-$table->addCell($showcomment->show() . " *" . $this->objLanguage->languageText('mod_contextadmin_comments', 'contextadmin', 'Enable or Disable users to post comments on page content'));
-$table->endRow();
-
-$table->startRow();
-$table->addCell('&nbsp;');
-$table->addCell('&nbsp;');
+$table->addCell($showcomment->show() . '<span class="contextadmin-field-help">' . $this->objLanguage->languageText('mod_contextadmin_comments', 'contextadmin', 'Enable or Disable users to post comments on page content') . '</span>');
 $table->endRow();
 
 if ($objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'false') {
@@ -303,33 +368,22 @@ if ($objSysConfig->getValue('context_access_private_only', 'context', 'false') =
     $table->endRow();
 }
 
-$emailAlert = new checkbox('emailalertopt', $this->objLanguage->languageText('mod_contextadmin_emailalertwhat', 'contextadmin', 'Send email alerts'), true);  // this will checked
-
-if ($mode == 'add' && is_array($fixup)) {
-    $emailAlert->setChecked($fixup['alerts']);
-} elseif($mode == 'add') {
-    $emailAlert->setChecked('0');
-} else if ($mode == 'edit') {
-    $emailAlert->setChecked($context['alerts']);
-}
-
-$table->startRow();
-$table->addCell($this->objLanguage->languageText('mod_contextadmin_emailalert', 'contextadmin', 'Alerts'));
-$table->addCell($emailAlert->show());
-$table->endRow();
-
 $button = new button('savecontext', $this->objLanguage->languageText('mod_contextadmin_gotonextstep', 'contextadmin', 'Go to Next Step'));
 $button->cssId = 'savebutton';
+$button->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-primary';
+$button->sexyButtons = FALSE;
 $button->setToSubmit();
 
 //$table_ = $table->show();
 //if ($objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'true') {
 //    $table_ .= $access->show();
 //}
-$form->addToForm( $table->show() . '<p><br />' . $button->show() . '</p>');
+$form->addToForm('<div class="contextadmin-course-form-wrap">' . $table->show() . '<div class="contextadmin-course-form-actions">' . $button->show() . '</div></div>');
 
 $hiddenInput = new hiddeninput('mode', $mode);
 $form->addToForm($hiddenInput->show());
+$csrfInput = new hiddeninput('csrf_token', $contextAdminCsrf);
+$form->addToForm($csrfInput->show());
 
 if ($mode == 'add') {
     $form->addRule('contextcode', $this->objLanguage->code2Txt('mod_contextadmin_pleaseentercontextcode', 'contextadmin', NULL, 'Please enter a [-context-] code'), 'required');
@@ -337,4 +391,5 @@ if ($mode == 'add') {
 $form->addRule('title', $this->objLanguage->languageText('mod_contextadmin_pleaseentertitle', 'contextadmin', 'Please enter a title'), 'required');
 
 echo $form->show();
+echo '</div>';
 ?>

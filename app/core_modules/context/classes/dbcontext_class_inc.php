@@ -138,7 +138,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of adding a context
      */
     public function createContext(
-    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='') {
+    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE) {
 
         $contextCode = preg_replace('/\W*/', '', $contextCode);
         $contextCode = strtolower($contextCode);
@@ -148,6 +148,11 @@ class dbcontext extends dbTable {
         }
 
         if ($this->valueExists('contextcode', $contextCode)) {
+            return FALSE;
+        }
+
+        $learningDesign = $this->validateLearningDesign($deliveryFormat, $navigationMode);
+        if ($learningDesign === FALSE) {
             return FALSE;
         }
 
@@ -165,9 +170,13 @@ class dbcontext extends dbTable {
             'goals' => $goals,
             'showcomment' => $showcomment,
             'canvas' => $canvas,
+            'delivery_format' => $learningDesign['delivery_format'],
+            'navigation_mode' => $learningDesign['navigation_mode'],
             'lastaccessed' => date("Y-m-d H:i:s"));
 
-        $this->beginTransaction();
+        if ($manageTransaction) {
+            $this->beginTransaction();
+        }
         try {
             $result = $this->insert($data);
             if (!$result) {
@@ -182,15 +191,46 @@ class dbcontext extends dbTable {
             }
 
             $this->joinContext($contextCode);
-            $this->commitTransaction();
+            if ($manageTransaction) {
+                $this->commitTransaction();
+            }
         } catch (Throwable $failure) {
-            $this->rollbackTransaction();
+            if ($manageTransaction) {
+                $this->rollbackTransaction();
+            }
             throw $failure;
         }
 
-        // Search indexing is non-transactional and follows the database commit.
-        $this->_indexContext($contextCode);
+        // An orchestration caller indexes only after its wider transaction commits.
+        if ($manageTransaction) {
+            $this->indexCreatedContext($contextCode);
+        }
         return $result;
+    }
+
+    /**
+     * Validate context-owned learning design properties and apply format defaults.
+     *
+     * @return array|false
+     */
+    public function validateLearningDesign($deliveryFormat, $navigationMode = NULL) {
+        $deliveryFormat = strtolower(trim((string) $deliveryFormat));
+        if (!in_array($deliveryFormat, array('standard', 'microlearning'), TRUE)) {
+            return FALSE;
+        }
+        $navigationMode = strtolower(trim((string) $navigationMode));
+        if ($navigationMode === '') {
+            $navigationMode = $deliveryFormat === 'microlearning' ? 'backward' : 'free';
+        }
+        if (!in_array($navigationMode, array('sequential', 'backward', 'free'), TRUE)) {
+            return FALSE;
+        }
+        return array('delivery_format' => $deliveryFormat, 'navigation_mode' => $navigationMode);
+    }
+
+    /** Search indexing is deliberately outside orchestrated database transactions. */
+    public function indexCreatedContext($contextCode) {
+        $this->_indexContext($contextCode);
     }
 
     /**
@@ -206,7 +246,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of Update
      */
     public function updateContext(
-    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE) {
+    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE) {
         $fields = array();
 
         $fields['updated'] = date('Y-m-d H:i:s');
@@ -239,6 +279,16 @@ class dbcontext extends dbTable {
         }
         if ($canvas !== FALSE) {
             $fields['canvas'] = $canvas;
+        }
+        if ($deliveryFormat !== FALSE || $navigationMode !== FALSE) {
+            $currentFormat = $deliveryFormat !== FALSE ? $deliveryFormat : $this->getField('delivery_format', $contextCode);
+            $currentNavigation = $navigationMode !== FALSE ? $navigationMode : $this->getField('navigation_mode', $contextCode);
+            $design = $this->validateLearningDesign($currentFormat ?: 'standard', $currentNavigation ?: NULL);
+            if ($design === FALSE) {
+                return FALSE;
+            }
+            $fields['delivery_format'] = $design['delivery_format'];
+            $fields['navigation_mode'] = $design['navigation_mode'];
         }
 
         $result = $this->update('contextcode', $contextCode, $fields);

@@ -79,6 +79,8 @@ function removeContextImage()
     $leftCol .= '<img src="'.$hasContextImage.'" width="100" height="100"><br />';
     
     $removeButton = new button('removeimage', $this->objLanguage->languageText('mod_contextadmin_removeimage', 'contextadmin', 'Remove Image'));
+    $removeButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-danger';
+    $removeButton->sexyButtons = FALSE;
     $removeButton->setOnClick('removeContextImage();');
     
     $leftCol .= $removeButton->show();
@@ -103,6 +105,8 @@ $table->endRow();
 
 
 $button = new button ('savecontext', $formButton);
+$button->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-primary';
+$button->sexyButtons = FALSE;
 $button->setToSubmit();
 
 
@@ -111,6 +115,8 @@ $form = new form ('createcontext', $this->uri(array('action'=>$formAction)));
 
 $backUri = $this->uri(array('action'=>'edit','contextcode'=>$contextCode),'contextadmin');
 $backButton = new button('back', $this->objLanguage->languageText('word_back'),"document.location='$backUri'");
+$backButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-secondary';
+$backButton->sexyButtons = FALSE;
 
 $form->addToForm($table->show());
 $form->addToForm($backButton->show()." ".$button->show());

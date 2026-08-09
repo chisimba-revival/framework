@@ -3008,3 +3008,407 @@ h5.featureboxheader,
     }
 }
 
+/* BEGIN CHISIMBA-REBORN CONTEXTADMIN COURSE CREATION */
+.contextadmin-course-creation {
+    --contextadmin-label-width: 12.5rem;
+    max-width: 62rem;
+    margin-inline: auto;
+}
+
+.contextadmin-course-creation > h1 {
+    margin-block: 0.8rem 1.25rem;
+}
+
+.contextadmin-course-form-wrap {
+    overflow: hidden;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-lg, 0.75rem);
+    background: var(--chisimba-surface, #fff);
+    box-shadow: 0 0.2rem 0.7rem rgba(26, 45, 62, 0.06);
+}
+
+.contextadmin-course-form {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+}
+
+.contextadmin-course-form td {
+    padding: 0.62rem 1.15rem;
+    border: 0;
+    vertical-align: top;
+}
+
+.contextadmin-course-form td:first-child:not([colspan]) {
+    width: var(--contextadmin-label-width);
+    padding-top: 0.82rem;
+    color: var(--chisimba-text-strong, #27333e);
+    font-weight: 650;
+}
+
+.contextadmin-course-form input[type="text"],
+.contextadmin-course-form input[type="number"],
+.contextadmin-course-form select,
+.contextadmin-course-form textarea {
+    min-height: 2.45rem;
+    padding: 0.48rem 0.62rem;
+}
+
+.contextadmin-course-form input[type="text"] {
+    width: min(100%, 32rem);
+}
+
+.contextadmin-course-form select {
+    min-width: min(100%, 17rem);
+}
+
+.contextadmin-course-form label {
+    line-height: 1.5;
+}
+
+.contextadmin-course-form .caption {
+    display: inline-block;
+    margin-block-start: 0.22rem;
+    color: var(--chisimba-text-muted, #5d6772);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.contextadmin-form-section-heading {
+    margin: 0;
+    color: var(--chisimba-blue-dark, #164b72);
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+}
+
+.contextadmin-course-form tr:has(.contextadmin-form-section-heading) td {
+    padding-block: 1rem 0.55rem;
+    border-top: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    background: var(--chisimba-surface-muted, #f6f8fa);
+}
+
+.contextadmin-course-form tr:first-child td {
+    border-top: 0;
+}
+
+.contextadmin-course-form tr:has(#cpd_enabled) td {
+    padding-block: 1rem;
+    border-block: 1px solid #c7dccf;
+    background: #f1f8f3;
+}
+
+.contextadmin-course-form tr:has(#cpd_enabled) td:first-child {
+    border-inline-start: 0.3rem solid #6ea27c;
+}
+
+.contextadmin-course-form tr:has(#cpd_enabled) td:last-child {
+    padding-inline-end: 1.4rem;
+}
+
+.contextadmin-course-form #cpd_enabled {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-inline-end: 0.4rem;
+    accent-color: #3f7d52;
+}
+
+.contextadmin-course-form #cpd_creation_settings {
+    margin-block-start: 0.9rem;
+    padding: 0.3rem 0 0.1rem 1.5rem;
+    border-inline-start: 2px solid #b5d1be;
+}
+
+.contextadmin-course-form #cpd_creation_settings p {
+    display: grid;
+    grid-template-columns: minmax(10.5rem, 14rem) minmax(0, 1fr);
+    gap: 0.2rem 0.8rem;
+    align-items: center;
+    margin: 0 0 0.75rem;
+}
+
+.contextadmin-course-form #cpd_creation_settings .caption {
+    grid-column: 2;
+}
+
+.contextadmin-course-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.15rem 1.15rem;
+    border-top: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    background: var(--chisimba-surface-muted, #f6f8fa);
+}
+
+.contextadmin-course-form-actions #savebutton {
+    min-width: 9.5rem;
+}
+
+@media (max-width: 48rem) {
+    .contextadmin-course-creation {
+        --contextadmin-label-width: auto;
+    }
+
+    .contextadmin-course-form,
+    .contextadmin-course-form tbody,
+    .contextadmin-course-form tr,
+    .contextadmin-course-form td {
+        display: block;
+        width: 100% !important;
+    }
+
+    .contextadmin-course-form tr {
+        padding-block: 0.3rem;
+    }
+
+    .contextadmin-course-form td {
+        padding: 0.25rem 0.9rem;
+    }
+
+    .contextadmin-course-form td:first-child:not([colspan]) {
+        padding-top: 0.65rem;
+    }
+
+    .contextadmin-course-form tr:has(.contextadmin-form-section-heading) td {
+        padding-block: 0.9rem 0.55rem;
+    }
+
+    .contextadmin-course-form tr:has(#cpd_enabled) td {
+        padding-inline: 0.9rem;
+    }
+
+    .contextadmin-course-form #cpd_creation_settings {
+        padding-inline-start: 0.8rem;
+    }
+
+    .contextadmin-course-form #cpd_creation_settings p {
+        display: block;
+    }
+
+    .contextadmin-course-form #cpd_creation_settings label,
+    .contextadmin-course-form #cpd_creation_settings input,
+    .contextadmin-course-form #cpd_creation_settings select {
+        display: block;
+        width: 100%;
+        margin-block: 0.2rem;
+    }
+
+    .contextadmin-course-form-actions {
+        justify-content: stretch;
+    }
+
+    .contextadmin-course-form-actions #savebutton {
+        width: 100%;
+    }
+}
+/* END CHISIMBA-REBORN CONTEXTADMIN COURSE CREATION */
+
+/* BEGIN CHISIMBA-REBORN CONTEXTADMIN COURSE CREATION REFINEMENT */
+.contextadmin-course-form .contextadmin-field-help {
+    display: block;
+    margin-block-start: 0.35rem;
+    color: var(--chisimba-text-muted, #5d6772);
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.contextadmin-course-form-actions #savebutton {
+    min-height: 2.65rem;
+    padding: 0.62rem 1.1rem;
+    border: 0 !important;
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: var(--chisimba-text-inverse, #fff) !important;
+    background: var(--chisimba-blue-deep, #164b72) !important;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    cursor: pointer;
+}
+
+.contextadmin-course-form-actions #savebutton:hover,
+.contextadmin-course-form-actions #savebutton:focus-visible {
+    background: var(--chisimba-orange, #d56a1f) !important;
+}
+
+.contextadmin-course-form-actions #savebutton:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--chisimba-blue-deep, #164b72) 28%, transparent);
+    outline-offset: 2px;
+}
+/* END CHISIMBA-REBORN CONTEXTADMIN COURSE CREATION REFINEMENT */
+
+/* BEGIN CHISIMBA-REBORN CONTEXTADMIN NESTED ACTION FIX */
+/* Chisimba's button helper wraps the native submit control in #savebutton. */
+.contextadmin-course-form-actions #savebutton:has(input[type="submit"]),
+.contextadmin-course-form-actions #savebutton:has(button) {
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0;
+    outline: 0;
+    color: inherit !important;
+    background: transparent !important;
+}
+
+.contextadmin-course-form-actions #savebutton input[type="submit"],
+.contextadmin-course-form-actions #savebutton button {
+    min-width: 9.5rem;
+    min-height: 2.65rem;
+    margin: 0;
+    padding: 0.62rem 1.1rem;
+    border: 0 !important;
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    box-shadow: none !important;
+    color: var(--chisimba-text-inverse, #fff) !important;
+    background: var(--chisimba-blue-deep, #164b72) !important;
+    background-image: none !important;
+    font: inherit;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    line-height: 1.2;
+    text-shadow: none !important;
+    cursor: pointer;
+    appearance: none;
+}
+
+.contextadmin-course-form-actions #savebutton input[type="submit"]:hover,
+.contextadmin-course-form-actions #savebutton input[type="submit"]:focus-visible,
+.contextadmin-course-form-actions #savebutton button:hover,
+.contextadmin-course-form-actions #savebutton button:focus-visible {
+    background: var(--chisimba-orange, #d56a1f) !important;
+}
+
+.contextadmin-course-form-actions #savebutton input[type="submit"]:focus-visible,
+.contextadmin-course-form-actions #savebutton button:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--chisimba-blue-deep, #164b72) 28%, transparent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 48rem) {
+    .contextadmin-course-form-actions #savebutton:has(input[type="submit"]),
+    .contextadmin-course-form-actions #savebutton:has(button),
+    .contextadmin-course-form-actions #savebutton input[type="submit"],
+    .contextadmin-course-form-actions #savebutton button {
+        width: 100%;
+    }
+}
+/* END CHISIMBA-REBORN CONTEXTADMIN NESTED ACTION FIX */
+
+/* BEGIN CHISIMBA-REBORN CONTEXTADMIN INNER DECORATION FIX */
+/* The legacy button helper decorates inner spans; the outer button is the control. */
+.contextadmin-course-form-actions #savebutton > span,
+.contextadmin-course-form-actions #savebutton > span > span {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    background-image: none !important;
+    font: inherit !important;
+    line-height: inherit !important;
+    text-shadow: none !important;
+}
+
+.contextadmin-course-form-actions #savebutton > span::before,
+.contextadmin-course-form-actions #savebutton > span::after,
+.contextadmin-course-form-actions #savebutton > span > span::before,
+.contextadmin-course-form-actions #savebutton > span > span::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+/* END CHISIMBA-REBORN CONTEXTADMIN INNER DECORATION FIX */
+
+/* BEGIN CHISIMBA-REBORN CONTEXTADMIN WIZARD ACTIONS */
+.contextadmin-wizard-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    margin: 0.2rem 0.3rem 0.2rem 0;
+    padding: 0.58rem 1rem;
+    border: 1px solid transparent !important;
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    box-shadow: none !important;
+    font: inherit;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+    line-height: 1.2;
+    text-shadow: none !important;
+    cursor: pointer;
+    appearance: none;
+}
+
+.contextadmin-wizard-button-primary {
+    color: var(--chisimba-text-inverse, #fff) !important;
+    background: var(--chisimba-blue-deep, #164b72) !important;
+    background-image: none !important;
+}
+
+.contextadmin-wizard-button-primary:hover,
+.contextadmin-wizard-button-primary:focus-visible {
+    background: var(--chisimba-orange, #d56a1f) !important;
+}
+
+.contextadmin-wizard-button-secondary {
+    color: var(--chisimba-blue-deep, #164b72) !important;
+    border-color: var(--chisimba-border-strong, #aeb8c2) !important;
+    background: var(--chisimba-surface, #fff) !important;
+    background-image: none !important;
+}
+
+.contextadmin-wizard-button-secondary:hover,
+.contextadmin-wizard-button-secondary:focus-visible {
+    border-color: var(--chisimba-blue-deep, #164b72) !important;
+    background: var(--chisimba-surface-muted, #f2f5f7) !important;
+}
+
+.contextadmin-wizard-button-danger {
+    color: var(--chisimba-danger, #9f2d2d) !important;
+    border-color: color-mix(in srgb, var(--chisimba-danger, #9f2d2d) 45%, white) !important;
+    background: color-mix(in srgb, var(--chisimba-danger, #9f2d2d) 8%, white) !important;
+    background-image: none !important;
+}
+
+.contextadmin-wizard-button:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--chisimba-blue-deep, #164b72) 28%, transparent);
+    outline-offset: 2px;
+}
+
+.contextadmin-module-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: var(--chisimba-blue-deep, #164b72);
+    background: var(--chisimba-surface-muted, #f1f5f9);
+}
+
+.contextadmin-module-icon svg,
+.contextadmin-module-icon img {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+/* END CHISIMBA-REBORN CONTEXTADMIN WIZARD ACTIONS */
+/* Contextcontent authoring lifecycle 2.013 */
+.contextcontent-chapter-context{margin:.15rem 0;padding:.7rem .85rem;border-left:4px solid #087f5b;border-radius:0 7px 7px 0;background:#eef8f4;color:#20343f;font-weight:700}.contextcontent-chapter-context span{color:#60727c;font-size:.9rem;font-weight:400}.contextcontent-primary-action,#ctxtcnt-add-submit{padding:.65rem 1rem!important;border:1px solid #087f5b!important;border-radius:7px!important;background:#087f5b!important;color:#fff!important;font-weight:700!important;box-shadow:none!important}.contextcontent-danger-action{padding:.65rem 1rem!important;border:1px solid #b42318!important;border-radius:7px!important;background:#b42318!important;color:#fff!important;font-weight:700!important;box-shadow:none!important}/* Contextcontent page navigation 2.014 */
+.chisimba-chapter-contents .htmlliststyle,
+.contextcontent-page-list .htmlliststyle{margin:.55rem 0;padding:0;list-style:none}
+.chisimba-chapter-contents .htmlliststyle li,
+.contextcontent-page-list .htmlliststyle li{margin:.4rem 0;padding:0;border:1px solid #dce4e8;border-radius:8px;background:#fff;box-shadow:0 1px 2px rgba(32,52,63,.04);list-style:none}
+.chisimba-chapter-contents .htmlliststyle li:hover,
+.contextcontent-page-list .htmlliststyle li:hover{border-color:#91b8a9;background:#f7fbf9}
+.chisimba-chapter-contents .htmlliststyle li:focus-within,
+.contextcontent-page-list .htmlliststyle li:focus-within{border-color:#087f5b;box-shadow:0 0 0 3px rgba(8,127,91,.12)}
+.chisimba-chapter-contents .htmlliststyle li>a,
+.contextcontent-page-list .htmlliststyle li>a{display:block;padding:.62rem .75rem;color:#20343f;font-weight:650;text-decoration:none}
+.contextcontent-page-title{display:inline-flex;align-items:center;gap:.55rem}
+.contextcontent-page-icon{width:1.05rem;height:1.05rem;flex:0 0 auto;color:#607d8b}
+.chisimba-current-page{border-color:#087f5b!important;background:#eef8f4!important}
+.chisimba-current-page>a{color:#075f47!important}
+.chisimba-current-page-icon{width:.9rem;height:.9rem;margin-right:.35rem;color:#087f5b;vertical-align:-.12em}
+

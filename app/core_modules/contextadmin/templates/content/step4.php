@@ -43,7 +43,7 @@ $form = new form('updateplugins', $this->uri(array('action'=>'savestep4')));
 
 $table = $this->newObject('htmltable', 'htmlelements');
 
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$moduleIconResolver = $this->getObject('moduleiconresolver', 'modulecatalogue');
 
 $counter = 0;
 
@@ -68,14 +68,14 @@ foreach ($newPlugins as $plugin)
         $checkbox->setChecked(TRUE);
     }
     
-    $objIcon->setModuleIcon($plugin['module_id']);
+    $moduleIcon = $moduleIconResolver->render($plugin['module_id'], $plugin['title']);
     
     if ($counter%2 == 1) {
         $table->startRow();
     }
     $table->addCell($checkbox->show(), 20);
     
-    $label = new label ($objIcon->show(), 'module_'.$plugin['module_id']);
+    $label = new label ('<span class="contextadmin-module-icon">'.$moduleIcon.'</span>', 'module_'.$plugin['module_id']);
     
     $table->addCell($label->show(), 30);
     
@@ -97,10 +97,14 @@ if ($counter%2 == 1) {
 $form->addToForm($table->show());
 
 $button =  new button ('submitform', $this->objLanguage->code2Txt('mod_context_savepluginsabs', 'context', array('plugins'=>'plugins'), 'Save [-plugins-]'));
+$button->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-primary';
+$button->sexyButtons = FALSE;
 $button->setToSubmit();
 
 $backUri = $this->uri(array('action'=>'step3','mode'=>'edit','contextCode'=>$contextCode),'contextadmin');
 $backButton = new button('back', $this->objLanguage->languageText('word_back'),"document.location='$backUri'");
+$backButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-secondary';
+$backButton->sexyButtons = FALSE;
 
 $form->addToForm($backButton->show()." ".$button->show());
 

@@ -66,7 +66,7 @@ $fields = array(
         ),
     'lastupdatedby' => array(
         'type' => 'text',
-        'length' => 32        
+        'length' => 255
         ),
     'updated' => array(
         'type' => 'timestamp'
@@ -92,9 +92,21 @@ $fields = array(
         'type' => 'integer',
         'length' => 255
 	   ),
-       'canvas' => array(
+	'canvas' => array(
         'type' => 'text',
         'length' => 255
+	   ),
+	'delivery_format' => array(
+        'type' => 'text',
+        'length' => 32,
+        'notnull' => TRUE,
+        'default' => 'standard'
+	   ),
+	'navigation_mode' => array(
+        'type' => 'text',
+        'length' => 32,
+        'notnull' => TRUE,
+        'default' => 'free'
 	   ),
 	'lastaccessed' => array(
         'type' => 'timestamp'

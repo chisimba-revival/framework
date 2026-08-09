@@ -57,6 +57,8 @@ if (!
  */
 class contextadmin extends controller {
 
+    const CSRF_CONTEXT = 'contextadmin_step1';
+
     /**
      * The user Object
      *
@@ -98,6 +100,14 @@ class contextadmin extends controller {
         $this->objUserContext = $this->getObject('usercontext', 'context');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objConfig = $this->getObject('altconfig', 'config');
+        $this->objCourseCreation = $this->getObject('coursecreationservice', 'contextadmin');
+        $this->objModules = $this->getObject('modules', 'modulecatalogue');
+        $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        $this->csrf = $stack['csrf'];
+    }
+
+    public function requiresLogin($action) {
+        return TRUE;
     }
 
     /**
@@ -180,7 +190,11 @@ class contextadmin extends controller {
      * Method to create a new context
      */
     private function __add() {
+        if (!$this->objUser->isAdmin()) {
+            return $this->nextAction(NULL, array('error' => 'forbidden'));
+        }
         $this->setVar('mode', 'add');
+        $this->prepareStep1Vars();
         return 'step1.php';
     }
 
@@ -188,6 +202,10 @@ class contextadmin extends controller {
      * Method to save step 1 of creating a context - context details
      */
     private function __savestep1() {
+        if (!$this->isPost() || !$this->objUser->isAdmin()
+            || !$this->csrf->consume(self::CSRF_CONTEXT, (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction('add', array('error' => 'invalidrequest'));
+        }
         $mode = $this->getParam('mode');
         $contextCode = $this->getParam('contextcode');
         $title = $this->getParam('title');
@@ -206,14 +224,23 @@ class contextadmin extends controller {
             $alerts = '0';
         }
 
-        if ($contextCode == '') {
-            $result = FALSE;
-        } else {
-            $result = $this->objContext->createContext($contextCode, $title, $status, $access, $about, '', $showcomment, $alerts, $canvas);
-        }
+        $result = $this->objCourseCreation->create(array(
+            'contextCode' => $contextCode, 'title' => $title, 'status' => $status,
+            'access' => $access, 'showComment' => $showcomment, 'alerts' => $alerts,
+            'deliveryFormat' => $this->getParam('delivery_format', 'standard'),
+            'navigationMode' => $this->getParam('navigation_mode', ''),
+            'cpdEnabled' => $this->getParam('cpd_enabled') === '1',
+            'cpdSchemeId' => $this->getParam('cpd_scheme_id'),
+            'cpdCategoryId' => $this->getParam('cpd_category_id'),
+            'cpdPoints' => $this->getParam('cpd_points'),
+            'cpdValidFrom' => $this->canonicalDate($this->getParam('cpd_valid_from'), TRUE),
+            'cpdValidUntil' => $this->canonicalDate($this->getParam('cpd_valid_until'), TRUE),
+            'cpdReason' => $this->getParam('cpd_reason'),
+            'actorUserId' => $this->objUser->userId()
+        ));
 
         // If successfully created
-        if ($result) {
+        if (!empty($result['ok'])) {
 
             $this->setSession('fixup', NULL);
             $this->setSession('contextCode', $contextCode);
@@ -223,7 +250,18 @@ class contextadmin extends controller {
 
             return $this->nextAction('step2', array('mode' => 'add', 'contextcode' => $contextCode));
         } else { // Else fix up errors
-            $fixup = array('contextcode' => $contextCode, 'title' => $title, 'status' => $status, 'showcomment' => $showcomment, 'access' => $access, 'alerts' => $alerts);
+            $fixup = array('contextcode' => $contextCode, 'title' => $title, 'status' => $status,
+                'showcomment' => $showcomment, 'access' => $access, 'alerts' => $alerts,
+                'delivery_format' => $this->getParam('delivery_format', 'standard'),
+                'navigation_mode' => $this->getParam('navigation_mode', ''),
+                'cpd_enabled' => $this->getParam('cpd_enabled'),
+                'cpd_scheme_id' => $this->getParam('cpd_scheme_id'),
+                'cpd_category_id' => $this->getParam('cpd_category_id'),
+                'cpd_points' => $this->getParam('cpd_points'),
+                'cpd_valid_from' => $this->getParam('cpd_valid_from'),
+                'cpd_valid_until' => $this->getParam('cpd_valid_until'),
+                'cpd_reason' => $this->getParam('cpd_reason'),
+                'creation_error' => $result['code'] ?? 'create_failed');
             $this->setSession('fixup', $fixup);
 
             return $this->nextAction('add', array('mode' => 'fixup', 'contextcode' => $contextCode));
@@ -558,11 +596,14 @@ class contextadmin extends controller {
             return $this->nextAction(NULL);
         }
 
-        // Todo - Check Permissions
+        if (!$this->canManageContext($contextCode)) {
+            return $this->nextAction(NULL, array('error' => 'forbidden'));
+        }
         $this->setVarByRef('context', $context);
         $this->setSession('contextCode', $contextCode);
 
         $this->setVar('mode', 'edit');
+        $this->prepareStep1Vars();
         return 'step1.php';
     }
 
@@ -570,7 +611,14 @@ class contextadmin extends controller {
      * Method to update the details of a context
      */
     private function __updatecontext() {
+        if (!$this->isPost()
+            || !$this->csrf->consume(self::CSRF_CONTEXT, (string) $this->getParam('csrf_token', ''))) {
+            return $this->nextAction(NULL, array('error' => 'invalidrequest'));
+        }
         $contextCode = $this->getParam('editcontextcode');
+        if (!$this->canManageContext($contextCode)) {
+            return $this->nextAction(NULL, array('error' => 'forbidden'));
+        }
         $title = $this->getParam('title');
         $canvas = $this->getParam('canvas');
 
@@ -585,6 +633,13 @@ class contextadmin extends controller {
             $alerts = '1';
         } else {
             $alerts = '0';
+        }
+
+        if (trim((string) $title) === ''
+            || !in_array($status, array('Published', 'Unpublished'), TRUE)
+            || !in_array($access, array('Public', 'Open', 'Private'), TRUE)
+            || !in_array((string) $showcomment, array('0', '1'), TRUE)) {
+            return $this->nextAction('edit', array('contextcode' => $contextCode, 'error' => 'invalidsettings'));
         }
 
         if ($contextCode != $this->getSession('contextCode')) {
@@ -617,7 +672,9 @@ class contextadmin extends controller {
                         $context['about'],
                         $goals,
                         $showcomment,
-                        $alerts, null,$canvas);
+                        $alerts, null, $canvas,
+                        $this->getParam('delivery_format', 'standard'),
+                        $this->getParam('navigation_mode', 'free'));
 
                 return $this->nextAction('step2', array('mode' => 'edit'));
             }
@@ -677,6 +734,10 @@ class contextadmin extends controller {
         $this->setPageTemplate(NULL);
         $this->setLayoutTemplate(NULL);
 
+        if (!$this->objUser->isAdmin()) {
+            echo 'forbidden';
+            return;
+        }
         $code = $this->getParam('code');
 
         switch (strtolower($code)) {
@@ -692,6 +753,41 @@ class contextadmin extends controller {
                     echo 'ok';
                 }
         }
+    }
+
+    private function isPost() {
+        return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) === 'POST';
+    }
+
+    private function canManageContext($contextCode) {
+        return $this->objUser->isAdmin()
+            || $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode);
+    }
+
+    private function prepareStep1Vars() {
+        $this->setVar('contextAdminCsrf', $this->csrf->issue(self::CSRF_CONTEXT));
+        $available = $this->objModules->checkIfRegistered('cpd', 'cpd');
+        $schemes = array();
+        $categories = array();
+        if ($available) {
+            $service = $this->getObject('cpdservice', 'cpd');
+            $schemes = $service->listSchemes();
+            foreach ($schemes as $scheme) {
+                $categories[$scheme['id']] = $service->listCategories($scheme['id']);
+            }
+        }
+        $this->setVar('contextAdminCpdAvailable', $available);
+        $this->setVar('contextAdminCpdSchemes', $schemes);
+        $this->setVar('contextAdminCpdCategories', $categories);
+    }
+
+    private function canonicalDate($value, $allowEmpty) {
+        $value = trim((string) $value);
+        if ($value === '' && $allowEmpty) { return ''; }
+        if (!preg_match('/^(\d{2})-(\d{2})-(\d{4})$/', $value, $parts)) { return '__invalid_date__'; }
+        $day = (int) $parts[1]; $month = (int) $parts[2]; $year = (int) $parts[3];
+        if (!checkdate($month, $day, $year)) { return '__invalid_date__'; }
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
     }
 
     /**

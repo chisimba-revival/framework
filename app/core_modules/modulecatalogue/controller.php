@@ -583,8 +583,26 @@ class modulecatalogue extends controller {
                     return 'front_tpl.php';
 
                 case 'updatexml' :
-                    $this->objCatalogueConfig->writeCatalogue ();
-                    return $this->nextAction ( null, array ('message' => $this->objLanguage->languageText ( 'mod_modulecatalogue_xmlupdated', 'modulecatalogue' ) ) );
+                    $summary = $this->objCatalogueConfig->writeCatalogue ();
+                    $message = $this->objLanguage->languageText ( 'mod_modulecatalogue_xmlupdated', 'modulecatalogue' );
+                    if (is_array($summary)) {
+                        $detail = $this->objLanguage->languageText(
+                            'mod_modulecatalogue_refreshsummary',
+                            'modulecatalogue'
+                        );
+                        $detail = str_replace('{DISCOVERED}', (string) $summary['discovered'], $detail);
+                        $detail = str_replace('{REMOVED}', (string) count($summary['removed']), $detail);
+                        $message .= ' ' . $detail;
+                        if (empty($summary['reconciled'])) {
+                            $message .= ' ' . $this->objLanguage->languageText(
+                                'mod_modulecatalogue_reconcileskipped',
+                                'modulecatalogue'
+                            );
+                        } elseif (!empty($summary['removed'])) {
+                            $message .= ' ' . htmlspecialchars(implode(', ', $summary['removed']), ENT_QUOTES, 'UTF-8');
+                        }
+                    }
+                    return $this->nextAction ( null, array ('message' => $message ) );
 
                 case 'uploadarchive' :
                     $file = $_FILES ['archive'] ['name'];

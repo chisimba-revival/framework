@@ -104,6 +104,8 @@ do {
 $loDrops->setSelected(0);
 //Add button to add fields
 $button = new button('addfields', $addLOButton);
+$button->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-secondary';
+$button->sexyButtons = FALSE;
 $button->setToSubmit();
 //Add dropdown to table with LO drop down list
 $table->startRow();
@@ -232,9 +234,13 @@ $table->addCell('<div id="countDiv">' . $loHiddenLOCount->show() . '</div>');
 $table->endRow();
 
 $button = new button('savecontext', $formButton);
+$button->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-primary';
+$button->sexyButtons = FALSE;
 $button->setToSubmit();
 
 $delButton = new button('deleteoutcomes', $deleteLOButton);
+$delButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-danger';
+$delButton->sexyButtons = FALSE;
 $delButton->setToSubmit();
 
 
@@ -243,6 +249,8 @@ $form = new form('createcontext', $this->uri(array('action' => $formAction)));
 // Fixed Ticket #3128 J C O'Connor
 //$backUri = $this->uri(array('action' => 'step2', 'mode' => 'edit', 'contextcode' => $contextCode), 'contextadmin');
 $backButton = new button('back', $this->objLanguage->languageText('word_back'));
+$backButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-secondary';
+$backButton->sexyButtons = FALSE;
 $backButton->setToSubmit();
 
 $form->addToForm($table->show());

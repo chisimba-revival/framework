@@ -396,5 +396,37 @@ class modules extends dbTable
             return $row['dependscontext'] == 1 ? TRUE : FALSE;
         }
     }
+
+    /**
+     * Remove catalogue registrations whose source directories disappeared.
+     * This is metadata reconciliation, not module uninstallation.
+     *
+     * @param array $availableModuleIds successfully discovered module IDs
+     * @return array removed module IDs
+     */
+    public function reconcileAvailableModules($availableModuleIds)
+    {
+        if (!is_array($availableModuleIds)) {
+            throw new InvalidArgumentException('available_module_ids_invalid');
+        }
+        $available = array();
+        foreach ($availableModuleIds as $moduleId) {
+            $moduleId = trim((string) $moduleId);
+            if ($moduleId === '' || !preg_match('/^[A-Za-z0-9_-]+$/', $moduleId)) {
+                throw new InvalidArgumentException('available_module_id_invalid');
+            }
+            $available[$moduleId] = true;
+        }
+        $removed = array();
+        foreach ($this->getAll('ORDER BY module_id') as $row) {
+            $moduleId = (string) $row['module_id'];
+            if (!isset($available[$moduleId])) {
+                $this->delete('module_id', $moduleId);
+                $removed[] = $moduleId;
+            }
+        }
+        return $removed;
+    }
+
 }
 ?>

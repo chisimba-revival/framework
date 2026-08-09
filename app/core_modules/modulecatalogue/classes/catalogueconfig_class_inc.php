@@ -198,6 +198,8 @@ class catalogueconfig extends ChisimbaObject {
             //$xmlStr .= "    </catalogue>\n";
             $modules = $objModFile->getLocalModuleList();
             $id = 001;
+            $discoveredModuleIds = array();
+            $scanComplete = true;
             foreach ($modules as $mod) {
                 if ($mod) {
                     $xmlStr .= "    <module>
@@ -207,10 +209,13 @@ class catalogueconfig extends ChisimbaObject {
                         $from = $this->objLanguage->languageText('phrase_frommodule');
                         if (isset($reg['MODULE_ID'])){
                             $module_id = htmlentities($reg['MODULE_ID']);
+                            $discoveredModuleIds[] = (string) $reg['MODULE_ID'];
                         } else {
                             $module_id = 'unknown';
                             log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_ID");
                         }
+                        $module_icon = isset($reg['MODULE_ICON'])
+                            ? htmlentities($reg['MODULE_ICON']) : 'puzzle';
                         if (isset($reg['MODULE_NAME'])){
                             $module_name = htmlentities($reg['MODULE_NAME']);
                         } else {
@@ -268,6 +273,7 @@ class catalogueconfig extends ChisimbaObject {
                         }
                         $xmlStr .= "        <module_id>$module_id</module_id>
         <module_name>$module_name</module_name>
+        <module_icon>$module_icon</module_icon>
         <module_authors>$module_authors</module_authors>
         <module_releasedate>$module_releasedate</module_releasedate>
         <module_description>$module_description</module_description>
@@ -282,6 +288,7 @@ class catalogueconfig extends ChisimbaObject {
                             }
                         }
                     } else {
+                        $scanComplete = false;
                         $mod = htmlentities($mod);
                         $xmlStr .= "        <module_id>$mod</module_id>\n";
                     }
@@ -307,9 +314,23 @@ class catalogueconfig extends ChisimbaObject {
                 chmod($this->_path . 'catalogue.xml',0666);
             }
             $fh = fopen($this->_path.'catalogue.xml','w');
-            fwrite($fh,$xmlStr);
-            fclose($fh);
-            return true;
+            if (fwrite($fh, $xmlStr) === false) {
+                throw new RuntimeException('catalogue_write_failed');
+            }
+            if (!fclose($fh)) {
+                throw new RuntimeException('catalogue_close_failed');
+            }
+            $removed = array();
+            $reconciled = $scanComplete && count($discoveredModuleIds) === count($modules);
+            if ($reconciled) {
+                $objModules = $this->getObject('modules', 'modulecatalogue');
+                $removed = $objModules->reconcileAvailableModules($discoveredModuleIds);
+            }
+            return array(
+                'discovered' => count($discoveredModuleIds),
+                'removed' => $removed,
+                'reconciled' => $reconciled
+            );
         } catch (Exception $e)
         {
             $this->errorCallback('Caught exception: '.$e->getMessage());

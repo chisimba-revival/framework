@@ -10,7 +10,14 @@
 class iconservice extends ChisimbaObject
 {
     private $allowedIcons = array(
-        'calendar' => true, 'chevron-left' => true, 'chevron-right' => true,
+        'file-text' => true,
+        'external-link' => true,
+        'file-archive' => true,
+        'file-down' => true,
+        'image-plus' => true,
+        'smartphone' => true,
+        'video' => true,
+ 'calendar' => true, 'chevron-left' => true, 'chevron-right' => true,
         'circle-alert' => true, 'circle-check' => true, 'clock' => true,
         'download' => true, 'eye' => true, 'info' => true, 'minus' => true,
         'pencil' => true, 'pin' => true, 'plus' => true, 'search' => true,
