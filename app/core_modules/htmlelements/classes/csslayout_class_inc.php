@@ -180,36 +180,59 @@ class csslayout extends ChisimbaObject implements ifhtml
      */
     private function loadSettings()
     {
-        if (isset ($_SESSION['skinhassettings'])) {
-            if ($_SESSION['skinhassettings']) {
-                $this->skinVersion = $_SESSION['skinVersion'];
-                $this->layoutType = $_SESSION['layoutType'];
-                return TRUE;
-            }
+        $objSkin = $this->getObject('skin', 'skin');
+        $skinLocation = $objSkin->getSkinLocation();
+        $configFile = $skinLocation . 'settings.json';
+        $legacyFile = $skinLocation . 'skinversion.txt';
+
+        if (is_file($configFile)) {
+            $settingsSignature = 'json:' . hash_file('sha256', $configFile);
+        } elseif (is_file($legacyFile)) {
+            $settingsSignature = 'legacy:' . hash_file('sha256', $legacyFile);
         } else {
-            $objSkin = $this->getObject('skin', 'skin');
-            $configFile = $objSkin->getSkinLocation().'settings.json';
-            if(file_exists($configFile)) {
-                $jsonRaw = file_get_contents($configFile);
-                $jsonObj = json_decode($jsonRaw);
-                $this->skinVersion = $jsonObj->skinVersion;
-                $this->layoutType = $jsonObj->layoutType;
-            } else {
-                // Read the old skinversion.txt
-                $file = $objSkin->getSkinLocation().'skinversion.txt';
-                if(file_exists($file)) {
-                    $this->skinVersion = trim(file_get_contents($file));
-                    $this->layoutType = "default";
-                } else {
-                    $this->skinVersion = 1.0;
-                    $this->layoutType = "notapplicable";
-                }
-            }
-            $_SESSION['skinVersion'] = $this->skinVersion;
-            $_SESSION['layoutType'] = $this->layoutType;
-            $_SESSION['skinhassettings'] = TRUE;
+            $settingsSignature = 'none';
+        }
+
+        $hasCurrentCache = isset(
+            $_SESSION['skinSettingsSignature'],
+            $_SESSION['skinVersion'],
+            $_SESSION['layoutType']
+        ) && hash_equals(
+            (string) $_SESSION['skinSettingsSignature'],
+            $settingsSignature
+        );
+
+        if ($hasCurrentCache) {
+            $this->skinVersion = $_SESSION['skinVersion'];
+            $this->layoutType = $_SESSION['layoutType'];
             return TRUE;
         }
+
+        if (is_file($configFile)) {
+            $jsonRaw = file_get_contents($configFile);
+            $jsonObj = json_decode($jsonRaw);
+            if (!is_object($jsonObj)
+                || !isset($jsonObj->skinVersion, $jsonObj->layoutType)
+            ) {
+                throw new RuntimeException(
+                    'Invalid skin settings file: ' . $configFile
+                );
+            }
+            $this->skinVersion = $jsonObj->skinVersion;
+            $this->layoutType = $jsonObj->layoutType;
+        } elseif (is_file($legacyFile)) {
+            $this->skinVersion = trim(file_get_contents($legacyFile));
+            $this->layoutType = "default";
+        } else {
+            $this->skinVersion = 1.0;
+            $this->layoutType = "notapplicable";
+        }
+
+        $_SESSION['skinVersion'] = $this->skinVersion;
+        $_SESSION['layoutType'] = $this->layoutType;
+        $_SESSION['skinSettingsSignature'] = $settingsSignature;
+        $_SESSION['skinhassettings'] = TRUE;
+        return TRUE;
     }
 
     /**

@@ -259,9 +259,9 @@ class filemanager extends controller {
         // Explicit headless upload route.
         // This action must bypass layouts and ordinary template rendering so
         // the response remains JSON.
-        if ($action === 'apiuploadimage') {
-            $this->__apiuploadimage();
-        }
+        if ($action === 'apiuploadimage') { $this->__apiuploadimage(); }
+        if ($action === 'apifileupload') { $this->__apifileupload(); }
+        if ($action === 'apifiles') { $this->__apifiles(); }
 
         // Check to ensure the user has access to the file manager.
         if (!$this->userHasAccess()) {
@@ -415,6 +415,61 @@ class filemanager extends controller {
         }
         return $this->__viewfolder($folderId);
     }
+
+    /* CHISIMBA_GENERIC_FILE_PICKER_START */
+    private function __filepicker()
+    {
+        $policy = (string) $this->getParam('policy', '');
+        if (!in_array($policy, array('image', 'audio', 'pdf', 'zip'), true)) {
+            throw new InvalidArgumentException($this->objLanguage->languageText('mod_filemanager_picker_unknown_policy', 'filemanager'));
+        }
+
+        $folder = $this->getParam('folder', null);
+        $location = (string) $this->getParam('location', '');
+        $uploadedFile = null;
+        $uploadError = '';
+
+        if (isset($_SERVER['REQUEST_METHOD']) &&
+                strtoupper((string) $_SERVER['REQUEST_METHOD']) === 'POST') {
+            $uploadResult = $this->objFileApi->uploadUserFile(
+                $policy,
+                $folder,
+                'file',
+                $location
+            );
+            if (!empty($uploadResult['ok']) && !empty($uploadResult['file'])) {
+                $uploadedFile = $uploadResult['file'];
+            } elseif (!empty($uploadResult['error']['message'])) {
+                $uploadError = (string) $uploadResult['error']['message'];
+            }
+        }
+
+        $payload = $this->objFileApi->listUserFiles($policy, $folder, $location);
+        $this->setVar('pickerPolicy', $policy);
+        $this->setVar('pickerTarget', (string) $this->getParam('target', ''));
+        $this->setVar('pickerData', $payload);
+        $this->setVar('pickerUploadedFile', $uploadedFile);
+        $this->setVar('pickerUploadError', $uploadError);
+        $this->setVar('pageSuppressBanner', true);
+        $this->setVar('pageSuppressToolbar', true);
+        $this->setVar('suppressFooter', true);
+        $this->setLayoutTemplate(null);
+        return 'api_filepicker_tpl.php';
+    }
+    private function __apifiles()
+    {
+        $payload=$this->objFileApi->listUserFiles((string)$this->getParam('policy',''),$this->getParam('folder',null),(string)$this->getParam('location',''));
+        if (!headers_sent()) { header('Content-Type: application/json; charset=UTF-8'); header('Cache-Control: no-store, private'); header('X-Content-Type-Options: nosniff'); http_response_code(empty($payload['ok'])?400:200); }
+        echo json_encode($payload,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE); exit;
+    }
+    private function __apifileupload()
+    {
+        if (!isset($_SERVER['REQUEST_METHOD'])||strtoupper((string)$_SERVER['REQUEST_METHOD'])!=='POST') { $payload=array('ok'=>false,'error'=>array('code'=>'method_not_allowed','message'=>$this->objLanguage->languageText('mod_filemanager_picker_post_required','filemanager'))); $status=405; }
+        else { $payload=$this->objFileApi->uploadUserFile((string)$this->getParam('policy',''),$this->getParam('folder',null),'file',(string)$this->getParam('location','')); $status=empty($payload['ok'])?400:201; }
+        if (!headers_sent()) { header('Content-Type: application/json; charset=UTF-8'); header('Cache-Control: no-store, private'); header('X-Content-Type-Options: nosniff'); http_response_code($status); }
+        echo json_encode($payload,JSON_UNESCAPED_SLASHES|JSON_INVALID_UTF8_SUBSTITUTE); exit;
+    }
+    /* CHISIMBA_GENERIC_FILE_PICKER_END */
 
     /**
      * Purpose-built editor image picker.

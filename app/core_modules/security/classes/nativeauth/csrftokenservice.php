@@ -10,6 +10,7 @@
 class CsrfTokenService
 {
     const SESSION_KEY = 'nativeAuthCsrfTokens';
+    const MAX_TOKENS_PER_CONTEXT = 12;
 
     private $backend;
     private $clock;
@@ -37,9 +38,14 @@ class CsrfTokenService
         $context = $this->normaliseContext($context);
         $token = bin2hex(random_bytes(32));
         $tokens = $this->purgeExpired($this->load());
-        $tokens[$context] = array(
+        $records = $this->recordsForContext($tokens, $context);
+        $records[] = array(
             'hash' => hash('sha256', $token),
             'expires_at' => $this->now() + $this->lifetime,
+        );
+        $tokens[$context] = array_slice(
+            $records,
+            -self::MAX_TOKENS_PER_CONTEXT
         );
         $this->backend->setSession(self::SESSION_KEY, $tokens);
         return $token;
@@ -49,18 +55,31 @@ class CsrfTokenService
     {
         $context = $this->normaliseContext($context);
         $tokens = $this->purgeExpired($this->load());
-        $record = isset($tokens[$context]) ? $tokens[$context] : null;
-        unset($tokens[$context]);
+        $records = $this->recordsForContext($tokens, $context);
+        $submittedHash = is_string($token)
+            ? hash('sha256', $token)
+            : '';
+        $matched = false;
+        foreach ($records as $index => $record) {
+            if ((int) $record['expires_at'] >= $this->now()
+                && $submittedHash !== ''
+                && hash_equals($record['hash'], $submittedHash)) {
+                unset($records[$index]);
+                $matched = true;
+                break;
+            }
+        }
+        if ($records) {
+            $tokens[$context] = array_values($records);
+        } else {
+            unset($tokens[$context]);
+        }
         if ($tokens) {
             $this->backend->setSession(self::SESSION_KEY, $tokens);
         } else {
             $this->backend->unsetSession(self::SESSION_KEY);
         }
-        return is_array($record)
-            && isset($record['hash'], $record['expires_at'])
-            && (int) $record['expires_at'] >= $this->now()
-            && is_string($token)
-            && hash_equals($record['hash'], hash('sha256', $token));
+        return $matched;
     }
 
     private function load()
@@ -72,14 +91,43 @@ class CsrfTokenService
     private function purgeExpired(array $tokens)
     {
         $now = $this->now();
-        foreach ($tokens as $context => $record) {
-            if (!is_array($record)
-                || !isset($record['expires_at'])
-                || (int) $record['expires_at'] < $now) {
+        foreach (array_keys($tokens) as $context) {
+            $records = array_values(array_filter(
+                $this->recordsForContext($tokens, $context),
+                function ($record) use ($now) {
+                    return (int) $record['expires_at'] >= $now;
+                }
+            ));
+            if ($records) {
+                $tokens[$context] = $records;
+            } else {
                 unset($tokens[$context]);
             }
         }
         return $tokens;
+    }
+
+    /**
+     * Read both the original single-record format and the concurrent format.
+     */
+    private function recordsForContext(array $tokens, $context)
+    {
+        if (!isset($tokens[$context]) || !is_array($tokens[$context])) {
+            return array();
+        }
+        $value = $tokens[$context];
+        if (isset($value['hash'], $value['expires_at'])) {
+            $value = array($value);
+        }
+        $records = array();
+        foreach ($value as $record) {
+            if (is_array($record)
+                && isset($record['hash'], $record['expires_at'])
+                && is_string($record['hash'])) {
+                $records[] = $record;
+            }
+        }
+        return $records;
     }
 
     private function normaliseContext($context)

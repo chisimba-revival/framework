@@ -322,12 +322,20 @@ class skin extends ChisimbaObject
      */
     public function putLogout()
     {
-        $logout=$this->objLanguage->languageText('word_logout','security','Logout');
-        $objConfirm =& $this->getObject('confirm', 'utilities');
-        $message = $this->objLanguage->languageText('phrase_confirmlogout','security');
-        $extra = ' class="pseudobutton"';
-        $objConfirm->setConfirm($logout, $this->uri(array('action' => 'logoff'), 'security') ,$message,$extra);
-        return $objConfirm->show();
+        // Compatibility entry point only: rendering and security are owned by
+        // Toolbar's canonical POST/CSRF logout form.
+        $securityContext = $this->getObject(
+            'toolbarsecuritycontext',
+            'toolbar'
+        );
+        return $securityContext->logoutForm(
+            $this->objLanguage->languageText(
+                'word_logout',
+                'system',
+                'Logout'
+            ),
+            'skin-logout-form'
+        );
     }
 
 

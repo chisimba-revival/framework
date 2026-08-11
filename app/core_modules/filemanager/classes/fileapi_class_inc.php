@@ -11,6 +11,8 @@ class fileapi extends ChisimbaObject
     private $objUser;
     private $objFileManagerObject;
     private $objUpload;
+    private $objLanguage;
+    private $objContext;
 
     public function init()
     {
@@ -19,6 +21,8 @@ class fileapi extends ChisimbaObject
         $this->objUser = $this->getObject('user', 'security');
         $this->objFileManagerObject = $this->getObject('filemanagerobject', 'filemanager');
         $this->objUpload = $this->getObject('upload', 'filemanager');
+        $this->objLanguage = $this->getObject('language', 'language');
+        $this->objContext = $this->getObject('dbcontext', 'context');
     }
 
     public function listUserImages($folderId = null)
@@ -213,6 +217,180 @@ class fileapi extends ChisimbaObject
             'folderId' => (string) $folderResult['folder']['id'],
         );
     }
+
+    /* CHISIMBA_GENERIC_FILE_PICKER_START */
+    /* CHISIMBA_PICKER_LOCATIONS: authorised personal/course roots */
+    public function listUserFiles($policyName, $folderId = null, $location = '')
+    {
+        $policy = $this->filePolicy($policyName);
+        if ($policy === null) { return $this->error('unknown_policy', $this->objLanguage->languageText('mod_filemanager_picker_unknown_policy', 'filemanager')); }
+        $folderResult = $this->resolvePickerFolder($location, $folderId);
+        if (empty($folderResult['ok'])) { return $folderResult; }
+        $folder = $folderResult['folder'];
+        $folders = array();
+        foreach ((array) $this->objFolders->getSubFolders($folder['id']) as $item) {
+            if (!is_array($item) || empty($item['id']) || empty($item['folderpath'])) { continue; }
+            $path = trim((string) $item['folderpath'], '/');
+            if (!$this->isInsideRoot($path, $folderResult['rootPath'])) { continue; }
+            $folders[] = array('id'=>(string)$item['id'], 'name'=>basename($path), 'path'=>$path);
+        }
+        $files = array();
+        foreach ((array) $this->objFiles->getFolderFiles($folder['folderpath']) as $file) {
+            if (!$this->fileMatchesPolicy($file, $policy)) { continue; }
+            $files[] = $this->genericFileItem($file);
+        }
+        usort($folders, array($this, 'sortByName')); usort($files, array($this, 'sortByName'));
+        $parentId = null;
+        if ($folder['folderpath'] !== $folderResult['rootPath']) {
+            $parentId = $this->objFolders->getFolderId(dirname($folder['folderpath'])) ?: null;
+        }
+        return array('ok'=>true, 'policy'=>$policyName,
+            'policyDetails'=>array('accept'=>$policy['accept'], 'titleKey'=>$policy['titleKey'],
+                'uploadKey'=>$policy['uploadKey'], 'icon'=>$policy['icon']),
+            'location'=>$folderResult['location'], 'locations'=>$folderResult['locations'],
+            'folder'=>array('id'=>(string)$folder['id'], 'name'=>basename($folder['folderpath']),
+                'path'=>$folder['folderpath'], 'isRoot'=>$folder['folderpath']===$folderResult['rootPath'],
+                'parentId'=>$parentId===null?null:(string)$parentId),
+            'folders'=>$folders, 'files'=>$files,
+            'capabilities'=>array('browse'=>true,'upload'=>$folderResult['canUpload'],'manage'=>false));
+    }
+
+    public function uploadUserFile($policyName, $folderId, $inputName = 'file', $location = '')
+    {
+        $policy = $this->filePolicy($policyName);
+        if ($policy === null) { return $this->error('unknown_policy', $this->objLanguage->languageText('mod_filemanager_picker_unknown_policy', 'filemanager')); }
+        $folderResult = $this->resolvePickerFolder($location, $folderId);
+        if (empty($folderResult['ok'])) { return $folderResult; }
+        if (empty($folderResult['canUpload'])) {
+            return $this->error('upload_forbidden', $this->objLanguage->languageText('mod_filemanager_picker_upload_forbidden', 'filemanager'));
+        }
+        if (!isset($_FILES[$inputName]) || !is_array($_FILES[$inputName])) {
+            return $this->error('no_file', $this->objLanguage->languageText('mod_filemanager_picker_choose_file', 'filemanager'));
+        }
+        $file=$_FILES[$inputName]; $error=isset($file['error'])?(int)$file['error']:UPLOAD_ERR_NO_FILE;
+        if ($error !== UPLOAD_ERR_OK) { return $this->error('upload_failed', $this->uploadErrorMessage($error)); }
+        $name=isset($file['name'])?(string)$file['name']:''; $tmp=isset($file['tmp_name'])?(string)$file['tmp_name']:'';
+        $ext=strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if (!in_array($ext, $policy['extensions'], true)) {
+            return $this->error('invalid_extension', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
+        }
+        if ($tmp==='' || !is_uploaded_file($tmp)) { return $this->error('invalid_upload', $this->objLanguage->languageText('mod_filemanager_native_invalid_upload', 'filemanager')); }
+        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); finfo_close($fi); } }
+        if (!in_array(strtolower($mime), $policy['mimetypes'], true)) {
+            return $this->error('invalid_mimetype', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
+        }
+        $this->objUpload->setUploadFolder($folderResult['folder']['folderpath']);
+        $this->objUpload->enableOverwriteIncrement=true;
+        // Picker policies already validate extension and detected MIME type.
+        // Obsolete media probing must not take over this HTML response.
+        $this->objUpload->skipLegacyMediaAnalysis=true;
+        // Use File Manager's established general upload path. The legacy
+        // single-file helper assumes image-oriented response handling for
+        // some media and may terminate the picker request for audio files.
+        $results=$this->objUpload->uploadFiles();
+        $result=is_array($results)&&isset($results[0])&&is_array($results[0])?$results[0]:null;
+        if (!is_array($result)||empty($result['success'])||empty($result['fileid'])) {
+            $reason=is_array($result)&&isset($result['reason'])?(string)$result['reason']:'upload_failed';
+            return $this->error($reason,$this->uploadFailureMessage($reason));
+        }
+        $item=array('id'=>(string)$result['fileid'],'name'=>isset($result['name'])?(string)$result['name']:$name,
+            'url'=>html_entity_decode($this->objFileManagerObject->uri(array('action'=>'file','id'=>$result['fileid'],'filename'=>$name,'type'=>'.'.$ext),'filemanager','','',false,true),ENT_QUOTES,'UTF-8'),
+            'mimetype'=>isset($result['mimetype'])?(string)$result['mimetype']:$mime,'extension'=>$ext,
+            'size'=>isset($result['size'])?(int)$result['size']:(isset($file['size'])?(int)$file['size']:0));
+        return array('ok'=>true,'file'=>$item,'folderId'=>(string)$folderResult['folder']['id']);
+    }
+
+    private function pickerLocations()
+    {
+        $locations = array();
+        $userPath = 'users/' . (string) $this->objUser->userId();
+        $userId = $this->objFolders->getFolderId($userPath);
+        if ($userId) {
+            $locations['user'] = array('key'=>'user','id'=>(string)$userId,'path'=>$userPath,
+                'label'=>$this->objLanguage->languageText('mod_filemanager_picker_my_files','filemanager'),'canUpload'=>true);
+        }
+        $contextCode = trim((string) $this->objContext->getContextCode());
+        if ($contextCode !== '') {
+            $contextPath = 'context/' . $contextCode;
+            $contextId = $this->objFolders->getFolderId($contextPath);
+            if ($contextId) {
+                $locations['context'] = array('key'=>'context','id'=>(string)$contextId,'path'=>$contextPath,
+                    'label'=>$this->objLanguage->languageText('mod_filemanager_picker_course_files','filemanager'),
+                    'canUpload'=>(bool)$this->objFolders->checkPermissionUploadFolder('context',$contextCode));
+            }
+        }
+        return $locations;
+    }
+
+    private function resolvePickerFolder($location, $folderId)
+    {
+        $locations = $this->pickerLocations();
+        if (!$locations) { return $this->error('picker_root_not_found', $this->objLanguage->languageText('mod_filemanager_picker_root_missing','filemanager')); }
+        $location = trim((string)$location);
+        if ($location === '') { $location = isset($locations['context']) ? 'context' : 'user'; }
+        if (!isset($locations[$location])) { return $this->error('location_forbidden', $this->objLanguage->languageText('mod_filemanager_picker_location_forbidden','filemanager')); }
+        $root = $locations[$location];
+        if ($folderId === null || trim((string)$folderId) === '') { $folderId = $root['id']; }
+        $folder = $this->objFolders->getFolder($folderId);
+        if (!$folder || !isset($folder['folderpath'])) { return $this->error('folder_not_found', $this->objLanguage->languageText('mod_filemanager_native_folder_missing','filemanager')); }
+        $folderPath = trim((string)$folder['folderpath'],'/');
+        if (!$this->isInsideRoot($folderPath,$root['path'])) { return $this->error('folder_forbidden', $this->objLanguage->languageText('mod_filemanager_native_folder_outside_root','filemanager')); }
+        $folder['folderpath']=$folderPath;
+        $publicLocations=array(); foreach ($locations as $item) { $publicLocations[]=array('key'=>$item['key'],'label'=>$item['label'],'id'=>$item['id']); }
+        return array('ok'=>true,'location'=>$location,'rootPath'=>$root['path'],'rootId'=>$root['id'],
+            'canUpload'=>(bool)$root['canUpload'],'locations'=>$publicLocations,'folder'=>$folder);
+    }
+
+    private function isInsideRoot($path,$rootPath)
+    {
+        return $path === $rootPath || strpos($path,$rootPath.'/') === 0;
+    }
+
+    private function filePolicy($name)
+    {
+        $policies = array(
+            'image' => array(
+                'extensions' => array('jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'),
+                'mimetypes' => array('image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'),
+                'accept' => 'image/jpeg,image/png,image/gif,image/webp,image/avif,.jpg,.jpeg,.png,.gif,.webp,.avif',
+                'titleKey' => 'select_image', 'uploadKey' => 'upload_image', 'icon' => 'image'
+            ),
+            'audio' => array(
+                'extensions' => array('mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'),
+                'mimetypes' => array('audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/flac', 'audio/x-flac'),
+                'accept' => 'audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/mp4,audio/x-m4a,audio/aac,audio/flac,audio/x-flac,.mp3,.wav,.ogg,.m4a,.aac,.flac',
+                'titleKey' => 'select_audio', 'uploadKey' => 'upload_audio', 'icon' => 'audio'
+            ),
+            'pdf' => array(
+                'extensions' => array('pdf'), 'mimetypes' => array('application/pdf'),
+                'accept' => 'application/pdf,.pdf',
+                'titleKey' => 'select_pdf', 'uploadKey' => 'upload_pdf', 'icon' => 'pdf'
+            ),
+            'zip' => array(
+                'extensions' => array('zip'),
+                'mimetypes' => array('application/zip', 'application/x-zip-compressed'),
+                'accept' => 'application/zip,application/x-zip-compressed,.zip',
+                'titleKey' => 'select_zip', 'uploadKey' => 'upload_zip', 'icon' => 'zip'
+            )
+        );
+        return isset($policies[$name]) ? $policies[$name] : null;
+    }
+    private function fileMatchesPolicy($file,$policy)
+    {
+        if (!is_array($file)||empty($file['id'])||empty($file['filename'])) { return false; }
+        $ext=strtolower(!empty($file['datatype'])?$file['datatype']:pathinfo($file['filename'],PATHINFO_EXTENSION));
+        $mime=strtolower(isset($file['mimetype'])?$file['mimetype']:'');
+        return in_array(ltrim($ext,'.'),$policy['extensions'],true) && in_array($mime,$policy['mimetypes'],true);
+    }
+    private function genericFileItem($file)
+    {
+        $ext=strtolower(ltrim(isset($file['datatype'])?$file['datatype']:pathinfo($file['filename'],PATHINFO_EXTENSION),'.'));
+        return array('id'=>(string)$file['id'],'name'=>(string)$file['filename'],
+            'url'=>html_entity_decode($this->objFileManagerObject->uri(array('action'=>'file','id'=>$file['id'],'filename'=>$file['filename'],'type'=>'.'.$ext),'filemanager','','',false,true),ENT_QUOTES,'UTF-8'),
+            'mimetype'=>isset($file['mimetype'])?(string)$file['mimetype']:'','extension'=>$ext,
+            'size'=>isset($file['filesize'])?(int)$file['filesize']:0);
+    }
+    /* CHISIMBA_GENERIC_FILE_PICKER_END */
 
     public function sortByName($left, $right)
     {

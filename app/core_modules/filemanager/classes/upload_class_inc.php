@@ -77,6 +77,13 @@ class upload extends filemanagerobject {
      * If a file called myinfo.txt is uploaded, but one exists, new file will be called 'myinfo_1.txt'
      */
     public $enableOverwriteIncrement = FALSE;
+
+    /**
+     * Skip obsolete media probing after a caller has already validated the
+     * upload. Disabled by default so established File Manager callers retain
+     * their existing behaviour.
+     */
+    public $skipLegacyMediaAnalysis = FALSE;
     //secure folder 
     private $secureFolder;
 
@@ -448,8 +455,9 @@ class upload extends filemanagerobject {
                          * uploads before the controller can redirect. Retain legacy
                          * analysis for audio, video and Flash only.
                          */
-                        if ($subfolder == 'audio' || $subfolder == 'video' ||
-                                $subfolder == 'flash') {
+                        if (!$this->skipLegacyMediaAnalysis &&
+                                ($subfolder == 'audio' || $subfolder == 'video' ||
+                                $subfolder == 'flash')) {
 
                             // Get Media Info
                             $fileInfo = $this->objAnalyzeMediaFile->analyzeFile($savepath);
@@ -732,8 +740,9 @@ class upload extends filemanagerobject {
                          * uploads before the controller can redirect. Retain legacy
                          * analysis for audio, video and Flash only.
                          */
-                        if ($subfolder == 'audio' || $subfolder == 'video' ||
-                                $subfolder == 'flash') {
+                        if (!$this->skipLegacyMediaAnalysis &&
+                                ($subfolder == 'audio' || $subfolder == 'video' ||
+                                $subfolder == 'flash')) {
 
                     // Get Media Info
                     $fileInfo = $this->objAnalyzeMediaFile->analyzeFile($savepath);

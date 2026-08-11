@@ -1036,3 +1036,39 @@
         flex-direction: column;
     }
 }
+
+/* BEGIN CHISIMBA-REBORN SINGLE STACKED SIDEBAR POSITION
+ *
+ * canvas_stacked13 combines both narrow columns into Region3 and omits
+ * Region1. The default two-row canvas otherwise assigns Region3 to the lower
+ * sidebar row, leaving an artificial vertical gap beside a tall main region.
+ * When Region3 is the only supplementary region, give it the upper sidebar
+ * slot and collapse the unused row.
+ */
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region3):not(:has(> #Canvas_Content_Body_Region1)) {
+    display: grid !important;
+    grid-template-areas: "main supplementary-top" !important;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(17rem, 24rem) !important;
+    grid-template-rows: auto !important;
+}
+
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region3):not(:has(> #Canvas_Content_Body_Region1))
+    > #Canvas_Content_Body_Region3 {
+    align-self: start !important;
+    grid-area: supplementary-top !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+@media (max-width: 60rem) {
+    #Canvas_Content_Body:has(> #Canvas_Content_Body_Region3):not(:has(> #Canvas_Content_Body_Region1)) {
+        grid-template-areas:
+            "main"
+            "supplementary-top" !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-rows: auto auto !important;
+    }
+}
+/* END CHISIMBA-REBORN SINGLE STACKED SIDEBAR POSITION */
