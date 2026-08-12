@@ -13,4 +13,19 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_module_patches</table>
+        <version>3.120</version>
+        <description>Allow patch records for legacy table names up to 64 characters</description>
+        <data>
+            <change>
+                <tablename>
+                    <definition>
+                        <type>text</type>
+                        <length>64</length>
+                    </definition>
+                </tablename>
+            </change>
+        </data>
+    </update>
 </updates>

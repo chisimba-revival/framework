@@ -3479,3 +3479,367 @@ h5.featureboxheader,
 @media (max-width: 48rem) { .mcq-student-list tr td:nth-child(3), .mcq-student-list tr th:nth-child(3) { display: none; } }
 
 /* END CHISIMBA-REBORN MCQ TEST LIST */
+
+
+/* BEGIN CHISIMBA-REBORN WORKSHEET AUTHORING UI */
+/* Worksheet supplies semantic wrappers and icon markup; presentation belongs to the skin. */
+.worksheet-authoring-steps {
+    margin: 0.35rem 0 1.5rem;
+}
+
+.worksheet-authoring-steps #stepmenu {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+}
+
+.worksheet-authoring-steps #stepmenu li,
+.worksheet-authoring-steps #stepmenu.stepmenu3 li,
+.worksheet-authoring-steps #stepmenu.stepmenu3 li.mainNavNoBg {
+    box-sizing: border-box;
+    width: auto;
+    min-height: 7.2rem;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: var(--chisimba-surface-muted, #f6f8fa) !important;
+    background-image: none !important;
+    box-shadow: 0 0.1rem 0.25rem rgba(26, 45, 62, 0.05);
+}
+
+.worksheet-authoring-steps #stepmenu li.current {
+    border-color: var(--chisimba-blue-deep, #164b72);
+    background: #eef5fb !important;
+    box-shadow: inset 0.25rem 0 0 var(--chisimba-blue-deep, #164b72), 0 0.1rem 0.25rem rgba(26, 45, 62, 0.05);
+}
+
+.worksheet-authoring-steps #stepmenu li.done,
+.worksheet-authoring-steps #stepmenu li.lastdone {
+    border-color: #a8cdb8;
+    background: #eef8f4 !important;
+}
+
+.worksheet-authoring-steps #stepmenu li a,
+.worksheet-authoring-steps #stepmenu.stepmenu3 li a {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    min-height: 7.2rem;
+    padding: 1rem;
+    color: var(--chisimba-text-strong, #27333e) !important;
+    text-decoration: none;
+}
+
+.worksheet-authoring-steps #stepmenu li a em,
+.worksheet-authoring-steps #stepmenu li a span {
+    display: block;
+    width: auto;
+    overflow-wrap: anywhere;
+}
+
+.worksheet-authoring-steps #stepmenu li a em {
+    margin-bottom: 0.45rem;
+    color: inherit;
+    font-size: 1rem;
+    font-weight: 750;
+    line-height: 1.3;
+}
+
+.worksheet-authoring-steps #stepmenu li a span {
+    color: var(--chisimba-text-muted, #5d6772);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.worksheet-authoring-steps #stepmenu li.current a,
+.worksheet-authoring-steps #stepmenu li.current a em,
+.worksheet-authoring-steps #stepmenu li.done a,
+.worksheet-authoring-steps #stepmenu li.done a em,
+.worksheet-authoring-steps #stepmenu li.lastdone a,
+.worksheet-authoring-steps #stepmenu li.lastdone a em {
+    color: var(--chisimba-text-strong, #27333e) !important;
+}
+
+.worksheet-authoring-steps #stepmenu li a:hover,
+.worksheet-authoring-steps #stepmenu li a:focus-visible {
+    background: rgba(22, 75, 114, 0.05);
+}
+
+.worksheet-authoring-steps #stepmenu li a:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--chisimba-blue-deep, #164b72) 30%, transparent);
+    outline-offset: 2px;
+}
+
+.worksheet-heading-action,
+.worksheet-action-group,
+.worksheet-icon-action,
+.worksheet-question-actions {
+    display: inline-flex;
+    align-items: center;
+}
+
+.worksheet-heading-action {
+    margin-inline-start: 0.55rem;
+    vertical-align: -0.15em;
+}
+
+.worksheet-action-group,
+.worksheet-question-actions {
+    gap: 0.7rem;
+    white-space: nowrap;
+}
+
+.worksheet-icon-action a {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.worksheet-icon-action img,
+.worksheet-heading-action img {
+    display: block;
+}
+
+.worksheet-question-actions {
+    float: right;
+    margin-inline-start: 1rem;
+}
+
+.worksheet-list td,
+.worksheet-list th {
+    border-inline: 0 !important;
+}
+
+@media (max-width: 48rem) {
+    .worksheet-authoring-steps #stepmenu {
+        grid-template-columns: 1fr;
+    }
+
+    .worksheet-authoring-steps #stepmenu li,
+    .worksheet-authoring-steps #stepmenu li a {
+        min-height: 0;
+    }
+}
+/* END CHISIMBA-REBORN WORKSHEET AUTHORING UI */
+
+/* BEGIN CHISIMBA-REBORN ASSESSMENT PLAN WORKSPACE */
+/* Gradebook provides semantic sections; this skin owns their presentation. */
+.assessment-plan-workspace {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 72rem;
+}
+
+.assessment-plan-introduction {
+    padding: 0 0 1.35rem;
+    border-bottom: 1px solid var(--chisimba-border-subtle, #d8dee5);
+}
+
+.assessment-plan-introduction > p:first-child {
+    max-width: 52rem;
+    margin: 0;
+    color: var(--chisimba-text-muted, #5d6772);
+    line-height: 1.55;
+}
+
+.assessment-plan-notice { margin: 1rem 0 0; }
+
+.assessment-plan-actions,
+.assessment-plan-next-step {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.assessment-plan-actions { margin-top: 1.1rem; }
+
+.assessment-plan-primary-action a,
+.assessment-plan-secondary-action a,
+.assessment-plan-next-step-action a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.45rem;
+    box-sizing: border-box;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    font-weight: 700;
+    line-height: 1.25;
+    text-decoration: none;
+}
+
+.assessment-plan-primary-action a,
+.assessment-plan-next-step-action a {
+    background: var(--chisimba-blue-deep, #164b72);
+    color: #fff;
+}
+
+.assessment-plan-primary-action a:hover,
+.assessment-plan-primary-action a:focus-visible,
+.assessment-plan-next-step-action a:hover,
+.assessment-plan-next-step-action a:focus-visible {
+    background: #0f3c5d;
+    color: #fff;
+}
+
+.assessment-plan-secondary-action a {
+    border: 1px solid var(--chisimba-border-subtle, #cbd5df);
+    background: var(--chisimba-surface-muted, #f6f8fa);
+    color: var(--chisimba-blue-deep, #164b72);
+}
+
+.assessment-plan-section {
+    overflow: hidden;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: #fff;
+}
+
+.assessment-plan-section-heading {
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    background: var(--chisimba-surface-muted, #f6f8fa);
+}
+
+.assessment-plan-section-heading h2,
+.assessment-plan-next-step h2 {
+    margin: 0;
+    color: var(--chisimba-text-strong, #27333e);
+    font-size: 1.05rem;
+    line-height: 1.3;
+}
+
+.assessment-plan-section-heading p,
+.assessment-plan-next-step p {
+    margin: 0.35rem 0 0;
+    color: var(--chisimba-text-muted, #5d6772);
+    line-height: 1.45;
+}
+
+.assessment-plan-empty { margin: 0; padding: 1.1rem 1.15rem; color: var(--chisimba-text-muted, #5d6772); }
+
+.assessment-plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.assessment-plan-table th,
+.assessment-plan-table td {
+    padding: 0.82rem 1.15rem;
+    border: 0;
+    border-bottom: 1px solid var(--chisimba-border-subtle, #e1e6eb);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.assessment-plan-table th {
+    background: #fff;
+    color: var(--chisimba-text-muted, #5d6772);
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.assessment-plan-table tr:last-child td { border-bottom: 0; }
+.assessment-plan-table tbody tr:nth-child(even) td { background: #fbfcfd; }
+.assessment-plan-table tbody tr:hover td { background: #f1f7fb; }
+
+.assessment-plan-selected-table th:nth-child(1) { width: 36%; }
+.assessment-plan-selected-table th:nth-child(2) { width: 20%; }
+.assessment-plan-selected-table th:nth-child(3) { width: 16%; }
+.assessment-plan-selected-table th:nth-child(4) { width: 28%; }
+
+.assessment-plan-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.6rem;
+    padding: 0.05rem 0.52rem;
+    border: 1px solid #9ed6c2;
+    border-radius: 999px;
+    background: #eef8f4;
+    color: #075f47;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.assessment-plan-remove-form { margin: 0; }
+.assessment-plan-remove-form button {
+    min-height: 2.25rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid #cdd6df;
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    background: #fff;
+    color: #7b2631;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.25;
+}
+.assessment-plan-remove-form button:hover,
+.assessment-plan-remove-form button:focus-visible { border-color: #b74a5a; background: #fff5f5; }
+
+.assessment-plan-provider-table th:nth-child(1) { width: 19%; }
+.assessment-plan-provider-table th:nth-child(2) { width: 22%; }
+.assessment-plan-provider-table td:nth-child(1) { font-weight: 700; }
+
+.assessment-plan-next-step {
+    justify-content: space-between;
+    padding: 1rem 1.15rem;
+    border: 1px solid #bfd7e8;
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: #eef6fb;
+}
+
+.assessment-plan-back { margin: -0.25rem 0 0; }
+
+@media (max-width: 45rem) {
+    .assessment-plan-table,
+    .assessment-plan-table tbody,
+    .assessment-plan-table tr,
+    .assessment-plan-table th,
+    .assessment-plan-table td { display: block; width: auto; }
+    .assessment-plan-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .assessment-plan-table tr { padding: 0.7rem 1rem; border-bottom: 1px solid var(--chisimba-border-subtle, #e1e6eb); }
+    .assessment-plan-table tr:last-child { border-bottom: 0; }
+    .assessment-plan-table td { padding: 0.3rem 0; border: 0; }
+    .assessment-plan-table td:last-child { padding-top: 0.65rem; }
+    .assessment-plan-next-step { align-items: flex-start; }
+}
+/* END CHISIMBA-REBORN ASSESSMENT PLAN WORKSPACE */
+
+/* BEGIN CHISIMBA-REBORN ASSESSMENT PLAN PROVIDER ACTIONS */
+/* Provider-owned selection begins from the provider that implements a selector. */
+.assessment-plan-provider-table th:nth-child(1) { width: 17%; }
+.assessment-plan-provider-table th:nth-child(2) { width: 20%; }
+.assessment-plan-provider-table th:nth-child(3) { width: 47%; }
+.assessment-plan-provider-table th:nth-child(4) { width: 16%; }
+
+.assessment-plan-provider-action a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.3rem;
+    box-sizing: border-box;
+    padding: 0.38rem 0.7rem;
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    background: var(--chisimba-blue-deep, #164b72);
+    color: #fff;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+}
+.assessment-plan-provider-action a:hover,
+.assessment-plan-provider-action a:focus-visible {
+    background: #0f3c5d;
+    color: #fff;
+}
+/* END CHISIMBA-REBORN ASSESSMENT PLAN PROVIDER ACTIONS */

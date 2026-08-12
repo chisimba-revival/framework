@@ -222,7 +222,7 @@ class dbcontext extends dbTable {
         if ($navigationMode === '') {
             $navigationMode = $deliveryFormat === 'microlearning' ? 'backward' : 'free';
         }
-        if (!in_array($navigationMode, array('sequential', 'backward', 'free'), TRUE)) {
+        if (!in_array($navigationMode, array('sequential', 'backward', 'free', 'gated'), TRUE)) {
             return FALSE;
         }
         return array('delivery_format' => $deliveryFormat, 'navigation_mode' => $navigationMode);

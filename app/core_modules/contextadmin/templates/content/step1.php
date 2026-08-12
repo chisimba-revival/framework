@@ -281,6 +281,7 @@ $navigation = new dropdown('navigation_mode');
 $navigation->addOption('sequential', $this->objLanguage->languageText('mod_contextadmin_navigation_sequential', 'contextadmin', 'Sequential only'));
 $navigation->addOption('backward', $this->objLanguage->languageText('mod_contextadmin_navigation_backward', 'contextadmin', 'Backward allowed'));
 $navigation->addOption('free', $this->objLanguage->languageText('mod_contextadmin_navigation_free', 'contextadmin', 'Free navigation'));
+$navigation->addOption('gated', $this->objLanguage->languageText('mod_contextadmin_navigation_gated', 'contextadmin', 'Gated progression'));
 $navigation->setSelected($selectedNavigation);
 
 $table->startRow();
