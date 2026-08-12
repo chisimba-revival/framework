@@ -3412,3 +3412,29 @@ h5.featureboxheader,
 .chisimba-current-page>a{color:#075f47!important}
 .chisimba-current-page-icon{width:.9rem;height:.9rem;margin-right:.35rem;color:#087f5b;vertical-align:-.12em}
 
+/* BEGIN CHISIMBA-REBORN MCQ TEST LIST */
+/* The MCQ module supplies semantic classes only; its presentation belongs here. */
+.mcq-heading-actions { display: inline-flex; align-items: center; margin-left: 0.6rem; }
+.mcq-heading-actions a, .mcq-icon-action a { display: inline-flex; align-items: center; }
+.mcq-test-list { border-collapse: separate; border-spacing: 0 0.35rem; }
+.mcq-test-list td, .mcq-test-list th { padding: 0.72rem 0.9rem; vertical-align: middle; border-right: 0 !important; border-left: 0 !important; }
+.mcq-test-list tr.heading td, .mcq-test-list tr.heading th { border-bottom: 2px solid var(--chisimba-border-strong) !important; }
+.mcq-test-list tr.odd td { background: var(--chisimba-surface); }
+.mcq-test-list tr.even td { background: var(--chisimba-surface-subtle); }
+.mcq-test-list tr:hover td { background: var(--chisimba-primary-soft); }
+.mcq-test-list tr td:first-child { width: 31%; border-radius: 0.4rem 0 0 0.4rem; font-weight: 650; }
+.mcq-test-list tr td:nth-child(2) { width: 23%; }
+.mcq-test-list tr td:nth-child(3) { width: 13%; }
+.mcq-test-list tr td:nth-child(4) { width: 17%; white-space: nowrap; }
+.mcq-test-list tr td:nth-child(5) { width: 16%; border-radius: 0 0.4rem 0.4rem 0; white-space: nowrap; }
+.mcq-action-group, .mcq-results-action, .mcq-home-actions { display: inline-flex; align-items: center; }
+.mcq-action-group { gap: 0.8rem; flex-wrap: wrap; }
+.mcq-icon-action { display: inline-flex; align-items: center; line-height: 1; }
+.mcq-icon-action img { display: block; }
+.mcq-results-action { gap: 0.45rem; white-space: nowrap; }
+.mcq-home-actions { justify-content: center; gap: 1.25rem; flex-wrap: wrap; }
+@media (max-width: 48rem) {
+  .mcq-test-list tr td:nth-child(2), .mcq-test-list tr th:nth-child(2),
+  .mcq-test-list tr td:nth-child(4), .mcq-test-list tr th:nth-child(4) { display: none; }
+}
+/* END CHISIMBA-REBORN MCQ TEST LIST */
