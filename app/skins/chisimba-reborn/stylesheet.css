@@ -3437,4 +3437,29 @@ h5.featureboxheader,
   .mcq-test-list tr td:nth-child(2), .mcq-test-list tr th:nth-child(2),
   .mcq-test-list tr td:nth-child(4), .mcq-test-list tr th:nth-child(4) { display: none; }
 }
+
+
+/* Compact MCQ home-page columns and status treatment. */
+.mcq-test-list { table-layout: fixed; }
+.mcq-test-list tr > :first-child { width: 32%; }
+.mcq-test-list tr > :nth-child(2) { width: 8%; }
+.mcq-test-list tr > :nth-child(3) { width: 10%; }
+.mcq-test-list tr > :nth-child(4) { width: 22%; white-space: nowrap; }
+.mcq-test-list tr > :nth-child(5) { width: 28%; white-space: nowrap; }
+.mcq-action-group { flex-wrap: nowrap; }
+.mcq-test-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.65rem;
+    padding: 0.08rem 0.55rem;
+    border: 1px solid #9ed6c2;
+    border-radius: 999px;
+    background: #eef8f4;
+    color: #075f47;
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
 /* END CHISIMBA-REBORN MCQ TEST LIST */
