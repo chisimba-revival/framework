@@ -3462,4 +3462,20 @@ h5.featureboxheader,
     white-space: nowrap;
 }
 
+
+
+/* MCQ Tests: student-attempt list */
+.mcq-student-list { border-collapse: separate; border-spacing: 0 0.35rem; }
+.mcq-student-list tr.heading td, .mcq-student-list tr.heading th { border-bottom: 2px solid var(--chisimba-border-strong) !important; }
+.mcq-student-list tr.odd td { background: var(--chisimba-surface); }
+.mcq-student-list tr.even td { background: var(--chisimba-surface-subtle); }
+.mcq-student-list tr:hover td { background: var(--chisimba-primary-soft); }
+.mcq-student-list tr > :first-child { width: 31%; border-radius: 0.4rem 0 0 0.4rem; font-weight: 650; }
+.mcq-student-list tr > :nth-child(2) { width: 12%; }
+.mcq-student-list tr > :nth-child(3) { width: 22%; }
+.mcq-student-list tr > :nth-child(4) { width: 23%; }
+.mcq-student-list tr > :last-child { width: 12%; border-radius: 0 0.4rem 0.4rem 0; text-align: right; white-space: nowrap; }
+.mcq-student-list tr td { border-left: 0 !important; border-right: 0 !important; padding: 0.7rem 0.85rem; vertical-align: middle; }
+@media (max-width: 48rem) { .mcq-student-list tr td:nth-child(3), .mcq-student-list tr th:nth-child(3) { display: none; } }
+
 /* END CHISIMBA-REBORN MCQ TEST LIST */
