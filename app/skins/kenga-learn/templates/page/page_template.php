@@ -1,8 +1,8 @@
 <?php
 /*
- * chisimba-reborn canvas page template
+ * Kenga Learn canvas page template
  *
- * This is the page template in the chisimba-reborn skin
+ * This is the page template in the Kenga Learn skin
  * 
  * Notes: 
  *   1. There is no headerwrapper in this skin
@@ -39,7 +39,7 @@ $prefCanvas=FALSE;
 $setCanvas = FALSE;
 
 // Define the name of this skin.
-$skinName = "chisimba-reborn";
+$skinName = "kenga-learn";
 
 // Define the valid canvases for this skin as an array.
 $validCanvases = array_map('basename', glob('skins/' . $skinName . '/canvases/*', GLOB_ONLYDIR));
