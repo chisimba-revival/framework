@@ -746,9 +746,24 @@ class modulecatalogue extends controller {
                 }
             }
             return TRUE;
-        } catch ( customException $e ) {
-            $this->errorCallback ( 'Caught exception: ' . $e->getMessage () );
-            exit ();
+        } catch ( Throwable $e ) {
+            /* CHISIMBA_MODULECATALOGUE_BATCH_RETURN_BOUNDARY */
+            error_log(
+                'Module Catalogue batch registration failed: '
+                . $e->getMessage()
+            );
+            $moduleName = isset($line) ? (string) $line : '';
+            if (! $this->output) {
+                $this->output = str_replace(
+                    '[MODULE]',
+                    $moduleName,
+                    $this->objLanguage->languageText(
+                        'mod_modulecatalogue_failed',
+                        'modulecatalogue'
+                    )
+                );
+            }
+            return FALSE;
         }
     }
 
@@ -787,9 +802,22 @@ class modulecatalogue extends controller {
                 $this->output .= $this->objLanguage->languageText ( 'mod_modulecatalogue_errnofile', 'modulecatalogue' ) . "\n";
                 return FALSE;
             }
-        } catch ( customException $e ) {
-            $this->errorCallback ( 'Caught exception: ' . $e->getMessage () );
-            exit ();
+        } catch ( Throwable $e ) {
+            /* CHISIMBA_MODULECATALOGUE_SMART_RETURN_BOUNDARY */
+            error_log(
+                'Module Catalogue registration failed for ' . $modname . ': '
+                . $e->getMessage()
+            );
+            $this->output .= str_replace(
+                '[MODULE]',
+                $modname,
+                $this->objLanguage->languageText(
+                    'mod_modulecatalogue_failed',
+                    'modulecatalogue'
+                )
+            ) . "
+";
+            return FALSE;
         }
     }
 
