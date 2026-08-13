@@ -470,7 +470,7 @@ class modulecatalogue extends controller {
                         $this->output = '<b>' . $this->objLanguage->languageText ( 'mod_modulecatalogue_noselect', 'modulecatalogue' ) . '</b>';
                     }
                     $this->setSession ( 'output', $this->output );
-                    return $this->nextAction ( null, array ('cat' => $activeCat, 'lastError' => $error ) );
+                    return $this->nextAction ( 'list', array ('cat' => $activeCat, 'lastError' => $error ) );
                 case 'batchuninstall' :
                     $error = false;
                     $selectedModules = $this->getArrayParam ( 'arrayList' );
@@ -485,7 +485,7 @@ class modulecatalogue extends controller {
                         $this->output = '<b>' . $this->objLanguage->languageText ( 'mod_modulecatalogue_noselect', 'modulecatalogue' ) . '</b>';
                     }
                     $this->setSession ( 'output', $this->output );
-                    return $this->nextAction ( null, array ('cat' => $activeCat, 'lastError' => $error ) );
+                    return $this->nextAction ( 'list', array ('cat' => $activeCat, 'lastError' => $error ) );
 
                 case 'updateall' :
                     ini_set ( 'max_execution_time', '6000' );
