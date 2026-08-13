@@ -198,10 +198,24 @@ class skin extends ChisimbaObject
     */
     public function validateSkinSession()
     {
-        $objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
-        // Check if skin exists, else set to default
-        if ($this->getSession('skin') == '') {
-            $this->setSession('skin', $this->objConfig->getdefaultSkin());
+        /* CHISIMBA_SYSTEM_DEFAULT_SKIN_RESOLUTION
+         *
+         * KEWL_DEFAULT_SKIN is maintained by System Configuration in
+         * config.xml. The legacy resolver consulted it only when the session
+         * had no skin, so changing the site default appeared to do nothing for
+         * every existing session. Keep an explicit chooser selection as a
+         * per-session override; otherwise reconcile with the configured site
+         * default on every request.
+         */
+        $defaultSkin = trim((string) $this->objConfig->getdefaultSkin());
+        $currentSkin = trim((string) $this->getSession('skin'));
+        $hasOverride = $this->getSession('skinUserOverride') === TRUE;
+
+        if (! $hasOverride && $defaultSkin !== ''
+                && $currentSkin !== $defaultSkin) {
+            $this->setSession('skin', $defaultSkin);
+        } elseif ($currentSkin === '' && $defaultSkin !== '') {
+            $this->setSession('skin', $defaultSkin);
         }
     }
 
@@ -222,6 +236,9 @@ class skin extends ChisimbaObject
                 //Test if stylesheet exists in the skinlocation
                 if (file_exists($mySkinLocation.$this->skinFile)) {
                     $this->setSession('skin', $skinLocation);
+                    // Record that this session deliberately overrode the
+                    // site-wide default selected in System Configuration.
+                    $this->setSession('skinUserOverride', TRUE);
                     $configFile = $mySkinLocation . 'settings.json';
                     if(file_exists($configFile)) {
                         $jsonRaw = file_get_contents($configFile);
@@ -251,6 +268,7 @@ class skin extends ChisimbaObject
                 //Test if stylesheet exists in the skinlocation
                 if (file_exists($mySkinLocation.$this->skinFile)) {
                     $this->setSession('skin', $_POST['skinlocation']);
+                    $this->setSession('skinUserOverride', TRUE);
                 } else {
                     $this->setSession('skin', $this->objConfig->getdefaultSkin());
                 }
