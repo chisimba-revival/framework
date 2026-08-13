@@ -1,7 +1,7 @@
 {
     "skinName": "Kenga Learn",
-    "description": "",
+    "description": "Kenga Learn branding on the Chisimba Reborn rendering system.",
     "skinEngine": "default",
-    "skinVersion": "1.1",
+    "skinVersion": "3.0",
     "layoutType": "canvas_stacked13"
 }

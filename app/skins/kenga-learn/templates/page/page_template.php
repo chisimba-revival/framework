@@ -1,8 +1,8 @@
 <?php
 /*
- * Kenga Learn canvas page template
+ * kenga-learn canvas page template
  *
- * This is the page template in the Kenga Learn skin
+ * This is the page template in the kenga-learn skin
  * 
  * Notes: 
  *   1. There is no headerwrapper in this skin
