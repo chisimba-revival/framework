@@ -267,6 +267,80 @@ class context extends controller {
     }
 
     /**
+     * Display the published course catalogue.
+     *
+     * @return string Catalogue template filename
+     * @access protected
+     */
+    protected function __catalogue() {
+        $this->setLayoutTemplate(NULL);
+        $this->setVar(
+            'catalogueTitle',
+            $this->objLanguage->code2Txt(
+                'mod_context_coursecatalogue',
+                'context',
+                NULL,
+                'Course catalogue'
+            )
+        );
+        $this->setVar(
+            'catalogueContent',
+            $this->getObject('coursecatalogue', 'context')
+                ->renderCatalogue(60)
+        );
+        return 'catalogue_tpl.php';
+    }
+
+    /**
+     * Display the temporary application-information page for a private course.
+     *
+     * @return string Application-information template filename
+     * @access protected
+     */
+    protected function __apply() {
+        $contextCode = trim((string) $this->getParam('contextcode', ''));
+        $context = $contextCode === ''
+            ? false
+            : $this->objContext->getContext($contextCode);
+        if (!is_array($context)
+            || strtolower((string) $context['access']) !== 'private'
+            || strtolower((string) $context['status']) === 'unpublished') {
+            return $this->nextAction('catalogue', array(), 'context');
+        }
+
+        $this->setLayoutTemplate(NULL);
+        $this->setVar('applicationCourseTitle', $context['title']);
+        $this->setVar(
+            'applicationPageTitle',
+            $this->objLanguage->code2Txt(
+                'mod_context_applyforcourse',
+                'context',
+                NULL,
+                'Apply for course'
+            )
+        );
+        $this->setVar(
+            'applicationMessage',
+            $this->objLanguage->code2Txt(
+                'mod_context_applicationscomingsoon',
+                'context',
+                NULL,
+                'Online course applications will be available soon.'
+            )
+        );
+        $this->setVar(
+            'applicationBackLabel',
+            $this->objLanguage->code2Txt(
+                'mod_context_backtocatalogue',
+                'context',
+                NULL,
+                'Back to course catalogue'
+            )
+        );
+        return 'apply_tpl.php';
+    }
+
+    /**
      * Method to join a context requiring a login
      */
     protected function __joincontextrequirelogin() {

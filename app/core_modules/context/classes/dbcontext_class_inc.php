@@ -547,7 +547,8 @@ class dbcontext extends dbTable {
      */
     public function getArrayOfPublicContexts($numOfRecords=6)
     {
-        $sql = "WHERE access='Public' AND status!='Unpublished' ORDER BY datecreated, menutext LIMIT {$numOfRecords}";
+        $numOfRecords = max(1, (int) $numOfRecords);
+        $sql = "WHERE access='Public' AND status!='Unpublished' ORDER BY datecreated DESC, menutext ASC LIMIT {$numOfRecords}";
         return $this->getAll($sql);
     }
 
@@ -561,7 +562,8 @@ class dbcontext extends dbTable {
      */
     public function getArrayOfOpenContexts($numOfRecords=6)
     {
-        $sql = "WHERE access='Open' AND status!='Unpublished' ORDER BY  datecreated, menutext LIMIT {$numOfRecords}";
+        $numOfRecords = max(1, (int) $numOfRecords);
+        $sql = "WHERE access='Open' AND status!='Unpublished' ORDER BY datecreated DESC, menutext ASC LIMIT {$numOfRecords}";
         return $this->getAll($sql);
     }
 
@@ -575,7 +577,26 @@ class dbcontext extends dbTable {
      */
     public function getArrayOfPrivateContexts($numOfRecords=6)
     {
-        $sql = "WHERE access='Private' AND status!='Unpublished' ORDER BY  datecreated, menutext LIMIT {$numOfRecords}";
+        $numOfRecords = max(1, (int) $numOfRecords);
+        $sql = "WHERE access='Private' AND status!='Unpublished' ORDER BY datecreated DESC, menutext ASC LIMIT {$numOfRecords}";
+        return $this->getAll($sql);
+    }
+
+    /**
+     * Return published contexts across all access categories, newest first.
+     *
+     * @param integer $numOfRecords Maximum number of records to return
+     * @param integer $offset       Number of records to skip
+     * @return array Published context records
+     * @access public
+     */
+    public function getArrayOfLatestContexts($numOfRecords=6, $offset=0)
+    {
+        $numOfRecords = max(1, (int) $numOfRecords);
+        $offset = max(0, (int) $offset);
+        $sql = "WHERE status!='Unpublished' "
+          . "ORDER BY datecreated DESC, menutext ASC "
+          . "LIMIT {$offset}, {$numOfRecords}";
         return $this->getAll($sql);
     }
 

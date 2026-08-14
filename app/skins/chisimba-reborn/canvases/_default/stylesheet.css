@@ -1167,3 +1167,209 @@
     min-width: 0;
     width: 100%;
 }
+
+/* Unified course catalogue cards. */
+.course-catalogue,
+.course-catalogue-page {
+    inline-size: 100%;
+    min-inline-size: 0;
+}
+
+.course-card-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    inline-size: 100%;
+}
+
+.course-card {
+    background: var(--chisimba-surface, #fff);
+    border: 1px solid var(--chisimba-border, #d7e0ea);
+    border-radius: var(--chisimba-region-radius, 0.65rem);
+    box-shadow: var(--chisimba-shadow, 0 0.25rem 1rem rgb(15 23 42 / 8%));
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+    overflow: hidden;
+}
+
+.course-card__media {
+    aspect-ratio: 16 / 9;
+    background: color-mix(in srgb, var(--chisimba-primary, #0b78c5) 12%, #fff);
+    overflow: hidden;
+    position: relative;
+}
+
+.course-card__image {
+    block-size: 100%;
+    display: block;
+    inline-size: 100%;
+    object-fit: cover;
+}
+
+.course-card__placeholder {
+    align-items: center;
+    block-size: 100%;
+    display: flex;
+    inline-size: 100%;
+    justify-content: center;
+}
+
+.course-card__placeholder span {
+    border: 0.18rem solid color-mix(in srgb, var(--chisimba-primary, #0b78c5) 50%, transparent);
+    border-radius: 50%;
+    block-size: 3rem;
+    display: block;
+    inline-size: 3rem;
+}
+
+.course-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    inset-block-start: 0.75rem;
+    inset-inline-start: 0.75rem;
+    position: absolute;
+}
+
+.course-card__badge {
+    background: rgb(255 255 255 / 94%);
+    border-radius: 999px;
+    color: var(--chisimba-text, #172033);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.45rem 0.65rem;
+}
+
+.course-card__badge--access {
+    background: var(--chisimba-primary, #0b78c5);
+    color: #fff;
+}
+
+.course-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.course-card__title {
+    font-size: 1.2rem;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.course-card__summary {
+    color: var(--chisimba-muted, #536273);
+    display: -webkit-box;
+    line-height: 1.5;
+    margin: 0.7rem 0 1rem;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.course-card__footer {
+    margin-block-start: auto;
+    padding-block-start: 0.25rem;
+}
+
+.course-card__lecturer {
+    color: var(--chisimba-muted, #536273);
+    font-size: 0.9rem;
+    line-height: 1.35;
+    margin: 0 0 1rem;
+}
+
+.course-card__lecturer span {
+    font-weight: 700;
+}
+
+.course-card__action,
+.course-catalogue__more a {
+    align-items: center;
+    border-radius: 0.4rem;
+    display: inline-flex;
+    font-weight: 700;
+    justify-content: center;
+    min-block-size: 2.75rem;
+    text-decoration: none;
+}
+
+.course-card__action {
+    background: var(--chisimba-primary, #0b78c5);
+    color: #fff;
+    padding: 0.55rem 0.9rem;
+}
+
+.course-card__action:hover,
+.course-card__action:focus-visible {
+    background: var(--chisimba-primary-dark, #075c98);
+    color: #fff;
+    text-decoration: none;
+}
+
+.course-card__action:focus-visible,
+.course-catalogue__more a:focus-visible {
+    outline: 0.2rem solid var(--chisimba-focus, #f59e0b);
+    outline-offset: 0.15rem;
+}
+
+.course-catalogue__more {
+    margin: 1.25rem 0 0;
+    text-align: center;
+}
+
+.course-catalogue__more a {
+    border: 1px solid var(--chisimba-primary, #0b78c5);
+    color: var(--chisimba-primary, #0b78c5);
+    padding: 0.5rem 1rem;
+}
+
+.course-catalogue__empty {
+    color: var(--chisimba-muted, #536273);
+    margin: 0;
+}
+
+@media (max-width: 64rem) {
+    .course-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 42rem) {
+    .course-card-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
++
+
+.course-application {
+    background: var(--chisimba-surface, #fff);
+    border: 1px solid var(--chisimba-border, #d7e0ea);
+    border-top: 0.35rem solid var(--chisimba-primary, #0b78c5);
+    border-radius: var(--chisimba-region-radius, 0.65rem);
+    box-shadow: var(--chisimba-shadow, 0 0.25rem 1rem rgb(15 23 42 / 8%));
+    margin-inline: auto;
+    max-inline-size: 46rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.course-application__eyebrow {
+    color: var(--chisimba-primary, #0b78c5);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.4rem;
+    text-transform: uppercase;
+}
+
+.course-application h1 {
+    margin-block-start: 0;
+}
+
+.course-application__back {
+    color: var(--chisimba-primary, #0b78c5);
+    font-weight: 700;
+}
