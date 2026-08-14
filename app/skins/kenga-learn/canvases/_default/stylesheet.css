@@ -1167,3 +1167,81 @@
     min-width: 0;
     width: 100%;
 }
+
+/* CHISIMBA STACKED SIDEBAR WIDTH CONTRACT — p381
+ *
+ * canvas_stacked13 places the left and right logical columns one after the
+ * other inside Region 3. The User block is direct component output and is
+ * deliberately left unchanged. The legacy #leftblocks, #rightblocks and
+ * #editmode descendants are structural controls and must use the same width
+ * as that User block rather than retaining historical inner padding/insets.
+ *
+ * @author Derek Keats
+ */
+
+/* Block-list and editing panels occupy the complete supplementary width. */
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3)
+    > :is(#leftblocks, #rightblocks, #leftaddblock, #rightaddblock) {
+    box-sizing: border-box;
+    margin-inline: 0;
+    min-width: 0;
+    padding-inline: 0;
+    width: 100%;
+}
+
+/* Lists, rather than nested cards, own the space between sidebar blocks. */
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3)
+    > :is(#leftblocks, #rightblocks) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chisimba-space-3, 12px);
+}
+
+/* Flatten only wrappers whose child already supplies a complete surface. */
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3)
+    > :is(#leftblocks, #rightblocks)
+    > .block:has(> :is(.featurebox, .contentfeaturebox, .content-block, .featurebox--content)) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Complete child surfaces fill the width provided by their sidebar list. */
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3)
+    > :is(#leftblocks, #rightblocks)
+    > .block
+    > :is(.featurebox, .contentfeaturebox, .content-block, .featurebox--content) {
+    box-sizing: border-box;
+    margin-inline: 0;
+    max-inline-size: none;
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+}
+
+/* Override the old shared #editmode { padding: 20px } sidebar inset. */
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3) > #editmode {
+    box-sizing: border-box;
+    margin-inline: 0;
+    padding-inline: 0;
+    width: 100%;
+}
+
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3)
+    > #editmode
+    > #modeswitch_wrapper,
+:is(#Canvas_Content_Body_Region1, #Canvas_Content_Body_Region3)
+    > #editmode
+    > #modeswitch_wrapper
+    > #editmodeswitchbutton {
+    box-sizing: border-box;
+    display: block;
+    margin-inline: 0;
+    width: 100%;
+}
