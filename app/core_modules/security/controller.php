@@ -102,6 +102,7 @@ class security extends controller
             return $this->nativeLoginPage('mod_security_invalidrequest');
         }
 
+        $this->unsetSession('native_auth_login_failure');
         $stack = $this->nativeAuthStack();
         $returnTo = $this->validatedReturnTo(
             $this->getParam('return_to', '')
@@ -146,9 +147,18 @@ class security extends controller
             ));
         }
 
-        return $this->nativeLoginPage(
-            'mod_security_authenticationfailed'
-        );
+        $username = $this->getParam('username', '');
+        if (is_array($username) || is_object($username)) {
+            $username = '';
+        }
+        $this->setSession('native_auth_login_failure', array(
+            'message_key' => 'mod_security_authenticationfailed',
+            'username' => substr(trim((string) $username), 0, 255),
+            'return_to' => $returnTo === null ? '' : $returnTo,
+        ));
+
+        header('Location: ' . $this->frontPagePath(), true, 303);
+        exit;
     }
 
     private function nativeMfa($action)
@@ -337,6 +347,15 @@ class security extends controller
             );
         }
 
+        header('Location: ' . $this->frontPagePath(), true, 303);
+        exit;
+    }
+
+    /**
+     * Return the local installation front page without consulting site URLs.
+     */
+    private function frontPagePath()
+    {
         $scriptPath = str_replace(
             '\\',
             '/',
@@ -345,12 +364,10 @@ class security extends controller
                 : '/index.php'
         );
         $basePath = rtrim(dirname($scriptPath), '/');
-        $frontPage = ($basePath === '' || $basePath === '.')
+
+        return ($basePath === '' || $basePath === '.')
             ? '/'
             : $basePath . '/';
-
-        header('Location: ' . $frontPage, true, 303);
-        exit;
     }
 
     private function nativeFailure($key)

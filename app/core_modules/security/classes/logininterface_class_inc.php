@@ -82,7 +82,7 @@ class loginInterface extends ChisimbaObject {
      * Method to render a login box
      * @returns string
      */
-    public function renderLoginBox($module = NULL) {
+    public function renderLoginBox($module = NULL, array $state = array()) {
         try {
             //set the action for the login form
             if ($module != NULL) {
@@ -119,15 +119,40 @@ class loginInterface extends ChisimbaObject {
             $escapeAuthValue = static function ($value) {
                 return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
             };
+            $username = isset($state['username'])
+                && !is_array($state['username'])
+                && !is_object($state['username'])
+                ? substr(trim((string) $state['username']), 0, 255)
+                : '';
+            $allowedFailureKeys = array(
+                'mod_security_authenticationfailed',
+            );
+            $failure = '';
+            if (isset($state['message_key'])
+                && in_array($state['message_key'], $allowedFailureKeys, true)) {
+                $failure = '<p class="auth-login-error" role="alert">'
+                    . $escapeAuthValue($this->objLanguage->languageText(
+                        $state['message_key'],
+                        'security'
+                    )) . '</p>';
+            }
             // Create the native, CSRF-protected login form.
             $objForm = new form('loginform', $formAction);
+            if ($failure !== '') {
+                $objForm->addToForm($failure);
+            }
             $objForm->addToForm('<input type="hidden" '
                 . 'name="native_auth_begin" value="'
                 . htmlspecialchars($nativeCsrf->issue('native_auth_begin'),
                     ENT_QUOTES, 'UTF-8') . '">');
-            $currentRequest = isset($_SERVER['REQUEST_URI'])
+            $currentRequest = isset($state['return_to'])
+                && !is_array($state['return_to'])
+                && !is_object($state['return_to'])
+                && trim((string) $state['return_to']) !== ''
+                ? (string) $state['return_to']
+                : (isset($_SERVER['REQUEST_URI'])
                 ? (string) $_SERVER['REQUEST_URI']
-                : '';
+                : '');
             $objForm->addToForm('<input type="hidden" name="return_to" value="'
                 . $escapeAuthValue($currentRequest) . '">');
             $objForm->addToForm('<input type="hidden" name="abuse_issued_at" value="'
@@ -144,7 +169,7 @@ class loginInterface extends ChisimbaObject {
             $objFields->setLegend(' ');
 
             //--Create an element for the username
-            $objInput = new textinput('username', '', 'text', '15');
+            $objInput = new textinput('username', $username, 'text', '15');
             $objInput->extra = 'maxlength="255" placeholder="' . $this->objLanguage->languageText('word_username', 'system') . '"';
             $objLabel = new label($this->objLanguage->languageText('word_username') . ': ', 'input_username');
             //Add validation for username

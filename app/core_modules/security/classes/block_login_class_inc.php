@@ -91,8 +91,16 @@ class block_login extends ChisimbaObject
             if ($this->objUser->isLoggedIn()) {
                 return '';
             }
+            $failure = $this->getSession(
+                'native_auth_login_failure',
+                array()
+            );
+            $this->unsetSession('native_auth_login_failure');
+            if (!is_array($failure)) {
+                $failure = array();
+            }
             $objLogin = $this->getObject('logininterface', 'security');
-            return $objLogin->renderLoginBox();
+            return $objLogin->renderLoginBox(NULL, $failure);
         } catch (customException $e) {
             customException::cleanUp();
         }

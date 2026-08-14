@@ -813,6 +813,15 @@
     padding: 0;
 }
 
+#form_loginform .auth-login-error {
+    background: color-mix(in srgb, #dc2626 9%, var(--chisimba-surface, #fff));
+    border: 1px solid color-mix(in srgb, #dc2626 35%, transparent);
+    border-radius: .5rem;
+    color: #991b1b;
+    margin: 0 0 .75rem;
+    padding: .65rem .75rem;
+}
+
 #form_loginform .auth-field {
     align-items: center;
     background: var(--chisimba-surface, #fff);
