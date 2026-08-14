@@ -48,5 +48,14 @@ $fields = array(
         )
     );
 
+// A system parameter has one canonical owner and value per module.
+$name = 'sysconfig_module_parameter';
+$indexes = array(
+    'unique' => TRUE,
+    'fields' => array(
+        'pmodule' => array(),
+        'pname' => array()
+    )
+);
 
 ?>
