@@ -273,7 +273,14 @@ class prelogin extends controller {
                     $this->setVar('pageSuppressToolbar', TRUE);
                     // Only an authenticated site administrator may enter the
                     // prelogin block-management view.
-                    $this->setVar('preloginCanEdit', $this->objUser->isAdmin());
+                    $isVisitorPreview = (string) $this->getParam(
+                        'visitorpreview',
+                        ''
+                    ) === '1';
+                    $this->setVar(
+                        'preloginCanEdit',
+                        $this->objUser->isAdmin() && !$isVisitorPreview
+                    );
                     //Set Layout Template To Null
                     $this->setLayoutTemplate(NULL);
                     return 'prelogin_tpl.php';

@@ -196,6 +196,42 @@ class blocks extends ChisimbaObject {
     }
 
     /**
+     * Determine whether a registered block is suitable for anonymous visitors.
+     *
+     * Prelogin placement tools must not offer blocks which explicitly require
+     * authentication, site-administrator rights, or group membership. The
+     * block is loaded through the canonical block loader so dynamic content
+     * blocks and ordinary class-backed blocks follow the same contract.
+     *
+     * @param string $block  Block name registered by the owning module.
+     * @param string $module Owning module identifier.
+     *
+     * @return boolean TRUE when the block declares no authenticated audience.
+     */
+    public function isAnonymousSafe($block, $module) {
+        $this->objBlock = NULL;
+        if (!$this->loadBlock($block, $module)) {
+            return FALSE;
+        }
+
+        if (!isset($this->objBlock) || !is_object($this->objBlock)) {
+            return TRUE;
+        }
+
+        if (!empty($this->objBlock->requiresLogin)) {
+            return FALSE;
+        }
+        if (!empty($this->objBlock->requiresAdmin)) {
+            return FALSE;
+        }
+        if (!empty($this->objBlock->requiresGroup)) {
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    /**
      *
      * Check if the block requires login. If the requiresLogin property
      * of the block is set, it will require login, but also it caters

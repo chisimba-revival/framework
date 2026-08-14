@@ -79,6 +79,12 @@ $moduleDrop = new dropdown('moduleblock');
 $moduleDrop->addOption(NULL,$this->objLanguage->languageText('mod_prelogin_selectblock','prelogin'));
 if (isset($blockList)) {
     foreach($blockList as $moduleBlock){
+        if (!$this->objBlocks->isAnonymousSafe(
+            $moduleBlock['blockname'],
+            $moduleBlock['moduleid']
+        )) {
+            continue;
+        }
         $moduleDrop->addOption($moduleBlock['moduleid']."|".$moduleBlock['blockname'],$moduleBlock['moduleid']." - ".$moduleBlock['blockname']);
     }
 }

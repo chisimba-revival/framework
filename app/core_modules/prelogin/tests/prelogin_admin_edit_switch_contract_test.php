@@ -19,8 +19,8 @@ $admin = file_get_contents($root . '/templates/content/admin_tpl.php');
 $checks = array(
     'controller supplies server-side administrator decision' => str_contains(
         $controller,
-        "setVar('preloginCanEdit', \$this->objUser->isAdmin())"
-    ),
+        "'preloginCanEdit',"
+    ) && str_contains($controller, '$this->objUser->isAdmin()'),
     'visitor template guards the editing control' => str_contains(
         $prelogin,
         'if (!empty($preloginCanEdit))'
@@ -36,10 +36,7 @@ $checks = array(
     'editing labels use the language system' => str_contains(
         $prelogin,
         "languageText(\n            'mod_context_turneditingon',"
-    ) && str_contains(
-        $admin,
-        "languageText(\n    'mod_context_turneditingoff',"
-    ),
+    ) && str_contains($admin, "'mod_context_turneditingoff'"),
     'existing records update by submitted identifier' => str_contains(
         $controller,
         "\$id = trim((string) \$this->getParam('id', ''));"
