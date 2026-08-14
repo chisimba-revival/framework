@@ -1081,3 +1081,89 @@
     }
 }
 /* END CHISIMBA-REBORN SINGLE STACKED SIDEBAR POSITION */
+
+/* CHISIMBA COMPLETE COMPONENT WRAPPER CONTRACT — p380
+ *
+ * Canvas regions, block lists and .block elements are placement structures.
+ * They must not create an additional card or horizontal inset around a child
+ * that already renders a complete visual component.
+ *
+ * This extends the existing feature-box contract to semantic Content blocks
+ * while deliberately leaving unboxed legacy module output unchanged.
+ * Regions own placement and inter-component spacing; components own their
+ * visible surface.
+ *
+ * @author Derek Keats
+ */
+
+/* Flatten a region when a complete component is direct or block-wrapped. */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+):has(> .content-block),
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+):has(> :is(#leftblocks, #middleblocks, #rightblocks) > .block > .content-block) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* Placement lists use all available width and own spacing between blocks. */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) > :is(#leftblocks, #middleblocks, #rightblocks):has(
+    > .block > .content-block
+) {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--chisimba-space-3, 12px);
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* A generic wrapper around a complete component is structural, not a card. */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block:has(> .content-block) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* The component itself occupies the width provided by its canvas region. */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block > .content-block,
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) > .content-block {
+    box-sizing: border-box;
+    margin: 0;
+    max-inline-size: none;
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+}
