@@ -1373,3 +1373,55 @@
     color: var(--chisimba-primary, #0b78c5);
     font-weight: 700;
 }
+
+/* CHISIMBA DESCENDANT COMPLETE COMPONENT CONTRACT — p382
+ *
+ * A module installation can add an extra structural element between a canvas
+ * region, its block list and a complete component. Presentation must not rely
+ * on one exact wrapper depth: any region containing a semantic Content block
+ * is placement only, and any enclosing generic .block is placement only.
+ * Ordinary blocks remain untouched.
+ *
+ * @author Derek Keats
+ */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+):has(.content-block) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) :is(#leftblocks, #middleblocks, #rightblocks):has(.content-block) {
+    box-sizing: border-box;
+    margin: 0;
+    max-width: none;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+) .block:has(.content-block) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    margin: 0;
+    max-width: none;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
