@@ -2,6 +2,23 @@
 
 /* Template for prelogin */
 
+$editControl = '';
+if (!empty($preloginCanEdit)) {
+    $editUrl = $this->uri(array('action' => 'admin'), 'prelogin');
+    $editLabel = htmlspecialchars(
+        $this->objLanguage->languageText(
+            'mod_context_turneditingon',
+            'context'
+        ),
+        ENT_QUOTES,
+        'UTF-8'
+    );
+    $editControl = '<div id="editmode" class="prelogin-edit-control">'
+        . '<div id="modeswitch_wrapper" class="editing_off">'
+        . '<a href="' . $editUrl . '">' . $editLabel . '</a>'
+        . '</div></div>';
+}
+
 /* * ********** LEFT COLUMN ************* */
 $leftContent = NULL;
 $leftBlocks = $this->objPLBlocks->getVisibleBlocks('left');
@@ -59,5 +76,5 @@ $cssLayout->setLeftColumnContent($leftContent);
 $cssLayout->setMiddleColumnContent($middleContent);
 $cssLayout->setRightColumnContent($rightContent);
 
-echo $cssLayout->show();
+echo $editControl . $cssLayout->show();
 ?>

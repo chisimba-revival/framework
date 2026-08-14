@@ -14,8 +14,15 @@ $this->loadClass('form', 'htmlelements');
 //main heading
 $scLink = &$this->newObject('link', 'htmlelements');
 $scLink->link($this->uri(null, 'prelogin'));
-$scLink->link = $this->objLanguage->languageText('mod_prelogin_preview', 'prelogin');
-$scLink->extra = "class='pseudobutton' target='_blank'";
+$scLink->link = $this->objLanguage->languageText(
+    'mod_context_turneditingoff',
+    'context'
+);
+$scLink->extra = "class='prelogin-edit-switch'";
+$editOff = '<div id="editmode" class="prelogin-edit-control">'
+    . '<div id="modeswitch_wrapper" class="editing_on">'
+    . $scLink->show()
+    . '</div></div>';
 $objH = &$this->newObject('htmlheading', 'htmlelements');
 $objH->type = 1;
 $objH->str = $this->objLanguage->languageText('mod_prelogin_mainheader', 'prelogin');
@@ -284,6 +291,7 @@ $link = &$this->getObject('link', 'htmlelements');
 $link->link($objLink);
 $link->link = $this->objLanguage->languageText('mod_prelogin_addblock', 'prelogin');
 
-$content = $objH->show() . $scLink->show() . $submitMsg . $head->show() . $objForm->show() . $link->show();
+$content = $editOff . $objH->show() . $submitMsg . $head->show()
+    . $objForm->show() . $link->show();
 echo "<div class='prelogin_main'>$content</div>";
 ?>

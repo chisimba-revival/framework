@@ -161,7 +161,8 @@ class prelogin extends controller {
                             $blockName = '';
                         }
                         $data = array('title' => $title, 'side' => $side, 'content' => $content, 'isblock' => $bType, 'blockname' => $blockName, 'blockmodule' => $blockModule);
-                        if ($id == $this->getParam('id')) {
+                        $id = trim((string) $this->getParam('id', ''));
+                        if ($id !== '') {
                             $result = $this->objPLBlocks->updateBlock($id, $data);
                         } else {
                             $result = $this->objPLBlocks->insertBlock($data);
@@ -270,6 +271,9 @@ class prelogin extends controller {
                     //$this->setVar('jsLoad', array($js));
                     // Suppress Toolbar - user isn't logged in yet
                     $this->setVar('pageSuppressToolbar', TRUE);
+                    // Only an authenticated site administrator may enter the
+                    // prelogin block-management view.
+                    $this->setVar('preloginCanEdit', $this->objUser->isAdmin());
                     //Set Layout Template To Null
                     $this->setLayoutTemplate(NULL);
                     return 'prelogin_tpl.php';
