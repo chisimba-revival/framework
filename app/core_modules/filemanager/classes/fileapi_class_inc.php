@@ -288,7 +288,10 @@ class fileapi extends ChisimbaObject
         // single-file helper assumes image-oriented response handling for
         // some media and may terminate the picker request for audio files.
         $results=$this->objUpload->uploadFiles();
-        $result=is_array($results)&&isset($results[0])&&is_array($results[0])?$results[0]:null;
+        $result = is_array($results) ? current($results) : null;
+        if (!is_array($result)) {
+            $result = null;
+        }
         if (!is_array($result)||empty($result['success'])||empty($result['fileid'])) {
             $reason=is_array($result)&&isset($result['reason'])?(string)$result['reason']:'upload_failed';
             return $this->error($reason,$this->uploadFailureMessage($reason));
