@@ -66,6 +66,19 @@ class multitabbedbox extends abhtmlbase implements ifhtml
     * @param int $height (optional);
     * @param int $width (optional);
     */
+        /*
+         * CHISIMBA_MULTITABBEDBOX_CONSTRUCTOR_PHP85
+         *
+         * PHP 8 does not recognise the historical class-named constructor.
+         * Keep the existing method contract and bridge native construction to it.
+         *
+         * @author Derek Keats
+         */
+        public function __construct($height=100, $width=500)
+        {
+            $this->multitabbedbox($height, $width);
+        }
+
         public function multitabbedbox($height=100,$width=500)
     {
         $this->height=$height;
@@ -103,7 +116,7 @@ class multitabbedbox extends abhtmlbase implements ifhtml
     * @return $str string
     */
     public function show(){
-        $cnt=0;$str='';$width='';
+        $cnt=0;$str='';$width=0;
         //get the javascript
         $str='<script language="JavaScript" src="core_modules/htmlelements/resources/tabbedbox.js"></script>';
         

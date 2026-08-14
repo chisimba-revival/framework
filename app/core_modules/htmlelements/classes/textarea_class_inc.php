@@ -91,6 +91,19 @@ require_once("ifhtml_class_inc.php");
     /**
     * Method to establish the default values
     */
+        /*
+         * CHISIMBA_TEXTAREA_CONSTRUCTOR_PHP85
+         *
+         * Provide the native constructor required by PHP 8 while retaining the
+         * established Chisimba textarea method contract.
+         *
+         * @author Derek Keats
+         */
+        public function __construct($name=null, $value='', $rows=4, $cols=50, $characters=NULL, $label=NULL)
+        {
+            $this->textarea($name, $value, $rows, $cols, $characters, $label);
+        }
+
         public function textarea($name=null,$value='',$rows=4,$cols=50, $characters = NULL, $label = NULL)
      {
         $this->name=$name;
