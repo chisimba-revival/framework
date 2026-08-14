@@ -106,8 +106,59 @@ class prelogin extends controller {
                             $contentWideBlocks = $this->objBlocksContent->getBlocksArr('content_widetext');
                             $this->setVarByRef('contentWideBlocks', $contentWideBlocks);
                         }
+                        $this->setVar(
+                            'preloginCatalogue',
+                            $this->getBlockCatalogue()
+                        );
                         return 'admin_tpl.php';
                     }
+                case 'addregisteredblock':
+                    if (!$this->objUser->isAdmin()) {
+                        return 'notadmin_tpl.php';
+                    }
+                    $registry = $this->getObject(
+                        'dbmoduleblocks',
+                        'modulecatalogue'
+                    );
+                    $registered = $registry->getRow(
+                        'id',
+                        (string) $this->getParam('blockid', '')
+                    );
+                    $side = (string) $this->getParam('side', '');
+                    if (!$registered
+                            || !$this->isCompatibleSide($registered, $side)) {
+                        return $this->nextAction(
+                            'admin',
+                            array('catalogueerror' => '1')
+                        );
+                    }
+                    $title = $this->objBlocks->getBlockDisplayTitle(
+                        $registered['blockname'],
+                        $registered['moduleid']
+                    );
+                    if ($title === FALSE) {
+                        return $this->nextAction(
+                            'admin',
+                            array('catalogueerror' => '1')
+                        );
+                    }
+                    if (!$this->objPLBlocks->hasModuleBlock(
+                        $registered['moduleid'],
+                        $registered['blockname']
+                    )) {
+                        $this->objPLBlocks->insertBlock(array(
+                            'title' => $title,
+                            'side' => $side,
+                            'content' => '',
+                            'isblock' => $this->TRUE,
+                            'blockname' => $registered['blockname'],
+                            'blockmodule' => $registered['moduleid'],
+                        ));
+                    }
+                    return $this->nextAction(
+                        'admin',
+                        array('change' => '2')
+                    );
                 case 'editblock':
                     if (!$this->objUser->isAdmin()) {
                         return 'notadmin_tpl.php';
@@ -198,61 +249,6 @@ class prelogin extends controller {
                     if (!$this->objUser->isAdmin()) {
                         return 'notadmin_tpl.php';
                     } else {
-                        $contentSmallBlocks = "";
-                        $contentWideBlocks = "";
-                        if ($this->cbExists) {
-                            //Get all wide blocks
-                            $contentWideBlocks = $this->objBlocksContent->getBlocksArr('content_widetext');
-                            $bType = 0;
-                            foreach ($contentWideBlocks as $contentWideBlock) {
-                                $data = array('title' => $contentWideBlock["title"],
-                                    'side' => 'middle', 'content' => $contentWideBlock["blocktext"],
-                                    'isblock' => $bType, 'blockname' => "context", 'blockmodule' => "contentblocks");
-                                // _mc_vis => middle content
-
-                                $id = $contentWideBlock['id'] . '_mc';
-
-                                // Update content block data for PLBs
-                                if ($this->getParam($contentWideBlock['id'] . '_mc_vis') == "on") {
-                                    $data['visible'] = $this->TRUE;
-                                } else {
-                                    $data['visible'] = $this->FALSE;
-                                }
-                                $result = $this->objPLBlocks->updateContentBlock($id, $data);
-                            }
-                            //Get all side blocks
-                            $contentSmallBlocks = $this->objBlocksContent->getBlocksArr('content_text');
-                            foreach ($contentSmallBlocks as $csBlock) {
-                                $data = array('title' => $csBlock["title"],
-                                    'content' => $csBlock["blocktext"],
-                                    'isblock' => $bType, 'blockname' => "context", 'blockmodule' => "contentblocks");
-
-                                // _mc_vis => left content
-                                $id = $csBlock['id'] . '_lc';
-                                // Update content block data for PLBs
-                                if ($this->getParam($csBlock['id'] . '_lc_vis') == "on") {
-                                    $data['visible'] = $this->TRUE;
-                                } else {
-                                    $data['visible'] = $this->FALSE;
-                                }
-                                $data['side'] = "left";
-
-                                $result = $this->objPLBlocks->updateContentBlock($id, $data);
-
-                                // _mc_vis => right content
-                                $id = $csBlock['id'] . '_rc';
-                                // Update content block data for PLBs
-                                if ($this->getParam($csBlock['id'] . '_rc_vis') == "on") {
-                                    $data['visible'] = $this->TRUE;
-                                } else {
-                                    $data['visible'] = $this->FALSE;
-                                }
-                                $data['side'] = "right";
-
-                                $result = $this->objPLBlocks->updateContentBlock($id, $data);
-                            }
-                        }
-                        $vibe = array();
                         $blocks = $this->objPLBlocks->getAll();
                         if (isset($blocks)) {
                             foreach ($blocks as $block) {
@@ -298,6 +294,7 @@ class prelogin extends controller {
     public function requiresLogin($action = null) {
         switch ($this->getParam('action')) {
             case 'admin':
+            case 'addregisteredblock':
             case 'update':
             case 'delete':
             case 'moveup':
@@ -309,6 +306,95 @@ class prelogin extends controller {
             default:
                 return FALSE;
         }
+    }
+
+    /**
+     * Return the same registered block catalogue offered after login.
+     *
+     * @return array Registered blocks not already placed on the public page
+     */
+    private function getBlockCatalogue() {
+        $registry = $this->getObject('dbmoduleblocks', 'modulecatalogue');
+        $catalogue = array();
+        foreach ($registry->getBlocks(NULL, 'site|user|postlogin') as $row) {
+            if ($this->usesCuratedCatalogue()
+                    && !$this->isCuratedBlock($row)) {
+                continue;
+            }
+            if ($this->objPLBlocks->hasModuleBlock(
+                $row['moduleid'],
+                $row['blockname']
+            )) {
+                continue;
+            }
+            $title = $this->objBlocks->getBlockDisplayTitle(
+                $row['blockname'],
+                $row['moduleid']
+            );
+            if ($title === FALSE) {
+                continue;
+            }
+            $row['displaytitle'] = $title;
+            $catalogue[] = $row;
+        }
+        usort($catalogue, function ($left, $right) {
+            return strcasecmp(
+                $left['displaytitle'],
+                $right['displaytitle']
+            );
+        });
+        return $catalogue;
+    }
+
+    /**
+     * Determine whether optional public-page catalogue curation is enabled.
+     *
+     * @return boolean TRUE only when explicitly enabled in system settings
+     */
+    private function usesCuratedCatalogue() {
+        $value = $this->objSysconfig->getValue(
+            'CURATE_PUBLIC_BLOCKS',
+            'prelogin'
+        );
+        return in_array(strtolower((string) $value), array('1', 'true', 'yes'), TRUE);
+    }
+
+    /**
+     * Provide the dormant curated-catalogue policy for future use.
+     *
+     * @param array $registered Module block registration row
+     *
+     * @return boolean TRUE when the block belongs to the curated policy
+     */
+    private function isCuratedBlock(array $registered) {
+        $module = (string) ($registered['moduleid'] ?? '');
+        $block = (string) ($registered['blockname'] ?? '');
+        if ($module === 'contentblocks' || $module === 'announcements') {
+            return TRUE;
+        }
+        $allowed = array(
+            'security' => array('login', 'register'),
+            'language' => array('language'),
+            'context' => array('latestcourses'),
+        );
+        return isset($allowed[$module])
+            && in_array($block, $allowed[$module], TRUE);
+    }
+
+    /**
+     * Check whether the requested column suits a block's registered width.
+     *
+     * @param array  $registered Module block registration row
+     * @param string $side       Public-page column
+     *
+     * @return boolean TRUE when the placement is valid
+     */
+    private function isCompatibleSide(array $registered, $side) {
+        $width = (string) ($registered['blockwidth'] ?? 'normal');
+        if ($width === 'wide') {
+            return $side === 'middle';
+        }
+        return $side === 'left' || $side === 'right';
     }
 
 }

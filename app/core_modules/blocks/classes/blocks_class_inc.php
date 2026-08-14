@@ -232,6 +232,30 @@ class blocks extends ChisimbaObject {
     }
 
     /**
+     * Return the display title declared by a registered block.
+     *
+     * @param string $block  Block name registered by the owning module.
+     * @param string $module Owning module identifier.
+     *
+     * @return string|false Display title, or FALSE when loading fails.
+     */
+    public function getBlockDisplayTitle($block, $module) {
+        $this->objBlock = NULL;
+        if (!$this->loadBlock($block, $module)) {
+            return FALSE;
+        }
+        if (isset($this->objBlock) && is_object($this->objBlock)
+                && isset($this->objBlock->title)) {
+            return (string) $this->objBlock->title;
+        }
+        if (isset($this->block) && is_array($this->block)
+                && isset($this->block['title'])) {
+            return (string) $this->block['title'];
+        }
+        return (string) $block;
+    }
+
+    /**
      *
      * Check if the block requires login. If the requiresLogin property
      * of the block is set, it will require login, but also it caters

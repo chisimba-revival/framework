@@ -25,7 +25,10 @@ $globalText = function ($key) {
 
 $previewUrl = $this->uri(array('visitorpreview' => '1'), 'prelogin');
 $editingOffUrl = $this->uri(null, 'prelogin');
-$addUrl = $this->uri(array('action' => 'addblock'), 'prelogin');
+$addRegisteredUrl = $this->uri(
+    array('action' => 'addregisteredblock'),
+    'prelogin'
+);
 $updateUrl = $this->uri(array('action' => 'update'), 'prelogin');
 
 $renderBlock = function ($block, $side) use ($escape) {
@@ -88,6 +91,11 @@ if ($this->getParam('change') === '2') {
     $message->setMessage($text('mod_prelogin_success'));
     $submitMessage = $message->show();
 }
+if ($this->getParam('catalogueerror') === '1') {
+    $message = $this->newObject('timeoutMessage', 'htmlelements');
+    $message->setMessage($text('mod_prelogin_catalogueerror'));
+    $submitMessage = $message->show();
+}
 
 $deletePrompt = $escape($globalText('phrase_delete'));
 $style = <<<'CSS'
@@ -108,6 +116,9 @@ $style = <<<'CSS'
 .prelogin-editor__tools label { margin-right: auto; }
 .prelogin-editor__empty { padding: 1rem; border: 1px dashed #aab8c5; border-radius: .5rem; color: #536273; background: #fff; }
 .prelogin-editor__footer { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.prelogin-editor__catalogue { margin-top: 1.5rem; }
+.prelogin-editor__add { display: grid; gap: .65rem; }
+.prelogin-editor__add select { width: 100%; min-width: 0; padding: .55rem; }
 @media (max-width: 900px) {
   .prelogin-editor__columns { grid-template-columns: 1fr; }
   .prelogin-editor__preview iframe { min-height: 520px; }
@@ -188,9 +199,58 @@ $this->appendArrayVar('headerParams', $script);
             <button class="prelogin-editor__button" type="submit">
                 <?php echo $escape($globalText('word_update')); ?>
             </button>
-            <a class="prelogin-editor__button" href="<?php echo $addUrl; ?>">
-                <?php echo $escape($text('mod_prelogin_addblock')); ?>
-            </a>
         </div>
     </form>
+
+    <section class="prelogin-editor__catalogue" aria-labelledby="block-catalogue-heading">
+        <h2 id="block-catalogue-heading">
+            <?php echo $escape($text('mod_prelogin_blockcatalogue')); ?>
+        </h2>
+        <p class="prelogin-editor__help">
+            <?php echo $escape($text('mod_prelogin_blockcataloguehelp')); ?>
+        </p>
+        <div class="prelogin-editor__columns">
+            <?php foreach ($columns as $side => $heading) : ?>
+                <?php
+                $compatibleBlocks = array();
+                foreach (($preloginCatalogue ?? array()) as $candidate) {
+                    $wide = ($candidate['blockwidth'] ?? 'normal') === 'wide';
+                    if (($side === 'middle' && $wide)
+                            || ($side !== 'middle' && !$wide)) {
+                        $compatibleBlocks[] = $candidate;
+                    }
+                }
+                ?>
+                <form class="prelogin-editor__column prelogin-editor__add"
+                    method="post" action="<?php echo $addRegisteredUrl; ?>">
+                    <h2><?php echo $escape($heading); ?></h2>
+                    <input type="hidden" name="side" value="<?php echo $escape($side); ?>">
+                    <?php if (empty($compatibleBlocks)) : ?>
+                        <div class="prelogin-editor__empty">
+                            <?php echo $escape($text('mod_prelogin_nocatalogueblocks')); ?>
+                        </div>
+                    <?php else : ?>
+                        <label for="prelogin-add-<?php echo $escape($side); ?>">
+                            <?php echo $escape($text('mod_prelogin_chooseblock')); ?>
+                        </label>
+                        <select id="prelogin-add-<?php echo $escape($side); ?>"
+                            name="blockid" required>
+                            <option value="">
+                                <?php echo $escape($text('mod_prelogin_chooseblock')); ?>
+                            </option>
+                            <?php foreach ($compatibleBlocks as $candidate) : ?>
+                                <option value="<?php echo $escape($candidate['id']); ?>">
+                                    <?php echo $escape($candidate['displaytitle']); ?>
+                                    (<?php echo $escape($candidate['moduleid']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button class="prelogin-editor__button" type="submit">
+                            <?php echo $escape($text('mod_prelogin_addblock')); ?>
+                        </button>
+                    <?php endif; ?>
+                </form>
+            <?php endforeach; ?>
+        </div>
+    </section>
 </main>

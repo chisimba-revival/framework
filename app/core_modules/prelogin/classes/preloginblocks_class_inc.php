@@ -151,6 +151,25 @@ class preloginBlocks extends dbTable {
     }
 
     /**
+     * Determine whether a module block is already placed on the public page.
+     *
+     * @param string $module Owning module identifier
+     * @param string $block  Registered block name
+     *
+     * @return boolean TRUE when the block already has a placement
+     */
+    public function hasModuleBlock($module, $block) {
+        $module = addslashes((string) $module);
+        $block = addslashes((string) $block);
+        $rows = $this->getAll(
+            "WHERE isblock = '{$this->TRUE}'"
+            . " AND blockmodule = '{$module}'"
+            . " AND blockname = '{$block}'"
+        );
+        return !empty($rows);
+    }
+
+    /**
      * Method to update a record in the table - specific to content blocks
      *
      * @param string $id the id of the record in question

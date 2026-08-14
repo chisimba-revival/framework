@@ -15,9 +15,6 @@ $controller = file_get_contents($preloginRoot . '/controller.php');
 $editor = file_get_contents(
     $preloginRoot . '/templates/content/admin_tpl.php'
 );
-$addBlock = file_get_contents(
-    $preloginRoot . '/templates/content/addblock_tpl.php'
-);
 $blocks = file_get_contents(
     $applicationRoot . '/core_modules/blocks/classes/blocks_class_inc.php'
 );
@@ -43,19 +40,28 @@ $checks = array(
         && str_contains($editor, "'action' => 'editblock'")
         && str_contains($editor, "'action' => 'delete'")
         && str_contains($editor, '_vis'),
-    'block catalogue rejects authenticated audiences' => str_contains(
-        $addBlock,
-        'isAnonymousSafe('
+    'editor uses the normal postlogin registered block catalogue' =>
+        str_contains($controller, "'site|user|postlogin'")
+        && str_contains($controller, "case 'addregisteredblock':")
+        && str_contains($editor, "'action' => 'addregisteredblock'"),
+    'catalogue curation remains optional and disabled by default' =>
+        str_contains($controller, 'usesCuratedCatalogue()')
+        && str_contains(
+            $register,
+            'CONFIG: CURATE_PUBLIC_BLOCKS|FALSE|'
+        ),
+    'registered blocks supply their own display titles' => str_contains(
+        $blocks,
+        'public function getBlockDisplayTitle('
     ),
-    'anonymous block policy checks all authenticated restrictions' =>
-        str_contains($blocks, 'public function isAnonymousSafe(')
-        && str_contains($blocks, 'requiresLogin')
-        && str_contains($blocks, 'requiresAdmin')
-        && str_contains($blocks, 'requiresGroup'),
+    'legacy content block mirroring no longer creates placements' =>
+        !str_contains($controller, "'_mc_vis'")
+        && !str_contains($controller, "'_lc_vis'")
+        && !str_contains($controller, "'_rc_vis'"),
     'new interface text is owned by the language system' =>
         str_contains($register, 'mod_prelogin_visitorpreview|')
         && str_contains($register, 'mod_prelogin_editlayout|')
-        && str_contains($register, 'mod_prelogin_hiddenblock|'),
+        && str_contains($register, 'mod_prelogin_blockcatalogue|'),
 );
 
 foreach ($checks as $name => $passed) {
