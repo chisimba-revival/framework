@@ -562,7 +562,7 @@ class blocks extends ChisimbaObject {
                     $configData = $this->objBlock->configData;
                 }
                 if (isset($blockDataArr["blockType"])) {
-                    //$blockType = $block["blockType"];
+                    $blockType = $blockDataArr["blockType"];
                 }
                 if ($wrapStr) {
                     $objWrap = $this->getObject('trimstr', 'strings');
