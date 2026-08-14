@@ -379,7 +379,6 @@ class InstallDirectoryAction extends StepAction
 
                 $success = false;
 
-                @fclose ( $fp );
                 return $success;
             }
         } else {
