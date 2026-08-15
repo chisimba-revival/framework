@@ -38,6 +38,9 @@ $checks = array(
         str_contains($template, "'action' => 'moveup'")
         && str_contains($template, "'action' => 'movedown'")
         && str_contains($template, "'action' => 'delete'"),
+    'all placed blocks receive a shared flow wrapper' =>
+        str_contains($template, 'prelogin-placed-block')
+        && str_contains($template, '$renderPlacedBlock($block, $side)'),
     'content blocks are available in the catalogue' =>
         str_contains($controller, 'getBlocksArr($contentType)')
         && str_contains($controller, "'moduleid' => 'contentblocks'"),

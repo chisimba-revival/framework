@@ -4066,3 +4066,13 @@ h5.featureboxheader,
     transform: rotate(90deg);
 }
 /* END CHISIMBA CONTEXT CONTENT CHAPTER CARDS */
+
+/* CHISIMBA PRELOGIN PLACED BLOCK FLOW */
+.prelogin-placed-block {
+    min-width: 0;
+}
+
+.prelogin-placed-block + .prelogin-placed-block {
+    margin-block-start: var(--chisimba-space-3, 0.75rem);
+}
+/* END CHISIMBA PRELOGIN PLACED BLOCK FLOW */

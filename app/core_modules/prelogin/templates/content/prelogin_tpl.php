@@ -84,7 +84,8 @@ $renderColumn = function ($side) use ($editing, $renderPlacedBlock) {
         if (!$editing && $block['visible'] != $this->TRUE) {
             continue;
         }
-        $output .= $renderPlacedBlock($block, $side);
+        $output .= '<div class="prelogin-placed-block">'
+            . $renderPlacedBlock($block, $side) . '</div>';
     }
     return $output;
 };

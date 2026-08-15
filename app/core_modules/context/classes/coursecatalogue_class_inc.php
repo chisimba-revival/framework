@@ -131,17 +131,36 @@ class coursecatalogue extends ChisimbaObject
 
         if ($showMore) {
             $output .= '<p class="course-catalogue__more"><a href="'
-              . $this->escape($this->uri(
+              . $this->uri(
                   array('action' => 'catalogue'),
                   'context'
-              )) . '">'
+              ) . '">'
               . $this->escape($this->text(
                   'mod_context_viewmorecourses',
                   'View more courses'
               )) . '</a></p>';
         }
 
-        return '<section class="course-catalogue">' . $output . '</section>';
+        return '<section class="course-catalogue">' . $output . '</section>'
+          . $this->applicationNoticeScript();
+    }
+
+    /**
+     * Bind the private-course application notice once per page.
+     *
+     * @return string Dependency-free event delegation script
+     * @access private
+     */
+    private function applicationNoticeScript()
+    {
+        return '<script>(function(){'
+          . 'if(window.chisimbaCourseApplicationNoticeBound){return;}'
+          . 'window.chisimbaCourseApplicationNoticeBound=true;'
+          . 'document.addEventListener("click",function(event){'
+          . 'var button=event.target.closest("[data-course-application-notice]");'
+          . 'if(!button){return;}'
+          . 'window.alert(button.getAttribute("data-course-application-notice"));'
+          . '});})();</script>';
     }
 
     /**
@@ -168,6 +187,16 @@ class coursecatalogue extends ChisimbaObject
         );
         $lecturers = $this->lecturerNames($code);
         $action = $this->actionFor($context);
+        if (isset($action['type']) && $action['type'] === 'notice') {
+            $actionHtml = '<button type="button" class="course-card__action"'
+              . ' data-course-application-notice="'
+              . $this->escape($action['message']) . '">'
+              . $this->escape($action['label']) . '</button>';
+        } else {
+            $actionHtml = '<a class="course-card__action" href="'
+              . $action['url'] . '">'
+              . $this->escape($action['label']) . '</a>';
+        }
 
         $media = '<div class="course-card__placeholder" aria-hidden="true">'
           . '<span></span></div>';
@@ -207,9 +236,8 @@ class coursecatalogue extends ChisimbaObject
           ) . '</span>' . $formatBadge . '</div></div>'
           . '<div class="course-card__body"><h3 class="course-card__title">'
           . $this->escape($title) . '</h3>' . $summaryHtml . $lecturerHtml
-          . '<div class="course-card__footer"><a class="course-card__action" '
-          . 'href="' . $this->escape($action['url']) . '">'
-          . $this->escape($action['label']) . '</a></div></div></article>';
+          . '<div class="course-card__footer">' . $actionHtml
+          . '</div></div></article>';
     }
 
     /**
@@ -229,13 +257,14 @@ class coursecatalogue extends ChisimbaObject
 
         if ($access === 'private' && !$isMember) {
             return array(
+                'type' => 'notice',
                 'label' => $this->text(
                     'mod_context_applyforcourse',
                     'Apply for course'
                 ),
-                'url' => $this->uri(
-                    array('action' => 'apply', 'contextcode' => $code),
-                    'context'
+                'message' => $this->text(
+                    'mod_context_applicationscomingsoon',
+                    'Online course applications will be available soon.'
                 ),
             );
         }

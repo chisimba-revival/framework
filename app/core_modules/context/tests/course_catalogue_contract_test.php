@@ -47,8 +47,15 @@ $expect(
     'All three catalogue actions must be represented.'
 );
 $expect(
-    strpos($renderer, "array('action' => 'apply'") !== false,
-    'Private non-members must enter the application-information route.'
+    strpos($renderer, "'type' => 'notice'") !== false
+      && strpos($renderer, 'data-course-application-notice') !== false
+      && strpos($renderer, 'window.alert') !== false,
+    'Private non-members must receive the translated application notice.'
+);
+$expect(
+    strpos($renderer, "\$this->escape(\$action['url'])") === false
+      && strpos($renderer, "\$this->escape(\$this->uri(") === false,
+    'Internally generated catalogue routes must be HTML encoded exactly once.'
 );
 $expect(
     strpos($renderer, 'renderLatest(6)') === false
