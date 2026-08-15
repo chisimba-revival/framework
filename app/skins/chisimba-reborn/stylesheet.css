@@ -3843,3 +3843,163 @@ h5.featureboxheader,
     color: #fff;
 }
 /* END CHISIMBA-REBORN ASSESSMENT PLAN PROVIDER ACTIONS */
+
+/* CHISIMBA COURSE CONTROL PANEL COMPONENTS
+ * Control-panel producers own semantic structure; the active skin owns its
+ * spacing and sizing. These rules do not affect ordinary site blocks.
+ *
+ * @author Derek Keats
+ */
+.context_cp_left > .featurebox + .featurebox,
+.context_cp_right > .featurebox + .featurebox {
+    margin-block-start: 0.85rem;
+}
+
+.course-control-settings {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 9rem) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.course-control-settings__media {
+    min-width: 0;
+}
+
+.course-control-settings__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    object-fit: cover;
+}
+
+.course-control-settings__placeholder {
+    display: grid;
+    min-height: 7rem;
+    place-items: center;
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    color: var(--chisimba-text-muted, #60727c);
+    background: var(--chisimba-surface-muted, #f1f5f9);
+}
+
+.course-control-settings__placeholder-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.course-control-settings__details {
+    display: grid;
+    gap: 0.65rem;
+    min-width: 0;
+    margin: 0;
+}
+
+.course-control-settings__details > div {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.course-control-settings__details dt {
+    font-weight: 700;
+}
+
+.course-control-settings__details dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.course-control-plugins,
+.course-control-members {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.course-control-plugins {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 1rem;
+}
+
+.course-control-plugin {
+    display: inline-flex;
+    gap: 0.55rem;
+    align-items: center;
+    min-width: 0;
+    padding-block: 0.2rem;
+    text-decoration: none;
+}
+
+.course-control-plugin__icon,
+.course-control-member__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    color: var(--chisimba-primary, #087f5b);
+    background: var(--chisimba-surface-muted, #f1f5f9);
+}
+
+.course-control-plugin__icon svg,
+.course-control-member__icon svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.course-control-plugin__label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.course-control-meta,
+.course-control-action {
+    margin: 0.85rem 0 0;
+}
+
+.course-control-meta {
+    color: var(--chisimba-text-muted, #60727c);
+    text-align: end;
+}
+
+.course-control-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.course-control-members li {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.course-control-member__name {
+    font-weight: 700;
+}
+
+.course-control-member__role {
+    color: var(--chisimba-text-muted, #60727c);
+    font-size: 0.875rem;
+}
+
+.course-control-members__empty {
+    margin: 0;
+    color: var(--chisimba-text-muted, #60727c);
+}
+
+@media (max-width: 48rem) {
+    .course-control-settings,
+    .course-control-plugins {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+/* END CHISIMBA COURSE CONTROL PANEL COMPONENTS */

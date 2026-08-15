@@ -1,146 +1,167 @@
 <?php
+/**
+ * Render the settings summary for the active course.
+ *
+ * PHP version 8
+ *
+ * @category  Chisimba
+ * @package   context
+ * @author    Tohir Solomons <tsolomons@uwc.ac.za>
+ * @author    Derek Keats <derek@dkeats.com>
+ * @copyright 2008 Tohir Solomons
+ * @copyright 2026 Derek Keats
+ * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
+ * @link      https://github.com/chisimba-revival/framework
+ */
 
-/**
-* Context Settings Block
-*
-* This class generates a block to show the settings and status of the current context
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the
-* Free Software Foundation, Inc.,
-* 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*
-* @category  Chisimba
-* @package   context
-* @author    Tohir Solomons <tsolomons@uwc.ac.za>
-* @copyright 2008 Tohir Solomons
-* @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
-* @version   $Id$
-* @link      http://avoir.uwc.ac.za
-* @see       core
-*/
-/* -------------------- dbTable class ----------------*/
-// security check - must be included in all scripts
-if (!
-/**
-* Description for $GLOBALS
-* @global entry point $GLOBALS['kewl_entry_point_run']
-* @name   $kewl_entry_point_run
-*/
-$GLOBALS['kewl_entry_point_run']) {
-die("You cannot view this page directly");
+if (empty($GLOBALS['kewl_entry_point_run'])) {
+    die('You cannot view this page directly');
 }
-// end security check
-
 
 /**
-* Context Settings Block
-*
-* This class generates a block to show the settings and status of the current context
-*
-* @category  Chisimba
-* @package   context
-* @author    Tohir Solomons <tsolomons@uwc.ac.za>
-* @copyright 2008 Tohir Solomons
-* @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
-* @version   Release: @package_version@
-* @link      http://avoir.uwc.ac.za
-* @see       core
-*/
+ * Course Settings control-panel block.
+ *
+ * @category Chisimba
+ * @package  context
+ * @author   Derek Keats <derek@dkeats.com>
+ * @license  http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
+ */
 class block_contextsettings extends ChisimbaObject
 {
+    /** @var object Course repository. */
+    public $objContext;
 
-   /**
-   * @var object $objContext : The Context Object
-   */
-   public $objContext;
+    /** @var object Language service. */
+    public $objLanguage;
 
-   /**
-   * @var object $objLanguage : The Language Object
-   */
-   public $objLanguage;
+    /** @var object System configuration repository. */
+    public $objSysConfig;
 
+    /** @var object Current-user service. */
+    public $objUser;
 
-   /**
-   *Initialize by send the table name to be accessed
-   */
-   public function init()
-   {
+    /** @var string Active course code. */
+    public $contextCode;
+
+    /**
+     * Load services required by the block.
+     *
+     * @return void
+     */
+    public function init()
+    {
         $this->objContext = $this->getObject('dbcontext');
         $this->contextCode = $this->objContext->getContextCode();
-
-        $this->loadClass('link', 'htmlelements');
         $this->objLanguage = $this->getObject('language', 'language');
-
-        $this->title = ucwords($this->objLanguage->code2Txt('mod_context_contextsettings', 'context', NULL, '[-context-] Settings'));
-        $this->objSysConfig = $this->getObject ('dbsysconfig', 'sysconfig');
+        $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
         $this->objUser = $this->getObject('user', 'security');
-   }
+        $this->title = ucwords($this->objLanguage->code2Txt(
+            'mod_context_contextsettings',
+            'context',
+            null,
+            '[-context-] Settings'
+        ));
+    }
 
-   /**
-    * Method to render the block
-    */
-   public function show()
-   {
-        // Check Context Code is Valid
-        if ($this->contextCode == 'root' || $this->contextCode == '') {
+    /**
+     * Render the active course summary and settings action.
+     *
+     * @return string HTML fragment.
+     */
+    public function show()
+    {
+        if ($this->contextCode === 'root' || $this->contextCode === '') {
             return '';
         }
 
-        // Get Context Details
-        $contextDetails = $this->objContext->getContextDetails($this->contextCode);
-
-        // Check that Context Exists
-        if ($contextDetails == FALSE) {
+        $details = $this->objContext->getContextDetails($this->contextCode);
+        if (!is_array($details)) {
             return '';
         }
 
-        // Prepare Block
-        $objContextImage = $this->getObject('contextimage');
-        $objIcon = $this->newObject('geticon', 'htmlelements');
-
-        $image = $objContextImage->getContextImage($this->contextCode);
-
-        if ($image == FALSE) {
-            $objIcon->setIcon('imagepreview');
-            $image = $objIcon->show();
+        $title = isset($details['title']) ? (string) $details['title'] : '';
+        $contextImage = $this->getObject('contextimage');
+        $imageUrl = $contextImage->getContextImage($this->contextCode);
+        if ($imageUrl === false || $imageUrl === '') {
+            $iconService = $this->getObject('iconservice', 'ui');
+            $media = '<span class="course-control-settings__placeholder">'
+                . $iconService->render('image-plus', array(
+                    'decorative' => true,
+                    'class' => 'course-control-settings__placeholder-icon',
+                )) . '</span>';
         } else {
-            $image = '<img src="'.$image.'" />';
+            $media = '<img class="course-control-settings__image" src="'
+                . $this->escape($imageUrl) . '" alt="'
+                . $this->escape($title) . '">';
         }
 
-        $table = $this->newObject('htmltable', 'htmlelements');
-        $table->startRow();
-        $table->addCell($image, 120);
+        $rows = array(
+            array(
+                $this->objLanguage->code2Txt(
+                    'mod_context_contexttitle',
+                    'context',
+                    null,
+                    '[-context-] Title'
+                ),
+                $title,
+            ),
+            array(
+                $this->objLanguage->code2Txt(
+                    'mod_context_contextstatus',
+                    'context',
+                    null,
+                    '[-context-] status'
+                ),
+                isset($details['status']) ? (string) $details['status'] : '',
+            ),
+        );
 
-
-        $str = '<p><strong>'.ucwords($this->objLanguage->code2Txt('mod_context_contexttitle', 'context', NULL, '[-context-] Title')).'</strong>: '.$contextDetails['title'].'</p>';
-        $str .= '<p><strong>'.ucwords($this->objLanguage->code2Txt('mod_context_contextstatus', 'context', NULL, '[-context-] status')).'</strong>: '.$contextDetails['status'].'</p>';
-        if ($this->objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'false' || $this->objUser->isAdmin()) {
-            $str .= '<p><strong>'.$this->objLanguage->languageText('mod_context_accessettings', 'context', 'Access Settings').'</strong>: '.$contextDetails['access'].'</p>';
+        if ($this->objSysConfig->getValue(
+            'context_access_private_only',
+            'context',
+            'false'
+        ) === 'false' || $this->objUser->isAdmin()) {
+            $rows[] = array(
+                $this->objLanguage->languageText(
+                    'mod_context_accessettings',
+                    'context',
+                    'Access Settings'
+                ),
+                isset($details['access']) ? (string) $details['access'] : '',
+            );
         }
 
+        $summary = '<dl class="course-control-settings__details">';
+        foreach ($rows as $row) {
+            $summary .= '<div><dt>' . $this->escape(ucwords($row[0]))
+                . '</dt><dd>' . $this->escape($row[1]) . '</dd></div>';
+        }
+        $summary .= '</dl>';
 
-        $table->addCell($str);
+        $action = $this->uri(array('action' => 'updatesettings'));
+        $actionLabel = ucwords($this->objLanguage->code2Txt(
+            'mod_context_changecontextsettings',
+            'context',
+            null,
+            'Change [-context-] Settings'
+        ));
 
-        $table->endRow();
+        return '<div class="course-control-settings"><div '
+            . 'class="course-control-settings__media">' . $media . '</div>'
+            . $summary . '</div><p class="course-control-action"><a href="'
+            . $this->escape($action) . '">' . $this->escape($actionLabel)
+            . '</a></p>';
+    }
 
-        $link = new link ($this->uri(array('action'=>'updatesettings')));
-        $link->link = ucwords($this->objLanguage->code2Txt('mod_context_changecontextsettings', 'context', NULL, 'Change [-context-] Settings'));
-
-        return $table->show().'<p>'.$link->show().'</p>';
-   }
-
-
-
-
-
+    /**
+     * Escape a value for HTML output.
+     *
+     * @param mixed $value Value to escape.
+     *
+     * @return string Escaped value.
+     */
+    private function escape($value)
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    }
 }
-?>
