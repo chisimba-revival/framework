@@ -132,7 +132,7 @@ class editoradapter extends ChisimbaObject
 
         $toolbarValue = strtolower($toolbar) === 'simple'
             ? 'undo redo | bold italic | bullist numlist | link image | removeformat'
-            : 'undo redo | blocks | bold italic underline | '
+            : 'undo redo | blocks | bold italic underline | forecolor backcolor | '
                 . 'alignleft aligncenter alignright | bullist numlist | '
                 . 'link image table | code preview | removeformat';
 
