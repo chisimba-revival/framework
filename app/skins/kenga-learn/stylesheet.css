@@ -4003,3 +4003,58 @@ h5.featureboxheader,
     }
 }
 /* END CHISIMBA COURSE CONTROL PANEL COMPONENTS */
+
+/* CHISIMBA CONTEXT CONTENT CHAPTER CARDS */
+#allchapters {
+    display: grid;
+    gap: var(--chisimba-space-5, 1.25rem);
+}
+
+#allchapters .chapterlisting {
+    box-sizing: border-box;
+    padding: var(--chisimba-space-5, 1.25rem);
+    border: 1px solid var(--chisimba-border, #cbd5e1);
+    border-block-start: 4px solid var(--chisimba-primary, #087f5b);
+    border-radius: var(--chisimba-region-radius, 0.65rem);
+    background: var(--chisimba-surface, #fff);
+    box-shadow: var(--chisimba-shadow-sm, 0 4px 14px rgba(38, 50, 56, 0.08));
+}
+
+.chisimba-chapter-order-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--chisimba-space-2, 0.5rem);
+    align-items: center;
+    margin-top: var(--chisimba-space-4, 1rem);
+}
+
+.chisimba-chapter-order-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.chisimba-chapter-order-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    padding: 0;
+    color: var(--chisimba-primary-dark, #174a78);
+    border: 1px solid var(--chisimba-border, #cbd5e1);
+    border-radius: var(--chisimba-radius-sm, 0.35rem);
+    background: var(--chisimba-surface, #fff);
+    cursor: pointer;
+}
+
+.chisimba-chapter-order-button:hover,
+.chisimba-chapter-order-button:focus-visible {
+    color: var(--chisimba-primary, #087f5b);
+    background: var(--chisimba-primary-soft, #e8f6ef);
+}
+
+.chisimba-chapter-order-button svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+/* END CHISIMBA CONTEXT CONTENT CHAPTER CARDS */
