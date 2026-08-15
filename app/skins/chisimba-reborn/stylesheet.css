@@ -4057,4 +4057,12 @@ h5.featureboxheader,
     width: 1.1rem;
     height: 1.1rem;
 }
+
+.chisimba-chapter-order-button .chisimba-icon--chevron-left {
+    transform: rotate(90deg);
+}
+
+.chisimba-chapter-order-button .chisimba-icon--chevron-right {
+    transform: rotate(90deg);
+}
 /* END CHISIMBA CONTEXT CONTENT CHAPTER CARDS */
