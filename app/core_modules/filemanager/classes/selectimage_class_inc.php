@@ -1,222 +1,179 @@
 <?php
 
+if (!$GLOBALS['kewl_entry_point_run']) {
+    die('You cannot view this page directly');
+}
+
 /**
- * Class to Show an Image Selector Input
+ * Render an image selector backed by the native File Manager picker.
  *
- * PHP version 5
+ * The component preserves the historical form contract: the named hidden
+ * field contains the selected File Manager record ID. Existing consumers can
+ * therefore adopt the native picker without changing their save handlers.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the
- * Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * PHP version 8
  *
  * @category  Chisimba
  * @package   filemanager
- * @author    Tohir Solomons <tsolomons@uwc.ac.za>
- * @copyright 2007 Tohir Solomons
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
- * @version   $Id$
- * @link      http://avoir.uwc.ac.za
- * @see
+ * @author    Derek Keats
+ * @copyright 2026 Derek Keats
+ * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
+ * @link      https://github.com/chisimba-revival/framework
  */
-
-/**
- * Class to Show an Image Selector Input
- *
- * @category  Chisimba
- * @package   filemanager
- * @author    Tohir Solomons <tsolomons@uwc.ac.za>
- * @copyright 2007 Tohir Solomons
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
- * @version   Release: @package_version@
- * @link      http://avoir.uwc.ac.za
- * @see
- */
-class selectimage extends ChisimbaObject {
-
-    /**
-     * @var string $name Name of the Image Selector Input
-     */
+class selectimage extends ChisimbaObject
+{
+    /** @var string Name of the submitted File Manager record-ID field. */
     public $name;
-    /**
-     * @var string $defaultFile Record Id of the Default File
-     */
+
+    /** @var string Existing File Manager record ID. */
     public $defaultFile;
-    /**
-     * @var  boolean $context Flag to only include Context Files
-     * @todo Implement this Feature
-     */
+
+    /** @var mixed Retained for compatibility with historical consumers. */
     public $context;
-    /**
-     * @var  boolean $workgroup Flag to only include Workgroup Files
-     * @todo Implement this Feature
-     */
+
+    /** @var bool Retained for compatibility with historical consumers. */
     public $workgroup;
-    /**
-     * @var int $widthOfInput Width of Text Input
-     */
+
+    /** @var string Retained for compatibility with historical consumers. */
     public $widthOfInput;
 
+    /** @var object File Manager database gateway. */
+    private $objFile;
+
+    /** @var object File Manager thumbnail helper. */
+    private $objThumbnails;
+
+    /** @var object Language service. */
+    private $objLanguage;
+
     /**
-     * Constructor
+     * Initialise the compatible image-selector component.
+     *
+     * @return void
      */
-    public function init() {
+    public function init()
+    {
         $this->name = 'imageselect';
-        $this->restrictFileList = array();
-
         $this->defaultFile = '';
-
-        $this->objContext = $this->getObject('dbcontext', 'context');
-        $this->context = $this->objContext->getContextCode();
-        $this->workgroup = FALSE;
-
-        $this->objIcon = $this->newObject('geticon', 'htmlelements');
-
-        $this->objFile = $this->getObject('dbfile');
-        $this->objThumbnails = $this->getObject('thumbnails');
-
-        $this->loadClass('hiddeninput', 'htmlelements');
-        $this->loadClass('textinput', 'htmlelements');
-        $this->loadClass('windowpop', 'htmlelements');
-        $this->loadClass('button', 'htmlelements');
-
+        $this->context = false;
+        $this->workgroup = false;
         $this->widthOfInput = '80%';
+        $this->objFile = $this->getObject('dbfile', 'filemanager');
+        $this->objThumbnails = $this->getObject('thumbnails', 'filemanager');
+        $this->objLanguage = $this->getObject('language', 'language');
     }
 
     /**
-     * Method to set the default File
-     * @access public
-     * @param  string $fileId Record Id of the Default File
+     * Set the initially selected File Manager record.
+     *
+     * @param string $fileId File Manager record ID.
+     *
+     * @return void
      */
-    public function setDefaultFile($fileId) {
-        $this->defaultFile = $fileId;
+    public function setDefaultFile($fileId)
+    {
+        $this->defaultFile = (string) $fileId;
     }
 
     /**
-     * Method to return the JavaScript to clear an input
-     * @return string
+     * Return the historical clear helper for compatible callers.
+     *
+     * @return string JavaScript helper.
      */
-    public function showClearInputJavaScript() {
-        $script = '
-<script type="text/javascript">
-
-function clearFileInputJS(name)
-{
-    //document.getElementById(\'selectfile_\'+name).value = \'\';
-    document.getElementById(\'imagepreview_\'+name).src = \'skins/_common/icons/imagepreview.gif\';
-    document.getElementById(\'hidden_\'+name).value = \'\';
-}
-</script>';
-
-        return $script;
+    public function showClearInputJavaScript()
+    {
+        return '<script type="text/javascript">'
+            . 'function clearFileInputJS(name){var field=document.getElementById("hidden_"+name),'
+            . 'preview=document.getElementById("imagepreview_"+name);'
+            . 'if(field){field.value="";}if(preview){preview.removeAttribute("src");preview.hidden=true;}}'
+            . '</script>';
     }
 
     /**
-     * Method to show the file selector input
-     * @return string File Selector
+     * Render the native image picker control.
+     *
+     * @param string $context Historical argument retained for compatibility.
+     *
+     * @return string Image selector markup.
      */
-    public function show($context="no") {
-        $this->appendArrayVar('headerParams', $this->showClearInputJavaScript());
-        if ($this->defaultFile == '') {
-            $defaultId = '';
-            $defaultName = '';
-            $defaultPath = NULL;
-        } else {
+    public function show($context = 'no')
+    {
+        unset($context);
+        $fieldId = 'hidden_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $this->name);
+        $previewId = 'imagepreview_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $this->name);
+        $chooseId = 'chooseimage_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $this->name);
+        $clearId = 'clearimage_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $this->name);
+        $defaultId = '';
+        $previewUrl = '';
+
+        if ($this->defaultFile !== '') {
             $file = $this->objFile->getFile($this->defaultFile);
-
-            if ($file == FALSE) {
-                $defaultId = '';
-                $defaultName = '';
-                $defaultPath = NULL;
-            } else {
-                $defaultId = $file['id'];
-                $defaultName = $file['filename'];
-                $defaultPath = $file['path'];
+            if (is_array($file) && !empty($file['id'])) {
+                $defaultId = (string) $file['id'];
+                $previewUrl = (string) $this->objThumbnails->getThumbnail(
+                    $file['id'],
+                    $file['filename'],
+                    $file['path']
+                );
             }
         }
 
-        $input = new hiddeninput($this->name, $defaultId);
-        $input->extra = ' id="hidden_' . $this->name . '"';
+        $pickerUrl = html_entity_decode(
+            $this->uri(
+                array(
+                    'action' => 'filepicker',
+                    'policy' => 'image',
+                    'target' => $fieldId,
+                ),
+                'filemanager'
+            ),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $chooseLabel = $this->objLanguage->languageText(
+            'mod_filemanager_picker_select_image',
+            'filemanager'
+        );
+        $clearLabel = $this->objLanguage->languageText('word_reset');
+        $previewLabel = $this->objLanguage->languageText(
+            'mod_filemanager_picker_image_preview',
+            'filemanager'
+        );
+        $escape = static function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
 
+        $script = '<script type="text/javascript">(function(){"use strict";'
+            . 'var target=' . json_encode($fieldId) . ',previewId=' . json_encode($previewId)
+            . ',chooseId=' . json_encode($chooseId) . ',clearId=' . json_encode($clearId)
+            . ',picker=' . json_encode($pickerUrl) . ',previous=window.ChisimbaFilePickerReceive;'
+            . 'window.ChisimbaFilePickerReceive=function(requestedTarget,file){'
+            . 'if(requestedTarget===target&&file&&file.id&&file.url){'
+            . 'var field=document.getElementById(target),preview=document.getElementById(previewId),clear=document.getElementById(clearId);'
+            . 'if(field){field.value=file.id;}if(preview){preview.src=file.url;preview.hidden=false;}if(clear){clear.disabled=false;}return;}'
+            . 'if(typeof previous==="function"){previous(requestedTarget,file);}};'
+            . 'document.addEventListener("DOMContentLoaded",function(){'
+            . 'var choose=document.getElementById(chooseId),clear=document.getElementById(clearId);'
+            . 'if(choose){choose.addEventListener("click",function(){window.open(picker,"chisimbaImagePicker","width=920,height=720,resizable=yes,scrollbars=yes");});}'
+            . 'if(clear){clear.addEventListener("click",function(){var field=document.getElementById(target),preview=document.getElementById(previewId);'
+            . 'if(field){field.value="";}if(preview){preview.removeAttribute("src");preview.hidden=true;}clear.disabled=true;});}});'
+            . '}());</script>';
+        $style = '<style>.chisimba-image-selector{display:grid;gap:.75rem;max-width:22rem}'
+            . '.chisimba-image-selector__preview{display:block;width:100%;max-height:14rem;object-fit:cover;border:1px solid #cbd5e1;border-radius:.5rem}'
+            . '.chisimba-image-selector__preview[hidden]{display:none}'
+            . '.chisimba-image-selector__actions{display:flex;gap:.5rem;flex-wrap:wrap}</style>';
+        $this->appendArrayVar('headerParams', $style . $script);
 
-        $objPop = new windowpop;
-
-
-        if ($this->context == '') {
-            $context = 'no';
-        } else {
-            $context = 'yes';
-        }
-
-        if ($this->workgroup) {
-            $workgroup = 'yes';
-        } else {
-            $workgroup = 'no';
-        }
-
-
-        $location = $this->uri(array('mode' => 'selectimagewindow', 'restriction' => 'jpg____gif____png____jpeg', 'name' => $this->name, 'context' => $context, 'workgroup' => $workgroup), 'filemanager');
-
-        // Couldnt do this via uri function due to embedded JS
-        $location .= '&amp;value=\'+document.getElementById(\'hidden_' . $this->name . '\').value+\'&amp;';
-
-        $objPop->set('location', $location);
-
-        $this->objIcon->setIcon('find_file');
-        $this->objIcon->alt = 'Select File';
-        $this->objIcon->title = 'Select File';
-
-
-
-        $objPop->set('linkType', 'button');
-        $objPop->set('linktext', 'Select File');
-
-        //$objPop->set('linktext', $this->objIcon->show());
-        $objPop->set('width', '750');
-        $objPop->set('height', '500');
-        $objPop->set('resizable', 'yes');
-        $objPop->set('scrollbars', 'yes');
-        $objPop->set('left', '50');
-        $objPop->set('top', '100');
-        $objPop->set('status', 'yes');
-        //leave the rest at default values
-        $objPop->putJs();
-
-        if ($defaultId == '') {
-            $this->objIcon->setIcon('imagepreview');
-            $this->objIcon->alt = 'Image Preview';
-            $this->objIcon->title = 'Image Preview';
-            $this->objIcon->extra = ' id="imagepreview_' . $this->name . '" class="ImagePreview"';
-            $previewImg = $this->objIcon->show();
-        } else {
-            $img = $this->objThumbnails->getThumbnail($defaultId, $file['filename'], $defaultPath);
-
-            $previewImg = '<img src="' . $img . '" id="imagepreview_' . $this->name . '" class="ImagePreview"/>';
-        }
-
-        $textinput = new textinput('selectfile_' . $this->name, $defaultName);
-        $textinput->setId('selectfile_' . $this->name);
-        $textinput->extra = ' readonly="true" style="width:' . $this->widthOfInput . '";height="50" ';
-
-        $button = new button('clear', 'Reset', 'clearFileInputJS(\'' . $this->name . '\');');
-
-        // Option for showing via submodal window
-        // $objSubModalWindow = $this->getObject('submodalwindow', 'htmlelements');
-        // $subModal = $objSubModalWindow->show('Select', $location, 'button');
-        // return $input->show().$textinput->show().' &nbsp; '.$subModal.$button->show();
-
-        return $input->show() . '<div class="ImagePreviewArea">' . $previewImg . '</div><br /><div>' . $objPop->show() . ' ' . $button->show() . '</div>';
-        //$textinput->show()
+        return '<div class="chisimba-image-selector">'
+            . '<input type="hidden" name="' . $escape($this->name) . '" id="' . $escape($fieldId)
+            . '" value="' . $escape($defaultId) . '">'
+            . '<img class="chisimba-image-selector__preview" id="' . $escape($previewId)
+            . '" alt="' . $escape($previewLabel) . '"'
+            . ($previewUrl === '' ? ' hidden' : ' src="' . $escape($previewUrl) . '"') . '>'
+            . '<div class="chisimba-image-selector__actions">'
+            . '<button type="button" id="' . $escape($chooseId) . '">' . $escape($chooseLabel) . '</button>'
+            . '<button type="button" id="' . $escape($clearId) . '"'
+            . ($defaultId === '' ? ' disabled' : '') . '>' . $escape($clearLabel) . '</button>'
+            . '</div></div>';
     }
-
 }
-
-?>
