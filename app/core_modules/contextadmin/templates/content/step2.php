@@ -34,6 +34,14 @@ $header->str = ucwords($headerTitle);
 
 echo '<div class="chisimba-wizard-heading">'.$header->show().'</div>';
 
+if (!empty($contextImageSaveError)) {
+    echo '<p class="error">'
+        . $this->objLanguage->languageText(
+            'mod_contextadmin_contextimagenotsaved',
+            'contextadmin'
+        ) . '</p>';
+}
+
 
 
 

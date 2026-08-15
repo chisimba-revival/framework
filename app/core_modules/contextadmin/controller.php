@@ -283,6 +283,10 @@ class contextadmin extends controller {
         $this->setVar('mode', $this->getParam('mode'));
         $this->setVar('contextCode', $contextCode);
         $this->setVar('context', $context);
+        $this->setVar(
+            'contextImageSaveError',
+            $this->getParam('imageerror', '') === '1'
+        );
 
         return 'step2.php';
     }
@@ -299,10 +303,16 @@ class contextadmin extends controller {
             $image = $this->getParam('imageselect');
             $mode = $this->getParam('mode');
 
-            // Check Context Image
             if ($image != '') {
                 $objContextImage = $this->getObject('contextimage', 'context');
-                $objContextImage->setContextImage($contextCode, $image);
+                if (!$objContextImage->setContextImage($contextCode, $image)) {
+                    $this->objContext->updateAbout($contextCode, $about);
+                    $this->setSession('contextCode', $contextCode);
+                    return $this->nextAction(
+                        'step2',
+                        array('mode' => $mode, 'imageerror' => '1')
+                    );
+                }
             }
 
             $this->objContext->updateAbout($contextCode, $about);
