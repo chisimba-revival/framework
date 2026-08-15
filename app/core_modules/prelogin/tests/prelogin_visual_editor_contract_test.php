@@ -1,6 +1,6 @@
 <?php
 /**
- * Verify the visual prelogin editor and anonymous visitor boundary.
+ * Verify the inline public-page block editor contract.
  *
  * @category  Chisimba
  * @package   prelogin
@@ -9,59 +9,48 @@
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
  * @link      https://github.com/chisimba-revival/framework
  */
-$preloginRoot = dirname(__DIR__);
-$applicationRoot = dirname(dirname($preloginRoot));
-$controller = file_get_contents($preloginRoot . '/controller.php');
-$editor = file_get_contents(
-    $preloginRoot . '/templates/content/admin_tpl.php'
+$root = dirname(__DIR__);
+$applicationRoot = dirname(dirname($root));
+$controller = file_get_contents($root . '/controller.php');
+$template = file_get_contents(
+    $root . '/templates/content/prelogin_tpl.php'
 );
-$blocks = file_get_contents(
-    $applicationRoot . '/core_modules/blocks/classes/blocks_class_inc.php'
+$register = file_get_contents($root . '/register.conf');
+$registry = file_get_contents(
+    $applicationRoot
+    . '/core_modules/modulecatalogue/classes/dbmoduleblocks_class_inc.php'
 );
-$register = file_get_contents($preloginRoot . '/register.conf');
 
 $checks = array(
-    'visitor preview cannot expose the editing control' => str_contains(
+    'editing uses the actual public-page template' => str_contains(
         $controller,
-        '&& !$isVisitorPreview'
-    ),
-    'visitor preview requests a credential-free browser context' => str_contains(
-        $editor,
-        '<iframe credentialless'
-    ),
-    'editor presents the three actual page columns' => str_contains(
-        $editor,
-        "'left' =>"
-    ) && str_contains($editor, "'middle' =>")
-        && str_contains($editor, "'right' =>"),
-    'placed blocks retain move edit delete and visibility controls' =>
-        str_contains($editor, "'action' => 'moveup'")
-        && str_contains($editor, "'action' => 'movedown'")
-        && str_contains($editor, "'action' => 'editblock'")
-        && str_contains($editor, "'action' => 'delete'")
-        && str_contains($editor, '_vis'),
-    'editor uses the normal postlogin registered block catalogue' =>
-        str_contains($controller, "'site|user|postlogin'")
-        && str_contains($controller, "case 'addregisteredblock':")
-        && str_contains($editor, "'action' => 'addregisteredblock'"),
-    'catalogue curation remains optional and disabled by default' =>
-        str_contains($controller, 'usesCuratedCatalogue()')
-        && str_contains(
-            $register,
-            'CONFIG: CURATE_PUBLIC_BLOCKS|FALSE|'
-        ),
-    'registered blocks supply their own display titles' => str_contains(
-        $blocks,
-        'public function getBlockDisplayTitle('
-    ),
-    'legacy content block mirroring no longer creates placements' =>
-        !str_contains($controller, "'_mc_vis'")
-        && !str_contains($controller, "'_lc_vis'")
-        && !str_contains($controller, "'_rc_vis'"),
-    'new interface text is owned by the language system' =>
-        str_contains($register, 'mod_prelogin_visitorpreview|')
-        && str_contains($register, 'mod_prelogin_editlayout|')
-        && str_contains($register, 'mod_prelogin_blockcatalogue|'),
+        'return $this->showPage(TRUE);'
+    ) && !str_contains($controller, "return 'admin_tpl.php';"),
+    'administrator switch controls inline editing mode' =>
+        str_contains($template, 'mod_context_turneditingon')
+        && str_contains($template, 'mod_context_turneditingoff')
+        && str_contains($template, '$preloginEditing'),
+    'all three columns receive normal add controls' =>
+        str_contains($template, '$renderAddControl(\'left\'')
+        && str_contains($template, '$renderAddControl(\'middle\'')
+        && str_contains($template, '$renderAddControl(\'right\''),
+    'placed blocks can be reordered and removed' =>
+        str_contains($template, "'action' => 'moveup'")
+        && str_contains($template, "'action' => 'movedown'")
+        && str_contains($template, "'action' => 'delete'"),
+    'content blocks are available in the catalogue' =>
+        str_contains($controller, 'getBlocksArr($contentType)')
+        && str_contains($controller, "'moduleid' => 'contentblocks'"),
+    'curation is dormant and uses prelogin registry types later' =>
+        str_contains($register, 'CONFIG: CURATE_PUBLIC_BLOCKS|FALSE|')
+        && str_contains($controller, "? 'prelogin' : NULL"),
+    'repeated audience registrations update their exact row' =>
+        str_contains($registry, '$exists[0][\'id\']')
+        && !str_contains($registry, 'WHERE blockname = \'$blockName\''),
+    'layout mutations require login' =>
+        str_contains($controller, "'addregisteredblock'")
+        && str_contains($controller, "'moveup'")
+        && str_contains($controller, "'delete'"),
 );
 
 foreach ($checks as $name => $passed) {
@@ -71,3 +60,4 @@ foreach ($checks as $name => $passed) {
     }
     echo "PASS: {$name}\n";
 }
+?>

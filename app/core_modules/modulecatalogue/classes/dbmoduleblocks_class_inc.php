@@ -168,8 +168,7 @@ class dbmoduleblocks extends dbTable
             $this->insert($arrData);
         }
         else {
-            $rec = $this->getAll("WHERE blockname = '$blockName'");
-            $this->update('id', $rec[0]['id'], $arrData);
+            $this->update('id', $exists[0]['id'], $arrData);
         }
     }
 
