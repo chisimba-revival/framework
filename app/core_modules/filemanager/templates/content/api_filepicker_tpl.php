@@ -25,7 +25,8 @@ $fileIcons = array(
     'image' => '<svg class="picker-icon picker-image-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 2-2 5 4"/></svg>',
     'audio' => '<svg class="picker-icon picker-audio-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>',
     'pdf' => '<svg class="picker-icon picker-pdf-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4 4V21H6z"/><path d="M14 2.5v4h4"/><path d="M8.5 16.5h7M8.5 13h7M8.5 9.5h2.5"/></svg>',
-    'zip' => '<svg class="picker-icon picker-zip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4 4V21H6z"/><path d="M14 2.5v4h4"/><path d="M11 3v2h2V3M11 7h2v2h-2M11 11h2v2h-2M10.5 15h3v3h-3z"/></svg>'
+    'zip' => '<svg class="picker-icon picker-zip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4 4V21H6z"/><path d="M14 2.5v4h4"/><path d="M11 3v2h2V3M11 7h2v2h-2M11 11h2v2h-2M10.5 15h3v3h-3z"/></svg>',
+    'assignment' => '<svg class="picker-icon picker-assignment-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h8l4 4V21H6z"/><path d="M14 2.5v4h4"/><path d="m9 14 2 2 4-5"/></svg>'
 );
 $fileIcon = isset($fileIcons[$pickerIcon]) ? $fileIcons[$pickerIcon] : $fileIcons['pdf'];
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?=htmlspecialchars($pickerTitle, ENT_QUOTES, 'UTF-8')?></title>

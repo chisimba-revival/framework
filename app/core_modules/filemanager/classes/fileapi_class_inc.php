@@ -369,6 +369,12 @@ class fileapi extends ChisimbaObject
                 'accept' => 'application/pdf,.pdf',
                 'titleKey' => 'select_pdf', 'uploadKey' => 'upload_pdf', 'icon' => 'pdf'
             ),
+            'assignment' => array(
+                'extensions' => array('doc', 'odt', 'rtf', 'txt', 'docx', 'mp3', 'mp4', 'ppt', 'pptx', 'odp', 'pdf'),
+                'mimetypes' => array('application/msword', 'application/vnd.oasis.opendocument.text', 'application/rtf', 'text/rtf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'audio/mpeg', 'video/mp4', 'application/mp4', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.oasis.opendocument.presentation', 'application/pdf'),
+                'accept' => '.doc,.odt,.rtf,.txt,.docx,.mp3,.mp4,.ppt,.pptx,.odp,.pdf',
+                'titleKey' => 'select_assignment', 'uploadKey' => 'upload_assignment', 'icon' => 'assignment'
+            ),
             'zip' => array(
                 'extensions' => array('zip'),
                 'mimetypes' => array('application/zip', 'application/x-zip-compressed'),
