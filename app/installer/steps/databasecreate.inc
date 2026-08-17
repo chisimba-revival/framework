@@ -200,7 +200,6 @@ class DbCreateAction extends StepAction
 					  'languagemodules' => 'core_modules/language/sql/langmodules.xml',
 					  'toolbar' => 'core_modules/toolbar/sql/defaultdata.xml',
 					  'sysconfig' => 'core_modules/sysconfig/sql/defaultdata.xml',
-					  'groupadmin2' => 'core_modules/groupadmin/sql/data.xml',
 					  'permissions' => 'core_modules/permissions/sql/defaultdata.xml',
 					  'decisiontable' => 'core_modules/decisiontable/sql/defaultdata.xml',
 					  'language' => 'core_modules/language/sql/langlist.xml',
