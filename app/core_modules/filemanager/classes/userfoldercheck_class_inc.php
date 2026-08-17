@@ -63,6 +63,7 @@ class userfoldercheck extends ChisimbaObject
     {
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objMkdir = $this->getObject('mkdir', 'files');
+        $this->objFolder = $this->getObject('dbfolder', 'filemanager');
         
         // List of Subfolders to be created in Path
         // $this->subFolders = array('images', 'audio', 'video', 'documents', 'flash', 'freemind', 'archives', 'temp', 'other', 'obj3d', 'scripts');
@@ -84,8 +85,17 @@ class userfoldercheck extends ChisimbaObject
             //{
                 $result = $this->objMkdir->mkdirs($path, 0777);
             //}
-            
-            return $result;
+
+            /* CHISIMBA_USER_ROOT_INDEX_CONTRACT
+             * A File Manager user root exists only when the physical folder
+             * and its tbl_files_folders catalogue record both exist.
+             */
+            if (!$result && !is_dir($path)) {
+                return FALSE;
+            }
+            $folderId = $this->objFolder->indexFolder('users/' . $userId, FALSE);
+            return $folderId !== FALSE;
+
         }
     }
     

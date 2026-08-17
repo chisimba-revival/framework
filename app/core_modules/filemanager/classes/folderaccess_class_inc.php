@@ -296,6 +296,10 @@ class folderaccess extends ChisimbaObject {
      * @return boolean
      */
     public function isFileAccessPrivate($file) {
+        /* CHISIMBA_FOLDERACCESS_ARRAY_GUARD */
+        if (!is_array($file)) {
+            return FALSE;
+        }
         $accessKeyExists = false;
         $downloadSecure = false;
         if (key_exists("access", $file)) {
@@ -318,6 +322,9 @@ class folderaccess extends ChisimbaObject {
      */
     public function isFileVisibilityPrivate($file) {
 
+        if (!is_array($file)) {
+            return FALSE;
+        }
         $visibilityKeyExists = false;
 
         if (key_exists("visibility", $file)) {

@@ -303,6 +303,94 @@ class fileapi extends ChisimbaObject
         return array('ok'=>true,'file'=>$item,'folderId'=>(string)$folderResult['folder']['id']);
     }
 
+    /* CHISIMBA_ASSIGNMENT_PROTECTED_INTAKE
+     * Assignment uploads are assessment evidence, not personal working files.
+     * The server chooses this hidden intake path; students cannot browse,
+     * move, delete, or create folders inside it through File Manager.
+     */
+    public function uploadAssignmentIntake($assignmentId, $inputName = 'file')
+    {
+        $policy = $this->filePolicy('assignment');
+        if ($policy === null) {
+            return $this->error('unknown_policy', $this->objLanguage->languageText('mod_filemanager_picker_unknown_policy', 'filemanager'));
+        }
+        if (!isset($_FILES[$inputName]) || !is_array($_FILES[$inputName])) {
+            return $this->error('no_file', $this->objLanguage->languageText('mod_filemanager_picker_choose_file', 'filemanager'));
+        }
+
+        $file = $_FILES[$inputName];
+        $uploadError = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            return $this->error('upload_failed', $this->uploadErrorMessage($uploadError));
+        }
+
+        $name = isset($file['name']) ? (string) $file['name'] : '';
+        $tmp = isset($file['tmp_name']) ? (string) $file['tmp_name'] : '';
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if ($name === '' || !in_array($extension, $policy['extensions'], true)) {
+            return $this->error('invalid_extension', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
+        }
+        if ($tmp === '' || !is_uploaded_file($tmp)) {
+            return $this->error('invalid_upload', $this->objLanguage->languageText('mod_filemanager_native_invalid_upload', 'filemanager'));
+        }
+
+        $mime = '';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mime = (string) finfo_file($finfo, $tmp);
+                finfo_close($finfo);
+            }
+        }
+        if (!in_array(strtolower($mime), $policy['mimetypes'], true)) {
+            return $this->error('invalid_mimetype', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
+        }
+
+        $contextCode = preg_replace('/[^A-Za-z0-9_.-]+/', '_', trim((string) $this->objContext->getContextCode()));
+        $safeAssignmentId = preg_replace('/[^A-Za-z0-9_.-]+/', '_', trim((string) $assignmentId));
+        $safeUserId = preg_replace('/[^A-Za-z0-9_.-]+/', '_', trim((string) $this->objUser->userId()));
+        if ($contextCode === '' || $safeAssignmentId === '' || $safeUserId === '') {
+            return $this->error('intake_context_missing', 'The protected assignment upload location could not be determined.');
+        }
+
+        $folderPath = 'assignment/intake/' . $contextCode . '/' . $safeAssignmentId . '/' . $safeUserId;
+        /* CHISIMBA_ASSIGNMENT_INTAKE_FOLDER_INDEX
+         * Legacy upload access checks require a catalogue row even though
+         * this protected path is never exposed by a File Manager picker.
+         */
+        $intakeFolderId = $this->objFolders->indexFolder($folderPath, FALSE);
+        if ($intakeFolderId === FALSE) {
+            return $this->error('intake_folder_index_failed', 'The protected assignment upload location could not be prepared.');
+        }
+        $this->objUpload->setUploadFolder($folderPath);
+        $this->objUpload->enableOverwriteIncrement = true;
+        $this->objUpload->skipLegacyMediaAnalysis = true;
+        $results = $this->objUpload->uploadFiles();
+        $result = is_array($results) ? current($results) : null;
+        if (!is_array($result) || empty($result['success']) || empty($result['fileid'])) {
+            $reason = is_array($result) && isset($result['reason']) ? (string) $result['reason'] : 'upload_failed';
+            return $this->error($reason, $this->uploadFailureMessage($reason));
+        }
+
+        $fileId = (string) $result['fileid'];
+        $storedName = isset($result['name']) ? (string) $result['name'] : $name;
+        return array(
+            'ok' => true,
+            'file' => array(
+                'id' => $fileId,
+                'name' => $storedName,
+                'url' => html_entity_decode($this->objFileManagerObject->uri(
+                    array('action'=>'file', 'id'=>$fileId, 'filename'=>$storedName, 'type'=>'.'.$extension),
+                    'filemanager', '', '', false, true
+                ), ENT_QUOTES, 'UTF-8'),
+                'mimetype' => isset($result['mimetype']) ? (string) $result['mimetype'] : $mime,
+                'extension' => $extension,
+                'size' => isset($result['size']) ? (int) $result['size'] : (isset($file['size']) ? (int) $file['size'] : 0),
+            ),
+            'intakePath' => $folderPath,
+        );
+    }
+
     private function pickerLocations()
     {
         $locations = array();
