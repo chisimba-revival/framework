@@ -32,6 +32,7 @@ class cssmenu extends ChisimbaObject {
 
                 $this->loadClass('link', 'htmlelements');
                 $this->iconService = $this->getObject('iconservice', 'ui');
+                $this->moduleIconResolver = $this->getObject('moduleiconresolver', 'modulecatalogue');
                 //$this->objLayer = $this->loadClass('layer','htmlelements');
         }
 
@@ -47,20 +48,7 @@ class cssmenu extends ChisimbaObject {
                 $homeLabel = $this->objLanguage->languageText('word_home', 'system', 'Home');
 
                 $home = $this->objConfig->getdefaultModuleName();
-
-                $menuIconMap = array(
-                        'calendar' => 'calendar',
-                        'contextadmin' => 'book-open',
-                        'contextcontent' => 'library',
-                        'contextgroups' => 'users-round',
-                        'filemanager' => 'folder-open',
-                        'groupadmin' => 'users-round',
-                        'logger' => 'scroll-text',
-                        'modulecatalogue' => 'boxes',
-                        'toolbar' => 'server-cog',
-                        'useradmin' => 'user-cog',
-                        'userdetails' => 'user',
-                );
+                /* CHISIMBA_TOOLBAR_MANIFEST_ICONS: register.conf is authoritative. */
 
                 $str = '<ul id="menuList" class="adxm">'; //this is not using this javascript menu. its using the css one
                 $str .= '<li id="home" class="navigation-list first" ><a href="' . $this->uri(NULL, $home) . '">' . $homeLabel . '</a></li>';
@@ -71,14 +59,10 @@ class cssmenu extends ChisimbaObject {
                         $counter = 1;
                         $numitems = (is_countable($item) ? count($item) : 0);
                         foreach ($item as $link => $val) {
-                                $iconName = isset($menuIconMap[$link])
-                                        ? $menuIconMap[$link] : 'puzzle';
-                                $icon = $this->iconService->render(
-                                        $iconName,
-                                        array(
-                                                'decorative' => true,
-                                                'class' => 'mainmenu-icon',
-                                        )
+                                $icon = $this->moduleIconResolver->render(
+                                        $link,
+                                        '',
+                                        'mainmenu-icon'
                                 );
 
                                 $objLink = new link($this->uri(NULL, $link));

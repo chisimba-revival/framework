@@ -80,7 +80,7 @@ class block_contextoutcomes extends ChisimbaObject
 
         try {
             $this->objLanguage =  $this->getObject('language', 'language');
-            $this->title = ucWords($this->objLanguage->code2Txt('mod_context_learneroutcomes', 'context'));
+            $this->title = $this->objLanguage->code2Txt('mod_context_learningoutcomes', 'context');
         } catch (customException $e) {
             customException::cleanUp();
         }
@@ -96,11 +96,24 @@ class block_contextoutcomes extends ChisimbaObject
         $contextCode = $objContext->getContextCode();
         $objDBLearnerOutcomes = $this->getObject('dbcontext_learneroutcomes', 'context');
         $contextLO = $objDBLearnerOutcomes->getContextOutcomes($contextCode);
-        $s = "";
-        foreach ($contextLO as $LO){
-            $s .= "<p>" . $LO["learningoutcome"] . "</p>";
+        /* CHISIMBA_LEARNING_OUTCOME_CARDS */
+        $s = '<ol class="context-learning-outcomes">';
+        $position = 0;
+        foreach ((array) $contextLO as $LO) {
+            $outcome = isset($LO['learningoutcome'])
+                ? trim((string) $LO['learningoutcome']) : '';
+            if ($outcome === '') {
+                continue;
+            }
+            $position++;
+            $s .= '<li class="context-learning-outcome">'
+                . '<span class="context-learning-outcome__number" aria-hidden="true">'
+                . sprintf('%02d', $position) . '</span>'
+                . '<div class="context-learning-outcome__text">'
+                . $objWashout->parseText($outcome) . '</div></li>';
         }
-        return $objWashout->parseText($s); //$objContext->getGoals()
+        $s .= '</ol>';
+        return $s;
     }
 }
 ?>

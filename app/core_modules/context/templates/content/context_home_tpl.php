@@ -8,26 +8,33 @@ $this->setVar('canvastype', 'context');
 $default = 'You are using an unsupported browser. Please switch to Mozilla FireFox available at ( http://getfirefox.com ). Currently the system functionality is limited. Thanks!';
 $browserError = $objLanguage->languageText('mod_poll_browserError', 'poll', $default);
 $objConfig = $this->getObject('altconfig', 'config');
-$objIcon = $this->newObject('geticon', 'htmlelements');
+$objIconService = $this->getObject('iconservice', 'ui');
 // Add JavaScript if User can update blocks
 if ($this->isValid('addblock')) {
 
 
-    $objIcon->setIcon('up');
-    $upIcon = $objIcon->show();
-
-
-    $objIcon->setIcon('down');
-    $downIcon = $objIcon->show();
-
-    $objIcon->setIcon('delete');
-    $deleteIcon = $objIcon->show();
+    $iconOptions = array('decorative' => TRUE, 'class' => 'block-control__icon');
+    $upIcon = $objIconService->render('chevron-up', $iconOptions);
+    $downIcon = $objIconService->render('chevron-down', $iconOptions);
+    $deleteIcon = $objIconService->render('trash-2', $iconOptions);
+    $moveUpLabel = $objLanguage->languageText(
+        'mod_context_moveblockup', 'context', 'Move block up');
+    $moveDownLabel = $objLanguage->languageText(
+        'mod_context_moveblockdown', 'context', 'Move block down');
+    $removeBlockLabel = $objLanguage->languageText(
+        'mod_context_removeblock', 'context', 'Remove block');
+    $blockControlsLabel = $objLanguage->languageText(
+        'mod_context_blockcontrols', 'context', 'Block controls');
     ?>
     <script type="text/javascript">
         // <![CDATA[
-        upIcon = '<?php echo $upIcon; ?>';
-        downIcon = '<?php echo $downIcon; ?>';
-        deleteIcon = '<?php echo $deleteIcon; ?>';
+        upIcon = <?php echo json_encode($upIcon); ?>;
+        downIcon = <?php echo json_encode($downIcon); ?>;
+        deleteIcon = <?php echo json_encode($deleteIcon); ?>;
+        moveUpLabel = <?php echo json_encode($moveUpLabel); ?>;
+        moveDownLabel = <?php echo json_encode($moveDownLabel); ?>;
+        removeBlockLabel = <?php echo json_encode($removeBlockLabel); ?>;
+        blockControlsLabel = <?php echo json_encode($blockControlsLabel); ?>;
         deleteConfirm = '<?php echo $objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block'); ?>';
         unableMoveBlock = '<?php echo $objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block'); ?>';
         unableDeleteBlock = '<?php echo $objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block'); ?>';
@@ -41,7 +48,7 @@ if ($this->isValid('addblock')) {
 
 
     <?php
-    echo $this->getJavaScriptFile('contextblocks.js');
+    echo $this->getJavaScriptFile('contextblocks.js?v=2002');
 } // End Addition of JavaScript
 
 $objModule = $this->getObject('modules', 'modulecatalogue');

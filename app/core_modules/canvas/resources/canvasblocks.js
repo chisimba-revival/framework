@@ -8,12 +8,23 @@
     // Var Current Entered Code
     var currentCode;
 
+    function blockControlLabel(value)
+    {
+        return jQuery('<div></div>').text(String(value)).html();
+    }
+
+    function blockOptionsMarkup()
+    {
+        return '<div class="blockoptions" role="group" aria-label="'+blockControlLabel(blockControlsLabel)+'">'
+            + '<button type="button" class="block-control moveup" aria-label="'+blockControlLabel(moveUpLabel)+'" title="'+blockControlLabel(moveUpLabel)+'">'+upIcon+'</button>'
+            + '<button type="button" class="block-control movedown" aria-label="'+blockControlLabel(moveDownLabel)+'" title="'+blockControlLabel(moveDownLabel)+'">'+downIcon+'</button>'
+            + '<button type="button" class="block-control deleteblock" aria-label="'+blockControlLabel(removeBlockLabel)+'" title="'+blockControlLabel(removeBlockLabel)+'">'+deleteIcon+'</button>'
+            + '</div>';
+    }
+
     // Action to be taken once page has loaded
     jQuery(document).ready(function(){
-        jQuery(".block").prepend('<div class="blockoptions"><a class="moveup" href="javascript:;">'+upIcon+
-            '</a><a class="movedown" href="javascript:;">'+downIcon+'</a>'+
-            '<a class="deleteblock" href="javascript:;">'+deleteIcon+'</a> </div>'
-        );
+        jQuery(".block").prepend(blockOptionsMarkup());
         if (inEditMode) {
             jQuery("#leftaddblock").show();
             jQuery("#rightaddblock").show();
@@ -62,8 +73,8 @@
     {
         var blocks = jQuery("#"+side+"blocks");
         blocks.find(".moveup, .movedown").show();
-        blocks.children().first().find("a.moveup").hide();
-        blocks.children().last().find("a.movedown").hide();
+        blocks.children().first().find(".moveup").hide();
+        blocks.children().last().find(".movedown").hide();
     }
 
     function updateAllMoveControls()
@@ -130,9 +141,7 @@
                     jQuery("#"+side+"previewcontent .block").attr('id', msg);
 
                     // First Add Up/Down/Delete
-                    jQuery("#"+side+"previewcontent .block").prepend('<div class="blockoptions"><a class="moveup" href="javascript:;">'+upIcon+
-            '</a> <a class="movedown" href="javascript:;">'+downIcon+'</a>'+
-            '<a class="deleteblock" href="javascript:;">'+deleteIcon+'</a> </div>');
+                    jQuery("#"+side+"previewcontent .block").prepend(blockOptionsMarkup());
 
                     // Then Attach
                     jQuery("#"+side+"previewcontent .block").appendTo("#"+side+"blocks");

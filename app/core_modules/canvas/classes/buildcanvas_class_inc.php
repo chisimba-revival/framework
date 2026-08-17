@@ -121,6 +121,12 @@ class buildcanvas extends ChisimbaObject {
      */
     private $deleteIcon;
 
+    /** Translated accessible labels for the block editing controls. */
+    private $moveUpLabel;
+    private $moveDownLabel;
+    private $removeBlockLabel;
+    private $blockControlsLabel;
+
     /**
      *
      * @var boolean $isOwner Whether the viewing user is the owner of the profile
@@ -166,15 +172,20 @@ class buildcanvas extends ChisimbaObject {
         $this->loadClass('dropdown', 'htmlelements');
         $this->loadClass('button', 'htmlelements');
         $this->loadClass('htmlheading', 'htmlelements');
-        // Generate Icons used by JavaScript.
-        $objIcon = $this->newObject('geticon', 'htmlelements');
-        $objIcon->setIcon('up');
-        $this->upIcon = $objIcon->show();
-        $objIcon->setIcon('down');
-        $this->downIcon = $objIcon->show();
-        $objIcon->setIcon('delete');
-        $this->deleteIcon = $objIcon->show();
-        unset($objIcon);
+        // Supply the editing controls from the curated Lucide catalogue.
+        $objIconService = $this->getObject('iconservice', 'ui');
+        $iconOptions = array('decorative' => TRUE, 'class' => 'block-control__icon');
+        $this->upIcon = $objIconService->render('chevron-up', $iconOptions);
+        $this->downIcon = $objIconService->render('chevron-down', $iconOptions);
+        $this->deleteIcon = $objIconService->render('trash-2', $iconOptions);
+        $this->moveUpLabel = $this->objLanguage->languageText(
+            'mod_canvas_moveblockup', 'canvas', 'Move block up');
+        $this->moveDownLabel = $this->objLanguage->languageText(
+            'mod_canvas_moveblockdown', 'canvas', 'Move block down');
+        $this->removeBlockLabel = $this->objLanguage->languageText(
+            'mod_canvas_removeblock', 'canvas', 'Remove block');
+        $this->blockControlsLabel = $this->objLanguage->languageText(
+            'mod_canvas_blockcontrols', 'canvas', 'Block controls');
     }
 
     /**
@@ -685,9 +696,13 @@ class buildcanvas extends ChisimbaObject {
         $ret = '
 <script type="text/javascript">
 // <![CDATA[
-    upIcon = \'' . $this->upIcon . '\';
-    downIcon = \'' . $this->downIcon . '\';
-    deleteIcon = \'' . $this->deleteIcon . '\';
+    upIcon = ' . json_encode($this->upIcon) . ';
+    downIcon = ' . json_encode($this->downIcon) . ';
+    deleteIcon = ' . json_encode($this->deleteIcon) . ';
+    moveUpLabel = ' . json_encode($this->moveUpLabel) . ';
+    moveDownLabel = ' . json_encode($this->moveDownLabel) . ';
+    removeBlockLabel = ' . json_encode($this->removeBlockLabel) . ';
+    blockControlsLabel = ' . json_encode($this->blockControlsLabel) . ';
     deleteConfirm = \'' . $this->objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block') . '\';
     unableMoveBlock = \'' . $this->objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block') . '\';
     unableDeleteBlock = \'' . $this->objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block') . '\';

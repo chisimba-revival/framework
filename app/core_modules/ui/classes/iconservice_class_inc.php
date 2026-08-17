@@ -18,6 +18,7 @@ class iconservice extends ChisimbaObject
         'smartphone' => true,
         'video' => true,
  'calendar' => true, 'chevron-left' => true, 'chevron-right' => true,
+        'chevron-up' => true, 'chevron-down' => true,
         'circle-alert' => true, 'circle-check' => true, 'clock' => true,
         'download' => true, 'eye' => true, 'info' => true, 'minus' => true,
         'pencil' => true, 'pin' => true, 'plus' => true, 'search' => true,

@@ -4076,3 +4076,146 @@ h5.featureboxheader,
     margin-block-start: var(--chisimba-space-3, 0.75rem);
 }
 /* END CHISIMBA PRELOGIN PLACED BLOCK FLOW */
+
+/* CHISIMBA_LEARNING_OUTCOME_CARDS */
+.context-learning-outcomes {
+    display: grid;
+    gap: .7rem;
+    list-style: none;
+    margin: 0;
+    padding: .9rem 1rem 1.05rem;
+}
+.context-learning-outcome {
+    align-items: start;
+    background: #f8fbfa;
+    border: 1px solid #d8e4e1;
+    border-radius: .55rem;
+    display: grid;
+    gap: .85rem;
+    grid-template-columns: 2.35rem minmax(0, 1fr);
+    padding: .8rem .9rem;
+}
+.context-learning-outcome__number {
+    align-items: center;
+    background: #295351;
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    font-size: .78rem;
+    font-weight: 700;
+    height: 2.35rem;
+    justify-content: center;
+    letter-spacing: .03em;
+    width: 2.35rem;
+}
+.context-learning-outcome__text {
+    line-height: 1.55;
+    min-width: 0;
+    padding-top: .35rem;
+}
+.context-learning-outcome__text > :first-child {
+    margin-top: 0;
+}
+.context-learning-outcome__text > :last-child {
+    margin-bottom: 0;
+}
+@media (max-width: 34rem) {
+    .context-learning-outcomes {
+        padding: .7rem;
+    }
+    .context-learning-outcome {
+        gap: .7rem;
+        padding: .75rem;
+    }
+}
+
+/* Modern block editing controls. */
+.blockoptions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    min-height: 2rem;
+    margin: 0 0 0.35rem;
+}
+
+.blockoptions .block-control {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: #285f5a;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.blockoptions .block-control:hover {
+    border-color: #c8dcda;
+    background: #eef6f4;
+}
+
+.blockoptions .block-control:focus-visible {
+    outline: 3px solid rgba(0, 122, 204, 0.3);
+    outline-offset: 1px;
+}
+
+.blockoptions .deleteblock {
+    color: #a13d3d;
+}
+
+.blockoptions .deleteblock:hover {
+    border-color: #eccaca;
+    background: #fff1f1;
+}
+
+.blockoptions .block-control__icon {
+    display: block;
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+/* Clearly visible modern block editing controls. */
+.blockoptions {
+    gap: 0.4rem;
+    padding: 0.15rem 0.2rem 0.5rem;
+}
+
+.blockoptions .block-control {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #c9dad7;
+    border-radius: 0.55rem;
+    background: #f5f9f8;
+    color: #245b57;
+    box-shadow: 0 1px 2px rgba(22, 55, 52, 0.08);
+}
+
+.blockoptions .block-control:hover {
+    border-color: #7eaaa5;
+    background: #e9f3f1;
+    color: #173f3c;
+}
+
+.blockoptions .block-control__icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    stroke-width: 2;
+}
+
+.blockoptions .deleteblock {
+    border-color: #e2b8b8;
+    background: #fff5f5;
+    color: #a62f2f;
+}
+
+.blockoptions .deleteblock:hover {
+    border-color: #c97070;
+    background: #ffe8e8;
+    color: #7f2020;
+}
