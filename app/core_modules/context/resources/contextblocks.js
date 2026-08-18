@@ -18,12 +18,20 @@
         return jQuery('<div></div>').text(String(value)).html();
     }
 
+    function optionalBlockControlLabel(variableName)
+    {
+        if (typeof window[variableName] === 'undefined') {
+            return '';
+        }
+        return blockControlLabel(window[variableName]);
+    }
+
     function blockOptionsMarkup()
     {
-        return '<div class="blockoptions" role="group" aria-label="'+blockControlLabel(blockControlsLabel)+'">'
-            + '<button type="button" class="block-control moveup" aria-label="'+blockControlLabel(moveUpLabel)+'" title="'+blockControlLabel(moveUpLabel)+'">'+upIcon+'</button>'
-            + '<button type="button" class="block-control movedown" aria-label="'+blockControlLabel(moveDownLabel)+'" title="'+blockControlLabel(moveDownLabel)+'">'+downIcon+'</button>'
-            + '<button type="button" class="block-control deleteblock" aria-label="'+blockControlLabel(removeBlockLabel)+'" title="'+blockControlLabel(removeBlockLabel)+'">'+deleteIcon+'</button>'
+        return '<div class="blockoptions" role="group" aria-label="'+optionalBlockControlLabel('blockControlsLabel')+'">'
+            + '<button type="button" class="block-control moveup" aria-label="'+optionalBlockControlLabel('moveUpLabel')+'" title="'+optionalBlockControlLabel('moveUpLabel')+'">'+upIcon+'</button>'
+            + '<button type="button" class="block-control movedown" aria-label="'+optionalBlockControlLabel('moveDownLabel')+'" title="'+optionalBlockControlLabel('moveDownLabel')+'">'+downIcon+'</button>'
+            + '<button type="button" class="block-control deleteblock" aria-label="'+optionalBlockControlLabel('removeBlockLabel')+'" title="'+optionalBlockControlLabel('removeBlockLabel')+'">'+deleteIcon+'</button>'
             + '</div>';
     }
 
