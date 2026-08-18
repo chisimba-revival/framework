@@ -29,6 +29,7 @@ class iconservice extends ChisimbaObject
         'shield-check' => true, 'boxes' => true, 'languages' => true,
         'puzzle' => true, 'text' => true, 'server-cog' => true,
         'code-2' => true,
+        'square-pen' => true, 'case-upper' => true, 'clipboard-pen' => true,
     );
 
     /**
