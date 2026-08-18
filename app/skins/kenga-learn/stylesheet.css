@@ -4286,3 +4286,260 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     .chisimba-row-actions { justify-content:flex-start; }
 }
 /* END CHISIMBA SHARED WORKSPACE PRIMITIVES */
+
+/* Context home: canonical learning journey presentation */
+.chisimba-learning-journey--polished {
+    --journey-primary: var(--journey-primary);
+    --journey-accent: var(--journey-accent);
+    --journey-soft: var(--journey-soft);
+    --journey-text: var(--journey-text);
+    --journey-shadow: var(--journey-shadow);
+    position: relative;
+    overflow: hidden;
+    margin: 0 0 1.6rem;
+    border: 1px solid color-mix(in srgb, var(--journey-primary) 15%, transparent);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--journey-accent) 22%, transparent), transparent 28%),
+        linear-gradient(135deg, #f8fbfa 0%, #ffffff 54%, var(--journey-soft) 100%);
+    box-shadow: 0 18px 42px var(--journey-shadow);
+}
+
+.chisimba-learning-journey--polished::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6px;
+    background: linear-gradient(180deg,var(--journey-accent),var(--journey-primary));
+}
+
+.chisimba-learning-journey__inner {
+    display: grid;
+    grid-template-columns: minmax(0,1.5fr) minmax(250px,.75fr);
+    gap: 1.4rem;
+    padding: 1.7rem 1.8rem 1.8rem 2rem;
+}
+
+.chisimba-learning-journey__main {
+    min-width: 0;
+}
+
+.chisimba-learning-journey__topline {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin-bottom: .65rem;
+}
+
+.chisimba-learning-journey__eyebrow {
+    margin: 0;
+    color: var(--journey-primary);
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+}
+
+.chisimba-learning-journey__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: .15rem .65rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--journey-accent) 18%, white);
+    color: var(--journey-primary);
+    font-size: .76rem;
+    font-weight: 750;
+}
+
+.chisimba-learning-journey__title {
+    margin: 0 0 .55rem;
+    color: var(--journey-text);
+    font-size: clamp(1.85rem,3.6vw,2.55rem);
+    line-height: 1.06;
+    letter-spacing: -.025em;
+}
+
+.chisimba-learning-journey__lead {
+    margin: 0 0 1.2rem;
+    color: #51605e;
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+.chisimba-learning-journey__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: .82rem 1.2rem;
+    border: 0;
+    border-radius: 11px;
+    background: var(--journey-primary);
+    color: #fff !important;
+    font-weight: 760;
+    text-decoration: none !important;
+    box-shadow: 0 7px 16px color-mix(in srgb, var(--journey-primary) 25%, transparent);
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.chisimba-learning-journey__action:hover,
+.chisimba-learning-journey__action:focus-visible {
+    transform: translateY(-1px);
+    background: #234846;
+    box-shadow: 0 10px 21px color-mix(in srgb, var(--journey-primary) 32%, transparent);
+}
+
+.chisimba-learning-journey__progress {
+    max-width: 30rem;
+    margin-top: 1.25rem;
+}
+
+.chisimba-learning-journey__progress-head {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .4rem;
+    color: #4d5d5a;
+    font-size: .82rem;
+}
+
+.chisimba-learning-journey__progress-label,
+.chisimba-learning-journey__progress-value {
+    font-weight: 700;
+}
+
+.chisimba-learning-journey__track {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--journey-primary) 12%, transparent);
+}
+
+.chisimba-learning-journey__track > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg,var(--journey-accent),#4bad76);
+}
+
+.chisimba-learning-journey__meta {
+    margin: .4rem 0 0;
+    color: #6b7977;
+    font-size: .8rem;
+}
+
+.chisimba-learning-journey__aside {
+    display: flex;
+}
+
+.chisimba-learning-journey__card {
+    width: 100%;
+    padding: 1rem 1rem 1.05rem;
+    border: 1px solid color-mix(in srgb, var(--journey-primary) 12%, transparent);
+    border-radius: 16px;
+    background: rgba(255,255,255,.84);
+    box-shadow: 0 8px 24px rgba(35,70,68,.06);
+}
+
+.chisimba-learning-journey__card-label {
+    margin: 0 0 .45rem;
+    color: #6a7977;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.chisimba-learning-journey__card-title {
+    margin: 0;
+    color: #172b29;
+    font-size: 1.12rem;
+    font-weight: 760;
+    line-height: 1.35;
+}
+
+.chisimba-learning-journey__card-meta {
+    margin: .65rem 0 0;
+    color: #687774;
+    font-size: .84rem;
+}
+
+@media (max-width: 900px) {
+    .chisimba-learning-journey__inner {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .chisimba-learning-journey--polished {
+        border-radius: 16px;
+    }
+
+    .chisimba-learning-journey__inner {
+        padding: 1.2rem;
+    }
+
+    .chisimba-learning-journey__action {
+        width: 100%;
+    }
+}
+/* End context home: canonical learning journey presentation */
+
+/* Context home: destination-card refinement override */
+.chisimba-learning-journey__aside {
+    display: flex;
+    align-items: stretch;
+}
+
+.chisimba-learning-journey__card {
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+    padding: 1.2rem 1.15rem 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--journey-primary) 22%, transparent);
+    border-radius: 16px;
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(in srgb, var(--journey-primary) 9%, white),
+            color-mix(in srgb, var(--journey-accent) 7%, white)
+        );
+    box-shadow: 0 10px 26px color-mix(in srgb, var(--journey-primary) 12%, transparent);
+}
+
+.chisimba-learning-journey__card::before {
+    content: "";
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 0 0 .8rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--journey-primary), var(--journey-accent));
+}
+
+.chisimba-learning-journey__card-label {
+    margin: 0 0 .55rem;
+    color: var(--journey-primary);
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.chisimba-learning-journey__card-title {
+    margin: 0;
+    color: var(--journey-text);
+    font-size: 1.22rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.chisimba-learning-journey__card-meta {
+    margin: .65rem 0 0;
+    color: #687774;
+    font-size: .84rem;
+}
+/* End context home: destination-card refinement override */

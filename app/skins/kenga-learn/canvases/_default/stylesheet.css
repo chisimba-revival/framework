@@ -1433,3 +1433,28 @@ button.course-card__action {
     font: inherit;
 }
 /* END CHISIMBA COURSE APPLICATION NOTICE BUTTON */
+
+/* CHISIMBA_BLOCK_PLACEMENT_NO_INSET
+   Generic block wrappers are placement structures only.
+   Visual/internal spacing belongs to the rendered block component itself. */
+:is(#leftblocks, #middleblocks, #rightblocks) > :is(
+    .block,
+    .blockwrapper,
+    .block-wrapper,
+    .moduleblock,
+    .module-block,
+    .sideblock,
+    .side-block
+) {
+    box-sizing: border-box;
+    width: 100%;
+    padding-inline: 0 !important;
+}
+
+/* Do not flatten the component's own internal content spacing. */
+:is(#leftblocks, #middleblocks, #rightblocks)
+> :is(.block, .blockwrapper, .block-wrapper, .moduleblock, .module-block, .sideblock, .side-block)
+> :is(.contentblock, .content-block) {
+    box-sizing: border-box;
+}
+/* END CHISIMBA_BLOCK_PLACEMENT_NO_INSET */

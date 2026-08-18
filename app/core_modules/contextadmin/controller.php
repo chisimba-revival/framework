@@ -246,6 +246,7 @@ class contextadmin extends controller {
             $this->setSession('contextCode', $contextCode);
 
             $objContextBlocks = $this->getObject('dbcontextblocks', 'context');
+            $objContextBlocks->addBlock('block|learningjourney|context', 'middle', $contextCode, 'context');
             $objContextBlocks->addBlock('block|aboutcontext|context', 'middle', $contextCode, 'context');
 
             return $this->nextAction('step2', array('mode' => 'add', 'contextcode' => $contextCode));

@@ -1,0 +1,233 @@
+<?php
+/**
+ * Personal learning-journey block for a [-context-] home.
+ *
+ * Context owns block placement/presentation. ContextContent owns learning
+ * position and visit interpretation through its learningjourney service.
+ */
+if (!$GLOBALS['kewl_entry_point_run']) {
+    die("You cannot view this page directly");
+}
+
+class block_learningjourney extends ChisimbaObject
+{
+    public $title;
+    public $showTitle = FALSE;
+    public $cssClass = 'chisimba-learning-journey-block-shell';
+
+    private $objLanguage;
+    private $objUser;
+    private $objContext;
+    private $objContextModules;
+    private $objModules;
+
+    public function init()
+    {
+        $this->objLanguage = $this->getObject('language', 'language');
+        $this->objUser = $this->getObject('user', 'security');
+        $this->objContext = $this->getObject('dbcontext', 'context');
+        $this->objContextModules = $this->getObject('dbcontextmodules', 'context');
+        $this->objModules = $this->getObject('modules', 'modulecatalogue');
+
+        $this->title = $this->objLanguage->languageText(
+            'mod_context_learningjourney',
+            'context',
+            'Your learning journey'
+        );
+    }
+
+    public function show()
+    {
+        $contextCode = $this->objContext->getContextCode();
+        if (empty($contextCode)) {
+            return '';
+        }
+
+        if (!method_exists($this->objModules, 'checkIfRegistered')
+            || !$this->objModules->checkIfRegistered('contextcontent')
+            || !$this->objContextModules->isContextPlugin($contextCode, 'contextcontent')) {
+            return '';
+        }
+
+        $objJourney = $this->getObject('learningjourney', 'contextcontent');
+        $userId = $this->objUser->isLoggedIn() ? $this->objUser->userId() : '';
+        $state = $objJourney->getState($contextCode, $userId);
+
+        if (!is_array($state) || empty($state['available'])) {
+            return '';
+        }
+
+        return $this->renderJourney($state);
+    }
+
+    private function renderJourney(array $state)
+    {
+        $started = !empty($state['started']);
+        $pageId = isset($state['pageid']) ? $state['pageid'] : '';
+        $pageTitle = isset($state['pagetitle']) ? $state['pagetitle'] : '';
+        $total = isset($state['total']) ? (int) $state['total'] : 0;
+        $visited = isset($state['visited']) ? (int) $state['visited'] : 0;
+
+        $eyebrow = $this->objLanguage->languageText(
+            'mod_context_learningjourney',
+            'context',
+            'Your learning journey'
+        );
+
+        $fullName = trim((string) $this->objUser->fullname());
+        $firstName = '';
+        if ($fullName !== '') {
+            $parts = preg_split('/\s+/', $fullName);
+            if (is_array($parts) && count($parts) > 0) {
+                $firstName = trim($parts[0]);
+            }
+        }
+
+        $heading = $started
+            ? $this->objLanguage->languageText(
+                'mod_context_journeywelcomeback',
+                'context',
+                'Welcome back'
+            )
+            : $this->objLanguage->languageText(
+                'mod_context_journeywelcome',
+                'context',
+                'Welcome'
+            );
+
+        if ($firstName !== '') {
+            $heading .= ', ' . $firstName;
+        }
+
+        $lead = $started
+            ? $this->objLanguage->languageText(
+                'mod_context_journeypickup',
+                'context',
+                'Continue where you left off'
+            )
+            : $this->objLanguage->languageText(
+                'mod_context_journeyready',
+                'context',
+                'Ready to begin?'
+            );
+
+        $action = $started
+            ? $this->objLanguage->languageText(
+                'mod_context_journeycontinue',
+                'context',
+                'Continue your learning journey'
+            )
+            : $this->objLanguage->languageText(
+                'mod_context_journeystart',
+                'context',
+                'Start your learning journey'
+            );
+
+        $status = $started
+            ? $this->objLanguage->languageText(
+                'mod_context_journeystatusprogress',
+                'context',
+                'In progress'
+            )
+            : $this->objLanguage->languageText(
+                'mod_context_journeystatusnew',
+                'context',
+                'New'
+            );
+
+        $destination = $started
+            ? $this->objLanguage->languageText(
+                'mod_context_journeycontinuelabel',
+                'context',
+                'Continue with'
+            )
+            : $this->objLanguage->languageText(
+                'mod_context_journeystartlabel',
+                'context',
+                'Start with'
+            );
+
+        $progressHeading = $this->objLanguage->languageText(
+            'mod_context_journeyprogressheading',
+            'context',
+            'Your progress'
+        );
+
+        $visitedLabel = $this->objLanguage->languageText(
+            'mod_context_journeyvisited',
+            'context',
+            'learning pages visited'
+        );
+
+        $url = $this->uri(
+            array('action' => 'viewpage', 'id' => $pageId),
+            'contextcontent'
+        );
+
+        $e = function ($value) {
+            return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        };
+
+        $html = '<section class="chisimba-learning-journey chisimba-learning-journey--polished"'
+            . ' aria-labelledby="chisimba-learning-journey-title">';
+        $html .= '<div class="chisimba-learning-journey__inner">';
+
+        $html .= '<div class="chisimba-learning-journey__main">';
+        $html .= '<div class="chisimba-learning-journey__topline">';
+        $html .= '<p class="chisimba-learning-journey__eyebrow">' . $e($eyebrow) . '</p>';
+        $html .= '<span class="chisimba-learning-journey__status">' . $e($status) . '</span>';
+        $html .= '</div>';
+
+        $html .= '<h1 id="chisimba-learning-journey-title"'
+            . ' class="chisimba-learning-journey__title">' . $e($heading) . '</h1>';
+        $html .= '<p class="chisimba-learning-journey__lead">' . $e($lead) . '</p>';
+
+        $html .= '<div class="chisimba-learning-journey__actions">';
+        $html .= '<a class="chisimba-learning-journey__action" href="' . $e($url) . '">'
+            . $e($action) . '<span aria-hidden="true"> →</span></a>';
+        $html .= '</div>';
+
+        if ($started && $total > 0) {
+            $visited = min($visited, $total);
+            $percent = (int) round(($visited / $total) * 100);
+
+            $html .= '<div class="chisimba-learning-journey__progress">';
+            $html .= '<div class="chisimba-learning-journey__progress-head">';
+            $html .= '<span class="chisimba-learning-journey__progress-label">'
+                . $e($progressHeading) . '</span>';
+            $html .= '<span class="chisimba-learning-journey__progress-value">'
+                . $visited . ' / ' . $total . '</span>';
+            $html .= '</div>';
+            $html .= '<div class="chisimba-learning-journey__track" aria-hidden="true">'
+                . '<span style="width:' . $percent . '%"></span></div>';
+            $html .= '<p class="chisimba-learning-journey__meta">'
+                . $visited . ' / ' . $total . ' ' . $e($visitedLabel) . '</p>';
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        $html .= '<aside class="chisimba-learning-journey__aside" aria-label="'
+            . $e($destination) . '">';
+        $html .= '<div class="chisimba-learning-journey__card">';
+        $html .= '<p class="chisimba-learning-journey__card-label">'
+            . $e($destination) . '</p>';
+
+        if ($pageTitle !== '') {
+            $html .= '<p class="chisimba-learning-journey__card-title">'
+                . $e($pageTitle) . '</p>';
+        }
+
+        if ($started && $total > 0) {
+            $html .= '<p class="chisimba-learning-journey__card-meta">'
+                . min($visited, $total) . ' / ' . $total . ' '
+                . $e($visitedLabel) . '</p>';
+        }
+
+        $html .= '</div></aside>';
+        $html .= '</div></section>';
+
+        return $html;
+    }
+}
+?>
