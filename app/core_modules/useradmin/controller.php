@@ -21,6 +21,7 @@ class useradmin extends controller
     public $objUserService;
     public $objUserProvisioning;
     public $objBatchUserRegistration;
+    public $objAuthenticationService;
 
     public function init()
     {
@@ -29,6 +30,10 @@ class useradmin extends controller
         $this->objUserService = $this->getObject('userservice', 'security');
         $this->objUserProvisioning = $this->getObject(
             'userprovisioningservice',
+            'security'
+        );
+        $this->objAuthenticationService = $this->getObject(
+            'authenticationservice',
             'security'
         );
         $this->objBatchUserRegistration = $this->getObject(
@@ -145,10 +150,54 @@ class useradmin extends controller
         $this->assertMutationRequest();
 
         $userId = trim((string) $this->getParam('userid', ''));
+        $password = (string) $this->getParam('password', '');
+        $repeatPassword = (string) $this->getParam('repeat_password', '');
+        if ($password !== '' || $repeatPassword !== '') {
+            if ($password !== $repeatPassword) {
+                return $this->redirectWithResult(
+                    false,
+                    'passwords_do_not_match',
+                    $userId
+                );
+            }
+            if ($password === '') {
+                return $this->redirectWithResult(
+                    false,
+                    'password_required',
+                    $userId
+                );
+            }
+        }
+
         $result = $this->objUserService->updateUser(
             $userId,
             $this->userInput($userId, false)
         );
+
+        if (!empty($result['ok']) && $password !== '') {
+            try {
+                $passwordHash = $this->objAuthenticationService
+                    ->createPasswordHash($password);
+                $passwordResult = $this->objUserService->updatePasswordHash(
+                    $userId,
+                    $passwordHash
+                );
+            } catch (Exception $exception) {
+                $passwordResult = array(
+                    'ok' => false,
+                    'code' => 'password_update_failed'
+                );
+            }
+            if (empty($passwordResult['ok'])) {
+                return $this->redirectWithResult(
+                    false,
+                    isset($passwordResult['code'])
+                        ? $passwordResult['code'] : 'password_update_failed',
+                    $userId
+                );
+            }
+            $result = array('ok' => true, 'code' => 'user_and_password_updated');
+        }
 
         return $this->redirectWithResult(
             !empty($result['ok']),
