@@ -44,7 +44,7 @@ $configured = !empty($status['configured']);
     <div class="featurebox">
         <h2><?php echo $esc($text['diagnostic'] ?? ''); ?></h2>
         <p><?php echo $esc($text['diagnosticintro'] ?? ''); ?></p>
-        <form method="post" action="<?php echo $esc($this->uri(array('action' => 'diagnostic'), 'ai')); ?>">
+        <form method="post" action="index.php?module=ai&amp;action=diagnostic">
             <input type="hidden" name="csrf_token" value="<?php echo $esc($aiToken ?? ''); ?>" />
             <button type="submit"><?php echo $esc($text['run'] ?? ''); ?></button>
         </form>
