@@ -1,0 +1,60 @@
+/*
+ * Shared modern action-button compatibility.
+ *
+ * Chisimba's legacy sexybutton rules decorate nested spans. Modern module
+ * markup uses real buttons with semantic icon + label spans, so those inner
+ * spans must be presentation-neutral. Both chisimba-reborn and kenga-learn
+ * load this file after their skin/canvas CSS so button structure and icons stay
+ * identical while colour remains owned by each skin's CSS variables.
+ */
+
+.chisimba-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.chisimba-form-actions button.button,
+.chisimba-form-actions input.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+}
+
+.chisimba-form-actions button.button > span,
+.chisimba-form-actions button.button > span > span {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    font: inherit !important;
+    line-height: inherit !important;
+    text-shadow: none !important;
+}
+
+.chisimba-form-actions button.button > span::before,
+.chisimba-form-actions button.button > span::after,
+.chisimba-form-actions button.button > span > span::before,
+.chisimba-form-actions button.button > span > span::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.chisimba-form-actions .chisimba-action-icon {
+    display: inline-block !important;
+    flex: 0 0 auto;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    color: currentColor;
+    vertical-align: -0.15em;
+}
