@@ -4302,7 +4302,7 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     background:
         radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--journey-accent) 22%, transparent), transparent 28%),
         linear-gradient(135deg, #f8fbfa 0%, #ffffff 54%, var(--journey-soft) 100%);
-    box-shadow: 0 18px 42px var(--journey-shadow);
+    box-shadow: 0 3px 10px var(--journey-shadow);
 }
 
 .chisimba-learning-journey--polished::before {
