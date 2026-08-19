@@ -24,6 +24,23 @@ class aiservice extends dbTable
     }
 
     /**
+     * Return the single application-facing availability decision for AI.
+     *
+     * Consumers must not inspect provider configuration directly. A missing AI
+     * module is handled by the consumer before this service can be requested.
+     */
+    public function isAvailable()
+    {
+        $state = strtolower(trim((string) $this->objConfig->getValue('AI_STATE', 'ai')));
+        if ($state !== 'enabled') {
+            return false;
+        }
+
+        $status = $this->providerStatus();
+        return is_array($status) && !empty($status['configured']);
+    }
+
+    /**
      * Execute one provider-neutral structured AI request.
      *
      * Required keys: consumer, task, instructions, input, schemaName, schema.
@@ -31,6 +48,17 @@ class aiservice extends dbTable
      */
     public function execute(array $request)
     {
+        if (!$this->isAvailable()) {
+            return array(
+                'ok' => false,
+                'provider' => $this->providerName(),
+                'error' => 'ai_unavailable',
+                'detail' => 'ai_unavailable',
+                'inputTokens' => 0,
+                'outputTokens' => 0
+            );
+        }
+
         $normalised = $this->normalise($request);
         if (!$normalised['ok']) { return $normalised; }
         $request = $normalised['request'];
