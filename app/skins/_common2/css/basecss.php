@@ -33,6 +33,7 @@ $cssFiles = array(
     'sexybuttons.css',
     'chisimbacanvas.css',
     'filemanager.css',
+    'modern-action-compat.css',
 );
 
 foreach ($cssFiles as $cssFile) {
