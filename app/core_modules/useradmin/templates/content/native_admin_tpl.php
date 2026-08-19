@@ -186,13 +186,10 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                 <legend>Account</legend>
                 <div class="ua-form-grid">
                     <label>Username <span aria-hidden="true">*</span><input name="username" required autocomplete="off" value="<?php echo $escape($value('username')); ?>"></label>
-                    <?php if (!$selected): ?>
-                        <label>Password <span aria-hidden="true">*</span><input name="password" type="password" required autocomplete="new-password"></label>
-                        <label>Repeat password <span aria-hidden="true">*</span><input name="repeat_password" type="password" required autocomplete="new-password"></label>
-                    <?php endif; ?>
+                    <label>Password <?php if (!$selected): ?><span aria-hidden="true">*</span><?php endif; ?><input name="password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
+                    <label>Repeat password <?php if (!$selected): ?><span aria-hidden="true">*</span><?php endif; ?><input name="repeat_password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
                     <label class="ua-checkbox"><input name="isactive" type="checkbox" value="1"<?php echo !$selected || !empty($selected['isactive']) ? ' checked' : ''; ?>> Active account</label>
                 </div>
-                <?php if ($selected): ?><p class="ua-help">Password changes are deliberately excluded until the canonical credential-reset service is available.</p><?php endif; ?>
             </fieldset>
 
             <div class="ua-form-actions"><button class="ua-button ua-button-primary" type="submit"><?php echo $selected ? 'Save changes' : 'Create user'; ?></button></div>
