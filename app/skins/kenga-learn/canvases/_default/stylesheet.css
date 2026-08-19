@@ -1458,3 +1458,57 @@ button.course-card__action {
     box-sizing: border-box;
 }
 /* END CHISIMBA_BLOCK_PLACEMENT_NO_INSET */
+
+/* CHISIMBA_CONTENT_MODE_BLOCK_WRAPPER */
+:is(#Canvas_Content_Body_Region1,#Canvas_Content_Body_Region2,#Canvas_Content_Body_Region3)
+:is(#leftblocks,#middleblocks,#rightblocks)
+> .block:has(> .featurebox--content) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+:is(#Canvas_Content_Body_Region1,#Canvas_Content_Body_Region2,#Canvas_Content_Body_Region3)
+:is(#leftblocks,#middleblocks,#rightblocks)
+> .block > .featurebox--content {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: border-box;
+    margin: 0;
+    max-width: none;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+/* END CHISIMBA_CONTENT_MODE_BLOCK_WRAPPER */
+
+/* CHISIMBA_CONTENT_MODE_REGION_SHELL
+ *
+ * A complete content-mode block already supplies its own visual surface.
+ * The canvas region around it is placement only and must not leave a
+ * background/padding strip beneath the component.
+ */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region2,
+    #Canvas_Content_Body_Region3
+):has(
+    > :is(#leftblocks, #middleblocks, #rightblocks)
+    > .block
+    > .featurebox--content
+) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+/* END CHISIMBA_CONTENT_MODE_REGION_SHELL */

@@ -4289,11 +4289,11 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 
 /* Context home: canonical learning journey presentation */
 .chisimba-learning-journey--polished {
-    --journey-primary: var(--journey-primary);
-    --journey-accent: var(--journey-accent);
-    --journey-soft: var(--journey-soft);
-    --journey-text: var(--journey-text);
-    --journey-shadow: var(--journey-shadow);
+    --journey-primary: #295351;
+    --journey-accent: #67c871;
+    --journey-soft: #f3f9f6;
+    --journey-text: #142524;
+    --journey-shadow: rgba(26,48,47,.10);
     position: relative;
     overflow: hidden;
     margin: 0 0 1.6rem;
@@ -4543,3 +4543,16 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     font-size: .84rem;
 }
 /* End context home: destination-card refinement override */
+
+/* CHISIMBA MODERN FEATUREBOX LEGACY CORNER SUPPRESSION
+ *
+ * featureboxtopcontainer/featureboxbottomcontainer were legacy scaffolding
+ * intended for decorative/JS corner treatment. The modern skins render the
+ * complete featurebox surface themselves, so these empty containers must not
+ * consume space or expose residual grey bars.
+ */
+.featureboxtopcontainer,
+.featureboxbottomcontainer {
+    display: none !important;
+}
+/* END CHISIMBA MODERN FEATUREBOX LEGACY CORNER SUPPRESSION */

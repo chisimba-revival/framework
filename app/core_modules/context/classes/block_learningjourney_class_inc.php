@@ -15,6 +15,9 @@ class block_learningjourney extends ChisimbaObject
     public $showTitle = FALSE;
     public $cssClass = 'chisimba-learning-journey-block-shell';
 
+    /** Render as a complete primary content surface. */
+    public $presentationMode = 'content';
+
     private $objLanguage;
     private $objUser;
     private $objContext;
