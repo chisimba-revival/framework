@@ -380,6 +380,32 @@ class filemanager extends controller {
         }
     }
 
+    /**
+     * Canonical server-side mutation boundary for File Manager folders.
+     */
+    private function canManageFolder($folder)
+    {
+        if (!is_array($folder) || empty($folder['folderpath'])) {
+            return false;
+        }
+        $parts = explode('/', (string) $folder['folderpath']);
+        return count($parts) >= 2
+            && $this->objFolders->checkPermissionUploadFolder($parts[0], $parts[1]);
+    }
+
+    private function canManageFolderForFile($fileId)
+    {
+        $file = $this->objFiles->getFile($fileId);
+        if (!is_array($file) || empty($file['filefolder'])) {
+            return false;
+        }
+        $folderId = $this->objFolders->getFolderId($file['filefolder']);
+        if (!$folderId) {
+            return false;
+        }
+        return $this->canManageFolder($this->objFolders->getFolder($folderId));
+    }
+
     /* ------------- BEGIN: Set of methods to replace case selection ------------ */
 
     /**
@@ -926,9 +952,10 @@ class filemanager extends controller {
     private function __upload() {
         $folder = $this->objFolders->getFolder($this->getParam('folder'));
 
-        if ($folder != FALSE) {
-            $this->objUpload->setUploadFolder($folder['folderpath']);
+        if ($folder == FALSE || !$this->canManageFolder($folder)) {
+            return $this->nextAction(NULL, array('error' => 'upload_not_permitted'));
         }
+        $this->objUpload->setUploadFolder($folder['folderpath']);
 
         // Upload Files
         $results = $this->objUpload->uploadFiles();
@@ -997,9 +1024,11 @@ class filemanager extends controller {
     private function __ajaxupload() {
         $folder = $this->objFolders->getFolder($this->getParam('folder'));
 
-        if ($folder != FALSE) {
-            $this->objUpload->setUploadFolder($folder['folderpath']);
+        if ($folder == FALSE || !$this->canManageFolder($folder)) {
+            header("HTTP/1.0 403 Forbidden");
+            return NULL;
         }
+        $this->objUpload->setUploadFolder($folder['folderpath']);
 
         // Upload Files
         $results = $this->objUpload->uploadFiles();
@@ -1347,6 +1376,11 @@ class filemanager extends controller {
             $folderpath = $folder['folderpath'];
         }
 
+
+        $manageFolder = $parentId == 'ROOT' ? array('folderpath' => $folderpath) : $parentFolder;
+        if (!$this->canManageFolder($manageFolder)) {
+            return $this->nextAction('viewfolder', array('folder' => $parentId, 'error' => 'createfolder_not_permitted'));
+        }
 
         $this->objMkdir = $this->getObject('mkdir', 'files');
 
@@ -2011,6 +2045,10 @@ function checkWindowOpener()
         if (is_null($folderName) || $folderName == '') {
             return $this->__home();
         }
+        $folder = $this->objFolders->getFolder($folderId);
+        if (!$this->canManageFolder($folder)) {
+            return $this->nextAction('viewfolder', array('folder' => $folderId, 'error' => 'rename_not_permitted'));
+        }
         $result = $this->objFolders->renameFolder_($folderId, $folderName);
         if ($result) {
             return $this->__viewfolder($folderId);
@@ -2027,6 +2065,10 @@ function checkWindowOpener()
         $objFolderAccess = $this->getObject("folderaccess", "filemanager");
         $access = $this->getParam("access_radio");
         $folderId = $this->getParam("id");
+        $folder = $this->objFolders->getFolder($folderId);
+        if (!$this->canManageFolder($folder)) {
+            return $this->nextAction("viewfolder", array("folder" => $folderId, "error" => "access_not_permitted"));
+        }
         $code = $objFolderAccess->setAccess($folderId, $access);
         if ($code == 0) {
             return $this->nextAction("viewfolder", array("folder" => $folderId));
@@ -2075,6 +2117,9 @@ function checkWindowOpener()
         $objFolderAccess = $this->getObject("folderaccess", "filemanager");
         $access = $this->getParam("access_radio");
         $fileId = $this->getParam("id");
+        if (!$this->canManageFolderForFile($fileId)) {
+            return $this->nextAction("fileinfo", array("id" => $fileId, "error" => "access_not_permitted"));
+        }
         $code = $objFolderAccess->setFileAccess($fileId, $access);
         if ($code == 0) {
             return $this->nextAction("fileinfo", array("id" => $fileId));
@@ -2127,6 +2172,9 @@ function checkWindowOpener()
         $objFolderAccess = $this->getObject("folderaccess", "filemanager");
         $access = $this->getParam("access_radio");
         $fileId = $this->getParam("id");
+        if (!$this->canManageFolderForFile($fileId)) {
+            return $this->nextAction("fileinfo", array("id" => $fileId, "error" => "visibility_not_permitted"));
+        }
 
         $code = $objFolderAccess->setFileVisibility($fileId, $access);
         if ($code == 0) {
@@ -2174,6 +2222,10 @@ function checkWindowOpener()
         $alertStatus = $this->getParam('alerts') == 'on' ? 'y' : 'n';
         $folderId = $this->getParam("id");
         $dbFolder = $this->getObject("dbfolder", "filemanager");
+        $folder = $dbFolder->getFolder($folderId);
+        if (!$this->canManageFolder($folder)) {
+            return $this->nextAction("viewfolder", array("folder" => $folderId, "error" => "alerts_not_permitted"));
+        }
         $dbFolder->setFolderAlerts($folderId, $alertStatus);
         return $this->nextAction("viewfolder", array("folder" => $folderId));
     }
