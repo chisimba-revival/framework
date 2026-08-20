@@ -170,6 +170,22 @@ class block_learningjourney extends ChisimbaObject
             'contextcontent',
             'View Bookmarked Pages'
         );
+        $viewAllBookmarks = $this->objLanguage->languageText(
+            'mod_contextcontent_view_all_bookmarks',
+            'contextcontent'
+        );
+        $clearBookmarks = $this->objLanguage->languageText(
+            'mod_contextcontent_clear_bookmarks',
+            'contextcontent'
+        );
+        $clearBookmarksConfirm = $this->objLanguage->languageText(
+            'mod_contextcontent_clear_bookmarks_confirm',
+            'contextcontent'
+        );
+        $clearBookmarksError = $this->objLanguage->languageText(
+            'mod_contextcontent_bookmarks_clear_error',
+            'contextcontent'
+        );
 
         $url = $this->uri(
             array('action' => 'viewpage', 'id' => $pageId),
@@ -254,11 +270,83 @@ class block_learningjourney extends ChisimbaObject
                 $html .= '<li><a href="' . $bookmarkUrl . '">'
                     . $e($bookmarkTitle) . '</a></li>';
             }
-            $html .= '</ul></div>';
+            $html .= '</ul>';
+
+            if (count($bookmarks) > 4) {
+                $html .= '<details class="chisimba-learning-journey__bookmark-all">';
+                $html .= '<summary>' . $e($viewAllBookmarks) . '</summary>';
+                $html .= '<ul class="chisimba-learning-journey__bookmark-list">';
+                foreach ($bookmarks as $bookmark) {
+                    $bookmarkId = isset($bookmark['pageid']) ? (string) $bookmark['pageid'] : '';
+                    $bookmarkTitle = isset($bookmark['pagetitle']) ? (string) $bookmark['pagetitle'] : '';
+                    if ($bookmarkId === '' || $bookmarkTitle === '') {
+                        continue;
+                    }
+                    $bookmarkUrl = $this->uri(
+                        array('action' => 'viewpage', 'id' => $bookmarkId),
+                        'contextcontent'
+                    );
+                    $html .= '<li><a href="' . $bookmarkUrl . '">'
+                        . $e($bookmarkTitle) . '</a></li>';
+                }
+                $html .= '</ul></details>';
+            }
+
+            $clearItems = array();
+            $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $csrf = isset($stack['csrf']) ? $stack['csrf'] : null;
+            if (is_object($csrf) && method_exists($csrf, 'issue')) {
+                foreach ($bookmarks as $bookmark) {
+                    $bookmarkId = isset($bookmark['pageid']) ? (string) $bookmark['pageid'] : '';
+                    if ($bookmarkId === '') {
+                        continue;
+                    }
+                    $clearItems[] = array(
+                        'id' => $bookmarkId,
+                        'csrf' => $csrf->issue('contextcontent_authoring')
+                    );
+                }
+            }
+
+            if ($clearItems !== array()) {
+                $clearUrl = $this->uri(array('action' => 'changebookmark'), 'contextcontent');
+                $html .= '<div class="chisimba-learning-journey__bookmark-actions">';
+                $html .= '<button type="button" class="chisimba-learning-journey__clear-bookmarks"'
+                    . ' data-url="' . $clearUrl . '"'
+                    . ' data-items="' . $e(json_encode($clearItems)) . '"'
+                    . ' data-confirm="' . $e($clearBookmarksConfirm) . '"'
+                    . ' data-error="' . $e($clearBookmarksError) . '">'
+                    . $e($clearBookmarks) . '</button>';
+                $html .= '<span class="chisimba-learning-journey__bookmark-feedback" role="status" aria-live="polite"></span>';
+                $html .= '</div>';
+            }
+
+            $html .= '</div>';
         }
 
         $html .= '</div></aside>';
         $html .= '</div></section>';
+
+        if ($bookmarks !== array()) {
+            $html .= '<script type="text/javascript">(function(){'
+                . 'if(window.chisimbaLearningJourneyBookmarks){return;}window.chisimbaLearningJourneyBookmarks=true;'
+                . 'document.addEventListener("click",function(event){'
+                . 'var button=event.target.closest(".chisimba-learning-journey__clear-bookmarks");if(!button){return;}'
+                . 'event.preventDefault();if(button.disabled){return;}'
+                . 'if(!window.confirm(button.dataset.confirm)){return;}'
+                . 'var items=[];try{items=JSON.parse(button.dataset.items||"[]");}catch(error){items=[];}'
+                . 'if(!items.length){return;}button.disabled=true;'
+                . 'var feedback=button.parentNode.querySelector(".chisimba-learning-journey__bookmark-feedback");'
+                . 'var index=0;var removeNext=function(){'
+                . 'if(index>=items.length){window.location.reload();return;}'
+                . 'var item=items[index++];var body=new URLSearchParams();'
+                . 'body.set("csrf_token",item.csrf);body.set("id",item.id);body.set("type","off");body.set("ajax","1");'
+                . 'fetch(button.dataset.url,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest","Accept":"application/json"},body:body.toString(),credentials:"same-origin"})'
+                . '.then(function(response){if(!response.ok){throw new Error("request");}return response.json();})'
+                . '.then(function(data){if(!data||data.ok!==true||data.bookmarked!==false){throw new Error("state");}removeNext();})'
+                . '.catch(function(){button.disabled=false;if(feedback){feedback.textContent=button.dataset.error;}});'
+                . '};removeNext();});})();</script>';
+        }
 
         return $html;
     }
