@@ -1,0 +1,15 @@
+/*
+ * ContextGroups role-status compatibility.
+ *
+ * Keep the bulk membership role column visually consistent while older
+ * templates still use the generic muted-text class for non-members.
+ */
+.contextgroups-bulk-table .contextgroups-muted {
+    display: inline-block;
+    margin: 0.1rem 0.25rem 0.1rem 0;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    color: var(--chisimba-text-muted, #5d6772);
+    background: var(--chisimba-surface-muted, #f3f5f7);
+    font-size: 0.82rem;
+}

@@ -34,6 +34,7 @@ $cssFiles = array(
     'chisimbacanvas.css',
     'filemanager.css',
     'modern-action-compat.css',
+    'contextgroups-role-compat.css',
 );
 
 foreach ($cssFiles as $cssFile) {
