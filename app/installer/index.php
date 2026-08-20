@@ -45,6 +45,24 @@ $_GET = install_gpc_stripslashes($_GET);
 
 $_REQUEST = install_gpc_stripslashes($_REQUEST);
 
+// Prefer Chisimba's bundled PEAR library. If it is not present, use the
+// system PEAR installation already resolvable through PHP's include path.
+// An explicitly submitted path always takes precedence.
+if (!isset($_POST['pear_path']) || trim((string) $_POST['pear_path']) === '') {
+    $bundledPearPath = rtrim(str_replace('\\', '/', $mepath), '/') . '/lib/pear';
+    $resolvedPearFile = stream_resolve_include_path('PEAR.php');
+
+    if (is_file($bundledPearPath . '/PEAR.php')) {
+        $pearPath = $bundledPearPath;
+    } elseif ($resolvedPearFile !== false) {
+        $pearPath = dirname($resolvedPearFile);
+    } else {
+        $pearPath = $bundledPearPath;
+    }
+
+    $_POST['pear_path'] = $pearPath;
+    $_REQUEST['pear_path'] = $pearPath;
+}
 
 
 $wizard = new InstallWizard();
