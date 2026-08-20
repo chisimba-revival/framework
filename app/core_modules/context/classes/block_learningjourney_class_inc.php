@@ -293,10 +293,11 @@ class block_learningjourney extends ChisimbaObject
             }
 
             $clearItems = array();
+            $clearBatch = array_slice($bookmarks, 0, 12);
             $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
             $csrf = isset($stack['csrf']) ? $stack['csrf'] : null;
             if (is_object($csrf) && method_exists($csrf, 'issue')) {
-                foreach ($bookmarks as $bookmark) {
+                foreach ($clearBatch as $bookmark) {
                     $bookmarkId = isset($bookmark['pageid']) ? (string) $bookmark['pageid'] : '';
                     if ($bookmarkId === '') {
                         continue;
@@ -314,6 +315,7 @@ class block_learningjourney extends ChisimbaObject
                 $html .= '<button type="button" class="chisimba-learning-journey__clear-bookmarks"'
                     . ' data-url="' . $clearUrl . '"'
                     . ' data-items="' . $e(json_encode($clearItems)) . '"'
+                    . ' data-more="' . (count($bookmarks) > count($clearItems) ? '1' : '0') . '"'
                     . ' data-confirm="' . $e($clearBookmarksConfirm) . '"'
                     . ' data-error="' . $e($clearBookmarksError) . '">'
                     . $e($clearBookmarks) . '</button>';
@@ -327,26 +329,30 @@ class block_learningjourney extends ChisimbaObject
         $html .= '</div></aside>';
         $html .= '</div></section>';
 
-        if ($bookmarks !== array()) {
-            $html .= '<script type="text/javascript">(function(){'
-                . 'if(window.chisimbaLearningJourneyBookmarks){return;}window.chisimbaLearningJourneyBookmarks=true;'
-                . 'document.addEventListener("click",function(event){'
-                . 'var button=event.target.closest(".chisimba-learning-journey__clear-bookmarks");if(!button){return;}'
-                . 'event.preventDefault();if(button.disabled){return;}'
-                . 'if(!window.confirm(button.dataset.confirm)){return;}'
-                . 'var items=[];try{items=JSON.parse(button.dataset.items||"[]");}catch(error){items=[];}'
-                . 'if(!items.length){return;}button.disabled=true;'
-                . 'var feedback=button.parentNode.querySelector(".chisimba-learning-journey__bookmark-feedback");'
-                . 'var index=0;var removeNext=function(){'
-                . 'if(index>=items.length){window.location.reload();return;}'
-                . 'var item=items[index++];var body=new URLSearchParams();'
-                . 'body.set("csrf_token",item.csrf);body.set("id",item.id);body.set("type","off");body.set("ajax","1");'
-                . 'fetch(button.dataset.url,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest","Accept":"application/json"},body:body.toString(),credentials:"same-origin"})'
-                . '.then(function(response){if(!response.ok){throw new Error("request");}return response.json();})'
-                . '.then(function(data){if(!data||data.ok!==true||data.bookmarked!==false){throw new Error("state");}removeNext();})'
-                . '.catch(function(){button.disabled=false;if(feedback){feedback.textContent=button.dataset.error;}});'
-                . '};removeNext();});})();</script>';
-        }
+        $html .= '<script type="text/javascript">(function(){'
+            . 'var storageKey="chisimba.clearContextBookmarks";'
+            . 'var button=document.querySelector(".chisimba-learning-journey__clear-bookmarks");'
+            . 'if(!button){try{window.sessionStorage.removeItem(storageKey);}catch(error){}return;}'
+            . 'var clearBatch=function(skipConfirm){'
+            . 'if(button.disabled){return;}'
+            . 'if(!skipConfirm&&!window.confirm(button.dataset.confirm)){return;}'
+            . 'var items=[];try{items=JSON.parse(button.dataset.items||"[]");}catch(error){items=[];}'
+            . 'if(!items.length){return;}button.disabled=true;'
+            . 'var feedback=button.parentNode.querySelector(".chisimba-learning-journey__bookmark-feedback");'
+            . 'var index=0;var removeNext=function(){'
+            . 'if(index>=items.length){'
+            . 'try{if(button.dataset.more==="1"){window.sessionStorage.setItem(storageKey,"1");}else{window.sessionStorage.removeItem(storageKey);}}catch(error){}'
+            . 'window.location.reload();return;}'
+            . 'var item=items[index++];var body=new URLSearchParams();'
+            . 'body.set("csrf_token",item.csrf);body.set("id",item.id);body.set("type","off");body.set("ajax","1");'
+            . 'fetch(button.dataset.url,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest","Accept":"application/json"},body:body.toString(),credentials:"same-origin"})'
+            . '.then(function(response){if(!response.ok){throw new Error("request");}return response.json();})'
+            . '.then(function(data){if(!data||data.ok!==true||data.bookmarked!==false){throw new Error("state");}removeNext();})'
+            . '.catch(function(){button.disabled=false;try{window.sessionStorage.removeItem(storageKey);}catch(error){}if(feedback){feedback.textContent=button.dataset.error;}});'
+            . '};removeNext();};'
+            . 'button.addEventListener("click",function(event){event.preventDefault();clearBatch(false);});'
+            . 'try{if(window.sessionStorage.getItem(storageKey)==="1"){clearBatch(true);}}catch(error){}'
+            . '})();</script>';
 
         return $html;
     }
