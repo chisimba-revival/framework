@@ -257,7 +257,7 @@ class block_learningjourney extends ChisimbaObject
             $html .= '<p class="chisimba-learning-journey__card-label">'
                 . $e($bookmarksHeading) . '</p>';
             $html .= '<ul class="chisimba-learning-journey__bookmark-list">';
-            foreach (array_slice($bookmarks, 0, 4) as $bookmark) {
+            foreach (array_slice($bookmarks, 0, 3) as $bookmark) {
                 $bookmarkId = isset($bookmark['pageid']) ? (string) $bookmark['pageid'] : '';
                 $bookmarkTitle = isset($bookmark['pagetitle']) ? (string) $bookmark['pagetitle'] : '';
                 if ($bookmarkId === '' || $bookmarkTitle === '') {
@@ -272,7 +272,7 @@ class block_learningjourney extends ChisimbaObject
             }
             $html .= '</ul>';
 
-            if (count($bookmarks) > 4) {
+            if (count($bookmarks) > 3) {
                 $html .= '<details class="chisimba-learning-journey__bookmark-all">';
                 $html .= '<summary>' . $e($viewAllBookmarks) . '</summary>';
                 $html .= '<ul class="chisimba-learning-journey__bookmark-list">';
