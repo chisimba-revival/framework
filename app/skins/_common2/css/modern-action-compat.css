@@ -58,3 +58,71 @@
     color: currentColor;
     vertical-align: -0.15em;
 }
+
+/*
+ * Legacy htmlelements buttons still emit class="sexybutton" and nested spans.
+ * In maintained modern skins, keep that HTML contract functional but present
+ * it as the same native button surface used by newer module markup. This lets
+ * older administration pages modernise visually without requiring an all-at-
+ * once PHP migration of every historical button call site.
+ */
+button.sexybutton,
+a.sexybutton {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.35rem;
+    margin: 0;
+    padding: 0.55rem 0.9rem !important;
+    color: var(--chisimba-text-inverse, #fff) !important;
+    background: var(--chisimba-blue-deep, #005b9f) !important;
+    border: 0 !important;
+    border-radius: 0.4rem !important;
+    box-shadow: none !important;
+    font: inherit !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    text-decoration: none !important;
+    text-shadow: none !important;
+    cursor: pointer;
+}
+
+button.sexybutton:hover,
+button.sexybutton:focus-visible,
+a.sexybutton:hover,
+a.sexybutton:focus-visible {
+    color: var(--chisimba-text-inverse, #fff) !important;
+    background: var(--chisimba-orange, #006fc0) !important;
+    outline: none;
+}
+
+/* Remove the silver/orange/yellow image slices from the two structural spans. */
+button.sexybutton > span,
+button.sexybutton > span > span,
+a.sexybutton > span,
+a.sexybutton > span > span {
+    display: inline !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: inherit !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font: inherit !important;
+    line-height: inherit !important;
+    text-shadow: none !important;
+}
+
+/* Preserve an optional third legacy icon span while removing sprite geometry. */
+button.sexybutton > span > span > span,
+a.sexybutton > span > span > span {
+    display: inline-block !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding-right: 0 !important;
+    line-height: inherit !important;
+    background-repeat: no-repeat !important;
+    background-position: left center !important;
+}
