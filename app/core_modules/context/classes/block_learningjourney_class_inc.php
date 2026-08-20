@@ -70,6 +70,9 @@ class block_learningjourney extends ChisimbaObject
         $pageTitle = isset($state['pagetitle']) ? $state['pagetitle'] : '';
         $total = isset($state['total']) ? (int) $state['total'] : 0;
         $visited = isset($state['visited']) ? (int) $state['visited'] : 0;
+        $bookmarks = isset($state['bookmarks']) && is_array($state['bookmarks'])
+            ? $state['bookmarks']
+            : array();
 
         $eyebrow = $this->objLanguage->languageText(
             'mod_context_learningjourney',
@@ -162,6 +165,12 @@ class block_learningjourney extends ChisimbaObject
             'learning pages visited'
         );
 
+        $bookmarksHeading = $this->objLanguage->languageText(
+            'mod_contextcontent_viewbookmarkedpages',
+            'contextcontent',
+            'View Bookmarked Pages'
+        );
+
         $url = $this->uri(
             array('action' => 'viewpage', 'id' => $pageId),
             'contextcontent'
@@ -225,6 +234,27 @@ class block_learningjourney extends ChisimbaObject
             $html .= '<p class="chisimba-learning-journey__card-meta">'
                 . min($visited, $total) . ' / ' . $total . ' '
                 . $e($visitedLabel) . '</p>';
+        }
+
+        if ($bookmarks !== array()) {
+            $html .= '<div class="chisimba-learning-journey__bookmarks">';
+            $html .= '<p class="chisimba-learning-journey__card-label">'
+                . $e($bookmarksHeading) . '</p>';
+            $html .= '<ul class="chisimba-learning-journey__bookmark-list">';
+            foreach (array_slice($bookmarks, 0, 4) as $bookmark) {
+                $bookmarkId = isset($bookmark['pageid']) ? (string) $bookmark['pageid'] : '';
+                $bookmarkTitle = isset($bookmark['pagetitle']) ? (string) $bookmark['pagetitle'] : '';
+                if ($bookmarkId === '' || $bookmarkTitle === '') {
+                    continue;
+                }
+                $bookmarkUrl = $this->uri(
+                    array('action' => 'viewpage', 'id' => $bookmarkId),
+                    'contextcontent'
+                );
+                $html .= '<li><a href="' . $e($bookmarkUrl) . '">'
+                    . $e($bookmarkTitle) . '</a></li>';
+            }
+            $html .= '</ul></div>';
         }
 
         $html .= '</div></aside>';
