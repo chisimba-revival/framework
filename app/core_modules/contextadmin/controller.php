@@ -58,6 +58,7 @@ if (!
 class contextadmin extends controller {
 
     const CSRF_CONTEXT = 'contextadmin_step1';
+    const CSRF_AUTHORS = 'contextadmin_authors';
 
     /**
      * The user Object
@@ -101,6 +102,7 @@ class contextadmin extends controller {
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->objCourseCreation = $this->getObject('coursecreationservice', 'contextadmin');
+        $this->objContextAuthors = $this->getObject('contextauthorservice', 'contextadmin');
         $this->objModules = $this->getObject('modules', 'modulecatalogue');
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->csrf = $stack['csrf'];
@@ -190,7 +192,7 @@ class contextadmin extends controller {
      * Method to create a new context
      */
     private function __add() {
-        if (!$this->objUser->isAdmin()) {
+        if (!$this->canCreateContext()) {
             return $this->nextAction(NULL, array('error' => 'forbidden'));
         }
         $this->setVar('mode', 'add');
@@ -202,7 +204,7 @@ class contextadmin extends controller {
      * Method to save step 1 of creating a context - context details
      */
     private function __savestep1() {
-        if (!$this->isPost() || !$this->objUser->isAdmin()
+        if (!$this->isPost() || !$this->canCreateContext()
             || !$this->csrf->consume(self::CSRF_CONTEXT, (string) $this->getParam('csrf_token', ''))) {
             return $this->nextAction('add', array('error' => 'invalidrequest'));
         }
@@ -703,6 +705,9 @@ class contextadmin extends controller {
         if ($context == FALSE) {
             return $this->nextAction(NULL, array('error' => 'deletenoneexistingcourse', 'context' => $contextCode));
         } else {
+            if (!$this->canManageAuthorRoster($contextCode)) {
+                return $this->nextAction(NULL, array('error' => 'forbidden'));
+            }
             $this->setVarByRef('context', $context);
             $this->setSession('deletecontext', $context['contextcode']);
 
@@ -723,6 +728,9 @@ class contextadmin extends controller {
             return $this->nextAction(NULL, array('error' => 'deletenoneexistingcourse', 'context' => $contextCode));
         } else {
 
+            if (!$this->canManageAuthorRoster($contextCode)) {
+                return $this->nextAction(NULL, array('error' => 'forbidden'));
+            }
             if ($contextCode != $this->getSession('deletecontext')) {
                 return $this->nextAction(NULL, array('error' => 'incompletedelete', 'context' => $contextCode));
             }
@@ -739,13 +747,57 @@ class contextadmin extends controller {
     }
 
     /**
+     * Manage contextual authors and course ownership.
+     */
+    private function __authors() {
+        $contextCode = trim((string) $this->getParam('contextcode', $this->getSession('contextCode', '')));
+        if ($contextCode === '' || !$this->canManageContext($contextCode)) {
+            return $this->nextAction(NULL, array('error' => 'forbidden'));
+        }
+        $snapshot = $this->objContextAuthors->snapshot($contextCode, $this->objUser->userId());
+        if (empty($snapshot['ok'])) {
+            return $this->nextAction(NULL, array('error' => 'forbidden'));
+        }
+        $this->setSession('contextCode', $contextCode);
+        $this->setVar('contextAuthorSnapshot', $snapshot);
+        $this->setVar('contextAuthorCsrf', $this->csrf->issue(self::CSRF_AUTHORS));
+        $this->setVar('contextAuthorMessage', (string) $this->getParam('message', ''));
+        $this->setVar('contextAuthorError', (string) $this->getParam('error', ''));
+        return 'authors.php';
+    }
+
+    private function __addauthor() { return $this->mutateAuthors('add'); }
+    private function __removeauthor() { return $this->mutateAuthors('remove'); }
+    private function __transferowner() { return $this->mutateAuthors('transfer'); }
+
+    private function mutateAuthors($operation) {
+        $contextCode = trim((string) $this->getParam('contextcode', ''));
+        if (!$this->isPost()
+            || !$this->csrf->consume(self::CSRF_AUTHORS, (string) $this->getParam('csrf_token', ''))
+            || !$this->canManageAuthorRoster($contextCode)) {
+            return $this->nextAction('authors', array('contextcode' => $contextCode, 'error' => 'forbidden'));
+        }
+        $targetUserId = trim((string) $this->getParam('userid', ''));
+        if ($operation === 'add') {
+            $result = $this->objContextAuthors->addAuthor($contextCode, $targetUserId, $this->objUser->userId());
+        } elseif ($operation === 'remove') {
+            $result = $this->objContextAuthors->removeAuthor($contextCode, $targetUserId, $this->objUser->userId());
+        } else {
+            $result = $this->objContextAuthors->transferOwnership($contextCode, $targetUserId, $this->objUser->userId());
+        }
+        $key = !empty($result['ok']) ? 'message' : 'error';
+        $code = isset($result['code']) ? (string) $result['code'] : 'operation_failed';
+        return $this->nextAction('authors', array('contextcode' => $contextCode, $key => $code));
+    }
+
+    /**
      * Ajax function to detect whether a context code has been taken already or not
      */
     private function __checkcode() {
         $this->setPageTemplate(NULL);
         $this->setLayoutTemplate(NULL);
 
-        if (!$this->objUser->isAdmin()) {
+        if (!$this->canCreateContext()) {
             echo 'forbidden';
             return;
         }
@@ -770,9 +822,16 @@ class contextadmin extends controller {
         return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? '')) === 'POST';
     }
 
+    private function canCreateContext() {
+        return $this->objContextAuthors->canCreateContext($this->objUser->userId());
+    }
+
     private function canManageContext($contextCode) {
-        return $this->objUser->isAdmin()
-            || $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode);
+        return $this->objContextAuthors->canManageContext($contextCode, $this->objUser->userId());
+    }
+
+    private function canManageAuthorRoster($contextCode) {
+        return $this->objContextAuthors->canManageAuthorRoster($contextCode, $this->objUser->userId());
     }
 
     private function prepareStep1Vars() {

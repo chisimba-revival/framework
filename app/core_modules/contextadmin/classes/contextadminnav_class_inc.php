@@ -101,6 +101,14 @@ class contextadminnav extends ChisimbaObject
             
             $str .= '<li>'.$createCourse->show().'</li>';
         }
+
+        $objContext = $this->getObject('dbcontext', 'context');
+        $contextCode = (string) $objContext->getContextCode();
+        if ($contextCode !== '' && ($objUser->isAdmin() || $objUser->isContextLecturer($objUser->userId(), $contextCode))) {
+            $authorsLink = new link($this->uri(array('action'=>'authors','contextcode'=>$contextCode)));
+            $authorsLink->link = $this->objLanguage->code2Txt('mod_contextadmin_manageauthors','contextadmin');
+            $str .= '<li>'.$authorsLink->show().'</li>';
+        }
         
         $str .= '</ul>';
         
