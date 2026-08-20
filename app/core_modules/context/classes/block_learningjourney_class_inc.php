@@ -21,7 +21,6 @@ class block_learningjourney extends ChisimbaObject
     private $objLanguage;
     private $objUser;
     private $objContext;
-    private $objContextModules;
     private $objModules;
 
     public function init()
@@ -29,7 +28,6 @@ class block_learningjourney extends ChisimbaObject
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objUser = $this->getObject('user', 'security');
         $this->objContext = $this->getObject('dbcontext', 'context');
-        $this->objContextModules = $this->getObject('dbcontextmodules', 'context');
         $this->objModules = $this->getObject('modules', 'modulecatalogue');
 
         $this->title = $this->objLanguage->languageText(
@@ -46,9 +44,11 @@ class block_learningjourney extends ChisimbaObject
             return '';
         }
 
+        // ContextContent may hold valid course content even when the legacy
+        // per-context plugin table has no row. The journey service itself is
+        // the authoritative availability check for this block.
         if (!method_exists($this->objModules, 'checkIfRegistered')
-            || !$this->objModules->checkIfRegistered('contextcontent')
-            || !$this->objContextModules->isContextPlugin($contextCode, 'contextcontent')) {
+            || !$this->objModules->checkIfRegistered('contextcontent')) {
             return '';
         }
 
