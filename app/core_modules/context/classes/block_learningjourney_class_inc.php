@@ -195,7 +195,7 @@ class block_learningjourney extends ChisimbaObject
         $html .= '<p class="chisimba-learning-journey__lead">' . $e($lead) . '</p>';
 
         $html .= '<div class="chisimba-learning-journey__actions">';
-        $html .= '<a class="chisimba-learning-journey__action" href="' . $e($url) . '">'
+        $html .= '<a class="chisimba-learning-journey__action" href="' . $url . '">'
             . $e($action) . '<span aria-hidden="true"> →</span></a>';
         $html .= '</div>';
 
@@ -251,7 +251,7 @@ class block_learningjourney extends ChisimbaObject
                     array('action' => 'viewpage', 'id' => $bookmarkId),
                     'contextcontent'
                 );
-                $html .= '<li><a href="' . $e($bookmarkUrl) . '">'
+                $html .= '<li><a href="' . $bookmarkUrl . '">'
                     . $e($bookmarkTitle) . '</a></li>';
             }
             $html .= '</ul></div>';
