@@ -1968,6 +1968,11 @@ h5.featureboxheader,
     min-width: 0;
 }
 
+.chisimba-site-footer__scope {
+    margin-inline-end: auto;
+    min-width: 0;
+}
+
 .chisimba-site-footer__actions {
     flex: 0 0 auto;
 }
