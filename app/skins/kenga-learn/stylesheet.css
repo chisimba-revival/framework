@@ -38,6 +38,7 @@
     --chisimba-text: #444444;
     --chisimba-text-muted: #666666;
     --chisimba-text-inverse: #ffffff;
+    --chisimba-link-on-surface: var(--chisimba-primary-dark);
 
     /* Borders and structure */
     --chisimba-border: #dddddd;
@@ -4249,6 +4250,9 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-table th { font-weight:700; background:var(--chisimba-surface); }
 .chisimba-table tbody tr:nth-child(even) { background:var(--chisimba-surface-subtle); }
 .chisimba-table tbody tr:hover { background:var(--chisimba-primary-soft); }
+.chisimba-table a:not(.button) { color:var(--chisimba-link-on-surface); font-weight:700; }
+.chisimba-table a:not(.button):hover,
+.chisimba-table a:not(.button):focus-visible { color:var(--chisimba-primary-hover); }
 .chisimba-table .chisimba-table-actions { text-align:right; min-width:19rem; }
 .chisimba-row-actions { display:flex; justify-content:flex-end; gap:.8rem; flex-wrap:wrap; }
 .chisimba-row-actions a { display:inline-flex; align-items:center; gap:.3rem; white-space:nowrap; text-decoration:none; }
