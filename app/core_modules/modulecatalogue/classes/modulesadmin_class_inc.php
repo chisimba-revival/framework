@@ -512,77 +512,10 @@ class modulesadmin extends dbTableManager
                 // end Permissions and Security
 
                 // Site Navigation
-
-                // Menu category
-                if (isset($registerdata['MENU_CATEGORY'])) {
-                    foreach ($registerdata['MENU_CATEGORY'] as $menu_category) {
-                        $menu_category=strtolower($menu_category);
-                        $catArray = array('category'=>$menu_category,'module'=>$moduleId,
-                                    'adminonly'=>$isAdmin,'permissions'=>$aclList,'dependscontext'=>$isContext);
-                        if ($id = $this->existsInToolbarMenu($moduleId,$catArray['category'])) {
-                            $this->objModules->update('id',$id,$catArray,'tbl_menu_category');
-                        } else {
-                            $this->objModules->insert($catArray,'tbl_menu_category');
-                        }
-                    }
-                }// end menu category
-
-                // Side menus
-                if (isset($registerdata['SIDEMENU'])) {
-                    foreach ($registerdata['SIDEMENU'] as $sidemenu) {
-                        $admin = $isAdmin;
-                        $actions = explode('|', $sidemenu);
-                        if(isset($actions[1]) && !empty($actions[1])){
-                            $sidemenu = $actions[0];
-                            $admin = 0;
-                            $rightId = $objToolbarRegister
-                                ->canonicalRightForAccessList(
-                                    $moduleId,
-                                    'side:' . $sidemenu,
-                                    array_map(
-                                        'trim',
-                                        explode(',', $actions[1])
-                                    )
-                                );
-                        }
-                        else {
-                            $rightId = $aclList;
-                        }
-                        $sidemenu = strtolower($sidemenu);
-
-                        $catArray = array('category'=>'menu_'.$sidemenu,'module'=>$moduleId,
-                                    'adminonly'=>$admin,'permissions'=>$rightId,'dependscontext'=>$isContext);
-                        if ($id = $this->existsInMenu("menu_$sidemenu",$moduleId)) {
-                            $this->objModules->update('id',$id,$catArray,'tbl_menu_category');
-                        } else {
-                            $this->objModules->insert($catArray,'tbl_menu_category');
-                        }
-                    }
-                }// end side menu
-
-                // admin and lecturer pages
-                if(isset($registerdata['PAGE'][0])){
-                    foreach($registerdata['PAGE'] as $line){
-                        $actions = explode('|',$line);
-                        $pages = explode(',',$actions[0]);
-                        $admin = 0;
-                        foreach($pages as $page){
-                            if(!(strpos($page, 'admin')===FALSE)){
-                                $admin = 1;
-                            }
-                            if(!(strpos($page, 'lecturer')===FALSE)){
-                                $admin = 0;
-                            }
-                        }
-                        $catArray = array('category'=>'page_'.$line,'module'=>$moduleId,
-                                    'adminonly'=>$admin,'permissions'=>$aclList,'dependscontext'=>$isContext);
-                        if ($id = $this->existsInMenu("page_$line",$moduleId)) {
-                            $this->objModules->update('id',$id,$catArray,'tbl_menu_category');
-                        } else {
-                            $this->objModules->insert($catArray,'tbl_menu_category');
-                        }
-                    }
-                }// end pages
+                // Use the same canonical registrar as Toolbar's full rebuild.
+                // Replacement removes declarations which were renamed or
+                // corrected instead of leaving stale menu rows behind.
+                $objToolbarRegister->replaceData($registerdata);
                 // end Site Navigation
 
                 // Here we pass CONFIG data to the sysconfig module

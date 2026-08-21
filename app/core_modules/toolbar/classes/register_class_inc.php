@@ -78,6 +78,30 @@ class register extends ChisimbaObject
         $this->readData($this->getModuleData($module));
     }
 
+    /**
+     * Replace one module's registered navigation with its declared defaults.
+     *
+     * Module Catalogue uses this when defaults are inserted or reinserted so
+     * declarations removed or corrected in register.conf cannot leave stale
+     * menu rows behind.
+     */
+    public function replaceDefaults($module)
+    {
+        $data = $this->getModuleData($module);
+        $this->replaceData($data);
+    }
+
+    public function replaceData($regData)
+    {
+        if (!is_array($regData) || empty($regData['MODULE_ID'])) {
+            throw new RuntimeException('Invalid toolbar registration data');
+        }
+        if (!$this->objDbMenu->deleteLinksForModule($regData['MODULE_ID'])) {
+            throw new RuntimeException('Toolbar default replacement failed');
+        }
+        $this->readData($regData);
+    }
+
     public function restoreDefaultPerms($module)
     {
         return $this->canonicalRightForRegistration(
