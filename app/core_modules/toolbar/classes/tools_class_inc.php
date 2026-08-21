@@ -349,7 +349,6 @@ class tools extends ChisimbaObject
         }
         // Language
         $home = $this->objLanguage->languageText ( 'word_home', 'system', 'Home' );
-        $welcome = $this->objLanguage->languageText ( 'mod_toolbar_welcome', 'toolbar' );
         // Get the module name
         $module = $this->getParam ( 'module' );
         // Get settings information for the module
@@ -360,13 +359,7 @@ class tools extends ChisimbaObject
         }
         // If the module is the default module
         if ($module == '_default' || $module == 'postlogin' || $module == '') {
-            //$nav = $welcome.' ';
-            if ($this->securityContext->isAuthenticated()) {
-                $nav = $welcome . ' '
-                    . $this->securityContext->displayName();
-            } else {
-                $nav = '';
-            }
+            $nav = $home;
         } else {
             // set the link to the default module
             $this->objLink = new link ( $this->uri ( array(), '_default' ) );
