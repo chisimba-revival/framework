@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 Chisimba
 ========
 
@@ -674,6 +677,19 @@ WIDEBLOCK: hello3
 
 TEXT: mod_hellochisimba_name|Hello Chisimba|Hello Chisimba
 
+Navigation entries normally inherit the module's `DEPENDS_CONTEXT` value.
+Mixed-scope modules can override that value for an individual entry by adding
+`site` or `context` in the entry's scope field:
+
+```
+MENU_CATEGORY: assessment|context
+SIDEMENU: postlogin-3|||icon|language_code|site
+PAGE: admin_shared|||language_code|site
+```
+
+This keeps course navigation inside a context while allowing a separate
+administration destination for the same module outside a context.
+
 See the chapter on Module catalogue for an explanation of these strings. For now just cut and paste this into the register.conf file. Note the registration of the blocks hello1, hello2, and the wide block hello3.
 
 Now lets review the module from the MVC perspective. We do not have a model class for this module since we are not yet accessing any data. We have a view (template) and controller only, in addition to which we have a register configuration file. The files our module uses are as follows:
@@ -857,4 +873,3 @@ how to make it multi-lingual
 how to add and patch language items by changing the version number of the module in register.conf
 how to run such a patch using module catalogue
 how to parse special codes in language elements to replace them with variables.
-

@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 <?php
 /**
 * @package
@@ -45,6 +48,7 @@ $adminIconMap = array(
     'systext' => 'text',
     'serverstatus' => 'server-cog',
     'sysconfig' => 'server-cog',
+    'rubric' => 'scroll-text',
     'viewsource' => 'code-2',
 );
 

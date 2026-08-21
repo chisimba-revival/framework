@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 /**
  * Chisimba Reborn skin design system.
  *
@@ -1965,6 +1968,11 @@ h5.featureboxheader,
 }
 
 .chisimba-site-footer__status {
+    min-width: 0;
+}
+
+.chisimba-site-footer__scope {
+    margin-inline-end: auto;
     min-width: 0;
 }
 
