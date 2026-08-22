@@ -49,7 +49,25 @@ class userprovisioningservice extends ChisimbaObject
             return $this->result(false, 'invalid_password');
         }
 
-        $input['passwordHash'] = $passwordHash;
+        return $this->createLocalUserWithPasswordHash($input, $passwordHash);
+    }
+
+    /**
+     * Create a complete local user from an already transformed credential.
+     *
+     * This supports verified-registration workflows that must never retain
+     * plaintext between the initial request and later account provisioning.
+     */
+    public function createLocalUserWithPasswordHash(array $input, $passwordHash)
+    {
+        if (!is_scalar($passwordHash)
+            || $this->objAuthenticationService->passwordHashScheme(
+                (string) $passwordHash
+            ) !== 'password_hash') {
+            return $this->result(false, 'invalid_password_hash');
+        }
+
+        $input['passwordHash'] = (string) $passwordHash;
         $created = $this->objUserService->createUser($input);
         if (empty($created['ok'])) {
             return $this->result(
@@ -98,19 +116,23 @@ class userprovisioningservice extends ChisimbaObject
             );
         }
 
-        $membership = ((string) $userId === '1')
-            ? $this->objGroupService->addBootstrapMember(
+        if ((string) $userId === '1') {
+            $membership = $this->objGroupService->addBootstrapMember(
                 $guestGroupId,
                 $userId,
                 'Guest'
-            )
-            : $this->objGroupService->addMember(
-                $guestGroupId,
-                $userId
             );
-        if (empty($membership['ok'])
-            && (!isset($membership['code'])
-                || $membership['code'] !== 'already_member')) {
+        } else {
+            $membership = $this->objGroupService->ensureMembership(
+                $guestGroupId,
+                $permissionUserId
+            );
+        }
+        $membershipReady = (string) $userId === '1'
+            ? (!empty($membership['ok'])
+                || (($membership['code'] ?? '') === 'already_member'))
+            : $membership === true;
+        if (!$membershipReady) {
             return $this->compensate(
                 'guest_membership_failed',
                 $userId,
@@ -134,21 +156,21 @@ class userprovisioningservice extends ChisimbaObject
         $groupId
     ) {
         if ($groupId !== null) {
-            $membershipRemoved = ((string) $userId === '1')
-                ? $this->objGroupService->removeBootstrapMember(
+            if ((string) $userId === '1') {
+                $membershipRemoved = $this->objGroupService->removeBootstrapMember(
                     $groupId,
                     $userId,
                     'Guest'
-                )
-                : $this->objGroupService->removeMember(
-                    $groupId,
-                    $userId
                 );
-            $membershipCode = isset($membershipRemoved['code'])
-                ? $membershipRemoved['code']
-                : '';
-            if (empty($membershipRemoved['ok'])
-                && $membershipCode !== 'not_a_member') {
+                $membershipRemovedReady = !empty($membershipRemoved['ok'])
+                    || (($membershipRemoved['code'] ?? '') === 'not_a_member');
+            } else {
+                $membershipRemovedReady = $this->objGroupService->removeMembership(
+                    $groupId,
+                    $permissionUserId
+                );
+            }
+            if (!$membershipRemovedReady) {
                 return $this->result(
                     false,
                     $failureCode . '_rollback_membership_failed',
