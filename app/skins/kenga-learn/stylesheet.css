@@ -4417,6 +4417,24 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     padding-top: 1rem;
     border-top: 1px solid var(--chisimba-border);
 }
+@media (min-width: 70rem) {
+    #Canvas_Content_Body:has(.registration-service.chisimba-form-page) {
+        grid-template-columns: minmax(0, 1fr) minmax(26rem, .52fr);
+    }
+    #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
+        .registration-service.chisimba-form-page {
+        padding-top: 0;
+    }
+    #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
+        .chisimba-form-card {
+        width: 100%;
+        max-width: none;
+    }
+    #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
+        .chisimba-guidance-card {
+        margin-top: 0;
+    }
+}
 @media (max-width: 38rem) {
     .chisimba-form-grid { grid-template-columns: 1fr; }
     .chisimba-form-field--full { grid-column: auto; }
