@@ -35,8 +35,8 @@ if (strpos($template, 'mod_contextadmin_transferownershiphelp') === false
     || strpos($register, 'TEXT: mod_contextadmin_transferownershiphelp|') === false) {
     $errors[] = 'The two-step ownership-transfer guidance is incomplete.';
 }
-if (strpos($register, 'first add the new owner as an [-author-]') === false) {
-    $errors[] = 'Ownership guidance must preserve the [-author-] system-text token.';
+if (strpos($register, 'first add the new owner to [-authors-]') === false) {
+    $errors[] = 'Ownership guidance must use the article-neutral [-authors-] system-text token.';
 }
 if (strpos($register, 'mod_contextadmin_backtocourseadmin|Back to course settings|Back to [-context-] settings') === false) {
     $errors[] = 'The return link must describe course settings.';
