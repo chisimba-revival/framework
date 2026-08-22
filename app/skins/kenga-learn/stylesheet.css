@@ -4288,6 +4288,78 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-icon-button:hover,
 .chisimba-icon-button:focus-visible { background:var(--chisimba-primary-soft); }
 .chisimba-form-section { margin-top:1.6rem; }
+.chisimba-form-page {
+    padding-top: clamp(1.25rem, 4vw, 3rem);
+    padding-bottom: clamp(2rem, 6vw, 4rem);
+}
+.chisimba-form-card {
+    box-sizing: border-box;
+    width: min(100%, 48rem);
+    padding: clamp(1.4rem, 4vw, 2.5rem);
+    border: 1px solid var(--chisimba-border);
+    border-radius: 1rem;
+    background: var(--chisimba-surface);
+    box-shadow: 0 .65rem 2rem rgba(17, 43, 66, .08);
+}
+.chisimba-form-card__header h1 { margin: 0 0 .55rem; }
+.chisimba-form-card__header p {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--chisimba-text-muted);
+    line-height: 1.55;
+}
+.chisimba-form-card__footer { margin: 1.35rem 0 0; }
+.chisimba-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.15rem 1.25rem;
+}
+.chisimba-form-grid .chisimba-form-field { margin: 0; min-width: 0; }
+.chisimba-form-field--full { grid-column: 1 / -1; }
+.chisimba-form-field input[type="email"],
+.chisimba-form-field input[type="password"] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: .58rem .65rem;
+}
+.chisimba-form-field input[type="text"],
+.chisimba-form-field input[type="number"],
+.chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="email"],
+.chisimba-form-field input[type="password"],
+.chisimba-form-field select,
+.chisimba-form-field textarea {
+    border: 1px solid var(--chisimba-border);
+    border-radius: .4rem;
+    background: var(--chisimba-surface);
+}
+.chisimba-form-field input:focus,
+.chisimba-form-field select:focus,
+.chisimba-form-field textarea:focus {
+    border-color: var(--chisimba-primary);
+    outline: 3px solid var(--chisimba-primary-soft);
+    outline-offset: 1px;
+}
+.chisimba-field-help {
+    display: block;
+    margin-top: .38rem;
+    color: var(--chisimba-text-muted);
+    font-size: .88rem;
+    line-height: 1.4;
+}
+.chisimba-checkbox-field {
+    display: flex;
+    align-items: flex-start;
+    gap: .55rem;
+    line-height: 1.45;
+}
+.chisimba-checkbox-field input { margin-top: .18rem; flex: 0 0 auto; }
+.chisimba-form-notice { margin-top: 1.2rem; }
+@media (max-width: 38rem) {
+    .chisimba-form-grid { grid-template-columns: 1fr; }
+    .chisimba-form-field--full { grid-column: auto; }
+    .chisimba-form-actions { align-items: stretch; flex-direction: column; }
+}
 .chisimba-status-page {
     display: flex;
     justify-content: center;
