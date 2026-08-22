@@ -1530,3 +1530,12 @@ button.course-card__action {
     padding: 0;
 }
 /* END CHISIMBA_CONTENT_MODE_REGION_SHELL */
+/* Registration: balanced main and guidance columns. */
+@media (min-width: 60.01rem) {
+    #Canvas_Content_Body:has(
+        > #Canvas_Content_Body_Region2
+        .registration-service.chisimba-form-page
+    ) {
+        grid-template-columns: minmax(0, 1fr) minmax(27rem, .52fr) !important;
+    }
+}
