@@ -59,7 +59,10 @@ class accountcredentialservice extends dbTable
         }
         $stack = $this->objNativeAuth->build();
         if (!isset($stack['persistent'])
-            || !$stack['persistent']->revokeAllForUser($user['userid'], time())) {
+            || $stack['persistent']->revokeAllForUser(
+                $user['userid'],
+                time()
+            ) === false) {
             return $this->result(false, 'session_revocation_failed');
         }
         return $this->result(true, 'password_replaced', $user['userid']);

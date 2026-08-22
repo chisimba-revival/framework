@@ -39,6 +39,10 @@ $checks = array(
         $credentials,
         'replaceWithinTransaction('
     ),
+    'zero-session revocation succeeds' => str_contains(
+        $credentials,
+        ') === false'
+    ),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
