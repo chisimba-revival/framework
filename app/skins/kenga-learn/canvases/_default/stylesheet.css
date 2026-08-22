@@ -1521,6 +1521,16 @@ button.course-card__action {
 }
 /* END CHISIMBA_CONTENT_MODE_REGION_SHELL */
 /* Registration: balanced main and guidance columns. */
+#Canvas_Content_Body_Region2:has(
+    > .registration-service.chisimba-form-page
+    > .chisimba-form-card
+) {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding-top: calc(var(--chisimba-region-padding) + .35rem);
+}
+
 @media (min-width: 60.01rem) {
     #Canvas_Content_Body:has(
         > #Canvas_Content_Body_Region2

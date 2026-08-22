@@ -20,6 +20,11 @@ foreach ($skins as $skin) {
             $canvas,
             'margin-top: 5px !important'
         ) === 1,
+        'account card is the sole surface' => str_contains(
+            $canvas,
+            '> .registration-service.chisimba-form-page'
+        ) && str_contains($canvas, 'background: transparent;')
+            && str_contains($canvas, 'box-shadow: none;'),
         'component spacing remains in base skin' => str_contains(
             $base,
             '.registration-service.chisimba-form-page'
