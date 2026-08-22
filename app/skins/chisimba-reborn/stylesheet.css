@@ -4288,6 +4288,77 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-icon-button:hover,
 .chisimba-icon-button:focus-visible { background:var(--chisimba-primary-soft); }
 .chisimba-form-section { margin-top:1.6rem; }
+.chisimba-status-page {
+    display: flex;
+    justify-content: center;
+    padding-top: clamp(1.5rem, 5vw, 4rem);
+    padding-bottom: clamp(2rem, 7vw, 5rem);
+}
+.chisimba-status-card {
+    box-sizing: border-box;
+    width: min(100%, 42rem);
+    padding: clamp(1.7rem, 5vw, 3rem);
+    border: 1px solid var(--chisimba-border);
+    border-radius: 1rem;
+    background: var(--chisimba-surface);
+    box-shadow: 0 .65rem 2rem rgba(17, 43, 66, .09);
+    text-align: center;
+}
+.chisimba-status-card__icon {
+    position: relative;
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1.35rem;
+    border-radius: 50%;
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary);
+}
+.chisimba-status-card--email .chisimba-status-card__icon::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    top: 1.25rem;
+    width: 2rem;
+    height: 1.45rem;
+    box-sizing: border-box;
+    border: .14rem solid currentColor;
+    border-radius: .2rem;
+}
+.chisimba-status-card--email .chisimba-status-card__icon::after {
+    content: "";
+    position: absolute;
+    left: 1.34rem;
+    top: 1.14rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-right: .14rem solid currentColor;
+    border-bottom: .14rem solid currentColor;
+    transform: rotate(45deg);
+}
+.chisimba-status-card h1 { margin: 0 0 .8rem; }
+.chisimba-status-card__lead {
+    max-width: 34rem;
+    margin: 0 auto .8rem;
+    color: var(--chisimba-text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+.chisimba-status-card__detail {
+    display: inline-block;
+    max-width: 100%;
+    margin: .4rem 0 1.3rem;
+    padding: .65rem 1rem;
+    border-radius: .55rem;
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary-dark);
+    overflow-wrap: anywhere;
+}
+.chisimba-status-card__help {
+    max-width: 34rem;
+    margin: 0 auto;
+    color: var(--chisimba-text-muted);
+    line-height: 1.55;
+}
 .chisimba-editor-row--new { grid-template-columns:minmax(14rem,1fr) auto; max-width:34rem; }
 @media (max-width:48rem) {
     .chisimba-editor-row { grid-template-columns:1fr; align-items:stretch; }
