@@ -13,7 +13,6 @@ class fileapi extends ChisimbaObject
     private $objUpload;
     private $objLanguage;
     private $objContext;
-    private $objConfig;
     private $objMkdir;
 
     public function init()
