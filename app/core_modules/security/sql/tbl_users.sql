@@ -40,7 +40,7 @@ $fields = array(
         ),
     'pass' => array(
         'type' => 'text',
-        'length' => 100,
+        'length' => 255,
 
         ),
     'creationdate' => array(

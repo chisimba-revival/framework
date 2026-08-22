@@ -185,7 +185,7 @@ class userservice extends dbTable
      *
      * This is not a general user-deletion API. Both identifiers must match,
      * the account must never have logged in, and its creation source must be
-     * the user-administration provisioning workflow.
+     * an approved canonical provisioning workflow.
      */
     public function rollbackProvisionedUser($userId, $storageId)
     {
@@ -202,7 +202,11 @@ class userservice extends dbTable
             || (string) $record['userid'] !== $userId
             || !in_array(
                 (string) $record['howcreated'],
-                array('useradmin', 'batch_user_registration'),
+                array(
+                    'useradmin',
+                    'batch_user_registration',
+                    'registration-service',
+                ),
                 true
             )
             || (isset($record['logins']) && (int) $record['logins'] !== 0)) {
