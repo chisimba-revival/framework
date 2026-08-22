@@ -31,7 +31,7 @@ foreach ($used as $icon) {
     }
 }
 
-$expected = array('plus', 'user-cog', 'minus');
+$expected = array('plus', 'arrow-right-left', 'user-minus');
 if ($used !== $expected) {
     $errors[] = 'Unexpected author action icons: ' . implode(', ', $used);
 }

@@ -12,8 +12,8 @@ $t=function($k){return $this->objLanguage->code2Txt($k,'contextadmin');};
 $ul=static function(array $u){$n=trim((isset($u['firstName'])?$u['firstName']:'').' '.(isset($u['surname'])?$u['surname']:''));$un=isset($u['username'])?(string)$u['username']:'';return $n!==''?$n.' ('.$un.')':$un;};
 $icons=$this->getObject('iconservice','ui');
 $plus=$icons->render('plus',array('decorative'=>true,'class'=>'chisimba-action-icon'));
-$swap=$icons->render('user-cog',array('decorative'=>true,'class'=>'chisimba-action-icon'));
-$minus=$icons->render('minus',array('decorative'=>true,'class'=>'chisimba-action-icon'));
+$swap=$icons->render('arrow-right-left',array('decorative'=>true,'class'=>'chisimba-action-icon'));
+$minus=$icons->render('user-minus',array('decorative'=>true,'class'=>'chisimba-action-icon'));
 ?>
 <div class="chisimba-workspace contextadmin-authors">
 <h1><?php echo $e($t('mod_contextadmin_manageauthors')); ?>: <?php echo $e($title); ?></h1>
