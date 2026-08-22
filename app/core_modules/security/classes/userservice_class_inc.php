@@ -50,6 +50,17 @@ class userservice extends dbTable
         return $this->findOne('username', $this->normaliseText($username, 255));
     }
 
+    /** Return one canonical user by an exact normalized email address. */
+    public function findByEmail($emailAddress)
+    {
+        $emailAddress = $this->normaliseText($emailAddress, 320);
+        if ($emailAddress === null
+            || filter_var($emailAddress, FILTER_VALIDATE_EMAIL) === false) {
+            return null;
+        }
+        return $this->findOne('emailaddress', strtolower($emailAddress));
+    }
+
     /**
      * Return one user by the retained storage primary key.
      *

@@ -4,6 +4,7 @@ $read = static fn($path) => file_get_contents($security . '/' . $path);
 $users = $read('classes/userservice_class_inc.php');
 $provisioning = $read('classes/userprovisioningservice_class_inc.php');
 $schema = $read('sql/tbl_users.sql');
+$credentials = $read('classes/accountcredentialservice_class_inc.php');
 $checks = array(
     'registration provenance rollback' => str_contains(
         $users,
@@ -29,6 +30,15 @@ $checks = array(
         $provisioning,
         'createLocalUserWithPasswordHash('
     ) && str_contains($provisioning, "!== 'password_hash'"),
+    'exact recovery lookup' => str_contains($users, 'function findByEmail('),
+    'recovery revokes sessions' => str_contains(
+        $credentials,
+        'revokeAllForUser('
+    ),
+    'transaction participant' => str_contains(
+        $credentials,
+        'replaceWithinTransaction('
+    ),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
