@@ -1088,16 +1088,6 @@
     }
 }
 
-@media (min-width: 60.01rem) {
-    #Canvas_Content_Body:has(> #Canvas_Content_Body_Region2 .registration-service.chisimba-form-page) {
-        grid-template-columns: minmax(0, 1fr) minmax(27rem, .52fr) !important;
-    }
-
-    #Canvas_Content_Body:has(> #Canvas_Content_Body_Region2 .registration-service.chisimba-form-page)
-        > #Canvas_Content_Body_Region3 > .chisimba-guidance-card {
-        margin-top: 5px !important;
-    }
-}
 /* END CHISIMBA-REBORN SINGLE STACKED SIDEBAR POSITION */
 
 /* CHISIMBA COMPLETE COMPONENT WRAPPER CONTRACT — p380
@@ -1537,5 +1527,12 @@ button.course-card__action {
         .registration-service.chisimba-form-page
     ) {
         grid-template-columns: minmax(0, 1fr) minmax(27rem, .52fr) !important;
+    }
+
+    #Canvas_Content_Body:has(
+        > #Canvas_Content_Body_Region2
+        .registration-service.chisimba-form-page
+    ) > #Canvas_Content_Body_Region3 > .chisimba-guidance-card {
+        margin-top: 5px !important;
     }
 }

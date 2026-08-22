@@ -4418,10 +4418,6 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     border-top: 1px solid var(--chisimba-border);
 }
 @media (min-width: 70rem) {
-    #Canvas_Content_Body:has(.registration-service.chisimba-form-page) {
-        grid-template-areas: "main supplementary-top" !important;
-        grid-template-columns: minmax(0, 1fr) minmax(27rem, .52fr) !important;
-    }
     #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
         .registration-service.chisimba-form-page {
         padding-top: 0;
@@ -4430,10 +4426,6 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
         .chisimba-form-card {
         width: 100%;
         max-width: none;
-    }
-    #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
-        .chisimba-guidance-card {
-        margin-top: 5px;
     }
 }
 @media (max-width: 38rem) {
