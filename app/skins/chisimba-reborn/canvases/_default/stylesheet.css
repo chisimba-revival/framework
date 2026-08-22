@@ -1528,7 +1528,7 @@ button.course-card__action {
     background: transparent;
     border: 0;
     box-shadow: none;
-    padding-top: calc(var(--chisimba-region-padding) + .35rem);
+    padding: 0;
 }
 
 @media (min-width: 60.01rem) {
@@ -1543,6 +1543,13 @@ button.course-card__action {
         > #Canvas_Content_Body_Region2
         .registration-service.chisimba-form-page
     ) > #Canvas_Content_Body_Region3 > .chisimba-guidance-card {
-        margin-top: 5px !important;
+        margin-top: 0 !important;
+    }
+
+    #Canvas_Content_Body:has(
+        > #Canvas_Content_Body_Region2
+        .registration-service.chisimba-form-page
+    ) > #Canvas_Content_Body_Region3 {
+        padding: 0;
     }
 }
