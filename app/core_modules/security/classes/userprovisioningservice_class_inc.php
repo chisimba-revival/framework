@@ -49,7 +49,25 @@ class userprovisioningservice extends ChisimbaObject
             return $this->result(false, 'invalid_password');
         }
 
-        $input['passwordHash'] = $passwordHash;
+        return $this->createLocalUserWithPasswordHash($input, $passwordHash);
+    }
+
+    /**
+     * Create a complete local user from an already transformed credential.
+     *
+     * This supports verified-registration workflows that must never retain
+     * plaintext between the initial request and later account provisioning.
+     */
+    public function createLocalUserWithPasswordHash(array $input, $passwordHash)
+    {
+        if (!is_scalar($passwordHash)
+            || $this->objAuthenticationService->passwordHashScheme(
+                (string) $passwordHash
+            ) !== 'password_hash') {
+            return $this->result(false, 'invalid_password_hash');
+        }
+
+        $input['passwordHash'] = (string) $passwordHash;
         $created = $this->objUserService->createUser($input);
         if (empty($created['ok'])) {
             return $this->result(

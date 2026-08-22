@@ -25,6 +25,10 @@ $checks = array(
         $schema,
         "'pass' => array(\n        'type' => 'text',\n        'length' => 255"
     ),
+    'verified hash provisioning' => str_contains(
+        $provisioning,
+        'createLocalUserWithPasswordHash('
+    ) && str_contains($provisioning, "!== 'password_hash'"),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {
