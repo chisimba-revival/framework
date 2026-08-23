@@ -5009,3 +5009,128 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     gap: 0.45rem;
     font-weight: 700;
 }
+
+/* Canonical MCQ test overview. */
+.mcq-overview__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-block-end: 1.25rem;
+}
+
+.mcq-overview__heading h1,
+.mcq-overview__heading p {
+    margin-block-start: 0;
+}
+
+.mcq-overview__create-actions {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.mcq-overview__create-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.mcq-overview__bulk {
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    margin-block: 1rem 1.25rem;
+    padding: 1rem;
+    box-shadow: none;
+}
+
+.mcq-overview__bulk label {
+    display: grid;
+    gap: 0.3rem;
+    font-weight: 700;
+}
+
+.mcq-overview__bulk input,
+.mcq-inline-mark {
+    box-sizing: border-box;
+    min-height: 2.5rem;
+    border: 1px solid var(--chisimba-border-strong);
+    border-radius: 0.4rem;
+    background: var(--chisimba-surface);
+    color: var(--chisimba-text);
+    font: inherit;
+}
+
+.mcq-overview__bulk input {
+    width: 7rem;
+    padding-inline: 0.65rem;
+}
+
+.mcq-inline-mark {
+    width: 5rem;
+    padding-inline: 0.5rem;
+}
+
+.mcq-inline-mark:focus,
+.mcq-overview__bulk input:focus {
+    border-color: var(--chisimba-primary);
+    outline: 0.18rem solid color-mix(in srgb, var(--chisimba-primary) 22%, transparent);
+}
+
+.mcq-overview__save-status {
+    min-width: 8rem;
+    align-self: center;
+    color: var(--chisimba-success);
+    font-weight: 700;
+}
+
+.mcq-overview__save-status.error {
+    color: var(--chisimba-danger);
+}
+
+.mcq-overview .mcq-test-list {
+    width: 100%;
+    table-layout: auto;
+}
+
+.mcq-overview .mcq-test-list th,
+.mcq-overview .mcq-test-list td {
+    width: auto;
+}
+
+.mcq-overview .mcq-test-list td:first-child {
+    font-weight: 700;
+}
+
+.mcq-overview .mcq-test-list td:nth-child(5) {
+    white-space: nowrap;
+}
+
+.mcq-overview .mcq-test-list td:last-child {
+    white-space: nowrap;
+}
+
+.chisimba-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.4rem;
+    color: var(--chisimba-text);
+    text-decoration: none;
+}
+
+.chisimba-icon-button:hover,
+.chisimba-icon-button:focus-visible {
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary-dark);
+}
+
+@media (max-width: 52rem) {
+    .mcq-overview__heading,
+    .mcq-overview__bulk {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
