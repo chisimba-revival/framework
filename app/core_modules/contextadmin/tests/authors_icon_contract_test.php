@@ -1,7 +1,7 @@
 <?php
 /**
  * Ensure every icon used by the author-management template is supported by
- * the curated UI icon service and has a corresponding SVG asset.
+ * the bundled UI icon catalogue and has a corresponding SVG asset.
  */
 
 $moduleRoot = dirname(__DIR__);
@@ -15,16 +15,10 @@ if ($template === false || $iconService === false) {
 }
 
 preg_match_all("/->render\\('([^']+)'/", $template, $usedMatches);
-preg_match_all("/'([^']+)'\\s*=>\\s*true/", $iconService, $allowedMatches);
-
 $used = array_values(array_unique($usedMatches[1]));
-$allowed = array_fill_keys($allowedMatches[1], true);
 $errors = array();
 
 foreach ($used as $icon) {
-    if (!isset($allowed[$icon])) {
-        $errors[] = "Icon is not allowlisted: {$icon}";
-    }
     $asset = $coreModules . '/ui/resources/icons/lucide/' . $icon . '.svg';
     if (!is_file($asset)) {
         $errors[] = "Icon asset is missing: {$icon}";

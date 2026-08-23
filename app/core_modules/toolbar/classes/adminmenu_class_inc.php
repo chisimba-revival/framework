@@ -87,7 +87,7 @@ class adminmenu extends ChisimbaObject
         // Certificate designs and signers are shared site resources.
         $module = $this->moduleCheck->getModuleInfo('certificate-service');
         if ($module['isreg']) {
-            $this->addNavigationRow($module['name'], 'scroll-text', 'certificate-service');
+            $this->addNavigationRow($module['name'], 'award', 'certificate-service');
         }
         // Check if moduleadmin is registered
         $module = $this->moduleCheck->getModuleInfo('moduleadmin');

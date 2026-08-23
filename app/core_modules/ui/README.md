@@ -20,3 +20,11 @@ CSS, and the browser `dialog` API.
 
 The module does not yet replace or modify ExtJS. It establishes the target API
 before any legacy caller is migrated.
+
+## Icons
+
+The module vendors the complete Lucide 1.28.0 SVG catalogue. `iconservice`
+accepts only bounded, lowercase kebab-case names and resolves them exclusively
+inside the bundled catalogue; no URL, path traversal, JavaScript, or CDN lookup
+is permitted. Availability and design choice are deliberately separate:
+modules should still choose one stable semantic icon for each action.
