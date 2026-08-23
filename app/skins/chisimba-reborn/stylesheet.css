@@ -4927,3 +4927,85 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     display: none !important;
 }
 /* END CHISIMBA MODERN FEATUREBOX LEGACY CORNER SUPPRESSION */
+
+/* Shared compact semantic status marker. */
+.chisimba-pill {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 1.5rem;
+    padding: 0.125rem 0.625rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 999px;
+    background: var(--chisimba-surface);
+    color: var(--chisimba-text);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    vertical-align: middle;
+}
+
+.chisimba-pill--success {
+    border-color: color-mix(in srgb, var(--chisimba-success) 38%, var(--chisimba-border));
+    background: color-mix(in srgb, var(--chisimba-success) 11%, var(--chisimba-surface));
+    color: color-mix(in srgb, var(--chisimba-success) 82%, #000000);
+}
+
+/* Whole-course AI quiz review. */
+.mcq-ai-chapter-review__chapters {
+    display: grid;
+    gap: 1.5rem;
+    margin-block: 1.5rem;
+}
+
+.mcq-ai-chapter-review__chapter {
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border-top: 0.25rem solid var(--chisimba-primary);
+}
+
+.mcq-ai-chapter-review__chapter > h2 {
+    margin-block: 0 1.25rem;
+}
+
+.mcq-ai-review-questions {
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    padding-inline-start: 1.75rem;
+}
+
+.mcq-ai-review-question {
+    padding-inline-start: 0.25rem;
+}
+
+.mcq-ai-review-question__stem {
+    display: block;
+    margin-block-end: 0.625rem;
+}
+
+.mcq-ai-review-options {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0 0 0.875rem;
+    padding-inline-start: 2rem;
+}
+
+.mcq-ai-review-options > li {
+    padding-inline-start: 0.25rem;
+}
+
+.mcq-ai-review-option--correct {
+    color: var(--chisimba-text);
+    font-weight: 400;
+}
+
+.mcq-ai-review-option--correct .chisimba-pill {
+    margin-inline-start: 0.5rem;
+}
+
+.mcq-ai-correction-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 700;
+}
