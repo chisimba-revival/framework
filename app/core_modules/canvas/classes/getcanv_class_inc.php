@@ -433,7 +433,7 @@ class getcanv extends ChisimbaObject
                     'Use this canvas'
                 );
 
-            return '<article class="chisimba-canvas-card chisimba-selectable"'
+            return '<article class="chisimba-canvas-card"'
                 . ' aria-selected="' . ($selected ? 'true' : 'false') . '">'
                 . '<div class="chisimba-canvas-card__preview" style="--canvas-preview-primary:'
                 . htmlspecialchars($primary, ENT_QUOTES, 'UTF-8')
