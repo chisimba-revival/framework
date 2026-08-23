@@ -20,6 +20,7 @@ class dbmenu extends dbtable
         $errorCallback = 'globalPearErrorCallback'
     ) {
         parent::init('tbl_menu_category');
+        $this->_db = $this->objEngine->getDbObj();
         $this->table = 'tbl_menu_category';
     }
 
