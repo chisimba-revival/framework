@@ -5,6 +5,8 @@ $users = $read('classes/userservice_class_inc.php');
 $provisioning = $read('classes/userprovisioningservice_class_inc.php');
 $schema = $read('sql/tbl_users.sql');
 $credentials = $read('classes/accountcredentialservice_class_inc.php');
+$register = $read('register.conf');
+$registrationBlock = $read('classes/block_register_class_inc.php');
 $checks = array(
     'registration provenance rollback' => str_contains(
         $users,
@@ -39,6 +41,14 @@ $checks = array(
         $credentials,
         ') === false'
     ),
+    'legacy login blocks are not optional' => !str_contains(
+        $register,
+        'BLOCK: login|site'
+    ) && !str_contains($register, 'BLOCK: elearnlogin|site'),
+    'registration block uses replacement service' => str_contains(
+        $registrationBlock,
+        "'registration-service'"
+    ) && !str_contains($registrationBlock, "'userregistration'"),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

@@ -85,11 +85,6 @@ class block_mycontexts extends ChisimbaObject
             $this->objGroups =  $this->getObject('groupservice', 'groupadmin');
             $this->title = ucWords($this->objLanguage->code2Txt('phrase_mycourses', 'system', NULL, 'My [-contexts-]'));
             
-            // HTML Elements
-            $this->loadClass('form', 'htmlelements');
-            $this->loadClass('dropdown', 'htmlelements');
-            $this->loadClass('button', 'htmlelements');
-            
         } catch (customException $e) {
             customException::cleanUp();
         }
@@ -107,9 +102,6 @@ class block_mycontexts extends ChisimbaObject
             return $this->objLanguage->code2Txt('mod_context_youdonotbelongtocontexts', 'context', NULL, 'You do not belong to any [-contexts-]');
         } else {
         
-            $form = new form('joincontext', $this->uri(array('action'=>'joincontext'), 'context'));
-            $dropdown = new dropdown ('contextcode');
-            
             $contextArray = array();
             
             foreach ($contexts AS $contextCode)
@@ -136,19 +128,19 @@ class block_mycontexts extends ChisimbaObject
             
             ksort($contextArray);
             
-            foreach ($contextArray as $title=>$code)
-            {
-                $dropdown->addOption($code, $title);
+            $output = '<nav class="course-shortcuts" aria-label="'
+                . htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8')
+                . '"><ul class="course-shortcuts__list">';
+            foreach ($contextArray as $title=>$code) {
+                $output .= '<li><a class="course-shortcuts__link" href="'
+                    . $this->uri(array(
+                        'action' => 'joincontext',
+                        'contextcode' => $code,
+                    ), 'context') . '"><span>'
+                    . htmlspecialchars($title, ENT_QUOTES, 'UTF-8')
+                    . '</span><span class="course-shortcuts__arrow" aria-hidden="true">&rsaquo;</span></a></li>';
             }
-            
-            $dropdown->setSelected($this->objContext->getContextCode());
-            
-            $button = new button ('submitform', ucwords($this->objLanguage->code2Txt('mod_context_entercourse', 'context', NULL, 'Enter [-context-]')));
-            $button->setToSubmit();
-            
-            $form->addToForm($dropdown->show().'<br />'.$button->show());
-            
-            return $form->show();
+            return $output . '</ul></nav>';
         }
     }
 }

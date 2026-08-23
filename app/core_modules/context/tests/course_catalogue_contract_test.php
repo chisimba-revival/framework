@@ -30,6 +30,8 @@ $database = $read('classes/dbcontext_class_inc.php');
 $renderer = $read('classes/coursecatalogue_class_inc.php');
 $block = $read('classes/block_latestcourses_class_inc.php');
 $controller = $read('controller.php');
+$myCourses = $read('classes/block_mycontexts_class_inc.php');
+$allCourses = $read('classes/block_context_class_inc.php');
 
 $expect(
     strpos($register, 'WIDEBLOCK: latestcourses') !== false,
@@ -75,6 +77,13 @@ $expect(
     strpos($renderer, 'getContextLecturers') !== false
       && strpos($renderer, "'mod_context_ledby'") !== false,
     'Course cards must obtain lecturer attribution from context membership.'
+);
+$expect(
+    strpos($myCourses, 'course-shortcuts__list') !== false
+      && strpos($allCourses, 'course-shortcuts__list') !== false
+      && strpos($myCourses, "new dropdown") === false
+      && strpos($allCourses, "new dropdown") === false,
+    'My Courses and All Courses must use direct course navigation, not chooser dropdowns.'
 );
 
 fwrite(STDOUT, "PASS: unified course catalogue contract\n");

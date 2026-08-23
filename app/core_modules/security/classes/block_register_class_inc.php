@@ -65,7 +65,6 @@ class block_register extends ChisimbaObject
         try {
             $this->objLanguage =  $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
-            $this->objSysConfig = $this->getObject('dbsysconfig', 'sysconfig');
             $this->objConf = $this->getObject('altconfig', 'config');
             if($this->objConf->getallowSelfRegister() == 'FALSE')
             {
@@ -89,106 +88,26 @@ class block_register extends ChisimbaObject
     public function show()
     {
         try {
-            $allowRegistration =  strtolower($this->objSysConfig->getValue('MOD_SECURITY_ALLOWREGISTRATION', 'security'));
-            if ($allowRegistration !== "false") {
-                if($this->objUser->isLoggedIn()) {
-                    return NULL;
-                } else {
-                    $regModule = $this->objSysConfig->getValue('REGISTRATION_MODULE', 'security');
-                    if(empty($regModule)){
-                        $regModule = 'userregistration';
-                    }
-                    $registrationSize = $this->objSysConfig->getValue('registrationsize', 'userregistration');
-                    if(strtolower($registrationSize) == 'big')
-                    {
-                       return $this->getBigForm($regModule); 
-                    }else{
-                        return $this->getRegForm();                   
-                    }
-								
-                }
-            } else {
-                return NULL;
+            if ($this->objUser->isLoggedIn()) {
+                return null;
             }
+            $label = $this->objLanguage->languageText(
+                'word_register', 'system', 'Create an account'
+            );
+            return '<div class="registration-block"><p>'
+                . htmlspecialchars(
+                    'Create an account to enrol in courses and keep track of your learning.',
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) . '</p><a class="button registration-block__action" href="'
+                . $this->uri(array(), 'registration-service') . '">'
+                . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+                . '</a></div>';
         } catch (Exception $e) {
             throw customException($e->getMessage());
             exit();
         }
     }
     
-    public function getBigForm($regModule){
-        $objAlertBox = $this->getObject('alertbox', 'htmlelements'); 
-	 	$regLink = $this->newObject('link','htmlelements'); 
- 	    $regLink->link = $this->objLanguage->languageText('word_register'); 
-	 	$regLink->link($this->uri(array('action' => 'showregister'), $regModule)); 
- 	    return  $objAlertBox->show(
- 	                  $this->objLanguage->languageText('word_register'), 
- 	                  $this->uri(array('action' => 'showregister'), $regModule)); 
-	 	return $regLink->show(); 
-    }
-    
-    public function getRegForm(){
-        
-        $this->setScripts();
-		
-		$captchaLabel = $this->objLanguage->languageText('phrase_verifyrequest', 'security', 'Verify Request');
-		$objCaptcha = $this->getObject('captcha', 'utilities');
-        
-            $form = '
-                        <div id="demo" class=""ui-dialog-content ui-widget-content">
-                            <div id="dialog" title="'.$this->title.'">
-                                <div id="message"></div>
-                            	
-                            
-                            	<form id="dialog_form">
-                            	<p class="validateTips">All form fields are required.</p>
-                            	<fieldset>
-                            		<label for="name">'.$this->objLanguage->languageText('word_username', 'system').'</label>
-                            		<input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all" />
-                            		<label for="email">'.$this->objLanguage->languageText('word_email', 'system', 'Email').'</label>
-                            		<input type="text" name="email" id="email" value="" class="text ui-widget-content ui-corner-all" />
-                            		<label for="password">'.$this->objLanguage->languageText('word_password', 'system').'</label>
-                            		<input type="password" name="password" id="password" value="" class="text ui-widget-content ui-corner-all" /> 
-                            		<label for="request_captcha">'.$captchaLabel.'</label>
-                            		<div id="captchaDiv" style="padding-top:3px;padding-bottom:3px">
-                            		  '.$objCaptcha->show().'
-                            		</div>
-                            		<input type="text" name="request_captcha" id="request_captcha" value="" class="text ui-widget-content ui-corner-all" /> 
-                            		<a id="redraw">'.$this->objLanguage->languageText('word_redraw', 'security', 'Redraw').'</a>
-                            	</fieldset>
-                            	</form>
-                            </div>
-                        
-                        </div>
-                        
-                        <button id="create-user" >
-				           
-				               '. $this->objLanguage->languageText('word_register').'
-				           
-				         </button>
-    					       
-					        ';
-        
-        return $form;
-    }
-    
-    
-    /**
-     * Setting the init scripts
-     *
-     */
-    public function setScripts(){
-        $objSysConfig  = $this->getObject('altconfig','config');
-        //$this->setVar('SUPPRESS_PROTOTYPE', true);
-		 //$this->appendArrayVar('headerParams',$css);
-		// $this->appendArrayVar('headerParams','<link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" />');
-		 $this->appendArrayVar('headerParams',$this->getJavascriptFile('register.js', 'userregistration'));
-		 $str = '<script type="text/javascript">
-		  registrationUrl = "'.$this->uri(array('action'=>'register')).'";
-		  var baseUri = "'.$objSysConfig->getsiteRoot().'index.php";
-		 </script>';
-		 $this->appendArrayVar('headerParams',$str);
-					 
-    }
 }
 ?>

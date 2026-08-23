@@ -472,6 +472,60 @@ ul#menuList li li ul {
     }
 }
 
+/* Compact course navigation used by narrow course blocks. */
+.course-shortcuts__list {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.course-shortcuts__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.5rem;
+    background: var(--chisimba-surface);
+    color: var(--chisimba-text);
+    font-weight: 650;
+    line-height: 1.3;
+    text-decoration: none;
+}
+
+.course-shortcuts__link:hover,
+.course-shortcuts__link:focus-visible {
+    border-color: var(--chisimba-primary);
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary-dark);
+}
+
+.course-shortcuts__arrow {
+    flex: 0 0 auto;
+    color: var(--chisimba-primary);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.course-shortcuts__catalogue {
+    display: inline-block;
+    margin-block-start: 0.8rem;
+    font-weight: 650;
+}
+
+.registration-block p {
+    margin-block-start: 0;
+}
+
+.registration-block__action {
+    display: inline-flex;
+    align-items: center;
+}
+
 /* END CHISIMBA-REBORN MODERN MENU */
 
 /* BEGIN CHISIMBA-REBORN MOBILE NAV

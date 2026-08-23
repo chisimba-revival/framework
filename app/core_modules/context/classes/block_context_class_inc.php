@@ -81,10 +81,6 @@ class block_context extends ChisimbaObject
             $this->objLanguage =  $this->getObject('language', 'language');
             $this->title = ucWords($this->objLanguage->code2Txt('mod_context_allcontexts', 'context', NULL, 'All [-contexts-]'));
             
-            // HTML Elements
-            $this->loadClass('form', 'htmlelements');
-            $this->loadClass('dropdown', 'htmlelements');
-            $this->loadClass('button', 'htmlelements');
         } catch (customException $e) {
             customException::cleanUp();
         }
@@ -103,19 +99,24 @@ class block_context extends ChisimbaObject
             return "<span class='noRecordsMessage'>$msg</span>";
             
         } else {
-            $form = new form('joincontext', $this->uri(array('action'=>'joincontext'), 'context'));
-            $dropdown = new dropdown ('contextcode');
-            foreach ($courses AS $course)
-            {
-                $dropdown->addOption($course['contextcode'], $course['menutext']);
+            $output = '<nav class="course-shortcuts" aria-label="'
+                . htmlspecialchars($this->title, ENT_QUOTES, 'UTF-8')
+                . '"><ul class="course-shortcuts__list">';
+            foreach ($courses AS $course) {
+                $title = !empty($course['title'])
+                    ? $course['title'] : $course['menutext'];
+                $output .= '<li><a class="course-shortcuts__link" href="'
+                    . $this->uri(array(
+                        'action' => 'joincontext',
+                        'contextcode' => $course['contextcode'],
+                    ), 'context') . '"><span>'
+                    . htmlspecialchars($title, ENT_QUOTES, 'UTF-8')
+                    . '</span><span class="course-shortcuts__arrow" aria-hidden="true">&rsaquo;</span></a></li>';
             }
-            $dropdown->setSelected($objContext->getContextCode());
-            $button = new button ('submitform', ucwords($this->objLanguage->code2Txt('mod_context_entercourse', 'context', NULL, 'Enter [-context-]')));
-            $button->setToSubmit();
-            
-            $form->addToForm($dropdown->show().'<br />'.$button->show());
-            
-            return $form->show();
+            $output .= '</ul><a class="course-shortcuts__catalogue" href="'
+                . $this->uri(array('action' => 'catalogue'), 'context')
+                . '">Browse course catalogue</a></nav>';
+            return $output;
         }
 
         } catch (customException $e) {
