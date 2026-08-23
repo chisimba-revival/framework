@@ -158,7 +158,7 @@ class sidemenu extends ChisimbaObject {
 
         $menu .= $this->joinContext();
 
-        $menu = $this->getMenuList($menus);
+        $menu = $this->getMenuList($menus, true);
         return $menu;
     }
 
@@ -215,7 +215,7 @@ class sidemenu extends ChisimbaObject {
         $access = $this->checkAccess();
         $menus = $this->dbMenu->getSideMenus('postlogin', $access, $this->context);
         $menus = $this->checkPerm($menus);
-        $menu = $this->getMenuList($menus);
+        $menu = $this->getMenuList($menus, true);
         return $menu;
     }
 
@@ -258,7 +258,7 @@ class sidemenu extends ChisimbaObject {
      * SIDEMENU: menu-1|permissions|linkaction|icon|language code
      * @param array $modules The list of modules.
      */
-    function getMenuList($modules) {
+    function getMenuList($modules, $includeLeaveContext = false) {
         $modulesNotToShowStr = $this->dbSysConfig->getValue('EXCLUDE_ON_SIDEMENU', 'toolbar');
         $modulesNotToShow = explode(",", $modulesNotToShowStr);
         if (!empty($modules)) {
@@ -303,6 +303,23 @@ class sidemenu extends ChisimbaObject {
                     $this->addNavigationRow($name, $line['module'], $icon, $linkArray);
                 }
             }
+        }
+        if ($includeLeaveContext && $this->context) {
+            $leaveContext = ucwords($this->objLanguage->code2Txt(
+                'mod_toolbar_leavecontext',
+                'toolbar',
+                null,
+                'Leave [-context-]'
+            ));
+            $this->globalNodes[] = array(
+                'text' => $leaveContext,
+                'uri' => $this->uri(
+                    array('action' => 'leavecontext'),
+                    'context'
+                ),
+                'nodeid' => 'leavecontext',
+                'css' => 'account-card__leave-context',
+            );
         }
         $objNav = $this->newObject('sidebar', 'navigation');
         return $objNav->show($this->globalNodes, $this->getParam('module'));
