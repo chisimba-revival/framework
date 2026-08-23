@@ -8,6 +8,10 @@ $css = file_get_contents($module . '/resources/css/native-admin.css');
 
 $checks = array(
     'context visibility reaches read service' => str_contains($controller, "getParam('showcontexts', '0')"),
+    'management copy matches active controls' => str_contains(
+        $template,
+        "'mod_groupadmin_native_management'"
+    ) && !str_contains($template, "'mod_groupadmin_native_readonly'"),
     'site-only default' => str_contains($reader, 'if (!$showContexts)'),
     'hierarchy ordering' => str_contains($reader, '$ordered[] = $context;')
         && str_contains($reader, '$ordered[] = $child;'),
