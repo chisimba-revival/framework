@@ -10,17 +10,13 @@ $checks = array(
         $users,
         "'registration-service'"
     ),
-    'non-admin provisioned membership' => str_contains(
+    'ordinary users are not implicit guests' => !str_contains(
         $provisioning,
-        'ensureMembership('
+        "groupIdForName('Guest')"
     ),
-    'permission identity membership' => str_contains(
+    'permission identity is created' => str_contains(
         $provisioning,
-        "\$permissionUserId\n            );"
-    ),
-    'non-admin compensation' => str_contains(
-        $provisioning,
-        'removeMembership('
+        'ensurePermissionIdentity($userId)'
     ),
     'password hash capacity' => str_contains(
         $schema,

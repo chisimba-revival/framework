@@ -42,7 +42,8 @@ class groupadmin extends controller
             $this->getParam('limit', 25),
             $this->getParam('q', ''),
             $this->getParam('sort', 'name'),
-            $this->getParam('dir', 'asc')
+            $this->getParam('dir', 'asc'),
+            $this->getParam('showcontexts', '0')
         );
 
         $token = $this->getSession('membership_csrf', '');
@@ -83,6 +84,7 @@ class groupadmin extends controller
             'q' => $this->getParam('q', ''),
             'sort' => $this->getParam('sort', 'name'),
             'dir' => $this->getParam('dir', 'asc'),
+            'showcontexts' => $this->getParam('showcontexts', '0'),
         );
 
         if (!empty($result['ok'])) {
