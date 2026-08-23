@@ -21,6 +21,10 @@ $checks = array(
         '~\.block:has\(> \.content-block\) \{[^}]*width: 100%;~s',
         $reborn
     ) === 1,
+    'structural wrapper defeats legacy important inset' => preg_match(
+        '~\.block:has\(> \.content-block\) \{[^}]*padding: 0 !important;~s',
+        $reborn
+    ) === 1,
     'component width is unconstrained' => str_contains($reborn, 'max-inline-size: none;')
         && str_contains($reborn, 'max-width: none;'),
     'plain blocks are not globally flattened' => !preg_match(

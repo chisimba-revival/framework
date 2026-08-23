@@ -235,6 +235,32 @@ if (!isset($suppressFooter)) {
             'context'
         ) . ' <strong>' . $objUser->fullname() . '</strong>';
         $footerStr = $str;
+
+        $objFooterContext = $this->getObject('dbcontext', 'context');
+        if ($objFooterContext->isInContext()) {
+            $footerScopeType = ucfirst($objLanguage->code2Txt(
+                'mod_toolbar_scope_course',
+                'toolbar'
+            ));
+            $footerContextCode = $objFooterContext->getContextCode();
+            $footerContext = $objFooterContext->getContextDetails($footerContextCode);
+            $footerScopeValue = $footerScopeType . ' — ' . $footerContext['title'];
+        } elseif ($this->getParam('module', '') === 'personalspace') {
+            $footerScopeValue = $objLanguage->languageText(
+                'mod_toolbar_scope_personal',
+                'toolbar'
+            );
+        } else {
+            $footerScopeValue = $objLanguage->languageText(
+                'mod_toolbar_scope_root',
+                'toolbar'
+            );
+        }
+        $footerScope = '<span class="chisimba-site-footer__scope"><strong>'
+            . htmlspecialchars($objLanguage->languageText('mod_toolbar_scope', 'toolbar'), ENT_QUOTES, 'UTF-8')
+            . ':</strong> '
+            . htmlspecialchars($footerScopeValue, ENT_QUOTES, 'UTF-8')
+            . '</span>';
     } elseif (!isset($footerStr)) {
         $footerStr = $objLanguage->languageText("mod_security_poweredby", 'security', 'Powered by ') . ' Chisimba';
     }
@@ -251,6 +277,10 @@ if (!isset($suppressFooter)) {
       . "<div class='chisimba-site-footer__status'>"
       . $footerStr
       . "</div>";
+
+    if (isset($footerScope)) {
+        echo $footerScope;
+    }
 
     // Put in the link to the top of the page.
     if (!isset($pageSuppressBanner)) {

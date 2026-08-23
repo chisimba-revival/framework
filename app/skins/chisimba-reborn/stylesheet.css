@@ -38,6 +38,15 @@
     --chisimba-text: #444444;
     --chisimba-text-muted: #666666;
     --chisimba-text-inverse: #ffffff;
+    --chisimba-link-on-surface: var(--chisimba-primary-dark);
+
+    /* Selectable controls such as navigation rows and option cards. */
+    --chisimba-selectable-color: var(--chisimba-ink);
+    --chisimba-selectable-background: transparent;
+    --chisimba-selectable-hover-color: var(--chisimba-ink);
+    --chisimba-selectable-hover-background: var(--chisimba-primary-soft);
+    --chisimba-selectable-selected-color: var(--chisimba-text-inverse);
+    --chisimba-selectable-selected-background: var(--chisimba-primary);
 
     /* Borders and structure */
     --chisimba-border: #dddddd;
@@ -1965,6 +1974,11 @@ h5.featureboxheader,
 }
 
 .chisimba-site-footer__status {
+    min-width: 0;
+}
+
+.chisimba-site-footer__scope {
+    margin-inline-end: auto;
     min-width: 0;
 }
 
@@ -4221,6 +4235,60 @@ h5.featureboxheader,
 }
 
 /* BEGIN CHISIMBA SHARED WORKSPACE PRIMITIVES */
+.chisimba-notice {
+    box-sizing: border-box;
+    margin: 0 0 1rem;
+    padding: .7rem .85rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: .5rem;
+    background: var(--chisimba-surface);
+}
+.chisimba-notice--success {
+    color: var(--chisimba-success);
+    background: color-mix(in srgb, var(--chisimba-success) 9%, var(--chisimba-surface));
+    border-color: color-mix(in srgb, var(--chisimba-success) 32%, var(--chisimba-border));
+}
+.chisimba-notice--error {
+    color: var(--chisimba-danger);
+    background: color-mix(in srgb, var(--chisimba-danger) 9%, var(--chisimba-surface));
+    border-color: color-mix(in srgb, var(--chisimba-danger) 32%, var(--chisimba-border));
+}
+.chisimba-notice--transient {
+    max-height: 12rem;
+    overflow: hidden;
+    animation: chisimba-notice-dismiss .55s ease 4.5s forwards;
+}
+@keyframes chisimba-notice-dismiss {
+    to {
+        max-height: 0;
+        margin-block: 0;
+        padding-block: 0;
+        border-width: 0;
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+.chisimba-selectable {
+    color: var(--chisimba-selectable-color);
+    background: var(--chisimba-selectable-background);
+}
+.chisimba-selectable:hover,
+.chisimba-selectable:focus-visible {
+    color: var(--chisimba-selectable-hover-color);
+    background: var(--chisimba-selectable-hover-background);
+}
+.chisimba-selectable[aria-current="page"],
+.chisimba-selectable[aria-selected="true"] {
+    color: var(--chisimba-selectable-selected-color);
+    background: var(--chisimba-selectable-selected-background);
+}
+.chisimba-selectable[aria-current="page"]:hover,
+.chisimba-selectable[aria-current="page"]:focus-visible,
+.chisimba-selectable[aria-selected="true"]:hover,
+.chisimba-selectable[aria-selected="true"]:focus-visible {
+    color: var(--chisimba-selectable-selected-color);
+    background: var(--chisimba-primary-hover);
+}
 .button {
     display: inline-flex;
     align-items: center;
@@ -4244,6 +4312,9 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-table th { font-weight:700; background:var(--chisimba-surface); }
 .chisimba-table tbody tr:nth-child(even) { background:var(--chisimba-surface-subtle); }
 .chisimba-table tbody tr:hover { background:var(--chisimba-primary-soft); }
+.chisimba-table a:not(.button) { color:var(--chisimba-link-on-surface); font-weight:700; }
+.chisimba-table a:not(.button):hover,
+.chisimba-table a:not(.button):focus-visible { color:var(--chisimba-primary-hover); }
 .chisimba-table .chisimba-table-actions { text-align:right; min-width:19rem; }
 .chisimba-row-actions { display:flex; justify-content:flex-end; gap:.8rem; flex-wrap:wrap; }
 .chisimba-row-actions a { display:inline-flex; align-items:center; gap:.3rem; white-space:nowrap; text-decoration:none; }
@@ -4266,6 +4337,22 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-button-secondary { color:var(--chisimba-ink); background:var(--chisimba-surface-muted); border:1px solid var(--chisimba-border); }
 .chisimba-button-secondary:hover,
 .chisimba-button-secondary:focus-visible { color:var(--chisimba-ink); background:var(--chisimba-primary-soft); }
+.chisimba-button-danger {
+    color: var(--chisimba-danger);
+    background: transparent;
+    border: 1px solid var(--chisimba-danger);
+}
+.chisimba-button-danger:hover,
+.chisimba-button-danger:focus-visible {
+    color: var(--chisimba-text-inverse);
+    background: var(--chisimba-danger);
+}
+.chisimba-button-secondary .chisimba-icon,
+.chisimba-button-danger .chisimba-icon,
+.chisimba-row-actions .chisimba-icon {
+    width: 1rem;
+    height: 1rem;
+}
 .chisimba-editor-list { display:grid; gap:.55rem; max-width:58rem; }
 .chisimba-editor-row { display:grid; grid-template-columns:minmax(14rem,1fr) 10rem auto auto; gap:.7rem; align-items:end; padding:.75rem; border:1px solid var(--chisimba-border); border-radius:.55rem; background:var(--chisimba-surface); }
 .chisimba-editor-row:nth-child(even) { background:var(--chisimba-surface-subtle); }
@@ -4279,6 +4366,222 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-icon-button:hover,
 .chisimba-icon-button:focus-visible { background:var(--chisimba-primary-soft); }
 .chisimba-form-section { margin-top:1.6rem; }
+.chisimba-form-page {
+    padding-top: clamp(1.25rem, 4vw, 3rem);
+    padding-bottom: clamp(2rem, 6vw, 4rem);
+}
+.chisimba-form-card {
+    box-sizing: border-box;
+    width: min(100%, 48rem);
+    padding: clamp(1.4rem, 4vw, 2.5rem);
+    border: 1px solid var(--chisimba-border);
+    border-radius: 1rem;
+    background: var(--chisimba-surface);
+    box-shadow: 0 .65rem 2rem rgba(17, 43, 66, .08);
+}
+.chisimba-form-card__header h1 { margin: 0 0 .55rem; }
+.chisimba-form-card__header p {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--chisimba-text-muted);
+    line-height: 1.55;
+}
+.chisimba-form-card__footer { margin: 1.35rem 0 0; }
+.chisimba-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.15rem 1.25rem;
+}
+.chisimba-form-grid .chisimba-form-field { margin: 0; min-width: 0; }
+.chisimba-form-field--full { grid-column: 1 / -1; }
+.chisimba-form-field input[type="email"],
+.chisimba-form-field input[type="password"] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: .58rem .65rem;
+}
+.chisimba-form-field input[type="text"],
+.chisimba-form-field input[type="number"],
+.chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="email"],
+.chisimba-form-field input[type="password"],
+.chisimba-form-field select,
+.chisimba-form-field textarea {
+    border: 1px solid var(--chisimba-border);
+    border-radius: .4rem;
+    background: var(--chisimba-surface);
+}
+.chisimba-form-field input:focus,
+.chisimba-form-field select:focus,
+.chisimba-form-field textarea:focus {
+    border-color: var(--chisimba-primary);
+    outline: 3px solid var(--chisimba-primary-soft);
+    outline-offset: 1px;
+}
+.chisimba-field-help {
+    display: block;
+    margin-top: .38rem;
+    color: var(--chisimba-text-muted);
+    font-size: .88rem;
+    line-height: 1.4;
+}
+.chisimba-checkbox-field {
+    display: flex;
+    align-items: flex-start;
+    gap: .55rem;
+    line-height: 1.45;
+}
+.chisimba-checkbox-field input { margin-top: .18rem; flex: 0 0 auto; }
+.chisimba-form-notice { margin-top: 1.2rem; }
+.chisimba-guidance-card {
+    box-sizing: border-box;
+    margin: clamp(1.25rem, 4vw, 3rem) 0 2rem;
+    padding: 1.4rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 1rem;
+    background: var(--chisimba-surface);
+    box-shadow: 0 .45rem 1.5rem rgba(17, 43, 66, .07);
+}
+.chisimba-guidance-card h2 {
+    margin: 0 0 1.1rem;
+    font-size: 1.2rem;
+}
+.chisimba-guidance-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: guidance-step;
+}
+.chisimba-guidance-steps li {
+    position: relative;
+    min-height: 2.25rem;
+    padding: 0 0 1.15rem 3rem;
+    counter-increment: guidance-step;
+}
+.chisimba-guidance-steps li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    top: 2rem;
+    bottom: .15rem;
+    width: 1px;
+    background: var(--chisimba-border);
+}
+.chisimba-guidance-steps li::before {
+    content: counter(guidance-step);
+    position: absolute;
+    left: 0;
+    top: -.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary-dark);
+    font-weight: 700;
+}
+.chisimba-guidance-steps strong,
+.chisimba-guidance-steps span { display: block; }
+.chisimba-guidance-steps span {
+    margin-top: .2rem;
+    color: var(--chisimba-text-muted);
+    font-size: .92rem;
+    line-height: 1.45;
+}
+.chisimba-guidance-card__footer {
+    margin: .25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--chisimba-border);
+}
+@media (min-width: 70rem) {
+    #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
+        .registration-service.chisimba-form-page {
+        padding-top: 0;
+    }
+    #Canvas_Content_Body:has(.registration-service.chisimba-form-page)
+        .chisimba-form-card {
+        width: 100%;
+        max-width: none;
+    }
+}
+@media (max-width: 38rem) {
+    .chisimba-form-grid { grid-template-columns: 1fr; }
+    .chisimba-form-field--full { grid-column: auto; }
+    .chisimba-form-actions { align-items: stretch; flex-direction: column; }
+}
+.chisimba-status-page {
+    display: flex;
+    justify-content: center;
+    padding-top: clamp(1.5rem, 5vw, 4rem);
+    padding-bottom: clamp(2rem, 7vw, 5rem);
+}
+.chisimba-status-card {
+    box-sizing: border-box;
+    width: min(100%, 42rem);
+    padding: clamp(1.7rem, 5vw, 3rem);
+    border: 1px solid var(--chisimba-border);
+    border-radius: 1rem;
+    background: var(--chisimba-surface);
+    box-shadow: 0 .65rem 2rem rgba(17, 43, 66, .09);
+    text-align: center;
+}
+.chisimba-status-card__icon {
+    position: relative;
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1.35rem;
+    border-radius: 50%;
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary);
+}
+.chisimba-status-card--email .chisimba-status-card__icon::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    top: 1.25rem;
+    width: 2rem;
+    height: 1.45rem;
+    box-sizing: border-box;
+    border: .14rem solid currentColor;
+    border-radius: .2rem;
+}
+.chisimba-status-card--email .chisimba-status-card__icon::after {
+    content: "";
+    position: absolute;
+    left: 1.34rem;
+    top: 1.14rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-right: .14rem solid currentColor;
+    border-bottom: .14rem solid currentColor;
+    transform: rotate(45deg);
+}
+.chisimba-status-card h1 { margin: 0 0 .8rem; }
+.chisimba-status-card__lead {
+    max-width: 34rem;
+    margin: 0 auto .8rem;
+    color: var(--chisimba-text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+.chisimba-status-card__detail {
+    display: inline-block;
+    max-width: 100%;
+    margin: .4rem 0 1.3rem;
+    padding: .65rem 1rem;
+    border-radius: .55rem;
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary-dark);
+    overflow-wrap: anywhere;
+}
+.chisimba-status-card__help {
+    max-width: 34rem;
+    margin: 0 auto;
+    color: var(--chisimba-text-muted);
+    line-height: 1.55;
+}
 .chisimba-editor-row--new { grid-template-columns:minmax(14rem,1fr) auto; max-width:34rem; }
 @media (max-width:48rem) {
     .chisimba-editor-row { grid-template-columns:1fr; align-items:stretch; }

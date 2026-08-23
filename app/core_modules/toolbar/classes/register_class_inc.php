@@ -78,6 +78,30 @@ class register extends ChisimbaObject
         $this->readData($this->getModuleData($module));
     }
 
+    /**
+     * Replace one module's registered navigation with its declared defaults.
+     *
+     * Module Catalogue uses this when defaults are inserted or reinserted so
+     * declarations removed or corrected in register.conf cannot leave stale
+     * menu rows behind.
+     */
+    public function replaceDefaults($module)
+    {
+        $data = $this->getModuleData($module);
+        $this->replaceData($data);
+    }
+
+    public function replaceData($regData)
+    {
+        if (!is_array($regData) || empty($regData['MODULE_ID'])) {
+            throw new RuntimeException('Invalid toolbar registration data');
+        }
+        if (!$this->objDbMenu->deleteLinksForModule($regData['MODULE_ID'])) {
+            throw new RuntimeException('Toolbar default replacement failed');
+        }
+        $this->readData($regData);
+    }
+
     public function restoreDefaultPerms($module)
     {
         return $this->canonicalRightForRegistration(
@@ -124,21 +148,27 @@ class register extends ChisimbaObject
         );
 
         if (!empty($regData['MENU_CATEGORY'])) {
-            foreach ($regData['MENU_CATEGORY'] as $category) {
+            foreach ($regData['MENU_CATEGORY'] as $declaration) {
+                list($category, $linkContext) = $this->splitScopedDeclaration(
+                    $declaration,
+                    1,
+                    $isContext
+                );
                 $this->sql(
                     strtolower($category),
                     $moduleId,
                     $isAdmin,
                     $defaultRight,
-                    $isContext
+                    $linkContext
                 );
             }
         }
 
         if (!empty($regData['SIDEMENU'])) {
             foreach ($regData['SIDEMENU'] as $declaration) {
-                list($category, $access) = $this->splitMenuDeclaration(
-                    $declaration
+                list($category, $access, $linkContext) = $this->splitMenuDeclaration(
+                    $declaration,
+                    $isContext
                 );
                 $rightId = $access === array()
                     ? $defaultRight
@@ -152,13 +182,18 @@ class register extends ChisimbaObject
                     $moduleId,
                     $access === array() ? $isAdmin : 0,
                     $rightId,
-                    $isContext
+                    $linkContext
                 );
             }
         }
 
         if (!empty($regData['PAGE'])) {
-            foreach ($regData['PAGE'] as $page) {
+            foreach ($regData['PAGE'] as $declaration) {
+                list($page, $linkContext) = $this->splitScopedDeclaration(
+                    $declaration,
+                    4,
+                    $isContext
+                );
                 $admin = stripos($page, 'admin') !== false ? 1 : 0;
                 if (stripos($page, 'lecturer') !== false) {
                     $admin = 0;
@@ -168,7 +203,7 @@ class register extends ChisimbaObject
                     $moduleId,
                     $admin,
                     $defaultRight,
-                    $isContext
+                    $linkContext
                 );
             }
         }
@@ -340,14 +375,48 @@ class register extends ChisimbaObject
         return $roles;
     }
 
-    private function splitMenuDeclaration($declaration)
+    private function splitMenuDeclaration($declaration, $defaultContext)
     {
-        $parts = explode('|', $declaration, 2);
-        $category = strtolower(rtrim($parts[0], '|'));
+        list($category, $context) = $this->splitScopedDeclaration(
+            $declaration,
+            5,
+            $defaultContext
+        );
+        $parts = explode('|', $category);
         $access = isset($parts[1])
             ? array_filter(array_map('trim', explode(',', $parts[1])))
             : array();
-        return array($category, array_values($access));
+        return array(
+            strtolower(rtrim($category, '|')),
+            array_values($access),
+            $context
+        );
+    }
+
+    /**
+     * Read an optional site/context override from one navigation declaration.
+     *
+     * The scope occupies a declaration-specific trailing field so existing
+     * action, icon, language and permission fields retain their positions.
+     */
+    private function splitScopedDeclaration(
+        $declaration,
+        $scopePosition,
+        $defaultContext
+    ) {
+        $parts = explode('|', trim((string) $declaration));
+        $context = (int) $defaultContext;
+        if (isset($parts[$scopePosition])) {
+            $scope = strtolower(trim($parts[$scopePosition]));
+            if ($scope === 'site') {
+                $context = 0;
+                unset($parts[$scopePosition]);
+            } elseif ($scope === 'context') {
+                $context = 1;
+                unset($parts[$scopePosition]);
+            }
+        }
+        return array(rtrim(implode('|', $parts), '|'), $context);
     }
 
     private function sql($category, $module, $admin, $rightId, $context)

@@ -20,6 +20,7 @@ class dbmenu extends dbtable
         $errorCallback = 'globalPearErrorCallback'
     ) {
         parent::init('tbl_menu_category');
+        $this->_db = $this->objEngine->getDbObj();
         $this->table = 'tbl_menu_category';
     }
 
@@ -155,7 +156,7 @@ class dbmenu extends dbtable
     private function moduleName($value)
     {
         $value = strtolower(trim((string) $value));
-        if (!preg_match('/^[a-z][a-z0-9_]{0,63}$/', $value)) {
+        if (!preg_match('/^[a-z][a-z0-9_-]{0,63}$/', $value)) {
             throw new InvalidArgumentException('Invalid module identifier');
         }
         return $value;

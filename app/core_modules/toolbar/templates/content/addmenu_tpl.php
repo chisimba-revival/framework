@@ -31,7 +31,7 @@ $menuOptions = $page
     ? array('lecturer', 'admin', 'manage')
     : array('user', 'alumni', 'context', 'postlogin', 'postgrad');
 $positionOptions = $page
-    ? array('users', 'content', 'organise', 'site', 'develop', 'assign')
+    ? array('users', 'content', 'organise', 'site', 'shared', 'develop', 'assign')
     : array('1', '2', '3', '4', '5');
 $heading = $lang->languageText(
     $editing ? 'mod_toolbar_editlink' : 'mod_toolbar_addnewlink',

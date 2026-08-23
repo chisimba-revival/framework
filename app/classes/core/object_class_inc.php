@@ -263,6 +263,33 @@ class ChisimbaObject
     }
 
     /**
+     * Build a URI which is safe to place directly in an HTML attribute.
+     *
+     * Legacy uri() returns HTML entities by default. Encoding that value a
+     * second time produces &amp;amp; and changes query parameter names. Ask the
+     * engine for raw separators, then perform exactly one encoding pass.
+     */
+    public function uriForHtmlAttribute(
+        $params,
+        $moduleName = '',
+        $uriMode = '',
+        $omitServerName = FALSE
+    ) {
+        if (empty($moduleName)) {
+            $moduleName = $this->moduleName;
+        }
+        $uri = $this->objEngine->uri(
+            $params,
+            $moduleName,
+            $uriMode,
+            $omitServerName,
+            TRUE,
+            TRUE
+        );
+        return htmlspecialchars($uri, ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
      * Method to load a class definition.
      * Use when you wish to instantiate the class yourself.
      * If module isn't given the class is loaded from the current module

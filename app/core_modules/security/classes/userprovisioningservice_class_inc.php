@@ -16,7 +16,6 @@ class userprovisioningservice extends ChisimbaObject
     private $objUserService;
     private $objAuthenticationService;
     private $objIdentityService;
-    private $objGroupService;
 
     public function init()
     {
@@ -29,14 +28,10 @@ class userprovisioningservice extends ChisimbaObject
             'identityservice',
             'security'
         );
-        $this->objGroupService = $this->getObject(
-            'groupservice',
-            'groupadmin'
-        );
     }
 
     /**
-     * Create a local user, permission identity and initial Guest membership.
+     * Create a local user and permission identity.
      *
      * @return array Result with ok, code, userId and storageId keys.
      */
@@ -49,7 +44,25 @@ class userprovisioningservice extends ChisimbaObject
             return $this->result(false, 'invalid_password');
         }
 
-        $input['passwordHash'] = $passwordHash;
+        return $this->createLocalUserWithPasswordHash($input, $passwordHash);
+    }
+
+    /**
+     * Create a complete local user from an already transformed credential.
+     *
+     * This supports verified-registration workflows that must never retain
+     * plaintext between the initial request and later account provisioning.
+     */
+    public function createLocalUserWithPasswordHash(array $input, $passwordHash)
+    {
+        if (!is_scalar($passwordHash)
+            || $this->objAuthenticationService->passwordHashScheme(
+                (string) $passwordHash
+            ) !== 'password_hash') {
+            return $this->result(false, 'invalid_password_hash');
+        }
+
+        $input['passwordHash'] = (string) $passwordHash;
         $created = $this->objUserService->createUser($input);
         if (empty($created['ok'])) {
             return $this->result(
@@ -87,111 +100,7 @@ class userprovisioningservice extends ChisimbaObject
             return $this->result(false, 'identity_create_failed', $userId);
         }
 
-        $guestGroupId = $this->objGroupService->groupIdForName('Guest');
-        if ($guestGroupId === false || $guestGroupId === null) {
-            return $this->compensate(
-                'guest_group_not_found',
-                $userId,
-                $storageId,
-                $permissionUserId,
-                null
-            );
-        }
-
-        $membership = ((string) $userId === '1')
-            ? $this->objGroupService->addBootstrapMember(
-                $guestGroupId,
-                $userId,
-                'Guest'
-            )
-            : $this->objGroupService->addMember(
-                $guestGroupId,
-                $userId
-            );
-        if (empty($membership['ok'])
-            && (!isset($membership['code'])
-                || $membership['code'] !== 'already_member')) {
-            return $this->compensate(
-                'guest_membership_failed',
-                $userId,
-                $storageId,
-                $permissionUserId,
-                $guestGroupId
-            );
-        }
-
         return $this->result(true, 'user_created', $userId, $storageId);
-    }
-
-    /**
-     * Compensate only records allocated inside the current provisioning call.
-     */
-    private function compensate(
-        $failureCode,
-        $userId,
-        $storageId,
-        $permissionUserId,
-        $groupId
-    ) {
-        if ($groupId !== null) {
-            $membershipRemoved = ((string) $userId === '1')
-                ? $this->objGroupService->removeBootstrapMember(
-                    $groupId,
-                    $userId,
-                    'Guest'
-                )
-                : $this->objGroupService->removeMember(
-                    $groupId,
-                    $userId
-                );
-            $membershipCode = isset($membershipRemoved['code'])
-                ? $membershipRemoved['code']
-                : '';
-            if (empty($membershipRemoved['ok'])
-                && $membershipCode !== 'not_a_member') {
-                return $this->result(
-                    false,
-                    $failureCode . '_rollback_membership_failed',
-                    $userId,
-                    $storageId
-                );
-            }
-        }
-
-        if ($this->objGroupService->hasAnyMembership($userId)) {
-            return $this->result(
-                false,
-                $failureCode . '_rollback_memberships_remain',
-                $userId,
-                $storageId
-            );
-        }
-
-        $identityRemoved = $this->objIdentityService
-            ->rollbackProvisionedIdentity($userId, $permissionUserId);
-        if (!$identityRemoved) {
-            return $this->result(
-                false,
-                $failureCode . '_rollback_identity_failed',
-                $userId,
-                $storageId
-            );
-        }
-
-        $userRemoved = $this->objUserService->rollbackProvisionedUser(
-            $userId,
-            $storageId
-        );
-        if (empty($userRemoved['ok'])) {
-            return $this->result(
-                false,
-                $failureCode . '_rollback_user_failed',
-                $userId,
-                $storageId
-            );
-        }
-
-        return $this->result(false, $failureCode, $userId);
     }
 
     private function result($ok, $code, $userId = null, $storageId = null)

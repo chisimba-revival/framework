@@ -45,6 +45,7 @@ $adminIconMap = array(
     'systext' => 'text',
     'serverstatus' => 'server-cog',
     'sysconfig' => 'server-cog',
+    'rubric' => 'scroll-text',
     'viewsource' => 'code-2',
 );
 

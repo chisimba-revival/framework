@@ -13,6 +13,7 @@ class fileapi extends ChisimbaObject
     private $objUpload;
     private $objLanguage;
     private $objContext;
+    private $objMkdir;
 
     public function init()
     {
@@ -23,6 +24,59 @@ class fileapi extends ChisimbaObject
         $this->objUpload = $this->getObject('upload', 'filemanager');
         $this->objLanguage = $this->getObject('language', 'language');
         $this->objContext = $this->getObject('dbcontext', 'context');
+        $this->objConfig = $this->getObject('altconfig', 'config');
+        $this->objMkdir = $this->getObject('mkdir', 'files');
+    }
+
+    /**
+     * Store a trusted, already validated generated image in the active context.
+     * This is intentionally separate from browser upload handling: callers pass
+     * bytes, and File Manager still owns the physical file and catalogue row.
+     */
+    public function storeContextGeneratedImage($contextCode, array $asset, $collection = 'ingest')
+    {
+        $contextCode = trim((string) $contextCode);
+        $activeContext = trim((string) $this->objContext->getContextCode());
+        if ($contextCode === '' || $activeContext === '' || $contextCode !== $activeContext
+            || !preg_match('/^[A-Za-z0-9._-]{1,255}$/', $contextCode)) {
+            return $this->error('generated_asset_context_forbidden', $this->objLanguage->languageText('mod_filemanager_generated_asset_context_forbidden', 'filemanager'));
+        }
+        $collection = preg_replace('/[^A-Za-z0-9._-]+/', '-', trim((string) $collection));
+        if ($collection === '') { $collection = 'ingest'; }
+        $content = base64_decode((string) ($asset['content'] ?? ''), true);
+        $declaredMime = strtolower(trim((string) ($asset['mediaType'] ?? '')));
+        $mimeExtensions = array('image/png'=>'png', 'image/jpeg'=>'jpg', 'image/gif'=>'gif', 'image/webp'=>'webp');
+        if ($content === false || $content === '' || strlen($content) > 10485760 || !isset($mimeExtensions[$declaredMime])) {
+            return $this->error('generated_asset_invalid', $this->objLanguage->languageText('mod_filemanager_generated_asset_invalid', 'filemanager'));
+        }
+        $detectedMime = '';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) { $detectedMime = strtolower((string) finfo_buffer($finfo, $content)); finfo_close($finfo); }
+        }
+        if ($detectedMime !== '' && $detectedMime !== $declaredMime) {
+            return $this->error('generated_asset_mimetype_mismatch', $this->objLanguage->languageText('mod_filemanager_generated_asset_mimetype_mismatch', 'filemanager'));
+        }
+        $digest = hash('sha256', $content);
+        $filename = 'ingest-' . substr($digest, 0, 24) . '.' . $mimeExtensions[$declaredMime];
+        $folderPath = 'context/' . $contextCode . '/ingest/' . $collection;
+        $relativePath = $folderPath . '/' . $filename;
+        $existing = $this->objFiles->getFileDetailsFromPath($relativePath);
+        if (is_array($existing) && !empty($existing['id'])) { return array('ok'=>true, 'file'=>$this->imageItem($existing), 'reused'=>true); }
+        $fullFolder = rtrim($this->objConfig->getcontentBasePath(), '/') . '/' . $folderPath;
+        if (!$this->objMkdir->mkdirs($fullFolder, 0777) || !$this->objFolders->indexFolder($folderPath, false)) {
+            return $this->error('generated_asset_folder_failed', $this->objLanguage->languageText('mod_filemanager_generated_asset_folder_failed', 'filemanager'));
+        }
+        $fullPath = $fullFolder . '/' . $filename;
+        $temporaryPath = $fullPath . '.tmp-' . bin2hex(random_bytes(6));
+        if (file_put_contents($temporaryPath, $content, LOCK_EX) !== strlen($content) || !rename($temporaryPath, $fullPath)) {
+            @unlink($temporaryPath);
+            return $this->error('generated_asset_write_failed', $this->objLanguage->languageText('mod_filemanager_generated_asset_write_failed', 'filemanager'));
+        }
+        $fileId = $this->objFiles->addFile($filename, $relativePath, strlen($content), $declaredMime, 'images');
+        if (!$fileId) { @unlink($fullPath); return $this->error('generated_asset_index_failed', $this->objLanguage->languageText('mod_filemanager_generated_asset_index_failed', 'filemanager')); }
+        $record = $this->objFiles->getFile($fileId);
+        return array('ok'=>true, 'file'=>$this->imageItem($record), 'reused'=>false);
     }
 
     public function listUserImages($folderId = null)

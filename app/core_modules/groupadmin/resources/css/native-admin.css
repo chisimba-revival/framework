@@ -128,6 +128,31 @@
     list-style: none;
 }
 
+.groupadmin-native__context-toggle {
+    display: block;
+    margin: 0 0 0.75rem;
+    padding: 0.5rem 0.65rem;
+    color: var(--ga-accent);
+    background: var(--ga-soft);
+    border: 1px solid var(--ga-border);
+    border-radius: 0.35rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.groupadmin-native__group-item--context {
+    margin-top: 0.55rem;
+    border-top: 1px solid var(--ga-border);
+    padding-top: 0.55rem;
+}
+
+.groupadmin-native__group-item--nested {
+    margin-left: 0.8rem;
+    border-left: 2px solid var(--ga-border);
+    padding-left: 0.35rem;
+}
+
 .groupadmin-native__group-form {
     margin: 0;
 }
@@ -147,14 +172,21 @@
 
 .groupadmin-native__group-button:hover,
 .groupadmin-native__group-button:focus-visible {
-    background: var(--ga-soft);
+    color: var(--chisimba-selectable-hover-color, inherit);
+    background: var(--chisimba-selectable-hover-background, var(--ga-soft));
     border-color: var(--ga-border);
 }
 
 .groupadmin-native__group-button[aria-current="page"] {
-    color: #fff;
-    background: var(--ga-accent);
+    color: var(--chisimba-selectable-selected-color, #fff);
+    background: var(--chisimba-selectable-selected-background, var(--ga-accent));
     border-color: var(--ga-accent);
+}
+
+.groupadmin-native__group-button[aria-current="page"]:hover,
+.groupadmin-native__group-button[aria-current="page"]:focus-visible {
+    color: var(--chisimba-selectable-selected-color, #fff);
+    background: var(--chisimba-primary-hover, var(--ga-accent));
 }
 
 .groupadmin-native__group-name {
@@ -290,6 +322,19 @@
     text-align: left;
     vertical-align: top;
     border-bottom: 1px solid var(--ga-border);
+}
+
+.groupadmin-native th:nth-child(1) { width: 26%; }
+.groupadmin-native th:nth-child(2) { width: 20%; }
+.groupadmin-native th:nth-child(3) { width: 31%; }
+.groupadmin-native th:nth-child(4) { width: 11%; }
+.groupadmin-native th:nth-child(5) { width: 12%; }
+
+.groupadmin-native td:nth-child(1),
+.groupadmin-native td:nth-child(2),
+.groupadmin-native td:nth-child(3) {
+    overflow-wrap: anywhere;
+    word-break: normal;
 }
 
 .groupadmin-native th {

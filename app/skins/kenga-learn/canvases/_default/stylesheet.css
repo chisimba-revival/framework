@@ -184,6 +184,13 @@
     width: 100% !important;
 }
 
+/* A one-column layout must not reserve the supplementary sidebar track. */
+#Canvas_Content_Body > #onecolumn,
+#Canvas_Content_Body > .onecolumn {
+    grid-template-areas: "main";
+    grid-template-columns: minmax(0, 1fr);
+}
+
 /*
  * Also support modules that emit the region elements directly without one of
  * the standard csslayout wrappers.
@@ -1080,6 +1087,7 @@
         grid-template-rows: auto auto !important;
     }
 }
+
 /* END CHISIMBA-REBORN SINGLE STACKED SIDEBAR POSITION */
 
 /* CHISIMBA COMPLETE COMPONENT WRAPPER CONTRACT — p380
@@ -1145,7 +1153,7 @@
     box-sizing: border-box;
     margin: 0;
     min-width: 0;
-    padding: 0;
+    padding: 0 !important;
     width: 100%;
 }
 
@@ -1422,7 +1430,7 @@
     margin: 0;
     max-width: none;
     min-width: 0;
-    padding: 0;
+    padding: 0 !important;
     width: 100%;
 }
 
@@ -1512,3 +1520,36 @@ button.course-card__action {
     padding: 0;
 }
 /* END CHISIMBA_CONTENT_MODE_REGION_SHELL */
+/* Registration: balanced main and guidance columns. */
+#Canvas_Content_Body_Region2:has(
+    > .registration-service.chisimba-form-page
+    > .chisimba-form-card
+) {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+@media (min-width: 60.01rem) {
+    #Canvas_Content_Body:has(
+        > #Canvas_Content_Body_Region2
+        .registration-service.chisimba-form-page
+    ) {
+        grid-template-columns: minmax(0, 1fr) minmax(27rem, .52fr) !important;
+    }
+
+    #Canvas_Content_Body:has(
+        > #Canvas_Content_Body_Region2
+        .registration-service.chisimba-form-page
+    ) > #Canvas_Content_Body_Region3 > .chisimba-guidance-card {
+        margin-top: 0 !important;
+    }
+
+    #Canvas_Content_Body:has(
+        > #Canvas_Content_Body_Region2
+        .registration-service.chisimba-form-page
+    ) > #Canvas_Content_Body_Region3 {
+        padding: 0;
+    }
+}

@@ -41,7 +41,8 @@ class groupadminreadservice extends ChisimbaObject
         $limit = 25,
         $query = '',
         $sort = 'name',
-        $direction = 'asc'
+        $direction = 'asc',
+        $showContexts = false
     ) {
         $this->assertAdministrator();
 
@@ -51,10 +52,11 @@ class groupadminreadservice extends ChisimbaObject
         $query = $this->normaliseQuery($query);
         $sort = $this->normaliseSort($sort);
         $direction = $this->normaliseDirection($direction);
+        $showContexts = $this->normaliseBoolean($showContexts);
 
         // Load the hierarchy through the canonical domain service.
         $groups = $this->loadGroupHierarchy();
-        $groups = $this->sortRecords($groups, 'name', 'asc');
+        $groups = $this->orderGroupHierarchy($groups, $showContexts);
 
         $selectedGroup = $this->findGroup($groups, $groupId);
         $members = array();
@@ -86,6 +88,7 @@ class groupadminreadservice extends ChisimbaObject
             'direction' => $direction,
             'page' => $page,
             'limit' => $limit,
+            'showContexts' => $showContexts,
         );
     }
 
@@ -95,6 +98,48 @@ class groupadminreadservice extends ChisimbaObject
     private function loadGroupHierarchy()
     {
         return $this->objGroupService->listGroups();
+    }
+
+    /**
+     * Keep site groups first. Context containers and their role groups are an
+     * optional, nested second section rather than a misleading flat list.
+     */
+    private function orderGroupHierarchy(array $groups, $showContexts)
+    {
+        $siteGroups = array();
+        $contexts = array();
+        $children = array();
+
+        foreach ($groups as $group) {
+            if (!is_array($group)) {
+                continue;
+            }
+            if (($group['type'] ?? '') === 'context') {
+                $contexts[] = $group;
+            } elseif (($group['type'] ?? '') === 'subgroup') {
+                $parentId = isset($group['parentId']) ? (int) $group['parentId'] : 0;
+                $children[$parentId][] = $group;
+            } else {
+                $siteGroups[] = $group;
+            }
+        }
+
+        $siteGroups = $this->sortRecords($siteGroups, 'name', 'asc');
+        if (!$showContexts) {
+            return $siteGroups;
+        }
+
+        $contexts = $this->sortRecords($contexts, 'name', 'asc');
+        $ordered = $siteGroups;
+        foreach ($contexts as $context) {
+            $ordered[] = $context;
+            $contextChildren = $children[(int) $context['id']] ?? array();
+            $contextChildren = $this->sortRecords($contextChildren, 'name', 'asc');
+            foreach ($contextChildren as $child) {
+                $ordered[] = $child;
+            }
+        }
+        return $ordered;
     }
 
 
@@ -232,6 +277,12 @@ class groupadminreadservice extends ChisimbaObject
     private function normaliseDirection($value)
     {
         return strtolower((string) $value) === 'desc' ? 'desc' : 'asc';
+    }
+
+    private function normaliseBoolean($value)
+    {
+        return in_array(strtolower(trim((string) $value)),
+            array('1', 'true', 'yes', 'on'), true);
     }
 
     private function lower($value)
