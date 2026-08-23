@@ -1,27 +1,8 @@
-# Kenga Learn
+# KengaLearn compatibility entry point
 
-Kenga Learn is derived from the modern Chisimba Reborn reference skin.
+KengaLearn is now a canvas in `chisimba-reborn`, not an independently
+maintained skin. This directory remains temporarily so sites configured with
+`KEWL_DEFAULT_SKIN=kenga-learn` continue to render while they are migrated.
 
-
-## Meaning and visual identity
-
-“Chisimba” is the Chichewa word for the wooden framework used to build a
-traditional African house. Chisimba is the framework; a deployed application
-is a particular house constructed with that framework.
-
-The default canvas therefore retains the original Chisimba logo and derives
-its design tokens from the original earth, ochre, gold and blue palette.
-
-## Architecture
-
-```text
-Skin
-    renders
-        Canvas
-```
-
-The skin owns templates, reusable design tokens, typography, common component
-styles and rendering behaviour. A canvas supplies contextual presentation.
-
-The initial `_default` canvas preserves all three historical content regions
-and arranges them responsively with CSS Grid.
+Do not add UI rules or templates here. Make shared changes in
+`chisimba-reborn`; make brand changes in its `canvases/kenga-learn` directory.

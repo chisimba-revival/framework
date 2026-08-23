@@ -67,10 +67,13 @@ if (isset ($canvas)) {
     $canvas = $objCanvas->getCanvas($validCanvases, $skinBase);
 }
 
-// Check if there is a settings file and load it
+// Check if there is a settings file and load it. Use the canonical skin path
+// rather than the requested skin object's path so compatibility entry points
+// can delegate here without retaining their own canvas implementation.
 if (!isset($pageSuppressSkin)) {
     $canvasName = $objCanvas->getCanvasName($canvas);
-    $settingsFile = $objSkin->getSkinLocation().'canvases/' . $canvasName . '/settings.php';
+    $settingsFile = $objConfig->getSiteRootPath()
+        . 'skins/' . $skinName . '/canvases/' . $canvasName . '/settings.php';
     if(file_exists($settingsFile)) {
         require_once $settingsFile;
     }

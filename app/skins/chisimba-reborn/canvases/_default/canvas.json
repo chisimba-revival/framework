@@ -1,0 +1,11 @@
+{
+    "name": "_default",
+    "displayName": "Default",
+    "description": "Compatibility fallback for the Chisimba canvas.",
+    "author": { "authorname": "Chisimba Revival" },
+    "preview": {
+        "thumb": "../../default.png",
+        "fullview": "../../default.png"
+    },
+    "downloadfrom": "_NULL"
+}

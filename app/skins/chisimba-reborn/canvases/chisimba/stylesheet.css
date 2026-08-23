@@ -1,0 +1,8 @@
+/**
+ * Chisimba canvas.
+ *
+ * Structure and component behaviour belong to the enclosing skin. This
+ * canvas deliberately adds no structural rules: the skin's default tokens
+ * are the Chisimba identity.
+ */
+@import url("../_default/stylesheet.css");

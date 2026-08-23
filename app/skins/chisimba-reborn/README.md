@@ -3,6 +3,10 @@
 Chisimba Reborn is the modern reference skin for the restored Chisimba
 framework.
 
+It is the single maintained modern UI implementation. Brand colours, logos
+and other identity choices live in named canvases. See
+[CANVAS_CONTRACT.md](CANVAS_CONTRACT.md) for the enforced ownership boundary.
+
 ## Meaning and visual identity
 
 “Chisimba” is the Chichewa word for the wooden framework used to build a

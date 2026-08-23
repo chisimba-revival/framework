@@ -11,9 +11,14 @@
  */
 $skins = dirname(__DIR__, 2);
 $reborn = file_get_contents($skins . '/chisimba-reborn/canvases/_default/stylesheet.css');
-$kenga = file_get_contents($skins . '/kenga-learn/canvases/_default/stylesheet.css');
 $checks = array(
-    'skin canvas parity' => hash('sha256', $reborn) === hash('sha256', $kenga),
+    'named canvases inherit canonical layout' => str_contains(
+        file_get_contents($skins . '/chisimba-reborn/canvases/chisimba/stylesheet.css'),
+        '@import url("../_default/stylesheet.css")'
+    ) && str_contains(
+        file_get_contents($skins . '/chisimba-reborn/canvases/kenga-learn/stylesheet.css'),
+        '@import url("../_default/stylesheet.css")'
+    ),
     'semantic component recognised' => str_contains($reborn, '.block:has(> .content-block)'),
     'region shell flattened' => str_contains($reborn, '):has(> .content-block),'),
     'placement list owns spacing' => str_contains($reborn, 'gap: var(--chisimba-space-3, 12px);'),

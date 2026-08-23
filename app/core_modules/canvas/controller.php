@@ -97,8 +97,9 @@ class canvas extends controller
         $this->objConfig = $this->getObject('config', 'config');
         // Create an instance of the master canvas class
         $this->objMasterCanvas = & $this->getObject('mastercanvas', 'canvas');
-        // Set the canvas for this module
-        $this->setVar('canvas', 'modcanvas');
+        // Let the active skin resolve the current site/user canvas. The old
+        // hard-coded "modcanvas" target does not exist in the modern skin and
+        // prevented the chooser itself from rendering with a valid canvas.
         //Get the activity logger class
         $this->objLog=$this->newObject('logactivity', 'logger');
         // Log this module call

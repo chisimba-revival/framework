@@ -13,11 +13,11 @@ $skins = dirname(__DIR__, 2);
 $reborn = file_get_contents(
     $skins . '/chisimba-reborn/canvases/_default/stylesheet.css'
 );
-$kenga = file_get_contents(
-    $skins . '/kenga-learn/canvases/_default/stylesheet.css'
-);
 $checks = array(
-    'skin canvas parity' => hash('sha256', $reborn) === hash('sha256', $kenga),
+    'layout has one canonical owner' => !str_contains(
+        file_get_contents($skins . '/kenga-learn/canvases/_default/stylesheet.css'),
+        'grid-template-areas'
+    ),
     'descendant region recognised' => str_contains(
         $reborn,
         '):has(.content-block) {'
