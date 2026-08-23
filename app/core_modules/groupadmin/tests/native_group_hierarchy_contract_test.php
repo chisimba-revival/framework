@@ -17,6 +17,9 @@ $checks = array(
     ) && !str_contains($service, 'foreach ($payload[0] as $key => $subgroup)'),
     'system text context label' => str_contains($template, "'[-context-] groups'"),
     'context toggle' => str_contains($template, 'groupadmin-native__context-toggle'),
+    'urls are not double encoded' => str_contains($template, '$escapeUrl = function')
+        && str_contains($template, 'html_entity_decode(')
+        && !str_contains($template, '$escape($buildUrl('),
     'nested context roles' => str_contains($template, 'groupadmin-native__group-item--nested'),
     'long identity wrapping' => str_contains($css, 'overflow-wrap: anywhere;'),
 );
