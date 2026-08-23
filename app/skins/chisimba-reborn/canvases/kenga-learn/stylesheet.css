@@ -14,7 +14,8 @@
     --chisimba-focus: #67c871;
     --chisimba-grey-blue: #295351;
     --chisimba-info: #295351;
-    --chisimba-brand-logo: url("images/chisimba-logo.svg");
+    /* URL variables are resolved where the shared skin consumes them. */
+    --chisimba-brand-logo: url("canvases/kenga-learn/images/chisimba-logo.svg");
 }
 
 .chisimba-learning-journey--polished {
