@@ -15,7 +15,9 @@ $reborn = file_get_contents(
 );
 $checks = array(
     'layout has one canonical owner' => !str_contains(
-        file_get_contents($skins . '/kenga-learn/canvases/_default/stylesheet.css'),
+        file_get_contents(
+            $skins . '/chisimba-reborn/canvases/kenga-learn/stylesheet.css'
+        ),
         'grid-template-areas'
     ),
     'descendant region recognised' => str_contains(

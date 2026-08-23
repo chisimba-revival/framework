@@ -28,8 +28,6 @@ class cssmenu extends ChisimbaObject {
         public function init() {
                 $this->objLanguage = $this->getObject('language', 'language');
                 $this->objSkin = $this->getObject('skin', 'skin');
-                $this->objConfig = $this->getObject('altconfig', 'config');
-
                 $this->loadClass('link', 'htmlelements');
                 $this->iconService = $this->getObject('iconservice', 'ui');
                 $this->moduleIconResolver = $this->getObject('moduleiconresolver', 'modulecatalogue');

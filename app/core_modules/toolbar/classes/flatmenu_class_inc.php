@@ -29,8 +29,6 @@ class flatmenu extends ChisimbaObject
     {
         $this->objLanguage = $this->getObject('language','language');
         $this->securityContext = $this->getObject('toolbarsecuritycontext');
-        $this->objConfig = $this->getObject('altconfig','config');
-        
         $this->loadClass('link','htmlelements');
     }
 
@@ -44,13 +42,10 @@ class flatmenu extends ChisimbaObject
     {
         $logoutLabel = $this->objLanguage->languageText('word_logout', 'system', 'Logout');
         
-        $postlogin = 'cms';//$this->objConfig->getdefaultModuleName();
-        $home = $this->objConfig->getPrelogin();
         $showLogout = FALSE;
         
         // Check if the user is logged in
         if($this->securityContext->isAuthenticated()){
-            $home = $postlogin;
             $showLogout = TRUE;
         }
         

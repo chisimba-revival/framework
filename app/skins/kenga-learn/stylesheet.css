@@ -1,7 +1,0 @@
-/**
- * Compatibility entry point only.
- *
- * The maintained component system is skins/chisimba-reborn/stylesheet.css
- * and KengaLearn identity is a canvas beneath that skin.
- */
-@import url("../chisimba-reborn/stylesheet.css");

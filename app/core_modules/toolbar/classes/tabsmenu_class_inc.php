@@ -44,7 +44,7 @@ class tabsmenu extends ChisimbaObject
     /**
      * @var string $default Default Tab to be highlighted
      */
-    private $default = 'home';
+    private $default = '';
     
     
     

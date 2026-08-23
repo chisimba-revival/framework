@@ -8,10 +8,6 @@ $chisimbaCanvas = file_get_contents(
 $kengaCanvas = file_get_contents(
     $skins . '/chisimba-reborn/canvases/kenga-learn/stylesheet.css'
 );
-$legacyCss = file_get_contents($skins . '/kenga-learn/stylesheet.css');
-$legacyTemplate = file_get_contents(
-    $skins . '/kenga-learn/templates/page/page_template.php'
-);
 
 $checks = array(
     'skin owns component system' => substr_count($skinCss, '{') > 500,
@@ -21,15 +17,11 @@ $checks = array(
         $kengaCanvas,
         '--chisimba-primary: #67c871;'
     ) && str_contains($kengaCanvas, '--chisimba-brand-logo:'),
-    'legacy stylesheet delegates' => substr_count($legacyCss, '{') === 0
-        && str_contains($legacyCss, '../chisimba-reborn/stylesheet.css'),
-    'legacy template selects shared canvas' => str_contains(
-        $legacyTemplate,
-        "\$canvas = 'kenga-learn';"
-    ) && str_contains(
-        $legacyTemplate,
-        'skins/chisimba-reborn/templates/page/page_template.php'
-    ),
+    'legacy framework skins are absent' =>
+        !is_dir($skins . '/canvas')
+        && !is_dir($skins . '/canvas5')
+        && !is_dir($skins . '/kenga-learn')
+        && !is_dir($skins . '/metallic'),
 );
 
 foreach ($checks as $name => $ok) {

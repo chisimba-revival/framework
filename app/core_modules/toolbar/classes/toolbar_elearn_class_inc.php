@@ -21,7 +21,7 @@ class toolbar_elearn extends ChisimbaObject
 
     private $menuItems;
 
-    private $default = 'home';
+    private $default = '';
 
     public $params;
 
@@ -143,9 +143,6 @@ class toolbar_elearn extends ChisimbaObject
             case 'groupadmin':
             case 'permissions':
                 $this->default = 'admin';
-                return;
-            case '_default':
-                $this->default = 'home';
                 return;
             case 'calendar':
             case 'filemanager':

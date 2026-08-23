@@ -4,7 +4,9 @@ $reborn = file_get_contents($skins . '/chisimba-reborn/stylesheet.css');
 $checks = array(
     'primitive has one canonical owner' => str_contains($reborn, '.chisimba-notice {')
         && !str_contains(
-            file_get_contents($skins . '/kenga-learn/stylesheet.css'),
+            file_get_contents(
+                $skins . '/chisimba-reborn/canvases/kenga-learn/stylesheet.css'
+            ),
             '.chisimba-notice {'
         ),
     'notice base primitive' => str_contains($reborn, '.chisimba-notice {'),
