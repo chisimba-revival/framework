@@ -1,39 +1,14 @@
 <?php
 /**
- * Safe renderer for the curated Chisimba Lucide icon catalogue.
+ * Safe renderer for the complete, pinned Chisimba Lucide icon catalogue.
  *
- * Modules choose an allowlisted semantic icon. The skin owns presentation.
+ * Modules choose a locally bundled semantic icon. The skin owns presentation.
  * SVGs render inline and inherit currentColor without JavaScript or a CDN.
  *
  * @author Derek Keats
  */
 class iconservice extends ChisimbaObject
 {
-    private $allowedIcons = array(
-        'file-text' => true,
-        'external-link' => true,
-        'file-archive' => true,
-        'file-down' => true,
-        'image-plus' => true,
-        'smartphone' => true,
-        'video' => true,
-        'sparkles' => true,
- 'calendar' => true, 'chevron-left' => true, 'chevron-right' => true,
-        'chevron-up' => true, 'chevron-down' => true,
-        'circle-alert' => true, 'circle-check' => true, 'clock' => true,
-        'download' => true, 'eye' => true, 'info' => true, 'minus' => true,
-        'arrow-right-left' => true,
-        'pencil' => true, 'pin' => true, 'plus' => true, 'search' => true,
-        'trash-2' => true, 'triangle-alert' => true, 'upload' => true,
-        'x' => true, 'user' => true, 'user-minus' => true, 'key-round' => true,
-        'log-in' => true, 'log-out' => true,
-        'book-open' => true, 'folder-open' => true, 'library' => true, 'scroll-text' => true, 'user-cog' => true, 'users-round' => true,
-        'shield-check' => true, 'boxes' => true, 'languages' => true,
-        'puzzle' => true, 'text' => true, 'server-cog' => true,
-        'code-2' => true,
-        'square-pen' => true, 'case-upper' => true, 'clipboard-pen' => true,
-    );
-
     /**
      * @param string $name
      * @param array $options label, decorative and class are supported.
@@ -41,7 +16,8 @@ class iconservice extends ChisimbaObject
      */
     public function render($name, $options = array())
     {
-        if (!is_string($name) || !isset($this->allowedIcons[$name])) {
+        if (!is_string($name)
+            || !preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $name)) {
             throw new InvalidArgumentException('icon_name_unknown');
         }
         if (!is_array($options)) {
@@ -59,6 +35,9 @@ class iconservice extends ChisimbaObject
         }
 
         $path = dirname(__DIR__) . '/resources/icons/lucide/' . $name . '.svg';
+        if (!is_file($path)) {
+            throw new InvalidArgumentException('icon_name_unknown');
+        }
         $svg = @file_get_contents($path);
         if ($svg === false) {
             throw new RuntimeException('icon_asset_missing');
