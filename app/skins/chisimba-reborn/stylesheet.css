@@ -4337,6 +4337,22 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-button-secondary { color:var(--chisimba-ink); background:var(--chisimba-surface-muted); border:1px solid var(--chisimba-border); }
 .chisimba-button-secondary:hover,
 .chisimba-button-secondary:focus-visible { color:var(--chisimba-ink); background:var(--chisimba-primary-soft); }
+.chisimba-button-danger {
+    color: var(--chisimba-danger);
+    background: transparent;
+    border: 1px solid var(--chisimba-danger);
+}
+.chisimba-button-danger:hover,
+.chisimba-button-danger:focus-visible {
+    color: var(--chisimba-text-inverse);
+    background: var(--chisimba-danger);
+}
+.chisimba-button-secondary .chisimba-icon,
+.chisimba-button-danger .chisimba-icon,
+.chisimba-row-actions .chisimba-icon {
+    width: 1rem;
+    height: 1rem;
+}
 .chisimba-editor-list { display:grid; gap:.55rem; max-width:58rem; }
 .chisimba-editor-row { display:grid; grid-template-columns:minmax(14rem,1fr) 10rem auto auto; gap:.7rem; align-items:end; padding:.75rem; border:1px solid var(--chisimba-border); border-radius:.55rem; background:var(--chisimba-surface); }
 .chisimba-editor-row:nth-child(even) { background:var(--chisimba-surface-subtle); }
