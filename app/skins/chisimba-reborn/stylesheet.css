@@ -4235,6 +4235,39 @@ h5.featureboxheader,
 }
 
 /* BEGIN CHISIMBA SHARED WORKSPACE PRIMITIVES */
+.chisimba-notice {
+    box-sizing: border-box;
+    margin: 0 0 1rem;
+    padding: .7rem .85rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: .5rem;
+    background: var(--chisimba-surface);
+}
+.chisimba-notice--success {
+    color: var(--chisimba-success);
+    background: color-mix(in srgb, var(--chisimba-success) 9%, var(--chisimba-surface));
+    border-color: color-mix(in srgb, var(--chisimba-success) 32%, var(--chisimba-border));
+}
+.chisimba-notice--error {
+    color: var(--chisimba-danger);
+    background: color-mix(in srgb, var(--chisimba-danger) 9%, var(--chisimba-surface));
+    border-color: color-mix(in srgb, var(--chisimba-danger) 32%, var(--chisimba-border));
+}
+.chisimba-notice--transient {
+    max-height: 12rem;
+    overflow: hidden;
+    animation: chisimba-notice-dismiss .55s ease 4.5s forwards;
+}
+@keyframes chisimba-notice-dismiss {
+    to {
+        max-height: 0;
+        margin-block: 0;
+        padding-block: 0;
+        border-width: 0;
+        opacity: 0;
+        visibility: hidden;
+    }
+}
 .chisimba-selectable {
     color: var(--chisimba-selectable-color);
     background: var(--chisimba-selectable-background);
