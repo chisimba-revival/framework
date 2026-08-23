@@ -48,7 +48,8 @@ $checks = array(
     'registration block uses replacement service' => str_contains(
         $registrationBlock,
         "'registration-service'"
-    ) && !str_contains($registrationBlock, "'userregistration'"),
+    ) && !str_contains($registrationBlock, "'userregistration'")
+      && !str_contains($registrationBlock, 'return null;'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

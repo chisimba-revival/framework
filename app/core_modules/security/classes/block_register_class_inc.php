@@ -70,11 +70,7 @@ class block_register extends ChisimbaObject
             {
                 $this->blockType="invisible";
             }
-            if($this->objUser->isLoggedIn()) {
-                $this->blockType="invisible";
-            } else { 
-                $this->title = $this->objLanguage->languageText("word_registration");
-            }
+            $this->title = $this->objLanguage->languageText("word_registration");
         } catch (Exception $e) {
             throw customException($e->getMessage());
             exit();
@@ -88,9 +84,6 @@ class block_register extends ChisimbaObject
     public function show()
     {
         try {
-            if ($this->objUser->isLoggedIn()) {
-                return null;
-            }
             $label = $this->objLanguage->languageText(
                 'word_register', 'system', 'Create an account'
             );
