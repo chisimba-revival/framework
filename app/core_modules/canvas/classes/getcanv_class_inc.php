@@ -421,6 +421,13 @@ class getcanv extends ChisimbaObject
                 array('action' => 'applysite'),
                 'canvas'
             );
+            // uri() returns HTML-encoded separators. Normalise before the
+            // final attribute escape so the action is encoded exactly once.
+            $action = html_entity_decode(
+                $action,
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            );
             $button = $selected
                 ? $this->objLanguage->languageText(
                     'mod_canvas_currentcanvas',

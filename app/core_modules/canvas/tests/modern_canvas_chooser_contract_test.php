@@ -17,6 +17,10 @@ $checks = array(
     'cards use the shared skin component' => str_contains($getter, 'chisimba-canvas-card'),
     'selection is explicit' => str_contains($getter, 'Use this canvas')
         && str_contains($getter, 'method="post"'),
+    'form action is encoded once' => str_contains(
+        $getter,
+        'html_entity_decode('
+    ) && str_contains($getter, 'ENT_QUOTES | ENT_HTML5'),
     'controller validates named canvas' => str_contains($controller, "private function __applysite()")
         && str_contains($controller, "preg_match('/^[a-z0-9][a-z0-9-]*$/', \$canvas)"),
     'skin owns card presentation' => str_contains($skin, '.chisimba-canvas-grid')
