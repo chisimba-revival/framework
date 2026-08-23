@@ -5,6 +5,7 @@ $reader = file_get_contents($module . '/classes/groupadminreadservice_class_inc.
 $service = file_get_contents($module . '/classes/groupservice_class_inc.php');
 $template = file_get_contents($module . '/templates/content/native_readonly_tpl.php');
 $css = file_get_contents($module . '/resources/css/native-admin.css');
+$skin = file_get_contents(dirname($module, 2) . '/skins/chisimba-reborn/stylesheet.css');
 
 $checks = array(
     'context visibility reaches read service' => str_contains($controller, "getParam('showcontexts', '0')"),
@@ -26,6 +27,14 @@ $checks = array(
         && !str_contains($template, '$escape($buildUrl('),
     'nested context roles' => str_contains($template, 'groupadmin-native__group-item--nested'),
     'long identity wrapping' => str_contains($css, 'overflow-wrap: anywhere;'),
+    'shared selectable primitive used' => str_contains(
+        $template,
+        'groupadmin-native__group-button chisimba-selectable'
+    ) && str_contains($skin, '.chisimba-selectable:hover'),
+    'hover keeps readable foreground' => str_contains(
+        $css,
+        'var(--chisimba-selectable-hover-color, inherit)'
+    ),
 );
 
 foreach ($checks as $name => $passed) {

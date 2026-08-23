@@ -181,7 +181,7 @@ $contextGroupsLabel = $this->objLanguage->code2Txt(
                                 <input type="hidden" name="limit" value="<?php echo (int) $limit; ?>" />
                                 <input type="hidden" name="showcontexts" value="<?php echo $showContexts ? '1' : '0'; ?>" />
                                 <button type="submit"
-                                        class="groupadmin-native__group-button"
+                                        class="groupadmin-native__group-button chisimba-selectable"
                                         <?php echo $isCurrent ? 'aria-current="page"' : ''; ?>>
                                     <span class="groupadmin-native__group-name"><?php echo $escape($group['name']); ?></span>
                                     <span class="groupadmin-native__type groupadmin-native__type--<?php echo $escape($group['type']); ?>">
