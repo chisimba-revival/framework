@@ -19,11 +19,13 @@ $sort = isset($snapshot['sort']) ? $snapshot['sort'] : 'name';
 $direction = isset($snapshot['direction']) ? $snapshot['direction'] : 'asc';
 $page = isset($snapshot['page']) ? $snapshot['page'] : 1;
 $limit = isset($snapshot['limit']) ? $snapshot['limit'] : 25;
+$showContexts = !empty($snapshot['showContexts']);
 $csrfToken = isset($groupAdminCsrfToken) ? (string) $groupAdminCsrfToken : '';
 $messageCode = isset($groupAdminMessage) ? (string) $groupAdminMessage : '';
 $errorCode = isset($groupAdminError) ? (string) $groupAdminError : '';
 
 $baseParams = array('action' => 'native');
+$baseParams['showcontexts'] = $showContexts ? '1' : '0';
 if ($selectedId !== null) {
     $baseParams['groupid'] = $selectedId;
 }
@@ -64,6 +66,12 @@ $headingName = $lang('mod_groupadmin_col_name', 'Name');
 $headingUsername = $lang('mod_groupadmin_col_username', 'Username');
 $headingEmail = $lang('mod_groupadmin_col_email', 'Email');
 $headingStatus = $lang('mod_groupadmin_col_status', 'Status');
+$contextGroupsLabel = $this->objLanguage->code2Txt(
+    'mod_groupadmin_contextgroups',
+    'groupadmin',
+    null,
+    '[-context-] groups'
+);
 ?>
 
 <link rel="stylesheet" type="text/css" href="<?php echo $escape($this->getResourceUri('css/native-admin.css', 'groupadmin')); ?>" />
@@ -129,6 +137,17 @@ $headingStatus = $lang('mod_groupadmin_col_status', 'Status');
                 <span><?php echo count($groups); ?></span>
             </div>
 
+            <a class="groupadmin-native__context-toggle"
+               href="<?php echo $escape($buildUrl(array(
+                   'showcontexts' => $showContexts ? '0' : '1',
+                   'groupid' => null,
+                   'page' => 1,
+               ))); ?>">
+                <?php echo $escape(($showContexts
+                    ? $lang('mod_groupadmin_hide', 'Hide')
+                    : $lang('mod_groupadmin_show', 'Show')) . ' ' . $contextGroupsLabel); ?>
+            </a>
+
             <?php if (!$groups): ?>
                 <p role="status"><?php echo $escape($this->objLanguage->languageText('mod_groupadmin_nogroupsfound', 'groupadmin', 'No groups were found.')); ?></p>
             <?php else: ?>
@@ -137,7 +156,9 @@ $headingStatus = $lang('mod_groupadmin_col_status', 'Status');
                         <?php
                         $isCurrent = (string) $selectedId === (string) $group['id'];
                         ?>
-                        <li>
+                        <li class="<?php echo $group['type'] === 'subgroup'
+                            ? 'groupadmin-native__group-item--nested'
+                            : ($group['type'] === 'context' ? 'groupadmin-native__group-item--context' : ''); ?>">
                             <form class="groupadmin-native__group-form"
                                   method="get"
                                   action="<?php echo $escape($this->uri(array(), 'groupadmin')); ?>">
@@ -148,6 +169,7 @@ $headingStatus = $lang('mod_groupadmin_col_status', 'Status');
                                 <input type="hidden" name="sort" value="<?php echo $escape($sort); ?>" />
                                 <input type="hidden" name="dir" value="<?php echo $escape($direction); ?>" />
                                 <input type="hidden" name="limit" value="<?php echo (int) $limit; ?>" />
+                                <input type="hidden" name="showcontexts" value="<?php echo $showContexts ? '1' : '0'; ?>" />
                                 <button type="submit"
                                         class="groupadmin-native__group-button"
                                         <?php echo $isCurrent ? 'aria-current="page"' : ''; ?>>
@@ -193,6 +215,7 @@ $headingStatus = $lang('mod_groupadmin_col_status', 'Status');
                     <input type="hidden" name="module" value="groupadmin" />
                     <input type="hidden" name="action" value="native" />
                     <input type="hidden" name="groupid" value="<?php echo (int) $selectedId; ?>" />
+                    <input type="hidden" name="showcontexts" value="<?php echo $showContexts ? '1' : '0'; ?>" />
 
                     <div class="groupadmin-native__field groupadmin-native__field--search">
                         <label for="groupadmin-search"><?php echo $escape($this->objLanguage->languageText('word_search', 'system', 'Search users')); ?></label>
@@ -291,6 +314,7 @@ $headingStatus = $lang('mod_groupadmin_col_status', 'Status');
                                                             <input type="hidden" name="dir" value="<?php echo $escape($direction); ?>" />
                                                             <input type="hidden" name="limit" value="<?php echo (int) $limit; ?>" />
                                                             <input type="hidden" name="page" value="<?php echo (int) $page; ?>" />
+                                                            <input type="hidden" name="showcontexts" value="<?php echo $showContexts ? '1' : '0'; ?>" />
                                                             <button type="submit" class="groupadmin-native__membership-button <?php echo $table['id'] === 'members' ? 'groupadmin-native__membership-button--remove' : 'groupadmin-native__membership-button--add'; ?>">
                                                                 <?php echo $escape($table['id'] === 'members' ? $lang('mod_groupadmin_remove_user', 'Remove') : $lang('mod_groupadmin_add_user', 'Add')); ?>
                                                             </button>
