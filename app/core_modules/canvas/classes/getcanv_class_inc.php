@@ -152,7 +152,6 @@ class getcanv extends ChisimbaObject
      */
     public function getCanvases($cType)
     {
-        $this->loadHeaderScript();
         $cType = strtolower($cType);
         if ($cType == 'personal') {
             return $this->getPersonal();
@@ -191,14 +190,21 @@ class getcanv extends ChisimbaObject
     */
     private function getSkin()
     {
-        //@todo - this needs sorting out in page templates
-        $this->curSkin = $_SESSION['skinName'];//$this->getSession('skinName', FALSE);
+        $this->curSkin = $_SESSION['skinName'];
         $canvasArray = $this->getSkinCanvasesArray($this->curSkin);
-        $canvases ="";
-        foreach ($canvasArray as $canvas) {
-            $canvases .= $this->getSkinCanvasView($canvas, "skin");
+        if (!is_array($canvasArray)) {
+            return '';
         }
-        return $canvases;
+        sort($canvasArray, SORT_NATURAL | SORT_FLAG_CASE);
+        $canvases = '<div class="chisimba-canvas-grid">';
+        foreach ($canvasArray as $canvas) {
+            // _default is an implementation fallback, not a user choice.
+            if (str_starts_with($canvas, '_')) {
+                continue;
+            }
+            $canvases .= $this->getSkinCanvasView($canvas);
+        }
+        return $canvases . '</div>';
     }
 
     /**
@@ -211,6 +217,7 @@ class getcanv extends ChisimbaObject
     *
     */
     private function getSkinCanvasesArray($curSkin) {
+        $ret = array();
         $canvasDir = $this->objConfig->getSiteRootPath() . "skins/" . $curSkin . "/canvases/";
         if ($handle = @opendir($canvasDir)) {
             while (FALSE !== ($file = readdir($handle))) {
@@ -391,22 +398,63 @@ class getcanv extends ChisimbaObject
         try {
             $dirToOpen = "skins/" . $this->curSkin . "/canvases/";
             $jsonFile = $dirToOpen . $canvas . '/canvas.json';
-            $jsonFile = file_get_contents($jsonFile);
-            $jsonObj = json_decode($jsonFile);
-            $divTag = "<div class='canvasthumb'>";
-            $divClose = "</div>";
-            $canvasName = $jsonObj->name;
-            $canvasName = $this->getSkinChooserLink($canvasName, 'skin');
-            $anchor = "<a href='" . $dirToOpen
-              . $canvas . "/" . $jsonObj->preview->fullview . "' rel='facebox'>"; //gb_imageset[skin_canvases]
-            $anchorClose = "</a>";
-            $imageLink = "<img src='" . $dirToOpen
-              . $canvas ."/" . $jsonObj->preview->thumb . "' />";
-            $by = $this->objLanguage->languageText("word_by");
-            $author = $by .": " . $jsonObj->author->authorname;
-            $downloadLink = $this->getDownLink($jsonObj->downloadfrom);
-            // @TODO add the download link
-            return $divTag . $canvasName . $anchor . $imageLink . $anchorClose . $author . $downloadLink . $divClose;
+            if (!is_file($jsonFile)) {
+                return '';
+            }
+            $jsonObj = json_decode(file_get_contents($jsonFile));
+            if (!$jsonObj) {
+                return '';
+            }
+
+            $displayName = $jsonObj->displayName ?? $jsonObj->name ?? $canvas;
+            $description = $jsonObj->description ?? '';
+            $logo = $jsonObj->preview->logo ?? '';
+            $logoUri = $logo === '' ? '' : $dirToOpen . $canvas . '/' . $logo;
+            $primary = $jsonObj->brand->primary ?? '#0084e7';
+            $accent = $jsonObj->brand->accent ?? '#577f9b';
+            $objConfig = $this->getObject('dbsysconfig', 'sysconfig');
+            $selected = $objConfig->getValue(
+                'canvas_preferredcanvas',
+                'canvas'
+            ) === $canvas;
+            $action = $this->uri(
+                array('action' => 'applysite'),
+                'canvas'
+            );
+            $button = $selected
+                ? $this->objLanguage->languageText(
+                    'mod_canvas_currentcanvas',
+                    'canvas',
+                    'Current canvas'
+                )
+                : $this->objLanguage->languageText(
+                    'mod_canvas_usecanvas',
+                    'canvas',
+                    'Use this canvas'
+                );
+
+            return '<article class="chisimba-canvas-card chisimba-selectable"'
+                . ' aria-selected="' . ($selected ? 'true' : 'false') . '">'
+                . '<div class="chisimba-canvas-card__preview" style="--canvas-preview-primary:'
+                . htmlspecialchars($primary, ENT_QUOTES, 'UTF-8')
+                . ';--canvas-preview-accent:'
+                . htmlspecialchars($accent, ENT_QUOTES, 'UTF-8') . '">'
+                . ($logoUri === '' ? '' : '<img src="'
+                    . htmlspecialchars($logoUri, ENT_QUOTES, 'UTF-8')
+                    . '" alt="" />')
+                . '<span>' . htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8')
+                . '</span></div>'
+                . '<div class="chisimba-canvas-card__body"><h3>'
+                . htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8')
+                . '</h3><p>' . htmlspecialchars($description, ENT_QUOTES, 'UTF-8')
+                . '</p><form method="post" action="'
+                . htmlspecialchars($action, ENT_QUOTES, 'UTF-8') . '">'
+                . '<input type="hidden" name="canvas" value="'
+                . htmlspecialchars($canvas, ENT_QUOTES, 'UTF-8') . '" />'
+                . '<button class="button" type="submit"'
+                . ($selected ? ' disabled aria-disabled="true"' : '') . '>'
+                . htmlspecialchars($button, ENT_QUOTES, 'UTF-8')
+                . '</button></form></div></article>';
         } catch(Exception $e) {
             throw customException($e->message());
             exit();
