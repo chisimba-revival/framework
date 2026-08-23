@@ -1,6 +1,7 @@
 decisiontable
 redirect
 modulecatalogue
+ui
 postlogin
 security
 useradmin
