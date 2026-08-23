@@ -1211,15 +1211,13 @@ class groupservice extends ChisimbaObject
     private function directSubgroups($parentId)
     {
         $payload = $this->legacySubgroupRows($parentId);
-        if (!is_array($payload)
-            || !isset($payload[0])
-            || !is_array($payload[0])) {
+        if (!is_array($payload)) {
             return array();
         }
 
         $records = array();
 
-        foreach ($payload[0] as $key => $subgroup) {
+        foreach ($payload as $key => $subgroup) {
             if (!is_array($subgroup)) {
                 continue;
             }
