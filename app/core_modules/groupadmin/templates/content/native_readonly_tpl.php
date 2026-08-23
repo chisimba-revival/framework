@@ -97,7 +97,7 @@ $contextGroupsLabel = $this->objLanguage->code2Txt(
             </h1>
             <p>
                 <?php echo $escape($this->objLanguage->languageText(
-                    'mod_groupadmin_native_readonly',
+                    'mod_groupadmin_native_management',
                     'groupadmin',
                     'Manage direct group membership using the native Chisimba interface.'
                 )); ?>
