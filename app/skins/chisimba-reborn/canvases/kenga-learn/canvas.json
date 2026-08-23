@@ -1,0 +1,13 @@
+{
+    "name": "kenga-learn",
+    "displayName": "KengaLearn",
+    "description": "KengaLearn branding on the shared modern Chisimba skin.",
+    "author": {
+        "authorname": "Kenga Solutions"
+    },
+    "preview": {
+        "thumb": "../../default.png",
+        "fullview": "../../default.png"
+    },
+    "downloadfrom": "_NULL"
+}

@@ -1,0 +1,13 @@
+{
+    "name": "chisimba",
+    "displayName": "Chisimba",
+    "description": "The reference Chisimba identity on the shared modern skin.",
+    "author": {
+        "authorname": "Chisimba Revival"
+    },
+    "preview": {
+        "thumb": "../../default.png",
+        "fullview": "../../default.png"
+    },
+    "downloadfrom": "_NULL"
+}

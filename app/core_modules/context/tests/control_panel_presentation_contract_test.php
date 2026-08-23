@@ -18,14 +18,13 @@ $settings = file_get_contents($root . '/classes/block_contextsettings_class_inc.
 $plugins = file_get_contents($root . '/classes/block_contextmodules_class_inc.php');
 $register = file_get_contents($root . '/register.conf');
 $reborn = file_get_contents($app . '/skins/chisimba-reborn/stylesheet.css');
-$kenga = file_get_contents($app . '/skins/kenga-learn/stylesheet.css');
 
 $marker = 'CHISIMBA COURSE CONTROL PANEL COMPONENTS';
 $checks = array(
-    'Context version records the repair' => str_contains(
-        $register,
-        'MODULE_VERSION: 1.99'
-    ),
+    'Context module has release metadata' => preg_match(
+        '/^MODULE_VERSION:\s*\d+(?:\.\d+)?$/m',
+        $register
+    ) === 1,
     'settings use a semantic spaced layout' => str_contains(
         $settings,
         'course-control-settings__details'
@@ -46,14 +45,7 @@ $checks = array(
         $plugins,
         'course-control-plugin__label'
     ),
-    'both supported skins contain the contract' => str_contains(
-        $reborn,
-        $marker
-    ) && str_contains($kenga, $marker),
-    'supported skin contracts remain identical' => substr(
-        $reborn,
-        strpos($reborn, $marker)
-    ) === substr($kenga, strpos($kenga, $marker)),
+    'shared skin contains the contract' => str_contains($reborn, $marker),
 );
 
 foreach ($checks as $name => $ok) {

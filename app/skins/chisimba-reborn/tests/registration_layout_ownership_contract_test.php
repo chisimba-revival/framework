@@ -1,6 +1,6 @@
 <?php
 $skinsRoot = dirname(__DIR__, 2);
-$skins = array('chisimba-reborn', 'kenga-learn');
+$skins = array('chisimba-reborn');
 
 foreach ($skins as $skin) {
     $base = file_get_contents($skinsRoot . '/' . $skin . '/stylesheet.css');
@@ -42,5 +42,5 @@ foreach ($skins as $skin) {
     }
 }
 
-echo "OK: registration layout ownership is singular in both modern skins\n";
+echo "OK: registration layout has one canonical owner\n";
 ?>
