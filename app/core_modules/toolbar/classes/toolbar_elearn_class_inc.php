@@ -41,7 +41,6 @@ class toolbar_elearn extends ChisimbaObject
 
         $this->objModule = $this->getObject('modules','modulecatalogue');
 
-        $this->menuItems['home'] = array('text'=>$this->objLanguage->languageText('word_home', 'system', 'Home'), 'link'=>$this->uri(NULL, '_default'), 'class'=>'homelink');
     }
 
     /**
@@ -94,30 +93,6 @@ class toolbar_elearn extends ChisimbaObject
 
         $this->determineDefault($this->getParam('module', '_default'));
         return $this->generateOutput();
-    }
-
-    /**
-     * Method to place the logout JavaScript
-     */
-    public function addContextLogoutJS()
-    {
-        $homeUri = $this->uri(NULL, '_default');
-        return "
-<script type=\"text/javascript\">
-// <![CDATA[
-// Change Link to javascript
-jQuery('.homelink').attr('href', 'javascript:;');
-// Bind a confirmation to link
-jQuery('.homelink').bind('click', function() {
-
-        if (confirm('".$this->objLanguage->code2Txt('mod_toolbar_requestcontextlogoutoption', 'toolbar', NULL, 'Would you like to log out of this [-context-]')."?')) {
-            window.location.href = '{$homeUri}';
-        }
-    });
-
-// ]]>
-</script>
-            ";
     }
 
     /**
@@ -266,9 +241,6 @@ jQuery('.homelink').bind('click', function() {
             $this->params[] = $objStatusbar->statusbarParams();
         }
 
-        if ($this->contextCode != '') {
-            $str .= $this->addContextLogoutJS();
-        }
         return $str;
     }
 

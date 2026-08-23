@@ -361,8 +361,8 @@ class tools extends ChisimbaObject
         if ($module == '_default' || $module == 'postlogin' || $module == '') {
             $nav = $home;
         } else {
-            // set the link to the default module
-            $this->objLink = new link ( $this->uri ( array(), '_default' ) );
+            // The banner and breadcrumbs share one canonical site-root Home.
+            $this->objLink = new link($this->objConfig->getSiteRoot());
             $this->objLink->link = $home;
             $this->objLink->cssClass = 'homelink';
             $home = $this->objLink->show ();

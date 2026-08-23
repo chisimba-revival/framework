@@ -61,8 +61,6 @@ class tabsmenu extends ChisimbaObject
         
         $this->objModule = $this->getObject('modules','modulecatalogue');
         
-        // Home will always be the first menu
-        $this->menuItems['home'] = array('text'=>$this->objLanguage->languageText('word_home', 'system', 'Home'), 'link'=>$this->uri(NULL, '_default'), 'class'=>'homelink');
     }
     
     /**

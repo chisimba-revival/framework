@@ -45,13 +45,9 @@ class cssmenu extends ChisimbaObject {
          * @return string $menu The menu
          */
         public function show() {
-                $homeLabel = $this->objLanguage->languageText('word_home', 'system', 'Home');
-
-                $home = $this->objConfig->getdefaultModuleName();
                 /* CHISIMBA_TOOLBAR_MANIFEST_ICONS: register.conf is authoritative. */
 
                 $str = '<ul id="menuList" class="adxm">'; //this is not using this javascript menu. its using the css one
-                $str .= '<li id="home" class="navigation-list first" ><a href="' . $this->uri(NULL, $home) . '">' . $homeLabel . '</a></li>';
                 foreach ($this->menu as $key => $item) {
                         $objLink = new link('#');
                         $objLink->link = $key . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';

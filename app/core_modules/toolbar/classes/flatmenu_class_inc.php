@@ -42,7 +42,6 @@ class flatmenu extends ChisimbaObject
     */
     public function show()
     {
-        $homeLabel = $this->objLanguage->languageText('word_home', 'system', 'Home');
         $logoutLabel = $this->objLanguage->languageText('word_logout', 'system', 'Logout');
         
         $postlogin = 'cms';//$this->objConfig->getdefaultModuleName();
@@ -57,14 +56,6 @@ class flatmenu extends ChisimbaObject
         
         $str = '<ul style="list-style: none; background-color:#fff;">';
         
-        // Home link
-        
-        $objLink = new link($this->uri('', $home));
-        $objLink->link = $homeLabel;
-        $link = $objLink->show();
-        
-        $str .= '<li style="border-right: 1px #ead0cf dotted; background-image: none;">'.$link.'</li>';
-
         if(!empty($this->menu)){
             foreach($this->menu as $item){
                 $actArr = !empty($item['action']) ? array('action' => $item['action']) : '';
