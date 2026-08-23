@@ -172,14 +172,21 @@
 
 .groupadmin-native__group-button:hover,
 .groupadmin-native__group-button:focus-visible {
-    background: var(--ga-soft);
+    color: var(--chisimba-selectable-hover-color, inherit);
+    background: var(--chisimba-selectable-hover-background, var(--ga-soft));
     border-color: var(--ga-border);
 }
 
 .groupadmin-native__group-button[aria-current="page"] {
-    color: #fff;
-    background: var(--ga-accent);
+    color: var(--chisimba-selectable-selected-color, #fff);
+    background: var(--chisimba-selectable-selected-background, var(--ga-accent));
     border-color: var(--ga-accent);
+}
+
+.groupadmin-native__group-button[aria-current="page"]:hover,
+.groupadmin-native__group-button[aria-current="page"]:focus-visible {
+    color: var(--chisimba-selectable-selected-color, #fff);
+    background: var(--chisimba-primary-hover, var(--ga-accent));
 }
 
 .groupadmin-native__group-name {

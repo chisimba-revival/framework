@@ -40,6 +40,14 @@
     --chisimba-text-inverse: #ffffff;
     --chisimba-link-on-surface: var(--chisimba-primary-dark);
 
+    /* Selectable controls such as navigation rows and option cards. */
+    --chisimba-selectable-color: var(--chisimba-ink);
+    --chisimba-selectable-background: transparent;
+    --chisimba-selectable-hover-color: var(--chisimba-ink);
+    --chisimba-selectable-hover-background: var(--chisimba-primary-soft);
+    --chisimba-selectable-selected-color: var(--chisimba-text-inverse);
+    --chisimba-selectable-selected-background: var(--chisimba-primary);
+
     /* Borders and structure */
     --chisimba-border: #dddddd;
     --chisimba-border-strong: #cccccc;
@@ -4227,6 +4235,27 @@ h5.featureboxheader,
 }
 
 /* BEGIN CHISIMBA SHARED WORKSPACE PRIMITIVES */
+.chisimba-selectable {
+    color: var(--chisimba-selectable-color);
+    background: var(--chisimba-selectable-background);
+}
+.chisimba-selectable:hover,
+.chisimba-selectable:focus-visible {
+    color: var(--chisimba-selectable-hover-color);
+    background: var(--chisimba-selectable-hover-background);
+}
+.chisimba-selectable[aria-current="page"],
+.chisimba-selectable[aria-selected="true"] {
+    color: var(--chisimba-selectable-selected-color);
+    background: var(--chisimba-selectable-selected-background);
+}
+.chisimba-selectable[aria-current="page"]:hover,
+.chisimba-selectable[aria-current="page"]:focus-visible,
+.chisimba-selectable[aria-selected="true"]:hover,
+.chisimba-selectable[aria-selected="true"]:focus-visible {
+    color: var(--chisimba-selectable-selected-color);
+    background: var(--chisimba-primary-hover);
+}
 .button {
     display: inline-flex;
     align-items: center;
