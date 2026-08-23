@@ -204,6 +204,38 @@ class canvas extends controller
         }
 
     }
+
+    /**
+     * Apply a named canvas as the site preference and return to the chooser.
+     *
+     * @return void
+     */
+    private function __applysite()
+    {
+        if (!$this->objUser->isAdmin()) {
+            $this->nextAction('select', array('ctype' => 'skin'), 'canvas');
+            return;
+        }
+
+        $canvas = trim((string) $this->getParam('canvas', ''));
+        $skin = $_SESSION['skinName'] ?? $this->objConfig->getdefaultSkin();
+        $canvasDir = $this->objConfig->getSiteRootPath()
+            . 'skins/' . $skin . '/canvases/' . $canvas;
+        if (!preg_match('/^[a-z0-9][a-z0-9-]*$/', $canvas)
+                || !is_dir($canvasDir)
+                || !is_file($canvasDir . '/canvas.json')) {
+            $this->nextAction('select', array('ctype' => 'skin'), 'canvas');
+            return;
+        }
+
+        $objCanvas = $this->getObject('dbcanvas', 'canvas');
+        $objCanvas->saveSkinCanvas($canvas);
+        $this->nextAction(
+            'select',
+            array('ctype' => 'skin', 'canvas_saved' => '1'),
+            'canvas'
+        );
+    }
     
     /**
     * 

@@ -122,6 +122,16 @@ class block_canvasviewer extends ChisimbaObject
                       . $this->objLanguage->languageText("mod_canvas_noperscan", "canvas")
                       . "</div>";
                 }
+                if ($this->getParam('canvas_saved', '') === '1') {
+                    $saved = $this->objLanguage->languageText(
+                        'mod_canvas_saved',
+                        'canvas',
+                        'Canvas preference saved.'
+                    );
+                    $ret = '<div class="chisimba-notice chisimba-notice--success chisimba-notice--transient" role="status">'
+                        . htmlspecialchars($saved, ENT_QUOTES, 'UTF-8')
+                        . '</div>' . $ret;
+                }
                 return "<div class='canvas_main'>$ret</div>";
             }
         }

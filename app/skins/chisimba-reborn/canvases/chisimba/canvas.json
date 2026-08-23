@@ -2,10 +2,15 @@
     "name": "chisimba",
     "displayName": "Chisimba",
     "description": "The reference Chisimba identity on the shared modern skin.",
+    "brand": {
+        "primary": "#0084e7",
+        "accent": "#577f9b"
+    },
     "author": {
         "authorname": "Chisimba Revival"
     },
     "preview": {
+        "logo": "../../images/chisimba-logo.png",
         "thumb": "../../default.png",
         "fullview": "../../default.png"
     },

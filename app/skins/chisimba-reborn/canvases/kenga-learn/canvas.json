@@ -2,10 +2,15 @@
     "name": "kenga-learn",
     "displayName": "KengaLearn",
     "description": "KengaLearn branding on the shared modern Chisimba skin.",
+    "brand": {
+        "primary": "#67c871",
+        "accent": "#295351"
+    },
     "author": {
         "authorname": "Kenga Solutions"
     },
     "preview": {
+        "logo": "images/chisimba-logo.svg",
         "thumb": "../../default.png",
         "fullview": "../../default.png"
     },
