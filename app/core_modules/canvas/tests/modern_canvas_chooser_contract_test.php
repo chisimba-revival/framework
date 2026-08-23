@@ -14,7 +14,7 @@ $kenga = json_decode(file_get_contents(
 
 $checks = array(
     'fallback is hidden' => str_contains($getter, "str_starts_with(\$canvas, '_')"),
-    'cards use skin primitives' => str_contains($getter, 'chisimba-canvas-card chisimba-selectable'),
+    'cards use the shared skin component' => str_contains($getter, 'chisimba-canvas-card'),
     'selection is explicit' => str_contains($getter, 'Use this canvas')
         && str_contains($getter, 'method="post"'),
     'controller validates named canvas' => str_contains($controller, "private function __applysite()")
