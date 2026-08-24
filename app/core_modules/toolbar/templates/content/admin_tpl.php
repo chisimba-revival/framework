@@ -14,6 +14,7 @@ $this->objLanguage = $this->getObject('language','language');
 $tab = $this->newObject('tabber', 'htmlelements');
 $tab->tabId = TRUE;
 $objIcon = $this->getObject('iconservice', 'ui');
+$moduleIconResolver = $this->getObject('moduleiconresolver', 'modulecatalogue');
 $objLink = $this->newObject('link', 'htmlelements');
 $objTable = $this->newObject('htmltable', 'htmlelements');
 $objHead = $this->newObject('htmlheading', 'htmlelements');
@@ -29,25 +30,6 @@ $this->iconModFolder = $this->iconFolder."modules/";
 $objHead->type = 1;
 $objHead->str = $head;
 echo $objHead->show().'<br />';
-
-$adminIconMap = array(
-    'contextadmin' => 'book-open',
-    'contextgroups' => 'users-round',
-    'useradmin' => 'user-cog',
-    'groupadmin' => 'users-round',
-    'permissions' => 'shield-check',
-    'moduleadmin' => 'boxes',
-    'modulecatalogue' => 'boxes',
-    'createlang' => 'languages',
-    'language' => 'languages',
-    'extensions' => 'puzzle',
-    'languagetext' => 'text',
-    'systext' => 'text',
-    'serverstatus' => 'server-cog',
-    'sysconfig' => 'server-cog',
-    'rubric' => 'scroll-text',
-    'viewsource' => 'code-2',
-);
 
 if(!empty($modules)){
     $langArray = array('context'=>'course', 'contexts'=>'courses', 'author'=>'lecturer', 'authors'=>'lecturers', 'readonly'=>'student', 'readonlys'=>'students');
@@ -75,19 +57,24 @@ if(!empty($modules)){
                     $objTable->startRow();
                 }
 
-                $iconKey = isset($line['icon']) && !empty($line['icon'])
-                    ? $line['icon'] : $line['module'];
-                if (isset($adminIconMap[$iconKey])) {
-                    $iconName = $adminIconMap[$iconKey];
-                } elseif (isset($adminIconMap[$line['module']])) {
-                    $iconName = $adminIconMap[$line['module']];
-                } else {
-                    $iconName = 'puzzle';
+                $iconMarkup = '';
+                if (isset($line['icon']) && !empty($line['icon'])) {
+                    try {
+                        $iconMarkup = $objIcon->render(
+                            $line['icon'],
+                            array('decorative' => true, 'class' => 'adminmenu-icon')
+                        );
+                    } catch (Throwable $exception) {
+                        $iconMarkup = '';
+                    }
                 }
-                $iconMarkup = $objIcon->render(
-                    $iconName,
-                    array('decorative' => true, 'class' => 'adminmenu-icon')
-                );
+                if ($iconMarkup === '') {
+                    $iconMarkup = $moduleIconResolver->render(
+                        $line['module'],
+                        '',
+                        'adminmenu-icon'
+                    );
+                }
 
                 // if an action is specified for the link
                 $action = array();
