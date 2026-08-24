@@ -18,6 +18,7 @@ of an administrator journey.
 - An administrator can find a destination using ordinary task language.
 - Common tasks remain visible without duplicating a separately maintained menu.
 - Site-wide and current-course actions are visibly separated.
+- Current course includes an explicit route back to the course page.
 - Leaving the current course is available only while a course is active.
 - Search exposes a useful empty state and does not require a server request.
 - The workbench becomes one column at narrow viewport widths.

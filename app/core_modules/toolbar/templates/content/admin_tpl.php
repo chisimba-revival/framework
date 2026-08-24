@@ -158,6 +158,17 @@ $noResults = $language->languageText('mod_toolbar_adminnoresults', 'toolbar',
                             echo $renderTask($line, 'current', true);
                         } ?>
                         <a class="admin-workbench-task admin-workbench-task--compact"
+                            href="<?php echo $escape($this->uri(array(), 'context')); ?>"
+                            data-admin-task data-admin-search="open course course page return course">
+                            <span class="admin-workbench-task__icon"><?php echo
+                                $icons->render('book-open', array('decorative' => true,
+                                    'class' => 'adminmenu-icon')); ?></span>
+                            <span class="admin-workbench-task__label"><?php echo $escape(
+                                $language->code2Txt('mod_toolbar_opencontext', 'toolbar',
+                                    array('context' => 'course'), 'Open [-context-]')
+                            ); ?></span>
+                        </a>
+                        <a class="admin-workbench-task admin-workbench-task--compact"
                             href="<?php echo $escape($this->uri(
                                 array('action' => 'leavecontext'), 'context')); ?>"
                             data-admin-task data-admin-search="leave course context">
