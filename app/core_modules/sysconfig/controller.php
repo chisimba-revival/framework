@@ -190,7 +190,7 @@ class sysconfig extends controller {
                  * missing CONFIG entries without modifying existing values.
                  */
                 $pmodule = trim($this->getParam('pmodule_id', ''));
-                if (!preg_match('/^[A-Za-z0-9_]+$/', $pmodule)
+                if (!preg_match('/^[A-Za-z0-9_-]+$/', $pmodule)
                         || $pmodule === '_site_') {
                     return $this->nextAction(
                             'step2',
