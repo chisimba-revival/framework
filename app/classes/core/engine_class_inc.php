@@ -2021,7 +2021,21 @@ class engine {
                     $output [] = urlencode ( $key ) . "=" . urlencode ( $item );
                 }
             }
-            $uri .= '?' . implode ( $javascriptCompatibility ? ($Strict ? '&' : '&#38;') : '&amp;', $output );
+            /*
+             * CHISIMBA_RAW_URI_QUERY_SEPARATOR
+             *
+             * A URI builder returns a URI, not pre-rendered HTML. Returning
+             * &amp; here caused modern attribute renderers to produce
+             * &amp;amp;, turning "action" into an "amp;action" parameter.
+             * HTML producers must escape the complete attribute once at the
+             * rendering boundary. Preserve the explicitly requested legacy
+             * JavaScript compatibility mode, but make the ordinary contract
+             * raw and context independent.
+             */
+            $separator = $javascriptCompatibility
+                ? ($Strict ? '&' : '&#38;')
+                : '&';
+            $uri .= '?' . implode($separator, $output);
         }
         return $uri;
     }

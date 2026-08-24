@@ -265,9 +265,8 @@ class ChisimbaObject
     /**
      * Build a URI which is safe to place directly in an HTML attribute.
      *
-     * Legacy uri() returns HTML entities by default. Encoding that value a
-     * second time produces &amp;amp; and changes query parameter names. Ask the
-     * engine for raw separators, then perform exactly one encoding pass.
+     * uri() returns a raw URI. Encode it exactly once at the HTML attribute
+     * rendering boundary.
      */
     public function uriForHtmlAttribute(
         $params,
@@ -278,13 +277,11 @@ class ChisimbaObject
         if (empty($moduleName)) {
             $moduleName = $this->moduleName;
         }
-        $uri = $this->objEngine->uri(
+        $uri = $this->uri(
             $params,
             $moduleName,
             $uriMode,
-            $omitServerName,
-            TRUE,
-            TRUE
+            $omitServerName
         );
         return htmlspecialchars($uri, ENT_QUOTES, 'UTF-8');
     }

@@ -177,6 +177,17 @@ class contextadmin extends controller {
      * Context Admin Home
      */
     private function __home() {
+        $contextCode = trim((string) $this->objContext->getContextCode());
+        if ($contextCode !== '' && $contextCode !== 'root'
+            && $this->canManageContext($contextCode)
+        ) {
+            return $this->nextAction(
+                'controlpanel',
+                array(),
+                'context'
+            );
+        }
+
         $content = $this->objUserContext->getUserContextsFormatted($this->objUser->userId());
 
         $this->setVarByRef('content', $content);

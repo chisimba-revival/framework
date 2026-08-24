@@ -39,10 +39,10 @@ $checks = array(
         $template,
         'course-control-details'
     ) && !str_contains($template, '$counter % 2'),
-    'task URLs are normalized before attribute escaping' => str_contains(
+    'task URLs use the shared raw URI encoding contract' => str_contains(
         $template,
-        'html_entity_decode((string) $value'
-    ) && str_contains($template, '$urlAttribute($task[\'url\'])'),
+        '$escape($task[\'url\'])'
+    ) && !str_contains($template, 'html_entity_decode'),
     'settings image has a presentation hook' => str_contains(
         $settings,
         'course-control-settings__image'

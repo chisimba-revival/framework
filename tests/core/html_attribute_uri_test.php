@@ -38,8 +38,8 @@ if (strpos($uri, '&amp;amp;') !== false) {
     fwrite(STDERR, "FAIL: URI contains a double-encoded query separator\n");
     exit(1);
 }
-if ($engine->arguments[4] !== true || $engine->arguments[5] !== true) {
-    fwrite(STDERR, "FAIL: helper did not request raw strict query separators\n");
+if ($engine->arguments[4] !== false || $engine->arguments[5] !== false) {
+    fwrite(STDERR, "FAIL: helper did not use the ordinary raw URI contract\n");
     exit(1);
 }
 

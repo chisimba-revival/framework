@@ -191,18 +191,23 @@ class link extends abhtmlbase implements ifhtml
     private function _buildLink()
     {
         $ret = "<a href=\"";
+        $href = '';
         if ($this->linkType!="none" && $this->linkType!=Null) {
             if ($this->linkType=='mailto') {
-                $ret .= $this->linkType.":";
+                $href .= $this->linkType.":";
             }else{
-                $ret .= $this->linkType."://";
+                $href .= $this->linkType."://";
             }
         }
         if ($this->href) {
-            $ret .= $this->href;
+            $href .= $this->href;
             if ($this->anchor) {
-                $ret.='#'.$this->anchor;
+                $href .= '#'.$this->anchor;
             }
+            // Accept legacy pre-escaped callers during the raw-URI migration,
+            // then encode the complete href exactly once.
+            $href = str_replace(array('&amp;', '&#38;'), '&', $href);
+            $ret .= htmlspecialchars($href, ENT_QUOTES, 'UTF-8');
             $ret .= "\" ";
         }
         if ($this->name) {
