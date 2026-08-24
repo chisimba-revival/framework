@@ -215,8 +215,8 @@ class sidemenu extends ChisimbaObject {
         $access = $this->checkAccess();
         $menus = $this->dbMenu->getSideMenus('postlogin', $access, $this->context);
         $menus = $this->checkPerm($menus);
-        $this->addStudentHomeLinks();
-        $menu = $this->getMenuList($menus, true);
+        $studentOnly = $this->addStudentHomeLinks();
+        $menu = $this->getMenuList($menus, true, !$studentOnly);
         return $menu;
     }
 
@@ -224,11 +224,11 @@ class sidemenu extends ChisimbaObject {
     private function addStudentHomeLinks() {
         $objModules = $this->getObject('modules', 'modulecatalogue');
         if (!$objModules->checkIfRegistered('mylearning')) {
-            return;
+            return false;
         }
         $resolver = $this->getObject('landingresolver', 'postlogin');
         if (!$resolver->isStudentOnly()) {
-            return;
+            return false;
         }
         $this->globalNodes[] = array(
             'text' => $this->objLanguage->languageText(
@@ -246,6 +246,7 @@ class sidemenu extends ChisimbaObject {
             'nodeid' => 'postlogin',
             'css' => 'account-card__site-home',
         );
+        return true;
     }
 
     /**
@@ -287,7 +288,11 @@ class sidemenu extends ChisimbaObject {
      * SIDEMENU: menu-1|permissions|linkaction|icon|language code
      * @param array $modules The list of modules.
      */
-    function getMenuList($modules, $includeLeaveContext = false) {
+    function getMenuList(
+        $modules,
+        $includeLeaveContext = false,
+        $showHomeLink = true
+    ) {
         $modulesNotToShowStr = $this->dbSysConfig->getValue('EXCLUDE_ON_SIDEMENU', 'toolbar');
         $modulesNotToShow = explode(",", $modulesNotToShowStr);
         if (!empty($modules)) {
@@ -351,6 +356,7 @@ class sidemenu extends ChisimbaObject {
             );
         }
         $objNav = $this->newObject('sidebar', 'navigation');
+        $objNav->showHomeLink = $showHomeLink;
         return $objNav->show($this->globalNodes, $this->getParam('module'));
         //  return $this->globalTable->show();
     }

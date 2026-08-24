@@ -36,6 +36,10 @@ $checks = array(
     'student account menu names both destinations' => str_contains($sideMenu, 'addStudentHomeLinks')
         && str_contains($sideMenu, "'mylearning'")
         && str_contains($sideMenu, "'postlogin'"),
+    'student account menu suppresses renderer-injected Home' => str_contains(
+        $sideMenu,
+        '$objNav->showHomeLink = $showHomeLink'
+    ) && str_contains($sideMenu, 'getMenuList($menus, true, !$studentOnly)'),
     'overview reuses learning journey state' => str_contains($overview, "getObject('learningjourney', 'contextcontent')")
         && str_contains($overview, 'getState($code, $userId)'),
     'course continuation joins the correct context' => str_contains($overview, "'action' => 'joincontext'")
