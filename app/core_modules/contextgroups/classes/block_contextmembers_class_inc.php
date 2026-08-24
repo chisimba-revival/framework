@@ -48,10 +48,10 @@ class block_contextmembers extends ChisimbaObject
         $this->contextCode = $this->objContext->getContextCode();
         $this->objLanguage = $this->getObject('language', 'language');
         $this->title = ucwords($this->objLanguage->code2Txt(
-            'mod_contextgroups_contextmembers',
+            'mod_contextgroups_toolbarname',
             'contextgroups',
             null,
-            '[-CONTEXT-] members'
+            'Manage [-CONTEXT-] members'
         ));
     }
 

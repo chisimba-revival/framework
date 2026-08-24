@@ -43,6 +43,10 @@ $checks = array(
         $block,
         "uri(null, 'contextgroups')"
     ),
+    'card title describes its management destination' => str_contains(
+        $block,
+        "'mod_contextgroups_toolbarname'"
+    ) && !str_contains($block, "'mod_contextgroups_contextmembers'"),
     'obsolete ExtJS member browser is absent' => !str_contains(
         $block,
         'memberbrowser'
