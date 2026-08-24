@@ -60,6 +60,15 @@ $bulkLast = min($bulkOffset + count($bulkUsers), $bulkTotal);
         <p class="contextgroups-intro">
             <?php echo $escape($pageTexts['intro']); ?>
         </p>
+        <div class="contextgroups-author-journey">
+            <div>
+                <strong><?php echo $escape($pageTexts['authorheading']); ?></strong>
+                <p><?php echo $escape($pageTexts['authorhelp']); ?></p>
+            </div>
+            <a class="contextgroups-button" href="<?php echo $escape('index.php?' . http_build_query(array('module' => 'contextadmin', 'action' => 'authors', 'contextcode' => $contextCode))); ?>">
+                <?php echo $escape($pageTexts['manageauthors']); ?>
+            </a>
+        </div>
     </header>
 
     <?php if ($message !== ''): ?>
@@ -125,6 +134,7 @@ $bulkLast = min($bulkOffset + count($bulkUsers), $bulkTotal);
                                 && is_array($result['courseRoles'])
                                 ? $result['courseRoles']
                                 : array();
+                            $isSiteAuthor = !empty($result['isSiteAuthor']);
                             ?>
                             <li class="contextgroups-result">
                                 <div class="contextgroups-person">
@@ -155,6 +165,13 @@ $bulkLast = min($bulkOffset + count($bulkUsers), $bulkTotal);
                                 <div class="contextgroups-role-actions" aria-label="<?php echo $escape($pageTexts['chooserole']); ?>">
                                     <?php foreach ($roles as $role => $definition): ?>
                                         <?php $isCurrentRole = in_array($role, $resultRoles, true); ?>
+                                        <?php
+                                        $needsSiteAuthor = $role === 'lecturer'
+                                            && !$isSiteAuthor
+                                            && !$isCurrentRole;
+                                        $cannotGrantSiteAuthor = $needsSiteAuthor
+                                            && !$canGrantSiteAuthor;
+                                        ?>
                                         <form method="post" action="index.php">
                                             <input type="hidden" name="module" value="contextgroups" />
                                             <input type="hidden" name="action" value="addusers" />
@@ -162,23 +179,40 @@ $bulkLast = min($bulkOffset + count($bulkUsers), $bulkTotal);
                                             <input type="hidden" name="membershiptoken" value="<?php echo $escape($membershipToken); ?>" />
                                             <input type="hidden" name="userid" value="<?php echo $escape($resultUserId); ?>" />
                                             <input type="hidden" name="role" value="<?php echo $escape($role); ?>" />
+                                            <?php if ($needsSiteAuthor && $canGrantSiteAuthor): ?>
+                                                <input type="hidden" name="grantsiteauthor" value="yes" />
+                                            <?php endif; ?>
                                             <button
                                                 type="submit"
                                                 class="contextgroups-button<?php echo $isCurrentRole ? ' contextgroups-button-current' : ''; ?>"
-                                                <?php echo $isCurrentRole ? 'disabled' : ''; ?>
+                                                <?php echo ($isCurrentRole || $cannotGrantSiteAuthor) ? 'disabled' : ''; ?>
                                             >
                                                 <?php
-                                                echo $escape($formatText(
-                                                    $isCurrentRole
-                                                        ? $pageTexts['alreadyrole']
-                                                        : $pageTexts['addas'],
-                                                    array('ROLE' => $definition['singular'])
-                                                ));
+                                                if ($cannotGrantSiteAuthor) {
+                                                    echo $escape($pageTexts['siteauthorrequired']);
+                                                } elseif ($needsSiteAuthor) {
+                                                    echo $escape($formatText(
+                                                        $pageTexts['grantandadd'],
+                                                        array('ROLE' => $definition['singular'])
+                                                    ));
+                                                } else {
+                                                    echo $escape($formatText(
+                                                        $isCurrentRole
+                                                            ? $pageTexts['alreadyrole']
+                                                            : $pageTexts['addas'],
+                                                        array('ROLE' => $definition['singular'])
+                                                    ));
+                                                }
                                                 ?>
                                             </button>
                                         </form>
                                     <?php endforeach; ?>
                                 </div>
+                                <?php if (!$isSiteAuthor): ?>
+                                    <p class="contextgroups-role-explanation">
+                                        <?php echo $escape($canGrantSiteAuthor ? $pageTexts['granthelp'] : $pageTexts['askadmin']); ?>
+                                    </p>
+                                <?php endif; ?>
                             </li>
                         <?php endforeach; ?>
                     </ul>

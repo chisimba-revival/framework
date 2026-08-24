@@ -18,10 +18,11 @@ $block = file_get_contents(
 );
 $register = file_get_contents($root . '/register.conf');
 $checks = array(
-    'Context Groups version records the repair' => str_contains(
+    'Context Groups version records the repair' => preg_match(
+        '/^MODULE_VERSION:\s+([0-9.]+)$/m',
         $register,
-        'MODULE_VERSION: 1.073'
-    ),
+        $versionMatch
+    ) === 1 && version_compare($versionMatch[1], '1.073', '>='),
     'canonical GroupService owns member reads' => str_contains(
         $block,
         "getObject('groupservice', 'groupadmin')"

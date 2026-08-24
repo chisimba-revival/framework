@@ -150,6 +150,16 @@ class contextgroups extends controller
                 100,
                 $searchLimited
             );
+            $siteAuthorGroupId = $this->siteAuthorGroupId();
+            foreach ($searchResults as &$searchResult) {
+                $searchResultUserId = $this->userIdFromRecord($searchResult);
+                $searchResult['isSiteAuthor'] = $siteAuthorGroupId !== false
+                    && $this->objGroupService->isGroupMember(
+                        $searchResultUserId,
+                        $siteAuthorGroupId
+                    );
+            }
+            unset($searchResult);
         }
 
         $bulkSearch = trim((string) $this->getParam('bulksearch', ''));
@@ -204,6 +214,8 @@ class contextgroups extends controller
         $this->setVarByRef('bulkOffset', $bulkOffset);
         $this->setVarByRef('membershipToken', $membershipToken);
         $this->setVarByRef('currentUserId', $currentUserId);
+        $canGrantSiteAuthor = $this->securityUser->isAdmin();
+        $this->setVarByRef('canGrantSiteAuthor', $canGrantSiteAuthor);
         $pageTexts = $this->pageTexts();
         $this->setVarByRef('pageTexts', $pageTexts);
 
@@ -315,6 +327,42 @@ class contextgroups extends controller
         }
 
         $groupIds = $this->contextRoleGroupIds();
+        $siteAuthorGroupId = $this->siteAuthorGroupId();
+        $grantedSiteAuthor = false;
+        if ($role === 'lecturer') {
+            if ($siteAuthorGroupId === false) {
+                return $this->redirectWithError(
+                    $this->text('mod_contextgroups_err_siteauthorgroup')
+                );
+            }
+            $isSiteAuthor = $this->objGroupService->isGroupMember(
+                $targetUserId,
+                $siteAuthorGroupId
+            );
+            if (!$isSiteAuthor) {
+                $grantRequested = (string) $this->getParam(
+                    'grantsiteauthor',
+                    ''
+                ) === 'yes';
+                if (!$this->securityUser->isAdmin() || !$grantRequested) {
+                    return $this->redirectWithError(
+                        $this->text('mod_contextgroups_err_siteauthorrequired')
+                    );
+                }
+                $permissionId = $this->objIdentityService
+                    ->permissionUserIdForUser($targetUserId);
+                if ($permissionId === null
+                    || !$this->objGroupService->ensureMembership(
+                        $siteAuthorGroupId,
+                        $permissionId
+                    )) {
+                    return $this->redirectWithError(
+                        $this->text('mod_contextgroups_err_siteauthorgrant')
+                    );
+                }
+                $grantedSiteAuthor = true;
+            }
+        }
         $desired = $this->currentRoleState(array($targetUserId), $groupIds);
         if ($role !== 'lecturer'
             && $targetUserId === (string) $this->userId
@@ -329,12 +377,24 @@ class contextgroups extends controller
 
         $error = $this->reconcileRoleStates($desired, $groupIds);
         if ($error !== null) {
+            if ($grantedSiteAuthor) {
+                $permissionId = $this->objIdentityService
+                    ->permissionUserIdForUser($targetUserId);
+                if ($permissionId !== null) {
+                    $this->objGroupService->removeMembership(
+                        $siteAuthorGroupId,
+                        $permissionId
+                    );
+                }
+            }
             return $this->redirectWithError($error);
         }
 
         return $this->nextAction(null, array(
             'message' => $this->text(
-                'mod_contextgroups_msg_memberadded',
+                $grantedSiteAuthor
+                    ? 'mod_contextgroups_msg_siteauthorandmemberadded'
+                    : 'mod_contextgroups_msg_memberadded',
                 array('ROLE' => $this->roleDefinitions()[$role]['singular'])
             ),
         ));
@@ -866,6 +926,11 @@ class contextgroups extends controller
         return $groupIds;
     }
 
+    private function siteAuthorGroupId()
+    {
+        return $this->objGroupService->groupIdForName('Lecturers');
+    }
+
     private function roleDefinitions()
     {
         return array(
@@ -922,6 +987,8 @@ class contextgroups extends controller
             'removeallhelp', 'removeallconfirm', 'currentmembership',
             'currentmembers', 'membercount', 'norole', 'you', 'remove',
             'showingfirst', 'usebulk',
+            'authorheading', 'authorhelp', 'manageauthors',
+            'siteauthorrequired', 'grantandadd', 'granthelp', 'askadmin',
         );
         $texts = array();
         foreach ($keys as $key) {
