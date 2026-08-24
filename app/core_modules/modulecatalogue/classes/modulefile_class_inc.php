@@ -441,6 +441,7 @@ class modulefile extends ChisimbaObject {
                         case 'ASSESSMENT_PROVIDER_DESCRIPTION':
                         case 'ASSESSMENT_PROVIDER_CLASS':
                         case 'ASSESSMENT_PROVIDER_CAPABILITIES':
+                        case 'ADMIN_SEARCH':
                             $registerdata[$params[0]]=rtrim($params[1]);
                             break;
 //                        case 'MODULE_RELEASEDATE':

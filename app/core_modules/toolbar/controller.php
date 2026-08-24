@@ -87,7 +87,12 @@ class toolbar extends controller
                     'admin',
                     $this->context
                 );
+                $contextTitle = $this->context
+                    ? $this->objContext->getTitle()
+                    : '';
                 $this->setVarByRef('modules', $modules);
+                $this->setVar('adminInContext', $this->context);
+                $this->setVar('adminContextTitle', $contextTitle);
                 return 'admin_tpl.php';
         }
     }

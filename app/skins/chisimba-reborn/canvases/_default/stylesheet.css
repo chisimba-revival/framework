@@ -1531,6 +1531,18 @@ button.course-card__action {
     padding: 0;
 }
 
+/* Site Administration owns its task cards; the canvas region is structural. */
+#Canvas_Content_Body_Region2:has(
+    > .toolbar_main
+    > .admin-workbench
+) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
 @media (min-width: 60.01rem) {
     #Canvas_Content_Body:has(
         > #Canvas_Content_Body_Region2
