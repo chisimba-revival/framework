@@ -4312,13 +4312,6 @@ h5.featureboxheader,
     text-decoration: none;
 }
 
-.course-control-task:hover,
-.course-control-task:focus-visible {
-    border-color: var(--chisimba-primary, #087f5b);
-    color: var(--chisimba-link, #006dcc);
-    background: var(--chisimba-surface, #fff);
-}
-
 .course-control-task__icon {
     display: inline-flex;
     flex: 0 0 auto;
@@ -4789,6 +4782,44 @@ h5.featureboxheader,
     color: var(--chisimba-selectable-selected-color);
     background: var(--chisimba-primary-hover);
 }
+
+/* CHISIMBA NAVIGATION ACTION PRIMITIVE
+ * Link destinations presented as button-like or card-like navigation affordances
+ * change colour only. They never acquire ordinary inline-link underlining or
+ * movement on hover.
+ */
+.chisimba-navigation-action,
+.chisimba-navigation-action:visited,
+.chisimba-navigation-action:hover,
+.chisimba-navigation-action:focus-visible,
+.chisimba-navigation-action * {
+    text-decoration: none !important;
+}
+
+.chisimba-navigation-action {
+    color: var(--chisimba-text, #17202a);
+    transition:
+        color 120ms ease,
+        border-color 120ms ease,
+        background-color 120ms ease;
+}
+
+.chisimba-navigation-action:hover,
+.chisimba-navigation-action:focus-visible {
+    border-color: var(--chisimba-primary, #087f5b);
+    color: var(--chisimba-link, #006dcc);
+    background: var(--chisimba-surface, #fff);
+}
+
+.chisimba-navigation-action:focus-visible {
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--chisimba-primary, #087f5b) 28%,
+        transparent
+    );
+    outline-offset: 2px;
+}
+
 .button {
     display: inline-flex;
     align-items: center;

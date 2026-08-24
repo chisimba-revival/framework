@@ -37,6 +37,11 @@ $checks = array(
         'course-control-tasks'
     ) && str_contains($template, "'action' => 'authors'")
         && str_contains($template, "'contextcontent'"),
+    'task shortcuts use the shared navigation-action primitive' => str_contains(
+        $template,
+        'chisimba-navigation-action course-control-task'
+    ) && str_contains($reborn, 'CHISIMBA NAVIGATION ACTION PRIMITIVE')
+        && str_contains($reborn, 'text-decoration: none !important;'),
     'control panel uses a deliberate details grid' => str_contains(
         $template,
         'course-control-details'

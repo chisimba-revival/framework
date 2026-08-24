@@ -51,7 +51,7 @@ $ret = '<div class="course-control-workspace"><header class="course-control-head
     . $escape($objLanguage->code2Txt('mod_context_commontasks', 'context', null, 'Common course-administration tasks')) . '"><h2>'
     . $escape($objLanguage->code2Txt('mod_context_commontasks', 'context', null, 'Common tasks')) . '</h2><ul>';
 foreach ($taskLinks as $task) {
-    $ret .= '<li><a class="course-control-task" href="' . $escape($task['url']) . '"><span class="course-control-task__icon">'
+    $ret .= '<li><a class="chisimba-navigation-action course-control-task" href="' . $escape($task['url']) . '"><span class="course-control-task__icon">'
         . $iconService->render($task['icon'], array('decorative' => true))
         . '</span><span><strong>' . $escape($task['label']) . '</strong><small>'
         . $escape($task['help']) . '</small></span></a></li>';
