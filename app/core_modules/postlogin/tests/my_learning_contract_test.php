@@ -8,6 +8,7 @@ $resolver = file_get_contents($root . '/classes/landingresolver_class_inc.php');
 $bestGuess = file_get_contents($coreModules . '/utilities/classes/bestguess_class_inc.php');
 $contextController = file_get_contents($coreModules . '/context/controller.php');
 $sideMenu = file_get_contents($coreModules . '/toolbar/classes/sidemenu_class_inc.php');
+$engine = file_get_contents(dirname($coreModules) . '/classes/core/engine_class_inc.php');
 $overview = file_get_contents(
     $coreModules . '/context/classes/studentlearningoverview_class_inc.php'
 );
@@ -23,6 +24,10 @@ $checks = array(
         && str_contains($resolver, 'getContextWhereLecturer'),
     'default navigation uses the landing resolver' => str_contains($bestGuess, "getObject('landingresolver', 'postlogin')")
         && str_contains($bestGuess, 'defaultModule'),
+    'clean site root uses the landing resolver' => str_contains(
+        $engine,
+        "'landingresolver',"
+    ) && str_contains($engine, '->defaultModule($defaultModule)'),
     'leaving a course resolves before context is cleared' => strpos($contextController, 'leaveCourseModule')
         < strpos($contextController, 'leaveContext()'),
     'student account menu names both destinations' => str_contains($sideMenu, 'addStudentHomeLinks')

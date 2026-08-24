@@ -2285,7 +2285,11 @@ class engine {
         $moduleName = str_replace ( "/", "", $moduleName );
         if ($moduleName == '_default') {
             if ($this->_objUser->isLoggedIn()) {
-                $moduleName = $this->_objConfig->getdefaultModuleName ();
+                $defaultModule = $this->_objConfig->getdefaultModuleName ();
+                $moduleName = $this->getObject(
+                    'landingresolver',
+                    'postlogin'
+                )->defaultModule($defaultModule);
             } else {
                 $moduleName = $this->_objConfig->getPrelogin ();
             }
