@@ -2560,6 +2560,16 @@ h5.featureboxheader,
     color: currentColor;
 }
 
+#nav-secondary .chisimba-current-page {
+    display: block;
+    padding: 5px 0 5px 23px;
+    color: var(--chisimba-primary-dark, #174a78);
+    background: var(--chisimba-primary-soft, #e7f0f8);
+    font: bold 86% arial, sans-serif;
+    line-height: 1.8;
+    cursor: default;
+}
+
 /* END CHISIMBA-REBORN CURRENT PAGE MARKER */
 
 /* BEGIN CHISIMBA-REBORN CONTEXT GROUPS */

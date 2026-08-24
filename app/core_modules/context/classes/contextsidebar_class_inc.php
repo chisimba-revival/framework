@@ -127,6 +127,12 @@ class contextsidebar extends ChisimbaObject
             $activeId = $this->getParam('module');
         }
 
+        foreach ($nodes as &$node) {
+            $node['current'] = isset($node['nodeid'])
+                && $node['nodeid'] === $activeId;
+        }
+        unset($node);
+
         $str .= $objSideBar->show($nodes, $activeId);
 
         return "<div class='context_sidebar'>$str</div>";

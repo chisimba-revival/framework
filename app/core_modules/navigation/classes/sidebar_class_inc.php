@@ -105,7 +105,14 @@ class sidebar extends ChisimbaObject
                     $nodeCss = '';
                 }
                 
-                if($node['nodeid'] == $activeId || isset($node['haschildren']))
+                if (!empty($node['current']))
+                {
+                    $cssClass = ' class="active'.$nodeCss.'" ';
+                    $str .='<li '.$cssClass.'>
+                                <span class="chisimba-current-page" aria-current="page">'.$node['text'].'</span>
+                                ';
+                }
+                elseif($node['nodeid'] == $activeId || isset($node['haschildren']))
                 {
                     $cssClass = ' class="active'.$nodeCss.'" ';
                     $str .='<li '.$cssClass.'>
