@@ -16,6 +16,7 @@ $root = dirname(__DIR__);
 $app = dirname(dirname($root));
 $settings = file_get_contents($root . '/classes/block_contextsettings_class_inc.php');
 $plugins = file_get_contents($root . '/classes/block_contextmodules_class_inc.php');
+$template = file_get_contents($root . '/templates/content/controlpanel_tpl.php');
 $register = file_get_contents($root . '/register.conf');
 $reborn = file_get_contents($app . '/skins/chisimba-reborn/stylesheet.css');
 
@@ -29,6 +30,19 @@ $checks = array(
         $settings,
         'course-control-settings__details'
     ),
+    'control panel exposes lecturer task shortcuts' => str_contains(
+        $template,
+        'course-control-tasks'
+    ) && str_contains($template, "'action' => 'authors'")
+        && str_contains($template, "'contextcontent'"),
+    'control panel uses a deliberate details grid' => str_contains(
+        $template,
+        'course-control-details'
+    ) && !str_contains($template, '$counter % 2'),
+    'task URLs are normalized before attribute escaping' => str_contains(
+        $template,
+        'html_entity_decode((string) $value'
+    ) && str_contains($template, '$urlAttribute($task[\'url\'])'),
     'settings image has a presentation hook' => str_contains(
         $settings,
         'course-control-settings__image'

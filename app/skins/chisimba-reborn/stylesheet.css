@@ -4211,6 +4211,103 @@ h5.featureboxheader,
  *
  * @author Derek Keats
  */
+.course-control-workspace {
+    display: grid;
+    gap: var(--chisimba-space-5, 1.25rem);
+}
+
+.course-control-header h1,
+.course-control-header p,
+.course-control-tasks h2 {
+    margin: 0;
+}
+
+.course-control-header p {
+    margin-block-start: 0.25rem;
+    color: var(--chisimba-text-muted, #60727c);
+}
+
+.course-control-tasks {
+    padding: var(--chisimba-space-5, 1.25rem);
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-block-start: 4px solid var(--chisimba-primary, #087f5b);
+    border-radius: var(--chisimba-region-radius, 0.65rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.course-control-tasks ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.course-control-task {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 0.85rem;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: var(--chisimba-text, #17202a);
+    background: var(--chisimba-surface-muted, #f1f5f9);
+    text-decoration: none;
+}
+
+.course-control-task:hover,
+.course-control-task:focus-visible {
+    border-color: var(--chisimba-primary, #087f5b);
+    color: var(--chisimba-link, #006dcc);
+    background: var(--chisimba-surface, #fff);
+}
+
+.course-control-task__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--chisimba-primary, #087f5b);
+}
+
+.course-control-task__icon svg {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.course-control-task strong,
+.course-control-task small {
+    display: block;
+}
+
+.course-control-task small {
+    margin-block-start: 0.2rem;
+    color: var(--chisimba-text-muted, #60727c);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.course-control-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--chisimba-space-5, 1.25rem);
+    align-items: start;
+}
+
+.course-control-details__item,
+.course-control-details__item > .featurebox {
+    min-width: 0;
+}
+
+.course-control-details__item > .featurebox {
+    margin: 0;
+}
+
 .context_cp_left > .featurebox + .featurebox,
 .context_cp_right > .featurebox + .featurebox {
     margin-block-start: 0.85rem;
@@ -4358,6 +4455,8 @@ h5.featureboxheader,
 }
 
 @media (max-width: 48rem) {
+    .course-control-tasks ul,
+    .course-control-details,
     .course-control-settings,
     .course-control-plugins {
         grid-template-columns: minmax(0, 1fr);
