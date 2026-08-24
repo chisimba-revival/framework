@@ -80,7 +80,7 @@ class dbcontextblocks extends dbTable {
      * @param string $side Side on which the blocks are on
      * @param return array
      */
-    public function getContextBlocks($contextCode, $side) {
+    public function getContextBlocks($contextCode, $side, $excludedBlocks = array()) {
         $results = $this->getContextBlocksList ( $contextCode, $side );
         if ((is_countable($results) ? count($results) : 0) == 0) {
             return '';
@@ -90,6 +90,9 @@ class dbcontextblocks extends dbTable {
             $objDynamicBlocks = $this->getObject ( 'dynamicblocks', 'blocks' );
 
             foreach ( $results as $result ) {
+                if (in_array($result['block'], $excludedBlocks, true)) {
+                    continue;
+                }
                 $block = explode ( '|', $result ['block'] );
                 $blockId = $side . '___' . str_replace ( '|', '___', $result ['block'] );
 

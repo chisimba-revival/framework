@@ -219,7 +219,8 @@ if ($objUser->isAdmin()) {
 $button = new button('addmiddleblock', $objLanguage->languageText('mod_prelogin_addblock', 'system', 'Add Block'));
 $button->cssId = 'middlebutton';
 
-$objCssLayout->middleColumnContent = '<div id="middleblocks">' . $middleBlocksStr . '</div>';
+$objCssLayout->middleColumnContent = $myLearningOverview
+    . '<div id="middleblocks">' . $middleBlocksStr . '</div>';
 
 if ($objUser->isAdmin()) {
     $objCssLayout->middleColumnContent .= '<div id="middleaddblock">' . $header->show() . $wideBlocksDropDown->show();

@@ -472,6 +472,143 @@ ul#menuList li li ul {
     }
 }
 
+/* CHISIMBA MY LEARNING OVERVIEW */
+.student-learning-overview {
+    margin: 0 0 var(--chisimba-layout-gap);
+    padding: clamp(1rem, 2.4vw, 1.75rem);
+    border: 1px solid var(--chisimba-border);
+    border-top: 0.3rem solid var(--chisimba-primary);
+    border-radius: var(--chisimba-region-radius);
+    background: var(--chisimba-surface);
+    box-shadow: var(--chisimba-shadow);
+}
+
+.student-learning-overview__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.student-learning-overview__eyebrow {
+    margin: 0 0 0.2rem;
+    color: var(--chisimba-primary-dark);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.student-learning-overview h1,
+.student-learning-overview h2,
+.student-learning-overview p {
+    margin-top: 0;
+}
+
+.student-learning-overview__header h1 {
+    margin-bottom: 0.3rem;
+}
+
+.student-learning-overview__header p:last-child {
+    margin-bottom: 0;
+    color: var(--chisimba-text-muted);
+}
+
+.student-learning-overview__count {
+    flex: 0 0 auto;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--chisimba-primary-soft);
+    color: var(--chisimba-primary-dark);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.student-learning-overview__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+}
+
+.student-learning-course {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.65rem;
+    background: var(--chisimba-surface-subtle);
+}
+
+.student-learning-course--next {
+    border-color: var(--chisimba-primary);
+    background: color-mix(in srgb, var(--chisimba-primary-soft) 55%, var(--chisimba-surface));
+}
+
+.student-learning-course__topline,
+.student-learning-course__progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--chisimba-text-muted);
+    font-size: 0.82rem;
+}
+
+.student-learning-course__topline strong {
+    color: var(--chisimba-primary-dark);
+}
+
+.student-learning-course h2 {
+    margin: 0.65rem 0 1rem;
+    font-size: 1.15rem;
+}
+
+.student-learning-course__track {
+    height: 0.5rem;
+    margin: 0.4rem 0 0.9rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--chisimba-surface-muted);
+}
+
+.student-learning-course__track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--chisimba-primary);
+}
+
+.student-learning-course__next {
+    display: grid;
+    gap: 0.15rem;
+    margin-bottom: 1rem;
+    color: var(--chisimba-text-muted);
+    font-size: 0.88rem;
+}
+
+.student-learning-course__next strong {
+    overflow-wrap: anywhere;
+    color: var(--chisimba-ink);
+}
+
+.student-learning-course__action {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+@media (max-width: 38rem) {
+    .student-learning-overview__header {
+        display: block;
+    }
+
+    .student-learning-overview__count {
+        display: inline-block;
+        margin-top: 0.8rem;
+    }
+}
+
 /* Compact course navigation used by narrow course blocks. */
 .course-shortcuts__list {
     display: grid;
