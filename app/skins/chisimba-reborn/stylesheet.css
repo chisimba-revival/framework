@@ -483,6 +483,16 @@ ul#menuList li li ul {
     box-shadow: var(--chisimba-shadow);
 }
 
+/* The dedicated My Learning layout already provides the standard page region. */
+.mylearning-page > .student-learning-overview {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
 .student-learning-overview__header {
     display: flex;
     align-items: flex-start;

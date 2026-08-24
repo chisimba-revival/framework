@@ -39,6 +39,10 @@ $checks = array(
         && str_contains($overview, "'contextmodule' => 'contextcontent'")
         && str_contains($overview, "'contextaction' => 'viewpage'"),
     'shared skin owns presentation' => str_contains($skin, 'CHISIMBA MY LEARNING OVERVIEW'),
+    'dedicated page does not nest overview cards' => str_contains(
+        $skin,
+        '.mylearning-page > .student-learning-overview'
+    ) && str_contains($skin, 'background: transparent'),
 );
 
 foreach ($checks as $name => $ok) {
