@@ -15,6 +15,9 @@ $overview = file_get_contents(
 $skin = file_get_contents(
     dirname($coreModules) . '/skins/chisimba-reborn/stylesheet.css'
 );
+$canvas = file_get_contents(
+    dirname($coreModules) . '/skins/chisimba-reborn/canvases/_default/stylesheet.css'
+);
 
 $checks = array(
     'Site Home remains a general page' => !str_contains($controller, 'studentlearningoverview')
@@ -39,10 +42,17 @@ $checks = array(
         && str_contains($overview, "'contextmodule' => 'contextcontent'")
         && str_contains($overview, "'contextaction' => 'viewpage'"),
     'shared skin owns presentation' => str_contains($skin, 'CHISIMBA MY LEARNING OVERVIEW'),
-    'dedicated page does not nest overview cards' => str_contains(
+    'dedicated page retains overview card ownership' => str_contains(
         $skin,
-        '.mylearning-page > .student-learning-overview'
-    ) && str_contains($skin, 'background: transparent'),
+        '.student-learning-overview {'
+    ),
+    'My Learning regions are structural and aligned' => str_contains(
+        $canvas,
+        '#Canvas_Content_Body_Region2:has(> .mylearning-page)'
+    ) && str_contains(
+        $canvas,
+        '#Canvas_Content_Body_Region1:has(> .mylearning-sidebar)'
+    ),
 );
 
 foreach ($checks as $name => $ok) {

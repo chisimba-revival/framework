@@ -1520,6 +1520,23 @@ button.course-card__action {
     padding: 0;
 }
 /* END CHISIMBA_CONTENT_MODE_REGION_SHELL */
+
+/* My Learning components own both visible cards; regions only place them. */
+#Canvas_Content_Body_Region2:has(> .mylearning-page),
+#Canvas_Content_Body_Region1:has(> .mylearning-sidebar),
+#Canvas_Content_Body_Region3:has(> .mylearning-sidebar) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.mylearning-page > .student-learning-overview,
+.mylearning-sidebar > .featurebox:first-child {
+    margin-top: 0;
+}
+
 /* Registration: balanced main and guidance columns. */
 #Canvas_Content_Body_Region2:has(
     > .registration-service.chisimba-form-page
