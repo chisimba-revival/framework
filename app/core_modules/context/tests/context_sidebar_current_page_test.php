@@ -16,7 +16,12 @@ $checks = array(
     'navigation renders the current destination without an anchor' =>
         str_contains($sidebar, "if (!empty(\$node['current']))")
         && str_contains($sidebar, 'aria-current="page"')
-        && str_contains($sidebar, 'chisimba-current-page'),
+        && str_contains($sidebar, 'chisimba-current-location')
+        && str_contains($sidebar, 'mod_navigation_youarehere')
+        && !str_contains($sidebar, 'chisimba-current-page'),
+    'current location keeps a visible label and destination name' =>
+        str_contains($sidebar, 'chisimba-current-location__label')
+        && str_contains($sidebar, 'chisimba-current-location__name'),
 );
 
 foreach ($checks as $label => $passed) {

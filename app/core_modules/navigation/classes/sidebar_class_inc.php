@@ -45,6 +45,7 @@ class sidebar extends ChisimbaObject
     {
         try{
             $this->nodes = array();
+            $this->objLanguage = $this->getObject('language', 'language');
         }catch (Exception $e){
             echo 'Caught exception: ',  $e->getMessage();
             exit();
@@ -107,9 +108,26 @@ class sidebar extends ChisimbaObject
                 
                 if (!empty($node['current']))
                 {
+                    $currentLabel = htmlspecialchars(
+                        $this->objLanguage->languageText(
+                            'mod_navigation_youarehere',
+                            'navigation',
+                            'You are here'
+                        ),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    $currentName = htmlspecialchars(
+                        (string) $node['text'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
                     $cssClass = ' class="active'.$nodeCss.'" ';
                     $str .='<li '.$cssClass.'>
-                                <span class="chisimba-current-page" aria-current="page">'.$node['text'].'</span>
+                                <span class="chisimba-current-location" aria-current="page">
+                                    <span class="chisimba-current-location__label">'.$currentLabel.'</span>
+                                    <strong class="chisimba-current-location__name">'.$currentName.'</strong>
+                                </span>
                                 ';
                 }
                 elseif($node['nodeid'] == $activeId || isset($node['haschildren']))

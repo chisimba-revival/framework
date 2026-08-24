@@ -2538,39 +2538,45 @@ h5.featureboxheader,
 
 /* END CHISIMBA-REBORN CHAPTER CONTENT UI */
 
-/* BEGIN CHISIMBA-REBORN CURRENT PAGE MARKER */
+/* BEGIN CHISIMBA CURRENT LOCATION PRIMITIVE */
 
-/*
- * The current content page is identified by an icon, not a block highlight.
- * This keeps the page list quiet while retaining an unambiguous location cue.
- */
-.htmlliststyle .chisimba-current-page {
-    display: inline-flex;
-    align-items: center;
-    color: var(--chisimba-primary-dark, #174a78);
+#nav-secondary > li.active:has(> .chisimba-current-location) {
+    padding: 0;
     background: transparent;
-    font-weight: var(--chisimba-font-weight-semibold, 600);
 }
 
-.htmlliststyle .chisimba-current-page-icon {
-    flex: 0 0 auto;
-    width: 1em;
-    height: 1em;
-    margin-inline-end: var(--chisimba-space-2, 0.5rem);
-    color: currentColor;
-}
-
-#nav-secondary .chisimba-current-page {
-    display: block;
-    padding: 5px 0 5px 23px;
-    color: var(--chisimba-primary-dark, #174a78);
-    background: var(--chisimba-primary-soft, #e7f0f8);
-    font: bold 86% arial, sans-serif;
-    line-height: 1.8;
+.chisimba-current-location {
+    display: grid;
+    box-sizing: border-box;
+    width: 100%;
+    gap: var(--chisimba-space-1, 0.25rem);
+    padding: var(--chisimba-space-3, 0.75rem) var(--chisimba-space-4, 1rem);
+    border: 2px solid var(--chisimba-primary, #087f5b);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    color: var(--chisimba-text, #17202a);
+    background: var(--chisimba-surface, #fff);
+    box-shadow: 0 2px 8px rgba(17, 43, 66, 0.08);
     cursor: default;
 }
 
-/* END CHISIMBA-REBORN CURRENT PAGE MARKER */
+.chisimba-current-location__label {
+    color: var(--chisimba-primary-dark, #075f47);
+    font-size: var(--chisimba-font-size-xs, 0.75rem);
+    font-weight: var(--chisimba-font-weight-bold, 700);
+    letter-spacing: var(--chisimba-letter-spacing-wide, 0.035em);
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.chisimba-current-location__name {
+    min-width: 0;
+    color: inherit;
+    font-size: var(--chisimba-font-size-sm, 0.875rem);
+    line-height: var(--chisimba-line-height-normal, 1.5);
+    overflow-wrap: anywhere;
+}
+
+/* END CHISIMBA CURRENT LOCATION PRIMITIVE */
 
 /* BEGIN CHISIMBA-REBORN CONTEXT GROUPS */
 
@@ -3769,10 +3775,6 @@ h5.featureboxheader,
 .contextcontent-page-list .htmlliststyle li>a{display:block;padding:.62rem .75rem;color:#20343f;font-weight:650;text-decoration:none}
 .contextcontent-page-title{display:inline-flex;align-items:center;gap:.55rem}
 .contextcontent-page-icon{width:1.05rem;height:1.05rem;flex:0 0 auto;color:#607d8b}
-.chisimba-current-page{border-color:#087f5b!important;background:#eef8f4!important}
-.chisimba-current-page>a{color:#075f47!important}
-.chisimba-current-page-icon{width:.9rem;height:.9rem;margin-right:.35rem;color:#087f5b;vertical-align:-.12em}
-
 /* BEGIN CHISIMBA-REBORN MCQ TEST LIST */
 /* The MCQ module supplies semantic classes only; its presentation belongs here. */
 .mcq-heading-actions { display: inline-flex; align-items: center; margin-left: 0.6rem; }
