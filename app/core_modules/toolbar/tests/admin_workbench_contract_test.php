@@ -29,6 +29,9 @@ $checks = array(
     'keyboard focus treatment' => str_contains($css, '.admin-workbench-task:focus-visible'),
     'outer canvas card is structural' => str_contains($canvasCss,
         "> .toolbar_main\n    > .admin-workbench"),
+    'vacant canvas sidebar track removed' => str_contains($css,
+        'grid-template-columns: minmax(0, 1fr) !important;')
+        && str_contains($css, 'width: 100% !important;'),
 );
 
 foreach ($checks as $label => $passed) {

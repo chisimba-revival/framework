@@ -3238,6 +3238,23 @@ h5.featureboxheader,
     display: none !important;
 }
 
+/* The workbench provides the page's main/sidebar composition itself. */
+#Canvas_Content_Body:has(
+    > #Canvas_Content_Body_Region2
+    .admin-workbench
+) {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+#Canvas_Content_Body:has(
+    > #Canvas_Content_Body_Region2
+    .admin-workbench
+) > #Canvas_Content_Body_Region2 {
+    grid-column: 1 / -1;
+    max-width: none;
+    width: 100% !important;
+}
+
 @media (max-width: 52rem) {
     .admin-workbench-hero,
     .admin-workbench-layout,
