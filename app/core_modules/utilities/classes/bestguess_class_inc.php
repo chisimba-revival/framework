@@ -215,10 +215,20 @@ class bestguess extends ChisimbaObject
             if ($curMod !== "_default") {
                 return $curMod;
             } else {
-                return $objConfig->getdefaultModuleName($moduleType);
+                $defaultModule = $objConfig->getdefaultModuleName($moduleType);
+                if ($moduleType === 'POSTLOGIN') {
+                    return $this->getObject('landingresolver', 'postlogin')
+                        ->defaultModule($defaultModule);
+                }
+                return $defaultModule;
             }
         } else {
-            return $objConfig->getdefaultModuleName($moduleType);
+            $defaultModule = $objConfig->getdefaultModuleName($moduleType);
+            if ($moduleType === 'POSTLOGIN') {
+                return $this->getObject('landingresolver', 'postlogin')
+                    ->defaultModule($defaultModule);
+            }
+            return $defaultModule;
         }
     }
     /**

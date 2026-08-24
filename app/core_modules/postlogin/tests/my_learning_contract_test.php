@@ -1,9 +1,13 @@
 <?php
-/** Static contract for the canonical My Learning post-login surface. */
+/** Static contract for the canonical, separate My Learning landing surface. */
 $root = dirname(__DIR__);
 $coreModules = dirname($root);
 $controller = file_get_contents($root . '/controller.php');
 $template = file_get_contents($root . '/templates/content/main_tpl.php');
+$resolver = file_get_contents($root . '/classes/landingresolver_class_inc.php');
+$bestGuess = file_get_contents($coreModules . '/utilities/classes/bestguess_class_inc.php');
+$contextController = file_get_contents($coreModules . '/context/controller.php');
+$sideMenu = file_get_contents($coreModules . '/toolbar/classes/sidemenu_class_inc.php');
 $overview = file_get_contents(
     $coreModules . '/context/classes/studentlearningoverview_class_inc.php'
 );
@@ -12,14 +16,18 @@ $skin = file_get_contents(
 );
 
 $checks = array(
-    'postlogin composes My Learning' => str_contains($controller, 'studentlearningoverview')
-        && str_contains($template, '$myLearningOverview'),
-    'My Learning precedes generic blocks' => strpos($template, '$myLearningOverview')
-        < strpos($template, '$middleBlocksStr'),
-    'legacy My Courses block is suppressed when overview exists' => str_contains(
-        $controller,
-        "array('block|mycontexts|context')"
-    ) && str_contains($controller, '$myLearningOverview ==='),
+    'Site Home remains a general page' => !str_contains($controller, 'studentlearningoverview')
+        && !str_contains($template, '$myLearningOverview'),
+    'resolver recognises only student-only accounts' => str_contains($resolver, 'isStudentOnly')
+        && str_contains($resolver, 'getContextWhereStudent')
+        && str_contains($resolver, 'getContextWhereLecturer'),
+    'default navigation uses the landing resolver' => str_contains($bestGuess, "getObject('landingresolver', 'postlogin')")
+        && str_contains($bestGuess, 'defaultModule'),
+    'leaving a course resolves before context is cleared' => strpos($contextController, 'leaveCourseModule')
+        < strpos($contextController, 'leaveContext()'),
+    'student account menu names both destinations' => str_contains($sideMenu, 'addStudentHomeLinks')
+        && str_contains($sideMenu, "'mylearning'")
+        && str_contains($sideMenu, "'postlogin'"),
     'overview reuses learning journey state' => str_contains($overview, "getObject('learningjourney', 'contextcontent')")
         && str_contains($overview, 'getState($code, $userId)'),
     'course continuation joins the correct context' => str_contains($overview, "'action' => 'joincontext'")
@@ -34,4 +42,4 @@ foreach ($checks as $name => $ok) {
         exit(1);
     }
 }
-fwrite(STDOUT, "PASS: My Learning post-login contract\n");
+fwrite(STDOUT, "PASS: separate My Learning landing contract\n");

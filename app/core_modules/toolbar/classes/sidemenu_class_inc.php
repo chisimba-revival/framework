@@ -215,8 +215,37 @@ class sidemenu extends ChisimbaObject {
         $access = $this->checkAccess();
         $menus = $this->dbMenu->getSideMenus('postlogin', $access, $this->context);
         $menus = $this->checkPerm($menus);
+        $this->addStudentHomeLinks();
         $menu = $this->getMenuList($menus, true);
         return $menu;
+    }
+
+    /** Give student-only accounts explicit learning and general-site routes. */
+    private function addStudentHomeLinks() {
+        $objModules = $this->getObject('modules', 'modulecatalogue');
+        if (!$objModules->checkIfRegistered('mylearning')) {
+            return;
+        }
+        $resolver = $this->getObject('landingresolver', 'postlogin');
+        if (!$resolver->isStudentOnly()) {
+            return;
+        }
+        $this->globalNodes[] = array(
+            'text' => $this->objLanguage->languageText(
+                'mod_mylearning_name', 'mylearning', 'My Learning'
+            ),
+            'uri' => $this->uri(null, 'mylearning'),
+            'nodeid' => 'mylearning',
+            'css' => 'account-card__my-learning',
+        );
+        $this->globalNodes[] = array(
+            'text' => $this->objLanguage->languageText(
+                'mod_mylearning_sitehome', 'mylearning', 'Site Home'
+            ),
+            'uri' => $this->uri(null, 'postlogin'),
+            'nodeid' => 'postlogin',
+            'css' => 'account-card__site-home',
+        );
     }
 
     /**

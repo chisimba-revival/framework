@@ -103,19 +103,7 @@ class postlogin extends controller {
      * the output
      */
     protected function __home() {
-        $myLearningOverview = $this->getObject(
-            'studentlearningoverview',
-            'context'
-        )->show();
-        $this->setVarByRef('myLearningOverview', $myLearningOverview);
-
-        $leftBlocks = $this->objContextBlocks->getContextBlocks(
-            $this->contextCode,
-            'left',
-            $myLearningOverview === ''
-                ? array()
-                : array('block|mycontexts|context')
-        );
+        $leftBlocks = $this->objContextBlocks->getContextBlocks($this->contextCode, 'left');
         $this->setVarByRef('leftBlocksStr', $leftBlocks);
 
         $rightBlocks = $this->objContextBlocks->getContextBlocks($this->contextCode, 'right');

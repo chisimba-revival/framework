@@ -786,6 +786,8 @@ class context extends controller {
      * @access protected
      */
     protected function __leavecontext() {
+        $leaveDestination = $this->getObject('landingresolver', 'postlogin')
+            ->leaveCourseModule($this->contextCode, '_default');
         if ($this->eventsEnabled) {
             $message = $this->objUser->fullname() . ' ' .
                     $this->objLanguage->languageText('mod_context_hasleft', 'context') .
@@ -798,7 +800,7 @@ class context extends controller {
         }
         $this->objContext->leaveContext();
         if ($this->objUser->isLoggedIn()) {
-            return $this->nextAction(NULL, NULL, '_default');
+            return $this->nextAction(NULL, NULL, $leaveDestination);
         } else {
             // Workaround for bug in the engine class - it should really be unfucked in the engine class
             $objConfig = $this->getObject('altconfig', 'config');
