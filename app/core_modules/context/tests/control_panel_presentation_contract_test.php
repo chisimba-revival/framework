@@ -74,6 +74,13 @@ $checks = array(
         $sidebar,
         "render('search'"
     ) && !str_contains($sidebar, 'setIconClass("search")'),
+    'student sidebar omits management and assessment indexes' => str_contains(
+        $sidebar,
+        '$learnerHiddenModules'
+    ) && str_contains($sidebar, "'contentblocks'")
+        && str_contains($sidebar, "'gradebook'")
+        && str_contains($sidebar, "'mcqtests'")
+        && str_contains($sidebar, '$mayManageLearning'),
     'plugin links separate icons from labels' => str_contains(
         $plugins,
         'course-control-plugin__label'

@@ -82,6 +82,24 @@ class menu extends ChisimbaObject
             // Check user permissions and get a nested array of categories and modules
             $rows = $this->isVisible($rows);
 
+            // Menu categories describe tasks, but legacy declarations did not
+            // consistently describe their audience. Keep management surfaces
+            // out of learner navigation without changing direct module access:
+            // students still reach assigned assessments through their journey.
+            foreach (array_keys($rows) as $categoryName) {
+                $category = strtolower(trim((string) $categoryName));
+                if ($category === 'admin'
+                    && !$this->securityContext->isSiteAdministrator()) {
+                    unset($rows[$categoryName]);
+                    continue;
+                }
+                if ($category === 'assessment'
+                    && !$this->securityContext->isSiteAdministrator()
+                    && !$this->securityContext->isCurrentContextLecturer()) {
+                    unset($rows[$categoryName]);
+                }
+            }
+
             // put admin and about menus at the end
             $admin = array(); $about = array();
             foreach($rows as $key=>$item){

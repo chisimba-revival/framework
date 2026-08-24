@@ -97,10 +97,29 @@ class contextsidebar extends ChisimbaObject
         $objContextModules = $this->getObject('dbcontextmodules');
         $contextModules = $objContextModules->getContextModules($this->contextCode);
         $objModules = $this->getObject('modules', 'modulecatalogue');
+        $mayManageLearning = $this->objUser->isAdmin()
+            || $this->objContextGroups->isContextLecturer();
+        $learnerHiddenModules = array(
+            'contentblocks',
+            'gradebook',
+            'mcqtests',
+            'assignment',
+            'rubric',
+            'worksheet',
+            'essay',
+            'essayadmin',
+            'pbl',
+            'pbladmin',
+        );
         $nodes = array();
         $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('mod_context_contexthome', 'context', NULL, '[-context-] Home')), 'uri'=>$this->uri(NULL, 'context'), 'nodeid'=>'context', 'css'=>'sidebarhomelink');
         if ((is_countable($contextModules) ? count($contextModules) : 0) > 0) {
             foreach ($contextModules as $module) {
+                $moduleId = strtolower(trim((string) $module));
+                if (!$mayManageLearning
+                    && in_array($moduleId, $learnerHiddenModules, true)) {
+                    continue;
+                }
                 $moduleInfo = $objModules->getModuleInfo($module);
                 if ($moduleInfo['isreg']) {
                     // Make sure that Wall is not included as a link since it cannot be used this way
@@ -110,7 +129,7 @@ class contextsidebar extends ChisimbaObject
                 }
             }
         }
-        if ($this->objUser->isAdmin () || $this->objContextGroups->isContextLecturer()) {
+        if ($mayManageLearning) {
             $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('mod_context_contextcontrolpanel', 'context', NULL, '[-context-] Control Panel')), 'uri'=>$this->uri(array('action'=>'controlpanel'), 'context'), 'nodeid'=>'controlpanel');
         }
         $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('phrase_leavecourse', 'system', NULL, 'Leave [-context-]')), 'uri'=>$this->uri(array('action'=>'leavecontext'), 'context'), 'nodeid'=>'leavecontext');

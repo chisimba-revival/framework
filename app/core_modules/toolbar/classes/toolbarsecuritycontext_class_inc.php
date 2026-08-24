@@ -17,6 +17,7 @@ class toolbarsecuritycontext extends ChisimbaObject
     private $csrf;
     private $user;
     private $permissions;
+    private $context;
 
     public function init()
     {
@@ -30,6 +31,7 @@ class toolbarsecuritycontext extends ChisimbaObject
             'permissionservice',
             'security'
         );
+        $this->context = $this->getObject('dbcontext', 'context');
     }
 
     public function isAuthenticated()
@@ -57,6 +59,23 @@ class toolbarsecuritycontext extends ChisimbaObject
 
         return $userId !== null
             && $this->user->inAdminGroup($userId, 'Site Admin');
+    }
+
+    /**
+     * Whether the current user may manage learning activities in this course.
+     *
+     * This is intentionally a current-context decision. A lecturer in one
+     * course must not inherit lecturer navigation while visiting another.
+     */
+    public function isCurrentContextLecturer()
+    {
+        $userId = $this->userId();
+        $contextCode = $this->context->getContextCode();
+
+        return $userId !== null
+            && $contextCode !== null
+            && $contextCode !== ''
+            && $this->user->isContextLecturer($userId, $contextCode);
     }
 
     /**
