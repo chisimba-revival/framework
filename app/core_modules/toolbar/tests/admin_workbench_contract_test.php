@@ -48,9 +48,14 @@ $registrations = array(
     'useradmin' => array('PAGE: admin_people', 'PAGE: admin_common'),
     'groupadmin' => array('PAGE: admin_people', 'PAGE: admin_common'),
     'sysconfig' => array('PAGE: admin_system', 'PAGE: admin_common'),
-    'logger' => array('PAGE: admin_operations', 'PAGE: admin_common'),
+    'logger' => array(
+        'MODULE_ISADMIN: 1',
+        'PAGE: admin_operations',
+        'PAGE: admin_common',
+    ),
     'modulecatalogue' => array('PAGE: admin_advanced', 'PAGE: admin_common'),
 );
+
 foreach ($registrations as $module => $needles) {
     $register = file_get_contents($root . '/' . $module . '/register.conf');
     foreach ($needles as $needle) {
