@@ -202,6 +202,15 @@ class contextforms extends ChisimbaObject {
 
         $objSelectImage = $this->getObject('selectimage', 'filemanager');
         $objSelectImage->context = TRUE;
+        if ($context != NULL && !empty($context['contextcode'])) {
+            $objContextImage = $this->getObject('contextimage', 'context');
+            $currentImage = $objContextImage->getContextImage(
+                $context['contextcode']
+            );
+            if ($currentImage !== false) {
+                $objSelectImage->setDefaultPreviewUrl($currentImage);
+            }
+        }
 
         $table2 = $this->newObject('htmltable', 'htmlelements');
         $table2->startRow();

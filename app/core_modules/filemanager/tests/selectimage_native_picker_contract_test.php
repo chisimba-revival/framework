@@ -22,6 +22,18 @@ $checks = array(
     'legacy popup is not invoked' => !str_contains($selector, 'selectimagewindow'),
     'picker returns File Manager ID' => str_contains($selector, 'field.value=file.id'),
     'picker returns preview URL' => str_contains($selector, 'preview.src=file.url'),
+    'saved image can be supplied as a preview' => str_contains(
+        $selector,
+        'setDefaultPreviewUrl'
+    ) && str_contains($selector, 'baseline='),
+    'reset restores the saved preview' => str_contains(
+        $selector,
+        'preview.src=baseline'
+    ),
+    'selector uses shared button primitives' => str_contains(
+        $selector,
+        'button chisimba-button-danger'
+    ) && !str_contains($selector, '<style>'),
     'course form retains selector component' => str_contains(
         $stepTwo,
         "getObject('selectimage', 'filemanager')"

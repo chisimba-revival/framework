@@ -28,6 +28,9 @@ class selectimage extends ChisimbaObject
     /** @var string Existing File Manager record ID. */
     public $defaultFile;
 
+    /** @var string Existing image URL when no File Manager ID is retained. */
+    public $defaultPreviewUrl;
+
     /** @var mixed Retained for compatibility with historical consumers. */
     public $context;
 
@@ -55,6 +58,7 @@ class selectimage extends ChisimbaObject
     {
         $this->name = 'imageselect';
         $this->defaultFile = '';
+        $this->defaultPreviewUrl = '';
         $this->context = false;
         $this->workgroup = false;
         $this->widthOfInput = '80%';
@@ -73,6 +77,18 @@ class selectimage extends ChisimbaObject
     public function setDefaultFile($fileId)
     {
         $this->defaultFile = (string) $fileId;
+    }
+
+    /**
+     * Set the saved image shown before a replacement is selected.
+     *
+     * @param string $url Public image URL.
+     *
+     * @return void
+     */
+    public function setDefaultPreviewUrl($url)
+    {
+        $this->defaultPreviewUrl = (string) $url;
     }
 
     /**
@@ -117,6 +133,9 @@ class selectimage extends ChisimbaObject
                 );
             }
         }
+        if ($previewUrl === '' && $this->defaultPreviewUrl !== '') {
+            $previewUrl = $this->defaultPreviewUrl;
+        }
 
         $pickerUrl = html_entity_decode(
             $this->uri(
@@ -146,7 +165,9 @@ class selectimage extends ChisimbaObject
         $script = '<script type="text/javascript">(function(){"use strict";'
             . 'var target=' . json_encode($fieldId) . ',previewId=' . json_encode($previewId)
             . ',chooseId=' . json_encode($chooseId) . ',clearId=' . json_encode($clearId)
-            . ',picker=' . json_encode($pickerUrl) . ',previous=window.ChisimbaFilePickerReceive;'
+            . ',picker=' . json_encode($pickerUrl)
+            . ',baseline=' . json_encode($previewUrl)
+            . ',previous=window.ChisimbaFilePickerReceive;'
             . 'window.ChisimbaFilePickerReceive=function(requestedTarget,file){'
             . 'if(requestedTarget===target&&file&&file.id&&file.url){'
             . 'var field=document.getElementById(target),preview=document.getElementById(previewId),clear=document.getElementById(clearId);'
@@ -156,13 +177,9 @@ class selectimage extends ChisimbaObject
             . 'var choose=document.getElementById(chooseId),clear=document.getElementById(clearId);'
             . 'if(choose){choose.addEventListener("click",function(){window.open(picker,"chisimbaImagePicker","width=920,height=720,resizable=yes,scrollbars=yes");});}'
             . 'if(clear){clear.addEventListener("click",function(){var field=document.getElementById(target),preview=document.getElementById(previewId);'
-            . 'if(field){field.value="";}if(preview){preview.removeAttribute("src");preview.hidden=true;}clear.disabled=true;});}});'
+            . 'if(field){field.value="";}if(preview){if(baseline){preview.src=baseline;preview.hidden=false;}else{preview.removeAttribute("src");preview.hidden=true;}}clear.disabled=true;});}});'
             . '}());</script>';
-        $style = '<style>.chisimba-image-selector{display:grid;gap:.75rem;max-width:22rem}'
-            . '.chisimba-image-selector__preview{display:block;width:100%;max-height:14rem;object-fit:cover;border:1px solid #cbd5e1;border-radius:.5rem}'
-            . '.chisimba-image-selector__preview[hidden]{display:none}'
-            . '.chisimba-image-selector__actions{display:flex;gap:.5rem;flex-wrap:wrap}</style>';
-        $this->appendArrayVar('headerParams', $style . $script);
+        $this->appendArrayVar('headerParams', $script);
 
         return '<div class="chisimba-image-selector">'
             . '<input type="hidden" name="' . $escape($this->name) . '" id="' . $escape($fieldId)
@@ -171,8 +188,8 @@ class selectimage extends ChisimbaObject
             . '" alt="' . $escape($previewLabel) . '"'
             . ($previewUrl === '' ? ' hidden' : ' src="' . $escape($previewUrl) . '"') . '>'
             . '<div class="chisimba-image-selector__actions">'
-            . '<button type="button" id="' . $escape($chooseId) . '">' . $escape($chooseLabel) . '</button>'
-            . '<button type="button" id="' . $escape($clearId) . '"'
+            . '<button class="button" type="button" id="' . $escape($chooseId) . '">' . $escape($chooseLabel) . '</button>'
+            . '<button class="button chisimba-button-danger" type="button" id="' . $escape($clearId) . '"'
             . ($defaultId === '' ? ' disabled' : '') . '>' . $escape($clearLabel) . '</button>'
             . '</div></div>';
     }

@@ -55,12 +55,12 @@ class block_contextmodules extends ChisimbaObject
         $this->objContextModules = $this->getObject('dbcontextmodules');
         $this->objModules = $this->getObject('modules', 'modulecatalogue');
         $this->objLanguage = $this->getObject('language', 'language');
-        $this->title = $this->objLanguage->code2Txt(
+        $this->title = ucfirst($this->objLanguage->code2Txt(
             'mod_context_plugins',
             'context',
             array('plugins' => 'plugins'),
             '[-plugins-]'
-        );
+        ));
     }
 
     /**

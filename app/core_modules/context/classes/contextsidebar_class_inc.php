@@ -158,11 +158,25 @@ class contextsidebar extends ChisimbaObject
 
         $textinput = new textinput('search', $this->getParam('search'));
 
-        $button = new button ('searchButton', ucwords($this->objLanguage->code2Txt('mod_context_searchcontext', 'context', NULL, 'Search [-context-]')));
-        $button->setIconClass("search");
-		$button->setToSubmit();
+        $searchLabel = ucwords($this->objLanguage->code2Txt(
+            'mod_context_searchcontext',
+            'context',
+            null,
+            'Search [-context-]'
+        ));
+        $iconService = $this->getObject('iconservice', 'ui');
+        $searchButton = '<button class="button context-sidebar-search__button" '
+            . 'type="submit">' . $iconService->render('search', array(
+                'decorative' => true,
+                'class' => 'context-sidebar-search__icon',
+            )) . '<span>' . htmlspecialchars(
+                $searchLabel,
+                ENT_QUOTES,
+                'UTF-8'
+            ) . '</span></button>';
 
-        $form->addToForm('<p align="center">'.$textinput->show().'<br />'.$button->show().'</p>');
+        $form->addToForm('<div class="context-sidebar-search">'
+            . $textinput->show() . $searchButton . '</div>');
 
         return $form->show();
     }

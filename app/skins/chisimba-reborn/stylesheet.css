@@ -4211,6 +4211,58 @@ h5.featureboxheader,
  *
  * @author Derek Keats
  */
+.context-sidebar-search {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.context-sidebar-search input[type="text"] {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.context-sidebar-search__button {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.context-sidebar-search__icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.chisimba-image-selector {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 22rem;
+}
+
+.chisimba-image-selector__preview {
+    display: block;
+    width: 100%;
+    max-height: 14rem;
+    border: 1px solid var(--chisimba-border, #cbd5e1);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    object-fit: cover;
+}
+
+.chisimba-image-selector__preview[hidden] {
+    display: none;
+}
+
+.chisimba-image-selector__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.chisimba-image-selector__actions .chisimba-button-danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
 .course-control-workspace {
     display: grid;
     gap: var(--chisimba-space-5, 1.25rem);

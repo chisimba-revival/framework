@@ -16,6 +16,8 @@ $root = dirname(__DIR__);
 $app = dirname(dirname($root));
 $settings = file_get_contents($root . '/classes/block_contextsettings_class_inc.php');
 $plugins = file_get_contents($root . '/classes/block_contextmodules_class_inc.php');
+$forms = file_get_contents($root . '/classes/contextforms_class_inc.php');
+$sidebar = file_get_contents($root . '/classes/contextsidebar_class_inc.php');
 $template = file_get_contents($root . '/templates/content/controlpanel_tpl.php');
 $register = file_get_contents($root . '/register.conf');
 $reborn = file_get_contents($app . '/skins/chisimba-reborn/stylesheet.css');
@@ -55,6 +57,18 @@ $checks = array(
         $plugins,
         'setModuleIcon'
     ),
+    'plugin heading is capitalized' => str_contains(
+        $plugins,
+        'ucfirst($this->objLanguage->code2Txt('
+    ),
+    'settings form supplies the saved image preview' => str_contains(
+        $forms,
+        'setDefaultPreviewUrl($currentImage)'
+    ),
+    'course search uses the shared Lucide icon service' => str_contains(
+        $sidebar,
+        "render('search'"
+    ) && !str_contains($sidebar, 'setIconClass("search")'),
     'plugin links separate icons from labels' => str_contains(
         $plugins,
         'course-control-plugin__label'
