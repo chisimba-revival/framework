@@ -79,6 +79,10 @@ $expect(
     'Course cards must obtain lecturer attribution from context membership.'
 );
 $expect(
+    strpos($renderer, "\$allowed = \$mappedPolicy === 'public'") !== false,
+    'Public catalogue actions must not depend on optional access services.'
+);
+$expect(
     strpos($myCourses, 'course-shortcuts__list') !== false
       && strpos($allCourses, 'course-shortcuts__list') !== false
       && strpos($myCourses, "new dropdown") === false

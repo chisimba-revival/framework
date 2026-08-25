@@ -267,7 +267,9 @@ class coursecatalogue extends ChisimbaObject
                     'url' => $this->uri(array('action' => 'showlogin'), 'security'),
                 );
             }
-            $allowed = $this->objUser->isAdmin();
+            // Public catalogue actions are intrinsic and must not bootstrap
+            // optional membership or entitlement services.
+            $allowed = $mappedPolicy === 'public' || $this->objUser->isAdmin();
             if (!$allowed) {
                 try {
                     $decision = $this->getObject('accesspolicyservice', 'access-policy-service')->resolve(array(
