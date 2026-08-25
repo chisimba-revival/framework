@@ -743,7 +743,7 @@ class form implements ifhtml
                     ok = ok && selected;
                 }else{
                     // FORM_VALIDATION_JS_LITERAL_PHP82
-                    alert('Error in form validation. ID=\''.$elemIdPrefix.$fieldname.'\'.');
+                    alert('Error in form validation. ID=\'".$elemIdPrefix.$fieldname."\'.');
                     return false;
                 }
             }
