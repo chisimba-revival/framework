@@ -419,6 +419,11 @@ class dbcontext extends dbTable {
         if ($this->objUser->isAdmin()) {
             return TRUE;
         }
+        // Public admission is intrinsic to the course. Anonymous entry must
+        // not depend on optional membership or entitlement infrastructure.
+        if (strtolower((string) $context['access_policy']) === 'public') {
+            return TRUE;
+        }
         // Existing canonical course membership remains a valid private-course
         // admission source; tiers never replace or reinterpret course groups.
         if (strtolower((string) $context['access_policy']) === 'private') {

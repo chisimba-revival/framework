@@ -30,6 +30,8 @@ $expect(strpos($database, "getObject('usercontext')") !== false,
 $expect(strpos($database, "strtolower((string) \$context['access_policy']) === 'private'") !== false
     && strpos($database, "isContextMember(\$this->objUser->userId(), \$context['contextcode'])") !== false,
     'Mapped Private courses must preserve admission for existing canonical members.');
+$expect(strpos($database, "strtolower((string) \$context['access_policy']) === 'public'") !== false,
+    'Mapped Public courses must admit without optional service infrastructure.');
 
 fwrite(STDOUT, "PASS: tiered course admission compatibility contract\n");
 ?>
