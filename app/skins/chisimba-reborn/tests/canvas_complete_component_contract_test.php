@@ -12,12 +12,12 @@
 $skins = dirname(__DIR__, 2);
 $reborn = file_get_contents($skins . '/chisimba-reborn/canvases/_default/stylesheet.css');
 $checks = array(
-    'named canvases inherit canonical layout' => str_contains(
+    'named canvases leave canonical layout to the versioned page link' => !str_contains(
         file_get_contents($skins . '/chisimba-reborn/canvases/chisimba/stylesheet.css'),
-        '@import url("../_default/stylesheet.css")'
-    ) && str_contains(
+        '@import'
+    ) && !str_contains(
         file_get_contents($skins . '/chisimba-reborn/canvases/kenga-learn/stylesheet.css'),
-        '@import url("../_default/stylesheet.css")'
+        '@import'
     ),
     'semantic component recognised' => str_contains($reborn, '.block:has(> .content-block)'),
     'region shell flattened' => str_contains($reborn, '):has(> .content-block),'),

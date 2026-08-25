@@ -55,7 +55,7 @@ $checks = array(
         '#Canvas_Content_Body_Region2:has(> .mylearning-page)'
     ) && str_contains(
         $canvas,
-        '#Canvas_Content_Body_Region1:has(> .mylearning-sidebar)'
+        ':has(> .chisimba-structural-sidebar)'
     ),
 );
 

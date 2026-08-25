@@ -383,7 +383,7 @@ class context extends controller {
                 } //--
                 return $this->nextAction('home');
             } else {
-                return $this->nextAction('join', array('error' => 'unabletoenter'));
+                return $this->nextAction('join', $this->joinFailure($contextCode));
             }
         }
     }
@@ -401,9 +401,22 @@ class context extends controller {
             if ($this->objContext->joinContext($contextCode)) {
                 return $this->nextAction(NULL, NULL, $module);
             } else {
-                return $this->nextAction('join', array('error' => 'unabletoenter'));
+                return $this->nextAction('join', $this->joinFailure($contextCode));
             }
         }
+    }
+
+    private function joinFailure($contextCode)
+    {
+        $params = array('error' => 'unabletoenter');
+        $details = $this->objContext->getContextDetails($contextCode);
+        $policy = is_array($details) && isset($details['access_policy'])
+            ? strtolower(trim((string) $details['access_policy'])) : '';
+        if (in_array($policy, array('free', 'tier_1', 'tier_2'), true)) {
+            $params['error'] = 'accessrequired';
+            $params['admissionpolicy'] = $policy;
+        }
+        return $params;
     }
 
     /**

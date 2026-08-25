@@ -37,11 +37,17 @@ class permissions_acl extends dbTable
     var $objUser;
 
     /**
+    * @var identityservice canonical logical-to-permission identity resolver.
+    */
+    var $objIdentity;
+
+    /**
     * Method to initialise an object.
     */
     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         $this->objUser = $this->getObject( 'user', 'security' );
+        $this->objIdentity = $this->getObject( 'identityservice', 'security' );
         parent::init( 'tbl_permissions_acl' );
     }
 
@@ -67,7 +73,7 @@ class permissions_acl extends dbTable
     * Method to unassign a user from an acl.
     *
     * @param string $aclId The unique ID for the access control list.
-    * @param string $userId The unique ID of an existing user. NB use PKid( userId ) method in user class
+    * @param string $userId The stored user primary key used by the ACL row.
     * @return true|false TRUE on success, FALSE on failure
     */
     function deleteAclUser( $aclId, $userId )
@@ -160,41 +166,103 @@ class permissions_acl extends dbTable
     }
 
     /**
-    * Method to get this users assigned acls.
+    * Method to get this user's assigned acls.
     *
-    * @param string $userId The unique ID of an existing user. NB use PKid( userId ) method in user class
+    * @param string $userId The logical user ID used by the security service.
     * @return array The list of unique ID for acls as an array.
     */
     function getUserAcls( $userId )
     {
-
-        return array();
-        $permAclDb = $this->_tableName;
-        // Get the all groups the user belongs to, include subgroups
-        $groupAdmin = $this->getObject( 'groupAdminModel', 'groupadmin' );
-        $subGroups = $groupAdmin->getUserGroups ( $userId );
-        // Groups higher up the group-tree has access as well.
-        // Eg. Context1/students/[user1]
-        // Will give user access to Context1 and Context1/students
-        $accessToGroups = array();
-        foreach( $subGroups as $groupId ) {
-            $groupToRoot =array(); // $groupAdmin->getGroupsToRoot( $groupId );
-            $accessToGroups = array_unique ( array_merge( $subGroups, $groupToRoot ) );
+        if (!is_scalar($userId) || trim((string) $userId) === '') {
+            return array();
         }
-        // Format the group list for the db query..
-        $lstAccessGroups = "'" . implode( "','", $accessToGroups ) . "'";
-        // User assigned acls
-        $sql = "SELECT acl_id ";
-        $sql .= " FROM $permAclDb";
-        $sql .= " WHERE ( user_id = '$userId' )";
-        $sql .= " OR ( group_id IN ( $lstAccessGroups ) ) ";
+
+        $logicalUserId = trim((string) $userId);
+        $permissionUserId = $this->objIdentity->permissionUserIdForUser($logicalUserId);
+        if ($permissionUserId === null
+            || !preg_match('/^[0-9]+$/', (string) $permissionUserId)) {
+            return array();
+        }
+
+        // Resolve direct groups and all their ancestors. ACLs attached to a
+        // parent group therefore apply to members of its nested groups too.
+        $groupIds = array();
+        $rows = parent::getArray(
+            'SELECT group_id FROM tbl_perms_groupusers'
+            . ' WHERE perm_user_id = ' . (int) $permissionUserId
+        );
+        if (!is_array($rows)) {
+            return array();
+        }
+        foreach ($rows as $row) {
+            $groupIds[(int) $row['group_id']] = true;
+        }
+
+        $frontier = array_keys($groupIds);
+        for ($depth = 0; $depth < 32 && !empty($frontier); $depth++) {
+            $parentRows = parent::getArray(
+                'SELECT group_id FROM tbl_perms_group_subgroups'
+                . ' WHERE subgroup_id IN ('
+                . implode(',', array_map('intval', $frontier)) . ')'
+            );
+            if (!is_array($parentRows)) {
+                return array();
+            }
+            $frontier = array();
+            foreach ($parentRows as $row) {
+                $parentId = (int) $row['group_id'];
+                if ($parentId > 0 && !isset($groupIds[$parentId])) {
+                    $groupIds[$parentId] = true;
+                    $frontier[] = $parentId;
+                }
+            }
+        }
+
+        // Legacy direct ACL rows store tbl_users.id. During identity migration
+        // some installations used perm_user_id, so accept both representations.
+        $directIds = array();
+        $storageUserId = $this->objUser->PKId($logicalUserId);
+        foreach (array($storageUserId, $permissionUserId) as $directId) {
+            if (is_scalar($directId) && trim((string) $directId) !== '') {
+                $directIds[] = $this->quoteValue((string) $directId);
+            }
+        }
+
+        $conditions = array();
+        if (!empty($directIds)) {
+            $conditions[] = 'user_id IN (' . implode(',', array_unique($directIds)) . ')';
+        }
+        if (!empty($groupIds)) {
+            $conditions[] = 'group_id IN ('
+                . implode(',', array_map('intval', array_keys($groupIds))) . ')';
+        }
+        if (empty($conditions)) {
+            return array();
+        }
+
+        $aclRows = parent::getArray(
+            'SELECT DISTINCT acl_id FROM ' . $this->_tableName
+            . ' WHERE ' . implode(' OR ', $conditions)
+        );
+        if (!is_array($aclRows)) {
+            return array();
+        }
 
         $result = array();
-        foreach ( parent::getArray( $sql ) as $acl ) {
-            $result[] = $acl['acl_id'];
+        foreach ($aclRows as $acl) {
+            if (isset($acl['acl_id'])) {
+                $result[(string) $acl['acl_id']] = true;
+            }
         }
-        // Return the list of all acls this user has access to..
-        return $result ;
+        return array_keys($result);
+    }
+
+    private function quoteValue($value)
+    {
+        $db = $this->objEngine->getDbObj();
+        return method_exists($db, 'quoteSmart')
+            ? $db->quoteSmart($value)
+            : "'" . str_replace("'", "''", $value) . "'";
     }
 }
 

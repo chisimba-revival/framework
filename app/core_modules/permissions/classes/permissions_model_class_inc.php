@@ -263,6 +263,24 @@ class permissions_model extends dbTable
     } 
 
     /**
+    * Check a named ACL against current database assignments rather than the
+    * session snapshot created at login. Security-sensitive services use this
+    * when role grants and revocations must take effect on the next request.
+    *
+    * @param string $aclName ACL description name.
+    * @return bool TRUE when the current user presently has the ACL.
+    */
+    function checkAclByNameFresh( $aclName )
+    {
+        $id = $this->getId( $aclName, 'name' );
+        if (!$id) {
+            return false;
+        }
+        $userId = $this->_objUserDb->userId();
+        return in_array($id, $this->getUserAcls($userId), true);
+    }
+
+    /**
     * Method to access the acl table and find the acls assigned to the logged in users.
     * The session variable is updated.
     * 
@@ -274,9 +292,7 @@ class permissions_model extends dbTable
         // This list will be generated using a query on the tbl_acl,and tbl_groupadmin_groupuser
         // Get the users acls from the permissions acl class.
         $userId = $this->_objUserDb->userId();
-        $userPkId = $this->_objUserDb->PKId( $userId );
-
-        $this->capabilityList = $this->_objAcl->getUserAcls( $userPkId ); 
+        $this->capabilityList = $this->_objAcl->getUserAcls( $userId );
         // Set the session variable
         $this->setSession( 'permissions', $this->capabilityList );
     } 

@@ -45,10 +45,18 @@ class studentlearningoverview extends ChisimbaObject
             if (!is_array($state) || empty($state['available'])) {
                 continue;
             }
+            $policy = isset($details['access_policy'])
+                ? strtolower(trim((string) $details['access_policy'])) : '';
             $courses[] = array(
                 'code' => (string) $code,
                 'title' => (string) $details['title'],
                 'state' => $state,
+                'accessPolicy' => $policy,
+                'admissionAllowed' => $this->allowsAdmission(
+                    $policy,
+                    (string) $code,
+                    (string) $userId
+                ),
             );
         }
 
@@ -144,14 +152,45 @@ class studentlearningoverview extends ChisimbaObject
                         : $text('mylearningstartwith', 'Start with'))
                     . '</span><strong>' . $e($nextTitle) . '</strong></p>';
             }
-            $html .= '<a class="button student-learning-course__action" href="'
-                . $e($actionUrl) . '">' . $e($started
-                    ? $text('mylearningcontinue', 'Continue learning')
-                    : $text('mylearningstart', 'Start course')) . '</a>';
+            if (!empty($course['admissionAllowed'])) {
+                $html .= '<a class="button student-learning-course__action" href="'
+                    . $e($actionUrl) . '">' . $e($started
+                        ? $text('mylearningcontinue', 'Continue learning')
+                        : $text('mylearningstart', 'Start course')) . '</a>';
+            } else {
+                $label = $course['accessPolicy'] === 'tier_2'
+                    ? $text('mylearningtier2required', 'Tier 2 access required')
+                    : $text('mylearningtier1required', 'Tier 1 access required');
+                $html .= '<span class="semantic-pill semantic-pill--warning '
+                    . 'student-learning-course__access-required">'
+                    . $e($label) . '</span>';
+            }
             $html .= '</article>';
         }
 
         return $html . '</div></section>';
+    }
+
+    private function allowsAdmission($policy, $courseCode, $userId)
+    {
+        if ($policy === '' || $policy === 'public' || $policy === 'private'
+            || $this->user->isAdmin()) {
+            return true;
+        }
+        try {
+            $decision = $this->getObject(
+                'accesspolicyservice',
+                'access-policy-service'
+            )->resolve(array(
+                'policy' => $policy,
+                'resourceType' => 'course',
+                'resourceId' => $courseCode,
+                'userId' => $userId,
+            ));
+            return !empty($decision['allowed']);
+        } catch (Throwable $failure) {
+            return false;
+        }
     }
 }
 ?>

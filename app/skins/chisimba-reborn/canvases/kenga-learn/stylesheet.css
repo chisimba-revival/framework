@@ -4,8 +4,6 @@
  * Only identity tokens live here. Layout, components, interaction states and
  * accessibility remain owned by the Chisimba Reborn skin.
  */
-@import url("../_default/stylesheet.css");
-
 :root {
     --chisimba-primary: #67c871;
     --chisimba-primary-hover: #295351;

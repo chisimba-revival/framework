@@ -5112,6 +5112,10 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     background: var(--chisimba-surface);
     box-shadow: 0 .65rem 2rem rgba(17, 43, 66, .08);
 }
+.chisimba-form-card--wide {
+    width: 100%;
+    max-width: none;
+}
 .chisimba-form-card__header h1 { margin: 0 0 .55rem; }
 .chisimba-form-card__header p {
     max-width: 42rem;

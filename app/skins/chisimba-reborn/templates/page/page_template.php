@@ -140,10 +140,19 @@ if (!isset($og_content)) {
 
     // Render the CSS for the current skin unless it is suppressed.
     if (!isset($pageSuppressSkin)) {
+       $skinCss = 'skins/' . $skinName . '/stylesheet.css';
+       $baseCanvasCss = 'skins/' . $skinName
+           . '/canvases/_default/stylesheet.css';
+       $canvasCss = $canvas . '/stylesheet.css';
+       $skinCssVersion = is_file($skinCss) ? '?v=' . filemtime($skinCss) : '';
+       $baseCanvasCssVersion = is_file($baseCanvasCss)
+           ? '?v=' . filemtime($baseCanvasCss) : '';
+       $canvasCssVersion = is_file($canvasCss) ? '?v=' . filemtime($canvasCss) : '';
        echo '
 
-       <link rel="stylesheet" type="text/css" href="skins/' . $skinName . '/stylesheet.css">
-       <link rel="stylesheet" type="text/css" href="' . $canvas . '/stylesheet.css">
+       <link rel="stylesheet" type="text/css" href="' . $skinCss . $skinCssVersion . '">
+       <link rel="stylesheet" type="text/css" href="' . $baseCanvasCss . $baseCanvasCssVersion . '">
+       <link rel="stylesheet" type="text/css" href="' . $canvasCss . $canvasCssVersion . '">
 
         ';
     }

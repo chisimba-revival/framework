@@ -1521,6 +1521,51 @@ button.course-card__action {
 }
 /* END CHISIMBA_CONTENT_MODE_REGION_SHELL */
 
+/* CHISIMBA_STRUCTURAL_SIDEBAR
+ *
+ * A sidebar marked with this primitive owns its visible cards. The canvas
+ * region is placement only, so it must not add an extra inset that leaves the
+ * first sidebar card lower than the main column. Use this marker for canonical
+ * account/admin navigation and other card stacks in a standard two-column
+ * workspace instead of adding module-specific offset rules.
+ */
+:is(
+    #Canvas_Content_Body_Region1,
+    #Canvas_Content_Body_Region3
+):has(> .chisimba-structural-sidebar) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.chisimba-structural-sidebar,
+.chisimba-structural-sidebar > :first-child {
+    margin-top: 0 !important;
+}
+/* END CHISIMBA_STRUCTURAL_SIDEBAR */
+
+/* CHISIMBA_STRUCTURAL_MAIN
+ *
+ * A main-column component marked with this primitive owns its visible cards.
+ * The canvas region becomes placement only, preventing card-within-card
+ * backgrounds and duplicate outer gutters.
+ */
+#Canvas_Content_Body_Region2:has(> .chisimba-structural-main) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.chisimba-structural-main,
+.chisimba-structural-main > :first-child {
+    margin-top: 0 !important;
+}
+/* END CHISIMBA_STRUCTURAL_MAIN */
+
 /* My Learning components own both visible cards; regions only place them. */
 #Canvas_Content_Body_Region2:has(> .mylearning-page),
 #Canvas_Content_Body_Region1:has(> .mylearning-sidebar),
