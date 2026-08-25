@@ -30,6 +30,7 @@ if ($isAccessRequired) {
         'free' => 'Free account',
         'tier_1' => 'Tier 1',
         'tier_2' => 'Tier 2',
+        'private' => 'Explicit private-course',
     );
     $label = isset($labels[$policy]) ? $labels[$policy] : 'Membership';
     echo '<p><strong>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')

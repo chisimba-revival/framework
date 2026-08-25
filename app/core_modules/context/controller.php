@@ -412,7 +412,7 @@ class context extends controller {
         $details = $this->objContext->getContextDetails($contextCode);
         $policy = is_array($details) && isset($details['access_policy'])
             ? strtolower(trim((string) $details['access_policy'])) : '';
-        if (in_array($policy, array('free', 'tier_1', 'tier_2'), true)) {
+        if (in_array($policy, array('free', 'tier_1', 'tier_2', 'private'), true)) {
             $params['error'] = 'accessrequired';
             $params['admissionpolicy'] = $policy;
         }

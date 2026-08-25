@@ -39,6 +39,7 @@ $expect(strpos($overview, "'admissionAllowed'") !== false
     && strpos($overview, 'Tier 1 access required') !== false,
     'My Learning must not offer an unusable start action for an inaccessible tiered course.');
 $expect(strpos($controller, "\$params['error'] = 'accessrequired'") !== false
+    && strpos($controller, "'tier_2', 'private'") !== false
     && strpos($template, "\$error === 'accessrequired'") !== false,
     'Tier-gate failures must explain the access requirement.');
 $expect(strpos($template, 'getAlphaListingAjax') !== false
