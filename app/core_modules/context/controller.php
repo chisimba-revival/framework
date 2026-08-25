@@ -572,6 +572,10 @@ class context extends controller {
         $title = $this->getParam('title');
         $status = $this->getParam('status');
         $access = $this->getParam('access');
+        $accessPolicy = $this->objContext->normaliseAccessPolicy(
+            $this->getParam('access_policy', ''),
+            TRUE
+        );
         $about = $this->getParam('about');
         $image = $this->getParam('imageselect');
 
@@ -582,9 +586,10 @@ class context extends controller {
         //$alerts.='e';
         //}
         $alerts = $this->getParam('emailalertopt') == 'on' ? '1' : '0';
-        if ($contextCode == $this->contextCode && $title != '') {
+        if ($contextCode == $this->contextCode && $title != '' && $accessPolicy !== FALSE) {
             $result = $this->objContext->updateContext(
-                    $contextCode, $title, $status, $access, $about, FALSE, /*'Y'*/FALSE, $alerts);
+                    $contextCode, $title, $status, $access, $about, FALSE, /*'Y'*/FALSE,
+                    $alerts, FALSE, FALSE, FALSE, FALSE, $accessPolicy);
 
             if ($image != '') {
                 $objContextImage = $this->getObject('contextimage', 'context');

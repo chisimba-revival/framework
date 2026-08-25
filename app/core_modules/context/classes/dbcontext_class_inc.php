@@ -138,7 +138,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of adding a context
      */
     public function createContext(
-    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE) {
+    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL) {
 
         $contextCode = preg_replace('/\W*/', '', $contextCode);
         $contextCode = strtolower($contextCode);
@@ -152,7 +152,8 @@ class dbcontext extends dbTable {
         }
 
         $learningDesign = $this->validateLearningDesign($deliveryFormat, $navigationMode);
-        if ($learningDesign === FALSE) {
+        $accessPolicy = $this->normaliseAccessPolicy($accessPolicy, TRUE);
+        if ($learningDesign === FALSE || $accessPolicy === FALSE) {
             return FALSE;
         }
 
@@ -160,6 +161,7 @@ class dbcontext extends dbTable {
             'title' => $title,
             'menutext' => $title,
             'access' => $access,
+            'access_policy' => $accessPolicy,
             'alerts' => $alerts,
             'status' => $status,
             'about' => $about,
@@ -246,7 +248,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of Update
      */
     public function updateContext(
-    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE) {
+    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE, $accessPolicy=FALSE) {
         $fields = array();
 
         $fields['updated'] = date('Y-m-d H:i:s');
@@ -261,6 +263,13 @@ class dbcontext extends dbTable {
         }
         if ($access !== FALSE) {
             $fields['access'] = $access;
+        }
+        if ($accessPolicy !== FALSE) {
+            $accessPolicy = $this->normaliseAccessPolicy($accessPolicy, TRUE);
+            if ($accessPolicy === FALSE) {
+                return FALSE;
+            }
+            $fields['access_policy'] = $accessPolicy;
         }
         if ($about !== FALSE) {
             $fields['about'] = $about;
@@ -368,7 +377,15 @@ class dbcontext extends dbTable {
                 return FALSE;
             }
 
-            if ($line ['access'] == 'Private') {
+            // Tiered admission is deliberately opt-in. A NULL policy leaves the
+            // legacy Public/Open/Private path below completely authoritative.
+            if (array_key_exists('access_policy', $line)
+                && $line['access_policy'] !== NULL
+                && trim((string) $line['access_policy']) !== '') {
+                if (!$this->mappedPolicyAllowsAdmission($line)) {
+                    return FALSE;
+                }
+            } elseif ($line ['access'] == 'Private') {
                 $objUserContext = $this->getObject('usercontext');
                 if (!$objUserContext->isContextMember($this->objUser->userId(), $contextCode)) {
                     if (!$this->objUser->isAdmin()) {
@@ -382,6 +399,37 @@ class dbcontext extends dbTable {
             $results = $this->updateLastAccessed($contextCode);
             return TRUE;
         } else {
+            return FALSE;
+        }
+    }
+
+    /** Validate the nullable opt-in policy used by courses and member pages. */
+    public function normaliseAccessPolicy($policy, $allowLegacy = FALSE) {
+        if ($allowLegacy && ($policy === NULL || trim((string) $policy) === '')) {
+            return NULL;
+        }
+        $policy = strtolower(trim((string) $policy));
+        return in_array($policy, array('public', 'free', 'tier_1', 'tier_2', 'private'), TRUE)
+            ? $policy : FALSE;
+    }
+
+    /** Resolve admission without changing canonical course membership or roles. */
+    private function mappedPolicyAllowsAdmission(array $context) {
+        // Site administrators retain their established operational access.
+        if ($this->objUser->isAdmin()) {
+            return TRUE;
+        }
+        try {
+            $resolver = $this->getObject('accesspolicyservice', 'access-policy-service');
+            $decision = $resolver->resolve(array(
+                'policy' => $context['access_policy'],
+                'resourceType' => 'course',
+                'resourceId' => $context['contextcode'],
+                'userId' => (string) $this->objUser->userId(),
+            ));
+            return !empty($decision['allowed']);
+        } catch (Throwable $failure) {
+            // A deliberately mapped course fails closed when its resolver is absent.
             return FALSE;
         }
     }

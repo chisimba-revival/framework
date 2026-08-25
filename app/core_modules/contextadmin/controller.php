@@ -240,6 +240,7 @@ class contextadmin extends controller {
         $result = $this->objCourseCreation->create(array(
             'contextCode' => $contextCode, 'title' => $title, 'status' => $status,
             'access' => $access, 'showComment' => $showcomment, 'alerts' => $alerts,
+            'accessPolicy' => $this->getParam('access_policy', ''),
             'deliveryFormat' => $this->getParam('delivery_format', 'standard'),
             'navigationMode' => $this->getParam('navigation_mode', ''),
             'cpdEnabled' => $this->getParam('cpd_enabled') === '1',
@@ -649,6 +650,10 @@ class contextadmin extends controller {
         $status = $this->getParam('status');
         $showcomment = $this->getParam('showcomment');
         $access = $this->getParam('access');
+        $accessPolicy = $this->objContext->normaliseAccessPolicy(
+            $this->getParam('access_policy', ''),
+            true
+        );
         $goals = $this->getParam('goals');
         $mode = $this->getParam('mode');
         $emailalert = $this->getParam('emailalertopt');
@@ -662,6 +667,7 @@ class contextadmin extends controller {
         if (trim((string) $title) === ''
             || !in_array($status, array('Published', 'Unpublished'), TRUE)
             || !in_array($access, array('Public', 'Open', 'Private'), TRUE)
+            || $accessPolicy === FALSE
             || !in_array((string) $showcomment, array('0', '1'), TRUE)) {
             return $this->nextAction('edit', array('contextcode' => $contextCode, 'error' => 'invalidsettings'));
         }
@@ -698,7 +704,8 @@ class contextadmin extends controller {
                         $showcomment,
                         $alerts, null, $canvas,
                         $this->getParam('delivery_format', 'standard'),
-                        $this->getParam('navigation_mode', 'free'));
+                        $this->getParam('navigation_mode', 'free'),
+                        $accessPolicy);
 
                 return $this->nextAction('step2', array('mode' => 'edit'));
             }

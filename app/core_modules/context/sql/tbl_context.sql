@@ -64,6 +64,10 @@ $fields = array(
         'length' => 32,
         'notnull' => TRUE
         ),
+    'access_policy' => array(
+        'type' => 'text',
+        'length' => 32
+        ),
     'lastupdatedby' => array(
         'type' => 'text',
         'length' => 255

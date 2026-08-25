@@ -178,9 +178,12 @@ class coursecatalogue extends ChisimbaObject
         $title = isset($context['title'])
             ? trim((string) $context['title'])
             : '';
-        $access = isset($context['access'])
-            ? ucfirst(strtolower((string) $context['access']))
-            : 'Private';
+        $access = isset($context['access_policy'])
+            && trim((string) $context['access_policy']) !== ''
+            ? strtolower((string) $context['access_policy'])
+            : (isset($context['access'])
+                ? ucfirst(strtolower((string) $context['access']))
+                : 'Private');
         $image = $this->objContextImage->getContextImage($code);
         $summary = $this->summary(
             isset($context['about']) ? $context['about'] : ''
@@ -251,9 +254,45 @@ class coursecatalogue extends ChisimbaObject
     {
         $code = (string) $context['contextcode'];
         $access = strtolower((string) $context['access']);
+        $mappedPolicy = isset($context['access_policy'])
+            ? strtolower(trim((string) $context['access_policy'])) : '';
         $isLoggedIn = $this->objUser->isLoggedIn();
         $isMember = $this->objUser->isAdmin()
             || in_array($code, $this->userContexts, true);
+
+        if ($mappedPolicy !== '') {
+            if ($mappedPolicy !== 'public' && !$isLoggedIn) {
+                return array(
+                    'label' => $this->text('mod_context_loginorjoinsite', 'Log in or join site'),
+                    'url' => $this->uri(array('action' => 'showlogin'), 'security'),
+                );
+            }
+            $allowed = $this->objUser->isAdmin();
+            if (!$allowed) {
+                try {
+                    $decision = $this->getObject('accesspolicyservice', 'access-policy-service')->resolve(array(
+                        'policy' => $mappedPolicy,
+                        'resourceType' => 'course',
+                        'resourceId' => $code,
+                        'userId' => (string) $this->objUser->userId(),
+                    ));
+                    $allowed = !empty($decision['allowed']);
+                } catch (Throwable $failure) {
+                    $allowed = FALSE;
+                }
+            }
+            if (!$allowed) {
+                return array(
+                    'type' => 'notice',
+                    'label' => $this->text('mod_context_courseaccessrequired', 'Access required'),
+                    'message' => $this->text('mod_context_courseaccessrequirement', 'This course requires the indicated membership or a specific course entitlement.'),
+                );
+            }
+            return array(
+                'label' => $this->text('mod_context_viewcourse', 'View course'),
+                'url' => $this->uri(array('action' => 'joincontext', 'contextcode' => $code), 'context'),
+            );
+        }
 
         if ($access === 'private' && !$isMember) {
             return array(
@@ -331,12 +370,16 @@ class coursecatalogue extends ChisimbaObject
      */
     private function accessLabel($access)
     {
-        if ($access === 'Public') {
+        $normalised = strtolower((string) $access);
+        if ($normalised === 'public') {
             return $this->objLanguage->languageText('word_public', 'system');
         }
-        if ($access === 'Open') {
+        if ($normalised === 'open') {
             return $this->objLanguage->languageText('word_open', 'system');
         }
+        if ($normalised === 'free') { return 'Free'; }
+        if ($normalised === 'tier_1') { return 'Tier 1'; }
+        if ($normalised === 'tier_2') { return 'Tier 2'; }
         return $this->text('word_private', 'Private');
     }
 

@@ -84,4 +84,16 @@
             </change>
         </data>
     </update>
+    <update>
+        <table>tbl_context</table>
+        <version>2.020</version>
+        <description>Add nullable tiered admission policy; null preserves legacy access behaviour</description>
+        <data>
+            <add>
+                <name>access_policy</name>
+                <type>text</type>
+                <length>32</length>
+            </add>
+        </data>
+    </update>
 </updates>

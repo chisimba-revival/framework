@@ -237,6 +237,22 @@ if ($objSysConfig->getValue('context_access_private_only', 'context', 'false') =
     }
 }
 
+$accessPolicy = new radio('access_policy');
+$accessPolicy->setBreakSpace('<br />');
+$accessPolicy->addOption('', '<strong>Legacy course access</strong> - <span class="caption">Keep the existing Public, Open or Private behaviour above. Existing courses remain here until deliberately migrated.</span>');
+$accessPolicy->addOption('public', '<strong>Public</strong> - <span class="caption">Anyone may enter, including anonymous visitors.</span>');
+$accessPolicy->addOption('free', '<strong>Free</strong> - <span class="caption">Any signed-in user may enter.</span>');
+$accessPolicy->addOption('tier_1', '<strong>Tier 1</strong> - <span class="caption">Members with Tier 1 or Tier 2 may enter.</span>');
+$accessPolicy->addOption('tier_2', '<strong>Tier 2</strong> - <span class="caption">Only Tier 2 members may enter.</span>');
+$accessPolicy->addOption('private', '<strong>Private</strong> - <span class="caption">An explicit entitlement to this course is required.</span>');
+$selectedAccessPolicy = '';
+if ($mode == 'add' && is_array($fixup) && isset($fixup['access_policy'])) {
+    $selectedAccessPolicy = (string) $fixup['access_policy'];
+} elseif ($mode == 'edit' && isset($context['access_policy'])) {
+    $selectedAccessPolicy = (string) $context['access_policy'];
+}
+$accessPolicy->setSelected($selectedAccessPolicy);
+
 $table = $this->newObject('htmltable', 'htmlelements');
 $table->cssClass = 'contextadmin-course-form';
 $table->startRow();
@@ -368,6 +384,11 @@ if ($objSysConfig->getValue('context_access_private_only', 'context', 'false') =
     $table->addCell($access->show());
     $table->endRow();
 }
+
+$table->startRow();
+$table->addCell('Admission policy');
+$table->addCell($accessPolicy->show() . '<span class="contextadmin-field-help">This gate controls entry only. Course membership and roles continue to control content, assessments and gradebook permissions.</span>');
+$table->endRow();
 
 $button = new button('savecontext', $this->objLanguage->languageText('mod_contextadmin_gotonextstep', 'contextadmin', 'Go to Next Step'));
 $button->cssId = 'savebutton';
