@@ -15,12 +15,12 @@ $form = $read($module . '/templates/content/step1.php');
 $controller = $read($module . '/controller.php');
 $creation = $read($module . '/classes/coursecreationservice_class_inc.php');
 
-foreach (array('', 'public', 'free', 'tier_1', 'tier_2', 'private') as $policy) {
+foreach (array('public', 'free', 'tier_1', 'tier_2', 'private') as $policy) {
     $needle = "addOption('" . $policy . "'";
-    $expect(strpos($form, $needle) !== false, 'Missing admission choice: ' . ($policy === '' ? 'legacy' : $policy));
+    $expect(strpos($form, $needle) !== false, 'Missing admission choice: ' . $policy);
 }
-$expect(strpos($form, 'Existing courses remain here until deliberately migrated.') !== false,
-    'The form must explain legacy migration semantics.');
+$expect(strpos($form, "'open'=>'free'") !== false,
+    'Legacy Open courses must be presented as Free without changing admission semantics.');
 $expect(strpos($form, 'controls entry only') !== false,
     'The form must distinguish admission from course permissions.');
 $expect(substr_count($controller, "getParam('access_policy'") >= 2,

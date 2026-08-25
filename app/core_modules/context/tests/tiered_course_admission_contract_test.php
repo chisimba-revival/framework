@@ -27,6 +27,9 @@ $expect(strpos($database, "\$this->setSession('contextCode', \$contextCode)") !=
     'Successful admission must retain the canonical context session flow.');
 $expect(strpos($database, "getObject('usercontext')") !== false,
     'Legacy course membership must remain canonical.');
+$expect(strpos($database, "strtolower((string) \$context['access_policy']) === 'private'") !== false
+    && strpos($database, "isContextMember(\$this->objUser->userId(), \$context['contextcode'])") !== false,
+    'Mapped Private courses must preserve admission for existing canonical members.');
 
 fwrite(STDOUT, "PASS: tiered course admission compatibility contract\n");
 ?>

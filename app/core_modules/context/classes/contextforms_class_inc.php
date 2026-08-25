@@ -106,14 +106,21 @@ class contextforms extends ChisimbaObject {
 
         $accessPolicy = new radio('access_policy');
         $accessPolicy->setBreakSpace('<br />');
-        $accessPolicy->addOption('', '<strong>Legacy course access</strong> - <span class="caption">Preserve the existing Public, Open or Private behaviour.</span>');
         $accessPolicy->addOption('public', '<strong>Public</strong> - <span class="caption">Anyone may enter.</span>');
         $accessPolicy->addOption('free', '<strong>Free</strong> - <span class="caption">Any signed-in user may enter.</span>');
         $accessPolicy->addOption('tier_1', '<strong>Tier 1</strong> - <span class="caption">Tier 1 and Tier 2 members may enter.</span>');
         $accessPolicy->addOption('tier_2', '<strong>Tier 2</strong> - <span class="caption">Only Tier 2 members may enter.</span>');
         $accessPolicy->addOption('private', '<strong>Private</strong> - <span class="caption">An explicit course entitlement is required.</span>');
-        $accessPolicy->setSelected($context != NULL && isset($context['access_policy'])
-            ? (string) $context['access_policy'] : '');
+        $legacyPolicyMap = array('public'=>'public', 'open'=>'free', 'private'=>'private');
+        $selectedPolicy = $context != NULL && isset($context['access_policy'])
+            && trim((string) $context['access_policy']) !== ''
+            ? (string) $context['access_policy']
+            : ($legacyPolicyMap[strtolower((string) ($context['access'] ?? 'Private'))] ?? 'private');
+        $accessPolicy->setSelected($selectedPolicy);
+        $access = new hiddeninput(
+            'access',
+            $context != NULL && isset($context['access']) ? (string) $context['access'] : 'Public'
+        );
 
 
         $titleLabel = new label ($this->objLanguage->languageText('word_title', 'system', 'Title'), 'input_title');
@@ -183,15 +190,9 @@ class contextforms extends ChisimbaObject {
         $table->addCell($status->show());
         $table->endRow();
 
-        if ($this->objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'false') {
-            $table->startRow();
-            $table->addCell($this->objLanguage->languageText('word_access', 'system', 'Access').':');
-            $table->addCell($access->show());
-            $table->endRow();
-        }
         $table->startRow();
-        $table->addCell('Admission policy:');
-        $table->addCell($accessPolicy->show() . '<span class="caption">Entry only; existing course membership and roles still govern permissions after admission.</span>');
+        $table->addCell($this->objLanguage->languageText('word_access', 'system', 'Access').':');
+        $table->addCell($accessPolicy->show() . $access->show() . '<span class="caption">Entry only; existing course membership and roles still govern permissions after admission. Legacy Open courses appear as Free.</span>');
         $table->endRow();
 
 

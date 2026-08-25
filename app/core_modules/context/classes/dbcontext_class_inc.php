@@ -419,6 +419,14 @@ class dbcontext extends dbTable {
         if ($this->objUser->isAdmin()) {
             return TRUE;
         }
+        // Existing canonical course membership remains a valid private-course
+        // admission source; tiers never replace or reinterpret course groups.
+        if (strtolower((string) $context['access_policy']) === 'private') {
+            $objUserContext = $this->getObject('usercontext');
+            if ($objUserContext->isContextMember($this->objUser->userId(), $context['contextcode'])) {
+                return TRUE;
+            }
+        }
         try {
             $resolver = $this->getObject('accesspolicyservice', 'access-policy-service');
             $decision = $resolver->resolve(array(
