@@ -23,6 +23,10 @@ class coursecreationservice extends ChisimbaObject
             $request['accessPolicy'] ?? null,
             true
         );
+        $privateAdmissionMode = $this->context->normalisePrivateAdmissionMode(
+            $request['privateAdmissionMode'] ?? null,
+            true
+        );
         $showComment = (string) ($request['showComment'] ?? '0');
         $alerts = (string) ($request['alerts'] ?? '0');
         $design = $this->context->validateLearningDesign(
@@ -35,7 +39,7 @@ class coursecreationservice extends ChisimbaObject
         }
         if (!in_array($status, array('Published', 'Unpublished'), true)
             || !in_array($access, array('Public', 'Open', 'Private'), true)
-            || $accessPolicy === false
+            || $accessPolicy === false || $privateAdmissionMode === false
             || !in_array($showComment, array('0', '1'), true)
             || !in_array($alerts, array('0', '1'), true)
             || $design === false) {
@@ -65,7 +69,7 @@ class coursecreationservice extends ChisimbaObject
             $created = $this->context->createContext(
                 $code, $title, $status, $access, '', false, $showComment,
                 $alerts, '', $design['delivery_format'], $design['navigation_mode'], false,
-                $accessPolicy
+                $accessPolicy, $privateAdmissionMode
             );
             if (!$created) {
                 throw new RuntimeException('context_create_failed');

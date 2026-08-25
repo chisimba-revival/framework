@@ -68,6 +68,10 @@ $fields = array(
         'type' => 'text',
         'length' => 32
         ),
+    'private_admission_mode' => array(
+        'type' => 'text',
+        'length' => 32
+        ),
     'lastupdatedby' => array(
         'type' => 'text',
         'length' => 255

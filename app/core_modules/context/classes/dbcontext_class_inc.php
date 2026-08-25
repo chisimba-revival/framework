@@ -138,7 +138,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of adding a context
      */
     public function createContext(
-    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL) {
+    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL) {
 
         $contextCode = preg_replace('/\W*/', '', $contextCode);
         $contextCode = strtolower($contextCode);
@@ -153,7 +153,12 @@ class dbcontext extends dbTable {
 
         $learningDesign = $this->validateLearningDesign($deliveryFormat, $navigationMode);
         $accessPolicy = $this->normaliseAccessPolicy($accessPolicy, TRUE);
-        if ($learningDesign === FALSE || $accessPolicy === FALSE) {
+        $privateAdmissionMode = $this->normalisePrivateAdmissionMode(
+            $privateAdmissionMode,
+            TRUE
+        );
+        if ($learningDesign === FALSE || $accessPolicy === FALSE
+            || $privateAdmissionMode === FALSE) {
             return FALSE;
         }
 
@@ -162,6 +167,7 @@ class dbcontext extends dbTable {
             'menutext' => $title,
             'access' => $access,
             'access_policy' => $accessPolicy,
+            'private_admission_mode' => $privateAdmissionMode,
             'alerts' => $alerts,
             'status' => $status,
             'about' => $about,
@@ -248,7 +254,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of Update
      */
     public function updateContext(
-    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE, $accessPolicy=FALSE) {
+    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE, $accessPolicy=FALSE, $privateAdmissionMode=FALSE) {
         $fields = array();
 
         $fields['updated'] = date('Y-m-d H:i:s');
@@ -270,6 +276,16 @@ class dbcontext extends dbTable {
                 return FALSE;
             }
             $fields['access_policy'] = $accessPolicy;
+        }
+        if ($privateAdmissionMode !== FALSE) {
+            $privateAdmissionMode = $this->normalisePrivateAdmissionMode(
+                $privateAdmissionMode,
+                TRUE
+            );
+            if ($privateAdmissionMode === FALSE) {
+                return FALSE;
+            }
+            $fields['private_admission_mode'] = $privateAdmissionMode;
         }
         if ($about !== FALSE) {
             $fields['about'] = $about;
@@ -411,6 +427,16 @@ class dbcontext extends dbTable {
         $policy = strtolower(trim((string) $policy));
         return in_array($policy, array('public', 'free', 'tier_1', 'tier_2', 'private'), TRUE)
             ? $policy : FALSE;
+    }
+
+    /** Validate the optional workflow used only by deliberately private courses. */
+    public function normalisePrivateAdmissionMode($mode, $allowLegacy = FALSE) {
+        if ($allowLegacy && ($mode === NULL || trim((string) $mode) === '')) {
+            return NULL;
+        }
+        $mode = strtolower(trim((string) $mode));
+        return in_array($mode, array('automatic_payment', 'manual_review'), TRUE)
+            ? $mode : FALSE;
     }
 
     /** Resolve admission without changing canonical course membership or roles. */

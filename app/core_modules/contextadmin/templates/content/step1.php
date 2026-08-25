@@ -241,6 +241,17 @@ if ($mode == 'add' && is_array($fixup) && isset($fixup['access_policy'])) {
     $selectedAccessPolicy = (string) $context['access_policy'];
 }
 $accessPolicy->setSelected($selectedAccessPolicy);
+$privateAdmissionMode = new radio('private_admission_mode');
+$privateAdmissionMode->setBreakSpace('<br />');
+$privateAdmissionMode->addOption('automatic_payment', '<strong>Admit after confirmed payment</strong> - <span class="contextadmin-field-help">For courses with no approval requirement.</span>');
+$privateAdmissionMode->addOption('manual_review', '<strong>Manual admission required</strong> - <span class="contextadmin-field-help">A manager reviews payment and eligibility before admitting the learner.</span>');
+$selectedPrivateAdmissionMode = 'manual_review';
+if ($mode == 'add' && is_array($fixup) && !empty($fixup['private_admission_mode'])) {
+    $selectedPrivateAdmissionMode = (string) $fixup['private_admission_mode'];
+} elseif ($mode == 'edit' && !empty($context['private_admission_mode'])) {
+    $selectedPrivateAdmissionMode = (string) $context['private_admission_mode'];
+}
+$privateAdmissionMode->setSelected($selectedPrivateAdmissionMode);
 
 $table = $this->newObject('htmltable', 'htmlelements');
 $table->cssClass = 'contextadmin-course-form';
@@ -370,6 +381,11 @@ $table->endRow();
 $table->startRow();
 $table->addCell($this->objLanguage->languageText('word_access', 'system', 'Access'));
 $table->addCell($accessPolicy->show() . $access->show() . '<span class="contextadmin-field-help">This controls entry only. Existing course membership and roles continue to control content, assessments and gradebook permissions. Legacy Public, Open and Private courses are shown as Public, Free and Private respectively.</span>');
+$table->endRow();
+
+$table->startRow();
+$table->addCell('Private-course admission');
+$table->addCell($privateAdmissionMode->show() . '<span class="contextadmin-field-help">Used only when Access is Private. Existing courses remain unchanged until this setting is saved.</span>');
 $table->endRow();
 
 $button = new button('savecontext', $this->objLanguage->languageText('mod_contextadmin_gotonextstep', 'contextadmin', 'Go to Next Step'));

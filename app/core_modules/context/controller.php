@@ -589,6 +589,10 @@ class context extends controller {
             $this->getParam('access_policy', ''),
             TRUE
         );
+        $privateAdmissionMode = $this->objContext->normalisePrivateAdmissionMode(
+            $this->getParam('private_admission_mode', ''),
+            TRUE
+        );
         $about = $this->getParam('about');
         $image = $this->getParam('imageselect');
 
@@ -599,10 +603,12 @@ class context extends controller {
         //$alerts.='e';
         //}
         $alerts = $this->getParam('emailalertopt') == 'on' ? '1' : '0';
-        if ($contextCode == $this->contextCode && $title != '' && $accessPolicy !== FALSE) {
+        if ($contextCode == $this->contextCode && $title != ''
+            && $accessPolicy !== FALSE && $privateAdmissionMode !== FALSE) {
             $result = $this->objContext->updateContext(
                     $contextCode, $title, $status, $access, $about, FALSE, /*'Y'*/FALSE,
-                    $alerts, FALSE, FALSE, FALSE, FALSE, $accessPolicy);
+                    $alerts, FALSE, FALSE, FALSE, FALSE, $accessPolicy,
+                    $privateAdmissionMode);
 
             if ($image != '') {
                 $objContextImage = $this->getObject('contextimage', 'context');

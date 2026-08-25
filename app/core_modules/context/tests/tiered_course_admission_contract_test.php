@@ -19,6 +19,10 @@ $overview = $read('classes/studentlearningoverview_class_inc.php');
 
 $expect(strpos($schema, "'access_policy'") !== false, 'Context must own the admission policy.');
 $expect(strpos($updates, '<name>access_policy</name>') !== false, 'Existing installations need an additive policy migration.');
+$expect(strpos($updates, '<name>private_admission_mode</name>') !== false,
+    'Existing installations need an additive private-admission migration.');
+$expect(strpos($schema, "'private_admission_mode'") !== false,
+    'Context must own its optional private-admission workflow.');
 $expect(strpos($database, "&& trim((string) \$line['access_policy']) !== ''") !== false,
     'Only deliberately mapped courses may invoke tiered admission.');
 $expect(strpos($database, "elseif (\$line ['access'] == 'Private')") !== false,
@@ -35,6 +39,9 @@ $expect(strpos($database, "strtolower((string) \$context['access_policy']) === '
     'Mapped Private courses must preserve admission for existing canonical members.');
 $expect(strpos($database, "strtolower((string) \$context['access_policy']) === 'public'") !== false,
     'Mapped Public courses must admit without optional service infrastructure.');
+$expect(strpos($database, 'normalisePrivateAdmissionMode') !== false
+    && strpos($database, "array('automatic_payment', 'manual_review')") !== false,
+    'Private admission modes must be bounded and nullable for legacy courses.');
 $expect(strpos($overview, "'admissionAllowed'") !== false
     && strpos($overview, 'Tier 1 access required') !== false,
     'My Learning must not offer an unusable start action for an inaccessible tiered course.');

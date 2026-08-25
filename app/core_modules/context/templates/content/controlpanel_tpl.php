@@ -43,6 +43,28 @@ $taskLinks = array(
         'url' => $this->uri(array('action' => 'manageplugins'), 'context'),
     ),
 );
+$courseDetails = $this->objContext->getContext($contextCode);
+$canManageAdmissions = false;
+try {
+    $canManageAdmissions = $this->getObject(
+        'membershipauthorizationservice',
+        'membership-service'
+    )->can('private_admission.manage');
+} catch (Throwable $failure) {
+    $canManageAdmissions = false;
+}
+if ($canManageAdmissions && is_array($courseDetails)
+    && strtolower((string) ($courseDetails['access_policy'] ?? '')) === 'private') {
+    $taskLinks[] = array(
+        'icon' => 'user-check',
+        'label' => 'Manage admissions',
+        'help' => 'Review payment evidence and admit learners to this private course.',
+        'url' => $this->uri(array(
+            'action' => 'admissions',
+            'contextcode' => $contextCode,
+        ), 'membership-service'),
+    );
+}
 
 $ret = '<div class="course-control-workspace"><header class="course-control-header">'
     . '<h1>' . $escape($objLanguage->code2Txt('mod_context_courseadministration', 'context', null, '[-context-] administration')) . '</h1>'

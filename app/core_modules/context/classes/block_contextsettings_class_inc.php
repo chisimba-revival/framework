@@ -121,13 +121,27 @@ class block_contextsettings extends ChisimbaObject
             'context',
             'false'
         ) === 'false' || $this->objUser->isAdmin()) {
+            $policy = strtolower(trim((string) ($details['access_policy'] ?? '')));
+            $policyLabels = array(
+                'public' => 'Public', 'free' => 'Free',
+                'tier_1' => 'Tier 1', 'tier_2' => 'Tier 2',
+                'private' => 'Private',
+            );
+            $accessLabel = isset($policyLabels[$policy])
+                ? $policyLabels[$policy]
+                : (isset($details['access']) ? (string) $details['access'] : '');
+            if ($policy === 'private' && !empty($details['private_admission_mode'])) {
+                $accessLabel .= $details['private_admission_mode'] === 'automatic_payment'
+                    ? ' — admit after confirmed payment'
+                    : ' — manual admission';
+            }
             $rows[] = array(
                 $this->objLanguage->languageText(
                     'mod_context_accessettings',
                     'context',
                     'Access Settings'
                 ),
-                isset($details['access']) ? (string) $details['access'] : '',
+                $accessLabel,
             );
         }
 

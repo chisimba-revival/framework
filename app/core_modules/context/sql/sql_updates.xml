@@ -96,4 +96,16 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_context</table>
+        <version>2.021</version>
+        <description>Add nullable private-course admission mode; null preserves existing private admission behaviour</description>
+        <data>
+            <add>
+                <name>private_admission_mode</name>
+                <type>text</type>
+                <length>32</length>
+            </add>
+        </data>
+    </update>
 </updates>

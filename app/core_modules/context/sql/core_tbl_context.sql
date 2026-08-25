@@ -17,6 +17,7 @@ CREATE TABLE `tbl_context` (
   'status' varchar(32) default NULL,
   'access' varchar(32) default NULL,
   'access_policy' varchar(32) default NULL,
+  'private_admission_mode' varchar(32) default NULL,
   updated TIMESTAMP ( 14 ) NOT NULL,
   PRIMARY KEY  (`id`,`contextCode`),
   KEY `contextCode` (`contextCode`)

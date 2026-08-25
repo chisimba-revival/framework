@@ -117,6 +117,12 @@ class contextforms extends ChisimbaObject {
             ? (string) $context['access_policy']
             : ($legacyPolicyMap[strtolower((string) ($context['access'] ?? 'Private'))] ?? 'private');
         $accessPolicy->setSelected($selectedPolicy);
+        $privateAdmissionMode = new radio('private_admission_mode');
+        $privateAdmissionMode->setBreakSpace('<br />');
+        $privateAdmissionMode->addOption('automatic_payment', '<strong>Admit after confirmed payment</strong> - <span class="caption">For courses with no approval requirement.</span>');
+        $privateAdmissionMode->addOption('manual_review', '<strong>Manual admission required</strong> - <span class="caption">A manager reviews payment and eligibility before admitting the learner.</span>');
+        $privateAdmissionMode->setSelected(!empty($context['private_admission_mode'])
+            ? (string) $context['private_admission_mode'] : 'manual_review');
         $access = new hiddeninput(
             'access',
             $context != NULL && isset($context['access']) ? (string) $context['access'] : 'Public'
@@ -133,29 +139,6 @@ class contextforms extends ChisimbaObject {
         if ($context != NULL) {
             $status->setSelected($context['status']);
         }
-
-        if ($this->objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'true') {
-            if (is_null($context)) {
-                $access_ = 'Private';
-            } else {
-                $access_ = $context['access'];
-            }
-            $access = new hiddeninput('access', $access_);
-        } else {
-            $access= new radio ('access');
-            $access->setBreakSpace('<br />');
-            $access->addOption('Public', '<strong>'.$this->objLanguage->languageText('word_public', 'system', 'Public').'</strong> - <span class="caption">'.ucfirst($this->objLanguage->code2Txt('mod_context_publiccontextdescription', 'context', NULL, '[-context-] can be accessed by all users, including anonymous users')).'</span>');
-            $access->addOption('Open', '<strong>'.$this->objLanguage->languageText('word_open', 'system', 'Open').'</strong> - <span class="caption">'.ucfirst($this->objLanguage->code2Txt('mod_context_opencontextdescription', 'context', NULL, '[-context-] can be accessed by all users that are logged in')).'</span>');
-            $access->addOption('Private', '<strong>'.$this->objLanguage->languageText('word_private', 'system', 'Private').'</strong> - <span class="caption">'.$this->objLanguage->code2Txt('mod_context_privatecontextdescription', 'context', NULL, 'Only [-context-] members can enter the [-context-]').'<span class="caption">');
-
-            if ($context != NULL) {
-                $access->setSelected($context['access']);
-            } else {
-                $access->setSelected('Public');
-            }
-        }
-
-
 
         $table = $this->newObject('htmltable', 'htmlelements');
 
@@ -193,6 +176,11 @@ class contextforms extends ChisimbaObject {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('word_access', 'system', 'Access').':');
         $table->addCell($accessPolicy->show() . $access->show() . '<span class="caption">Entry only; existing course membership and roles still govern permissions after admission. Legacy Open courses appear as Free.</span>');
+        $table->endRow();
+
+        $table->startRow();
+        $table->addCell('Private-course admission:');
+        $table->addCell($privateAdmissionMode->show() . '<span class="caption">Used only when Access is Private. Existing courses remain unchanged until this is saved.</span>');
         $table->endRow();
 
 
