@@ -14,13 +14,13 @@ $fields = array(
         ),
     'pmodule' => array(
         'type' => 'text',
-        'length' => 25,
+        'length' => 64,
         'notnull' => 1,
         'default' => 'unknown'
         ),
     'pname' => array(
         'type' => 'text',
-        'length' => 32,
+        'length' => 128,
         'notnull' => 1,
         'default' => 'novalue'
         ),
