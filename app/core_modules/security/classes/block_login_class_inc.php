@@ -72,7 +72,10 @@ class block_login extends ChisimbaObject
             $this->objLanguage =  $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             if ($this->objUser->isLoggedIn()) {
-                $this->title = $this->objLanguage->languageText("word_logout", "system");
+                // Login is an acquisition block. Logout belongs to the
+                // authenticated account controls, not a public-page block.
+                $this->blockType = 'invisible';
+                $this->title = '';
             } else {
                 $this->title = $this->objLanguage->languageText("word_login", "system");
             }
