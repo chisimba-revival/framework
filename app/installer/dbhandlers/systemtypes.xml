@@ -32,12 +32,14 @@
             <module>filters</module>
             <module>help</module>
             <module>htmlelements</module>
+            <module>ui</module>
             <module>language</module>
             <module>logger</module>
             <module>navigation</module>
             <module>postlogin</module>
             <module>prelogin</module>
             <module>skin</module>
+            <module>canvas</module>
             <module>storycategoryadmin</module>
             <module>stories</module>
             <module>strings</module>
