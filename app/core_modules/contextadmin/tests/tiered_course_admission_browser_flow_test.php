@@ -15,6 +15,7 @@ $form = $read($module . '/templates/content/step1.php');
 $controller = $read($module . '/controller.php');
 $creation = $read($module . '/classes/coursecreationservice_class_inc.php');
 $editForm = $read(dirname($module) . '/context/classes/contextforms_class_inc.php');
+$skin = $read($framework . '/skins/chisimba-reborn/stylesheet.css');
 
 foreach (array('public', 'free', 'tier_1', 'tier_2', 'private') as $policy) {
     $needle = "addOption('" . $policy . "'";
@@ -43,6 +44,9 @@ $expect(strpos($editForm, 'context-settings-primary') !== false
     && strpos($editForm, 'context-settings-image') !== false
     && strpos($editForm, 'context-settings-layout') === false,
     'Course settings must use the responsive content grid, never a table row coerced into a grid.');
+$expect(strpos($skin, '.context-settings-image .chisimba-image-selector__preview') !== false
+    && strpos($skin, 'height: 8rem') !== false,
+    'The settings image picker must remain a compact preview rather than consuming form width.');
 $expect(substr_count($controller, "getParam('access_policy'") >= 2,
     'Create and edit flows must both accept the policy.');
 $expect(strpos($creation, "'accessPolicy'") !== false,

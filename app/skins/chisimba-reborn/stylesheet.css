@@ -3582,7 +3582,7 @@ h5.featureboxheader,
 
 .context-settings-primary {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+    grid-template-columns: minmax(0, 1fr) 13rem;
     gap: 1.5rem;
     align-items: start;
     padding: 1.25rem;
@@ -3596,6 +3596,17 @@ h5.featureboxheader,
 
 .context-settings-image {
     align-self: start;
+}
+
+.context-settings-image .chisimba-image-selector {
+    max-width: 13rem;
+}
+
+.context-settings-image .chisimba-image-selector__preview {
+    width: 13rem;
+    max-width: 100%;
+    height: 8rem;
+    max-height: 8rem;
 }
 
 .context-settings-form .contextadmin-course-form input[type="text"] {
