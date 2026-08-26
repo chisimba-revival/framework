@@ -292,7 +292,27 @@ if ($mode == 'add' && is_array($fixup)) {
 $format = new dropdown('delivery_format');
 $format->addOption('standard', $this->objLanguage->languageText('mod_contextadmin_format_standard', 'contextadmin', 'Standard course'));
 $format->addOption('microlearning', $this->objLanguage->languageText('mod_contextadmin_format_microlearning', 'contextadmin', 'Microlearning course'));
+$format->addOption('masterclass', $this->objLanguage->languageText('mod_contextadmin_format_masterclass', 'contextadmin', 'Masterclass'));
 $format->setSelected($selectedFormat);
+$formatDescriptions = array(
+    'standard' => $this->objLanguage->languageText(
+        'mod_contextadmin_format_standard_help',
+        'contextadmin',
+        'A flexible course for varied content, activities and pacing.'
+    ),
+    'microlearning' => $this->objLanguage->languageText(
+        'mod_contextadmin_format_microlearning_help',
+        'Short, focused learning items designed for brief study sessions.'
+    ),
+    'masterclass' => $this->objLanguage->languageText(
+        'mod_contextadmin_format_masterclass_help',
+        'A short, focused class on a specific topic, typically one to three hours in duration.'
+    ),
+);
+$formatHelp = '<p id="delivery-format-help" class="contextadmin-field-help" data-format-descriptions="'
+    . htmlspecialchars(json_encode($formatDescriptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
+    . '">' . htmlspecialchars($formatDescriptions[$selectedFormat] ?? $formatDescriptions['standard'], ENT_QUOTES, 'UTF-8') . '</p>';
+$this->appendArrayVar('headerParams', '<script type="text/javascript">document.addEventListener("DOMContentLoaded",function(){var select=document.getElementById("input_delivery_format"),help=document.getElementById("delivery-format-help"),descriptions={};if(!select||!help){return;}try{descriptions=JSON.parse(help.dataset.formatDescriptions||"{}");}catch(error){descriptions={};}select.addEventListener("change",function(){help.textContent=descriptions[select.value]||"";});});</script>');
 $navigation = new dropdown('navigation_mode');
 $navigation->addOption('sequential', $this->objLanguage->languageText('mod_contextadmin_navigation_sequential', 'contextadmin', 'Sequential only'));
 $navigation->addOption('backward', $this->objLanguage->languageText('mod_contextadmin_navigation_backward', 'contextadmin', 'Backward allowed'));
@@ -306,7 +326,7 @@ $table->addCell($this->objLanguage->languageText('mod_contextadmin_learningdesig
 $table->endRow();
 $table->startRow();
 $table->addCell($this->objLanguage->languageText('mod_contextadmin_deliveryformat', 'contextadmin', 'Course format'));
-$table->addCell($format->show());
+$table->addCell($format->show() . $formatHelp);
 $table->endRow();
 $table->startRow();
 $table->addCell($this->objLanguage->languageText('mod_contextadmin_navigationmode', 'contextadmin', 'Learner navigation'));

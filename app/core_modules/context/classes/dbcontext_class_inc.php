@@ -223,7 +223,7 @@ class dbcontext extends dbTable {
      */
     public function validateLearningDesign($deliveryFormat, $navigationMode = NULL) {
         $deliveryFormat = strtolower(trim((string) $deliveryFormat));
-        if (!in_array($deliveryFormat, array('standard', 'microlearning'), TRUE)) {
+        if (!in_array($deliveryFormat, array('standard', 'microlearning', 'masterclass'), TRUE)) {
             return FALSE;
         }
         $navigationMode = strtolower(trim((string) $navigationMode));

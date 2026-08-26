@@ -221,6 +221,12 @@ class coursecatalogue extends ChisimbaObject
                   'mod_context_formatmicrolearning',
                   'Microlearning'
               )) . '</span>';
+        } elseif ($format === 'masterclass') {
+            $formatBadge = '<span class="course-card__badge">'
+              . $this->escape($this->text(
+                  'mod_context_formatmasterclass',
+                  'Masterclass'
+              )) . '</span>';
         }
 
         $summaryHtml = $summary === '' ? ''
