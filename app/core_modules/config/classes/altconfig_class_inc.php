@@ -308,8 +308,14 @@ class altconfig extends ChisimbaObject {
             if ($this->_root == NULL) {
                 $this->readConfig ( FALSE, 'XML' );
             }
+            if (!is_object($this->_root)) {
+                return FALSE;
+            }
             //Lets get the parent node section first
             $Settings = & $this->_root->getItem ( "section", "Settings" );
+            if (!is_object($Settings)) {
+                return FALSE;
+            }
             //Now onto the directive node
             //check to see if one of them isset to search by
             if (isset ( $pname )) {
@@ -1808,17 +1814,9 @@ class altconfig extends ChisimbaObject {
      * @return string true or false
      */
     public function getenable_logging() {
-        if (! is_object ( $this->_root )) {
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        }
-        //Lets get the parent node section first
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_ENABLE_LOGGING" );
-        //finally unearth whats inside
-        $getlogging = $SettingsDirective->getContent ();
+        $getlogging = $this->getItem('KEWL_ENABLE_LOGGING');
 
-        return $getlogging;
+        return $getlogging === FALSE ? FALSE : $getlogging;
     }
 
     /**
