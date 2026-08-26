@@ -53,6 +53,8 @@ class useradmin extends controller
                 return $this->updateUser();
             case 'setstatus':
                 return $this->setStatus();
+            case 'batcharchive':
+                return $this->batchArchive();
             case 'batchimport':
                 return $this->batchImport();
             case 'batchpreview':
@@ -212,12 +214,53 @@ class useradmin extends controller
 
         $userId = trim((string) $this->getParam('userid', ''));
         $active = (string) $this->getParam('active', '0') === '1';
+        if (!$active && $userId === (string) $this->objUser->userId()) {
+            return $this->redirectWithResult(
+                false,
+                'cannot_archive_current_account',
+                $userId
+            );
+        }
         $result = $this->objUserService->setActive($userId, $active);
 
         return $this->redirectWithResult(
             !empty($result['ok']),
             isset($result['code']) ? $result['code'] : 'status_update_failed',
             $userId
+        );
+    }
+
+    /** Safely archive selected accounts without deleting referenced records. */
+    private function batchArchive()
+    {
+        $this->assertMutationRequest();
+        if ((string) $this->getParam('batch_action', '') !== 'archive') {
+            return $this->redirectWithResult(false, 'invalid_batch_action');
+        }
+        $submitted = isset($_POST['userids']) && is_array($_POST['userids'])
+            ? $_POST['userids'] : array();
+        $userIds = array();
+        foreach ($submitted as $userId) {
+            $userId = trim((string) $userId);
+            if ($userId !== '' && $userId !== (string) $this->objUser->userId()
+                && !in_array($userId, $userIds, true)) {
+                $userIds[] = $userId;
+            }
+        }
+        if ($userIds === array()) {
+            return $this->redirectWithResult(false, 'select_accounts_to_archive');
+        }
+        $archived = 0;
+        foreach ($userIds as $userId) {
+            $result = $this->objUserService->setActive($userId, false);
+            if (!empty($result['ok'])) {
+                $archived++;
+            }
+        }
+        return $this->redirectWithResult(
+            $archived === count($userIds),
+            $archived === count($userIds)
+                ? 'accounts_archived' : 'some_accounts_not_archived'
         );
     }
 

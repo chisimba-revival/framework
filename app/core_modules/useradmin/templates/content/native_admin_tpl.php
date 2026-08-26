@@ -81,15 +81,40 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             </form>
         </div>
 
+        <?php
+        $batchArchiveAction = html_entity_decode(
+            $this->uri(array('action' => 'batcharchive'), 'useradmin'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        $setStatusAction = html_entity_decode(
+            $this->uri(array('action' => 'setstatus'), 'useradmin'),
+            ENT_QUOTES,
+            'UTF-8'
+        );
+        ?>
+        <form class="ua-batch-actions" method="post" action="<?php echo $escape($batchArchiveAction); ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo $escape($csrf); ?>">
+            <input type="hidden" name="q" value="<?php echo $escape($query); ?>">
+            <input type="hidden" name="page" value="<?php echo $escape($page); ?>">
+            <input type="hidden" name="limit" value="<?php echo $escape($limit); ?>">
+            <input type="hidden" name="active" value="0">
+            <label for="ua-batch-action">Selected accounts</label>
+            <select id="ua-batch-action" name="batch_action" required>
+                <option value="">Choose an action</option>
+                <option value="archive">Archive accounts</option>
+            </select>
+            <button class="ua-button" type="submit">Apply</button>
+
         <div class="ua-table-wrap">
             <table>
                 <caption class="ua-visually-hidden">User accounts</caption>
                 <thead>
-                    <tr><th scope="col">Name</th><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col"><span class="ua-visually-hidden">Actions</span></th></tr>
+                    <tr><th scope="col"><span class="ua-visually-hidden">Select</span></th><th scope="col">Name</th><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col"><span class="ua-visually-hidden">Actions</span></th></tr>
                 </thead>
                 <tbody>
                 <?php if (!$records): ?>
-                    <tr><td colspan="5" class="ua-empty">No users match this view.</td></tr>
+                    <tr><td colspan="6" class="ua-empty">No users match this view.</td></tr>
                 <?php else: ?>
                     <?php foreach ($records as $record): ?>
                         <?php
@@ -102,17 +127,19 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                         $active = !empty($record['isactive']);
                         ?>
                         <tr>
+                            <td data-label="Select"><input type="checkbox" name="userids[]" value="<?php echo $escape($userId); ?>" aria-label="Select <?php echo $escape($name !== '' ? $name : 'this account'); ?>"<?php echo $userId === (string) $this->objUser->userId() ? ' disabled' : ''; ?>></td>
                             <td data-label="Name"><?php echo $escape($name !== '' ? $name : 'Unnamed user'); ?></td>
                             <td data-label="Username"><?php echo $escape(isset($record['username']) ? $record['username'] : ''); ?></td>
                             <td data-label="Email"><?php echo $escape(isset($record['emailaddress']) ? $record['emailaddress'] : ''); ?></td>
-                            <td data-label="Status"><span class="ua-status <?php echo $active ? 'is-active' : 'is-inactive'; ?>"><?php echo $active ? 'Active' : 'Inactive'; ?></span></td>
-                            <td class="ua-actions"><a href="<?php echo $escape($url(array('userid' => $userId, 'page' => $page))); ?>#ua-editor">Edit</a></td>
+                            <td data-label="Status"><span class="ua-status <?php echo $active ? 'is-active' : 'is-inactive'; ?>"><?php echo $active ? 'Active' : 'Archived'; ?></span></td>
+                            <td class="ua-actions"><a href="<?php echo $escape($url(array('userid' => $userId, 'page' => $page))); ?>#ua-editor">Edit</a><?php if ($active && $userId !== (string) $this->objUser->userId()): ?><button class="ua-action-link ua-action-danger" type="submit" formnovalidate formaction="<?php echo $escape($setStatusAction); ?>" name="userid" value="<?php echo $escape($userId); ?>">Archive</button><?php endif; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
                 </tbody>
             </table>
         </div>
+        </form>
 
         <?php if ($pages > 1): ?>
             <nav class="ua-pagination" aria-label="User directory pages">
@@ -159,9 +186,9 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                             <?php endforeach; ?>
                         </select>
                     </label>
-                    <label>First name <span aria-hidden="true">*</span><input name="firstname" required value="<?php echo $escape($value('firstname')); ?>"></label>
-                    <label>Surname <span aria-hidden="true">*</span><input name="surname" required value="<?php echo $escape($value('surname')); ?>"></label>
-                    <label>Email address <span aria-hidden="true">*</span><input name="emailaddress" type="email" required value="<?php echo $escape($value('emailaddress')); ?>"></label>
+                    <label><span class="ua-field-label">First name <span class="ua-required" aria-hidden="true">*</span></span><input name="firstname" required value="<?php echo $escape($value('firstname')); ?>"></label>
+                    <label><span class="ua-field-label">Surname <span class="ua-required" aria-hidden="true">*</span></span><input name="surname" required value="<?php echo $escape($value('surname')); ?>"></label>
+                    <label><span class="ua-field-label">Email address <span class="ua-required" aria-hidden="true">*</span></span><input name="emailaddress" type="email" required value="<?php echo $escape($value('emailaddress')); ?>"></label>
                     <label>Staff or student number<input name="staffnumber" value="<?php echo $escape($value('staffnumber')); ?>"></label>
                     <label>Cell number<input name="cellnumber" value="<?php echo $escape($value('cellnumber')); ?>"></label>
                     <label><?php echo $escape($this->objLanguage->languageText('word_country')); ?>
@@ -185,9 +212,9 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             <fieldset>
                 <legend>Account</legend>
                 <div class="ua-form-grid">
-                    <label>Username <span aria-hidden="true">*</span><input name="username" required autocomplete="off" value="<?php echo $escape($value('username')); ?>"></label>
-                    <label>Password <?php if (!$selected): ?><span aria-hidden="true">*</span><?php endif; ?><input name="password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
-                    <label>Repeat password <?php if (!$selected): ?><span aria-hidden="true">*</span><?php endif; ?><input name="repeat_password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
+                    <label><span class="ua-field-label">Username <span class="ua-required" aria-hidden="true">*</span></span><input name="username" required autocomplete="off" value="<?php echo $escape($value('username')); ?>"></label>
+                    <label><span class="ua-field-label">Password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
+                    <label><span class="ua-field-label">Repeat password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="repeat_password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
                     <label class="ua-checkbox"><input name="isactive" type="checkbox" value="1"<?php echo !$selected || !empty($selected['isactive']) ? ' checked' : ''; ?>> Active account</label>
                 </div>
             </fieldset>
