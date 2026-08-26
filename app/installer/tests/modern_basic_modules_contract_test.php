@@ -28,6 +28,14 @@ $checks = array(
         < array_search('toolbar', $modules, true),
     'UI is installed before canvas consumes it' => array_search('ui', $modules, true)
         < array_search('canvas', $modules, true),
+    'canvas declares its UI dependency' => str_contains(
+        file_get_contents(dirname(__DIR__, 2) . '/core_modules/canvas/register.conf'),
+        'DEPENDS: ui'
+    ),
+    'toolbar declares its UI dependency' => str_contains(
+        file_get_contents(dirname(__DIR__, 2) . '/core_modules/toolbar/register.conf'),
+        'DEPENDS: ui'
+    ),
 );
 
 foreach ($checks as $name => $ok) {
