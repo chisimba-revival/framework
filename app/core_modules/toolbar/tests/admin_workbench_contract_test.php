@@ -54,6 +54,11 @@ $registrations = array(
         'PAGE: admin_common',
     ),
     'modulecatalogue' => array('PAGE: admin_advanced', 'PAGE: admin_common'),
+    'prelogin' => array(
+        'PAGE: admin_common|||mod_prelogin_admin_managepage',
+        'TEXT: mod_prelogin_addblock|add block heading|Add Block',
+        'MODULE_VERSION: 1.070',
+    ),
 );
 
 foreach ($registrations as $module => $needles) {
