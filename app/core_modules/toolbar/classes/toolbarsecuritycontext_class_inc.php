@@ -80,6 +80,12 @@ class toolbarsecuritycontext extends ChisimbaObject
             && $this->user->isContextLecturer($userId, $contextCode);
     }
 
+    /** Whether the account lectures in at least one course. */
+    public function isLecturer()
+    {
+        return $this->isAuthenticated() && $this->user->isLecturer();
+    }
+
     /** Whether the account has a learner journey in at least one course. */
     public function hasStudentLearning()
     {

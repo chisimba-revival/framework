@@ -3469,8 +3469,10 @@ h5.featureboxheader,
 /* END CHISIMBA-REBORN ADMIN WORKBENCH */
 
 /* Canonical toolbar Logout button */
-#navigation #nav > .toolbar-logout-item {
+#navigation ul#menuList > .toolbar-logout-item {
     margin-inline-start: auto;
+    padding-inline-start: 1rem;
+    border-inline-start: 1px solid var(--chisimba-border, #cbd5e1);
 }
 
 #navigation .toolbar-menu-logout {
@@ -3498,8 +3500,12 @@ h5.featureboxheader,
 }
 
 @media (max-width: 768px) {
-    #navigation #nav > .toolbar-logout-item {
+    #navigation ul#menuList > .toolbar-logout-item {
         margin-inline-start: 0;
+        padding-inline-start: 0;
+        border-inline-start: 0;
+        border-block-start: 1px solid var(--chisimba-border, #cbd5e1);
+        padding-block-start: 0.65rem;
     }
 
     #navigation .toolbar-menu-logout,

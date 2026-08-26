@@ -105,9 +105,6 @@ class menu extends ChisimbaObject
         );
         $moduleJourney = array(
             'calendar' => 'learning',
-            'contextadmin' => 'teaching',
-            'contextcontent' => 'teaching',
-            'filemanager' => 'teaching',
             'assignment' => 'teaching',
             'essay' => 'teaching',
             'essayadmin' => 'teaching',
@@ -130,12 +127,53 @@ class menu extends ChisimbaObject
             'simpleblog' => 'information',
         );
         $mayTeach = $this->securityContext->isSiteAdministrator()
-            || $this->securityContext->isCurrentContextLecturer();
+            || ($this->context
+                ? $this->securityContext->isCurrentContextLecturer()
+                : $this->securityContext->isLecturer());
         $isAdmin = $this->securityContext->isSiteAdministrator();
 
         if (($isAdmin || $this->securityContext->hasStudentLearning())
             && $this->objModule->checkIfRegistered('mylearning')) {
             $journeys['learning'][] = 'mylearning';
+        }
+
+        if ($this->context) {
+            $journeys['learning'][] = $this->journeyLink(
+                'context', NULL, 'mod_toolbar_coursehome', 'Course home'
+            );
+            if ($mayTeach) {
+                $journeys['teaching'][] = $this->journeyLink(
+                    'context', array('action' => 'controlpanel'),
+                    'mod_toolbar_coursecontrolpanel', 'Course control panel'
+                );
+                if ($this->objModule->checkIfRegistered('contextcontent')) {
+                    $journeys['teaching'][] = $this->journeyLink(
+                        'contextcontent', NULL,
+                        'mod_toolbar_coursecontent', 'Course content'
+                    );
+                }
+                if ($this->objModule->checkIfRegistered('contextgroups')) {
+                    $journeys['teaching'][] = $this->journeyLink(
+                        'contextgroups', NULL,
+                        'mod_toolbar_coursemembers', 'Course members'
+                    );
+                }
+            }
+        } else {
+            $journeys['learning'][] = $this->journeyLink(
+                'context', array('action' => 'join'),
+                'mod_toolbar_browsecourses', 'Browse courses'
+            );
+            if ($mayTeach && $this->objModule->checkIfRegistered('contextadmin')) {
+                $journeys['teaching'][] = $this->journeyLink(
+                    'contextadmin', NULL,
+                    'mod_toolbar_courseadministration', 'Course administration'
+                );
+                $journeys['teaching'][] = $this->journeyLink(
+                    'contextadmin', array('action' => 'add'),
+                    'mod_toolbar_createcourse', 'Create course'
+                );
+            }
         }
 
         foreach ((array) $legacyMenus as $modules) {
@@ -164,6 +202,18 @@ class menu extends ChisimbaObject
             }
         }
         return $result;
+    }
+
+    /** Build one explicit task destination without bypassing module access. */
+    private function journeyLink($module, $params, $languageKey, $fallback)
+    {
+        return array(
+            'module' => $module,
+            'params' => $params,
+            'label' => $this->objLanguage->languageText(
+                $languageKey, 'toolbar', $fallback
+            ),
+        );
     }
 
     /**
@@ -233,6 +283,19 @@ class menu extends ChisimbaObject
                 $category = strtolower($key);
                 $this->cssMenu->addHeader($this->objLanguage->languageText('category_'.$category,'toolbar', ucwords($category)));
                 foreach($item as $k=>$v){
+                    if (is_array($v) && isset($v['module'], $v['label'])) {
+                        $this->cssMenu->addMenuItem(
+                            $this->objLanguage->languageText(
+                                'category_'.$category,
+                                'toolbar',
+                                ucwords($category)
+                            ),
+                            $v['label'],
+                            $v['module'],
+                            isset($v['params']) ? $v['params'] : NULL
+                        );
+                        continue;
+                    }
                     if(!(strpos(strtolower($v), 'context')===FALSE)){
                         $array = array('context'=>'course');
                         $text = $this->objLanguage->code2Txt('mod_'.$v.'_toolbarname',$v);

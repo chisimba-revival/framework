@@ -53,13 +53,19 @@ class cssmenu extends ChisimbaObject {
                         $counter = 1;
                         $numitems = (is_countable($item) ? count($item) : 0);
                         foreach ($item as $link => $val) {
+                                $params = NULL;
+                                if (is_array($val) && isset($val['module'], $val['label'])) {
+                                        $link = $val['module'];
+                                        $params = isset($val['params']) ? $val['params'] : NULL;
+                                        $val = $val['label'];
+                                }
                                 $icon = $this->moduleIconResolver->render(
                                         $link,
                                         '',
                                         'mainmenu-icon'
                                 );
 
-                                $objLink = new link($this->uri(NULL, $link));
+                                $objLink = new link($this->uri($params, $link));
                                 $objLink->link = $icon . '<div class="menulinktext">' . $val . '</div>';
 
                                 $valLink = $objLink->show();
@@ -105,10 +111,14 @@ class cssmenu extends ChisimbaObject {
          * @param string $str The menu item.
          * @return
          */
-        public function addMenuItem($menuhead, $str, $link = '#') {
+        public function addMenuItem($menuhead, $str, $link = '#', $params = NULL) {
                 if (!empty($str)) {
                         if (array_key_exists($menuhead, $this->menu)) {
-                                $this->menu[$menuhead][$link] = $str;
+                                $this->menu[$menuhead][] = array(
+                                        'module' => $link,
+                                        'label' => $str,
+                                        'params' => $params,
+                                );
                         }
                 }
         }
