@@ -99,12 +99,14 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             <input type="hidden" name="page" value="<?php echo $escape($page); ?>">
             <input type="hidden" name="limit" value="<?php echo $escape($limit); ?>">
             <input type="hidden" name="active" value="0">
-            <label for="ua-batch-action">Selected accounts</label>
-            <select id="ua-batch-action" name="batch_action" required>
-                <option value="">Choose an action</option>
-                <option value="archive">Archive accounts</option>
-            </select>
-            <button class="ua-button" type="submit">Apply</button>
+            <div class="ua-batch-controls">
+                <label for="ua-batch-action">Selected accounts</label>
+                <select id="ua-batch-action" name="batch_action" required>
+                    <option value="">Choose an action</option>
+                    <option value="archive">Archive accounts</option>
+                </select>
+                <button class="ua-button" type="submit">Apply</button>
+            </div>
 
         <div class="ua-table-wrap">
             <table>

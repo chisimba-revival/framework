@@ -9,6 +9,7 @@ $lifecycle = file_get_contents(
 $checks = array(
     'single and batch archive actions exist' => str_contains($template, '>Archive</button>')
         && str_contains($template, 'name="userids[]"')
+        && str_contains($template, 'class="ua-batch-controls"')
         && str_contains($controller, "case 'batcharchive':"),
     'archive uses canonical active status' => str_contains(
         $controller,
