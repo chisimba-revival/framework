@@ -65,6 +65,20 @@ if ($canManageAdmissions && is_array($courseDetails)
         ), 'membership-service'),
     );
 }
+$currentUser = $this->getObject('user', 'security');
+if ($currentUser->isAdmin()) {
+    try {
+        $this->getObject('paymentcatalogservice', 'payment-service');
+        $taskLinks[] = array(
+            'icon' => 'badge-dollar-sign',
+            'label' => 'Pricing and sales',
+            'help' => 'Set up this course product and its current selling price.',
+            'url' => $this->uri(array('action' => 'products', 'purpose' => 'private_course', 'purpose_id' => $contextCode), 'payment-service'),
+        );
+    } catch (Throwable $failure) {
+        // The course control panel remains usable without optional payment support.
+    }
+}
 
 $ret = '<div class="course-control-workspace"><header class="course-control-header">'
     . '<h1>' . $escape($objLanguage->code2Txt('mod_context_courseadministration', 'context', null, '[-context-] administration')) . '</h1>'

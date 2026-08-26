@@ -16,6 +16,7 @@ $database = $read('classes/dbcontext_class_inc.php');
 $controller = $read('controller.php');
 $template = $read('templates/content/needtojoin_tpl.php');
 $overview = $read('classes/studentlearningoverview_class_inc.php');
+$controlPanel = $read('templates/content/controlpanel_tpl.php');
 
 $expect(strpos($schema, "'access_policy'") !== false, 'Context must own the admission policy.');
 $expect(strpos($updates, '<name>access_policy</name>') !== false, 'Existing installations need an additive policy migration.');
@@ -59,6 +60,10 @@ $expect(strpos($template, '>Create account</a>') !== false
     && strpos($template, '>Sign in</a>') !== false
     && strpos($template, 'Buy course access') !== false,
     'The access gate must give visitors and signed-in learners a clear next action.');
+$expect(strpos($controlPanel, "'label' => 'Pricing and sales'") !== false
+    && strpos($controlPanel, "'purpose_id' => \$contextCode") !== false
+    && strpos($controlPanel, "getObject('paymentcatalogservice', 'payment-service')") !== false,
+    'Course administration must expose an optional course-scoped pricing route.');
 
 fwrite(STDOUT, "PASS: tiered course admission compatibility contract\n");
 ?>
