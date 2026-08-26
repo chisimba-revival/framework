@@ -38,6 +38,11 @@ $expect(strpos($form, "new radio('status')") !== false
     'Two-state publication status must use radio controls consistently.');
 $expect(strpos($editForm, 'Email students when course content is added or updated') !== false,
     'Legacy Alerts must explain the actual email consequence.');
+$expect(strpos($editForm, 'context-settings-primary') !== false
+    && strpos($editForm, 'context-settings-fields') !== false
+    && strpos($editForm, 'context-settings-image') !== false
+    && strpos($editForm, 'context-settings-layout') === false,
+    'Course settings must use the responsive content grid, never a table row coerced into a grid.');
 $expect(substr_count($controller, "getParam('access_policy'") >= 2,
     'Create and edit flows must both accept the policy.');
 $expect(strpos($creation, "'accessPolicy'") !== false,

@@ -217,22 +217,6 @@ class contextforms extends ChisimbaObject {
         }
 
         $table->cssClass = 'contextadmin-course-form';
-        $table2 = $this->newObject('htmltable', 'htmlelements');
-        $table2->cssClass = 'context-settings-layout';
-        $table2->startRow();
-        $table2->addCell($table->show(), 600, NULL, NULL, NULL, 'colspan="2"');
-        $table2->addCell($objSelectImage->show());
-        $table2->endRow();
-
-        $table2->startRow();
-        $table2->addCell('&nbsp;');
-        $table2->addCell('&nbsp;');
-        $table2->addCell('&nbsp;');
-        $table2->endRow();
-
-        $table2->startRow();
-        $table2->addCell(ucwords($this->objLanguage->code2Txt('mod_context_aboutcontext', 'context', NULL, 'About [-context-]')).':', 100);
-
         $htmlEditor = $this->newObject('htmlarea', 'htmlelements');
         $htmlEditor->name = 'about';
         $htmlEditor->toolbarSet = 'advanced';
@@ -241,19 +225,6 @@ class contextforms extends ChisimbaObject {
             $htmlEditor->value = $context['about'];
         }
 
-        $table2->addCell($htmlEditor->show(), NULL, NULL, NULL, NULL, 'colspan="2"');
-        $table2->endRow();
-
-        $table2->startRow();
-        $table2->addCell('&nbsp;');
-        $table2->addCell('&nbsp;');
-        $table2->addCell('&nbsp;');
-        $table2->endRow();
-
-
-        $table2->startRow();
-        $table2->addCell('&nbsp;', 100);
-
         if ($context == NULL) {
             $button = new button ('savecontext', $formButton);
         } else {
@@ -261,12 +232,25 @@ class contextforms extends ChisimbaObject {
         }
         $button->setToSubmit();
 
-        $table2->addCell($button->show(), NULL, NULL, NULL, NULL, 'colspan="2"');
-        $table2->endRow();
+        $aboutLabel = ucwords($this->objLanguage->code2Txt(
+            'mod_context_aboutcontext',
+            'context',
+            NULL,
+            'About [-context-]'
+        ));
+        $settingsContent = '<div class="context-settings-primary">'
+            . '<div class="context-settings-fields">' . $table->show() . '</div>'
+            . '<aside class="context-settings-image">' . $objSelectImage->show() . '</aside>'
+            . '</div>'
+            . '<section class="context-settings-about">'
+            . '<h3>' . $aboutLabel . '</h3>'
+            . '<div class="context-settings-editor">' . $htmlEditor->show() . '</div>'
+            . '</section>'
+            . '<div class="contextadmin-course-form-actions">' . $button->show() . '</div>';
 
         $form = new form ('createcontext', $this->uri(array('action'=>$this->formAction), $this->formModule));
 
-        $form->addToForm('<div class="contextadmin-course-form-wrap context-settings-form">' . $table2->show() . '</div>');
+        $form->addToForm('<div class="contextadmin-course-form-wrap context-settings-form">' . $settingsContent . '</div>');
 
         if ($this->objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'true') {
             $form->addToForm($access->show());
