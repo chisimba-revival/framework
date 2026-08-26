@@ -30,7 +30,9 @@ $checks = array(
     'legacy selectors are gone' => !str_contains($script . $block, 'patchLink')
         && !str_contains($script . $block, 'linkUpdateAll')
         && !str_contains($script . $block, 'div_updates'),
-    'module version records replacement' => str_contains($manifest, 'MODULE_VERSION: 3.129')
+    'progress language is normalised for textContent' => str_contains($block, 'html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5')
+        && str_contains($block, 'assigned through textContent'),
+    'module version records replacement' => str_contains($manifest, 'MODULE_VERSION: 3.130')
         && str_contains($manifest, 'timer-driven legacy jQuery'),
 );
 

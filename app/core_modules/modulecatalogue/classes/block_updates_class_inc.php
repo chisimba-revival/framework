@@ -151,9 +151,14 @@ class block_updates extends ChisimbaObject {
     private function text($key, $fallback)
     {
         $value = $this->objLanguage->languageText($key, 'modulecatalogue');
-        return str_starts_with((string) $value, 'Language item not found:')
+        $value = str_starts_with((string) $value, 'Language item not found:')
             ? $fallback
             : $value;
+
+        // Language records may contain legacy HTML entities. These strings are
+        // assigned through textContent, so normalise them to plain UTF-8 before
+        // they are safely escaped into data attributes.
+        return html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
 }
