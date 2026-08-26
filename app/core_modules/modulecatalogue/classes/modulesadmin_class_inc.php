@@ -522,8 +522,17 @@ class modulesadmin extends dbTableManager
                 if (isset($registerdata['CONFIG']))
                 {
                     $this->objSysConfig=$this->getObject('dbsysconfig','sysconfig');
-                    $this->objSysConfig->updateFlag=TRUE;
-                    $this->objSysConfig->registerModuleParams($moduleId,$registerdata['CONFIG']);
+                    /*
+                     * Registration defaults initialise missing settings only.
+                     * A module update must never replace a site's established
+                     * operational or branding choices with register.conf
+                     * defaults. Descriptions may still be refreshed by the
+                     * additive registrar.
+                     */
+                    $this->objSysConfig->registerMissingModuleParams(
+                        $moduleId,
+                        $registerdata['CONFIG']
+                    );
                 }
 
                 // Icons
