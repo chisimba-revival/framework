@@ -18,6 +18,7 @@ $query = isset($userAdminQuery) ? (string) $userAdminQuery : '';
 $page = isset($userAdminPage) ? (int) $userAdminPage : 1;
 $pages = isset($userAdminPages) ? (int) $userAdminPages : 1;
 $limit = isset($userAdminLimit) ? (int) $userAdminLimit : 25;
+$includeArchived = !empty($userAdminIncludeArchived);
 $total = isset($userAdminTotal) ? (int) $userAdminTotal : 0;
 $titles = isset($userAdminTitles) && is_array($userAdminTitles)
     ? $userAdminTitles : array('');
@@ -28,7 +29,12 @@ $defaultCountry = isset($userAdminDefaultCountry)
 $csrf = isset($userAdminCsrfToken) ? (string) $userAdminCsrfToken : '';
 $message = isset($userAdminMessage) ? (string) $userAdminMessage : '';
 $error = isset($userAdminError) ? (string) $userAdminError : '';
-$base = array('action' => 'native', 'q' => $query, 'limit' => $limit);
+$base = array(
+    'action' => 'native',
+    'q' => $query,
+    'limit' => $limit,
+    'include_archived' => $includeArchived ? '1' : '0',
+);
 $url = function (array $changes) use ($base) {
     return html_entity_decode(
         $this->uri(array_merge($base, $changes), 'useradmin'),
@@ -78,6 +84,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                     <input id="ua-query" name="q" type="search" value="<?php echo $escape($query); ?>" placeholder="Name, username or email">
                     <button class="ua-button" type="submit">Search</button>
                 </div>
+                <label class="ua-filter-checkbox"><input name="include_archived" type="checkbox" value="1"<?php echo $includeArchived ? ' checked' : ''; ?>> Show archived accounts</label>
             </form>
         </div>
 
@@ -98,6 +105,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             <input type="hidden" name="q" value="<?php echo $escape($query); ?>">
             <input type="hidden" name="page" value="<?php echo $escape($page); ?>">
             <input type="hidden" name="limit" value="<?php echo $escape($limit); ?>">
+            <input type="hidden" name="include_archived" value="<?php echo $includeArchived ? '1' : '0'; ?>">
             <input type="hidden" name="active" value="0">
             <div class="ua-batch-controls">
                 <label for="ua-batch-action">Selected accounts</label>
@@ -177,6 +185,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             <input type="hidden" name="q" value="<?php echo $escape($query); ?>">
             <input type="hidden" name="page" value="<?php echo $escape($page); ?>">
             <input type="hidden" name="limit" value="<?php echo $escape($limit); ?>">
+            <input type="hidden" name="include_archived" value="<?php echo $includeArchived ? '1' : '0'; ?>">
 
             <fieldset>
                 <legend>Profile</legend>
@@ -240,6 +249,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                 <input type="hidden" name="q" value="<?php echo $escape($query); ?>">
                 <input type="hidden" name="page" value="<?php echo $escape($page); ?>">
                 <input type="hidden" name="limit" value="<?php echo $escape($limit); ?>">
+                <input type="hidden" name="include_archived" value="<?php echo $includeArchived ? '1' : '0'; ?>">
                 <button class="ua-button <?php echo $isActive ? 'ua-button-danger' : ''; ?>" type="submit"><?php echo $isActive ? 'Deactivate account' : 'Activate account'; ?></button>
             </form>
         <?php endif; ?>

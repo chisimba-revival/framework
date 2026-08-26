@@ -27,6 +27,11 @@ $checks = array(
         $template,
         'class="ua-field-label"'
     ) >= 6,
+    'archived accounts are optional and hidden by default' => str_contains(
+        $controller,
+        "'include_archived',\n            '0'"
+    ) && str_contains($template, 'Show archived accounts')
+        && str_contains($template, "include_archived' => \$includeArchived ? '1' : '0'"),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

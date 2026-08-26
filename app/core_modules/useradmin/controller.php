@@ -73,11 +73,15 @@ class useradmin extends controller
         $query = trim((string) $this->getParam('q', ''));
         $page = max(1, (int) $this->getParam('page', 1));
         $limit = (int) $this->getParam('limit', 25);
+        $includeArchived = (string) $this->getParam(
+            'include_archived',
+            '0'
+        ) === '1';
         if (!in_array($limit, array(10, 25, 50, 100), true)) {
             $limit = 25;
         }
 
-        $records = $this->objUserService->listUsers($query, true);
+        $records = $this->objUserService->listUsers($query, $includeArchived);
         if (!is_array($records)) {
             $records = array();
         }
@@ -98,6 +102,7 @@ class useradmin extends controller
         $this->setVar('userAdminPage', $page);
         $this->setVar('userAdminPages', $pages);
         $this->setVar('userAdminLimit', $limit);
+        $this->setVar('userAdminIncludeArchived', $includeArchived);
         $this->setVar('userAdminTotal', $total);
         $this->setVar('userAdminTitles', $this->titlePolicy());
         $countryPolicy = $this->getObject('countrypolicy', 'useradmin');
@@ -425,6 +430,10 @@ class useradmin extends controller
             'q' => (string) $this->getParam('q', ''),
             'page' => max(1, (int) $this->getParam('page', 1)),
             'limit' => (int) $this->getParam('limit', 25),
+            'include_archived' => (string) $this->getParam(
+                'include_archived',
+                '0'
+            ) === '1' ? '1' : '0',
         );
         if ($userId !== '') {
             $params['userid'] = $userId;
