@@ -8,6 +8,9 @@ $header->type = 1;
 $error = (string) $this->getParam('error', '');
 $policy = (string) $this->getParam('admissionpolicy', '');
 $isAccessRequired = $error === 'accessrequired';
+$isLoggedIn = method_exists($this->objUser, 'isLoggedIn') && $this->objUser->isLoggedIn();
+$admissionMode = (string) $this->getParam('privateadmissionmode', '');
+$purchaseProduct = (string) $this->getParam('purchaseproduct', '');
 $header->cssClass = $isAccessRequired ? '' : 'error';
 $header->str = $isAccessRequired
     ? $this->objLanguage->languageText(
@@ -35,7 +38,30 @@ if ($isAccessRequired) {
     $label = isset($labels[$policy]) ? $labels[$policy] : 'Membership';
     echo '<p><strong>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
         . ' access is required.</strong></p>';
-    echo '<p>Your course enrolment and role have not changed. Choose another course or return to My Learning.</p>';
+    if (!$isLoggedIn) {
+        echo '<p>Create an account or sign in before choosing access to this course.</p>';
+        echo '<div class="chisimba-form-actions">'
+            . '<a class="button" href="'
+            . htmlspecialchars(html_entity_decode($this->uri(array(), 'registration-service'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+            . '">Create account</a> '
+            . '<a class="button chisimba-button-secondary" href="'
+            . htmlspecialchars(html_entity_decode($this->uri(array('action' => 'showlogin'), 'security'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+            . '">Sign in</a></div>';
+    } elseif ($policy === 'private' && $admissionMode === 'automatic_payment' && $purchaseProduct !== '') {
+        $amount = (int) $this->getParam('purchaseamount', 0);
+        $currency = strtoupper((string) $this->getParam('purchasecurrency', 'ZAR'));
+        echo '<p>This course can admit you automatically after a confirmed payment.</p>';
+        echo '<div class="chisimba-form-actions"><a class="button" href="'
+            . htmlspecialchars(html_entity_decode($this->uri(array(
+                'action' => 'catalogue', 'product' => $purchaseProduct,
+            ), 'payment-service'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+            . '">Buy course access — ' . htmlspecialchars($currency, ENT_QUOTES, 'UTF-8')
+            . ' ' . number_format($amount / 100, 2) . '</a></div>';
+    } elseif ($policy === 'private' && $admissionMode === 'manual_review') {
+        echo '<p>This course requires approval by the admissions team before access can be granted.</p>';
+    } else {
+        echo '<p>The required access is not currently available for purchase. Your course enrolment and role have not changed.</p>';
+    }
 } else {
     echo '<p>'.$this->objLanguage->code2Txt('mod_context_unabletoenterinfo', 'context', NULL, 'The [-context-] you tried to enter either does not exist, or is private with access restricted to members only.').'</p>';
 }
@@ -52,10 +78,12 @@ if (!$isAccessRequired) {
 
 
 $link = new link($isAccessRequired
-    ? $this->uri(NULL, 'mylearning')
+    ? ($isLoggedIn ? $this->uri(NULL, 'mylearning') : $this->uri(array('action' => 'catalogue'), 'context'))
     : $this->uri(NULL, '_default'));
 $link->link = $isAccessRequired
-    ? $this->objLanguage->languageText('mod_context_backtomylearning', 'context', 'Back to My Learning')
+    ? ($isLoggedIn
+        ? $this->objLanguage->languageText('mod_context_backtomylearning', 'context', 'Back to My Learning')
+        : $this->objLanguage->languageText('mod_context_browsecourses', 'context', 'Browse courses'))
     : $this->objLanguage->languageText('phrase_backhome', 'system', 'Back to home');
 $link->cssClass = $isAccessRequired ? 'button' : '';
 

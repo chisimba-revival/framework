@@ -52,6 +52,13 @@ $expect(strpos($controller, "\$params['error'] = 'accessrequired'") !== false
 $expect(strpos($template, 'getAlphaListingAjax') !== false
     && strpos($template, 'if (!$isAccessRequired)') !== false,
     'The legacy alphabetical browser must be hidden for tier-gate failures.');
+$expect(strpos($controller, "privateCourseProduct((string) \$contextCode)") !== false
+    && strpos($controller, "\$params['purchaseproduct']") !== false,
+    'An automatically admitted private course must expose its optional priced product at the gate.');
+$expect(strpos($template, '>Create account</a>') !== false
+    && strpos($template, '>Sign in</a>') !== false
+    && strpos($template, 'Buy course access') !== false,
+    'The access gate must give visitors and signed-in learners a clear next action.');
 
 fwrite(STDOUT, "PASS: tiered course admission compatibility contract\n");
 ?>

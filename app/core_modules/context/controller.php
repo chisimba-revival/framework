@@ -408,13 +408,29 @@ class context extends controller {
 
     private function joinFailure($contextCode)
     {
-        $params = array('error' => 'unabletoenter');
+        $params = array('error' => 'unabletoenter', 'contextcode' => (string) $contextCode);
         $details = $this->objContext->getContextDetails($contextCode);
         $policy = is_array($details) && isset($details['access_policy'])
             ? strtolower(trim((string) $details['access_policy'])) : '';
         if (in_array($policy, array('free', 'tier_1', 'tier_2', 'private'), true)) {
             $params['error'] = 'accessrequired';
             $params['admissionpolicy'] = $policy;
+            $params['privateadmissionmode'] = is_array($details)
+                ? (string) ($details['private_admission_mode'] ?? '') : '';
+            if ($policy === 'private'
+                && $params['privateadmissionmode'] === 'automatic_payment') {
+                try {
+                    $product = $this->getObject('paymentcatalogservice', 'payment-service')
+                        ->privateCourseProduct((string) $contextCode);
+                    if (is_array($product) && is_array($product['current_price'] ?? NULL)) {
+                        $params['purchaseproduct'] = (string) $product['code'];
+                        $params['purchaseamount'] = (string) $product['current_price']['amount_minor'];
+                        $params['purchasecurrency'] = (string) $product['current_price']['currency'];
+                    }
+                } catch (Throwable $failure) {
+                    // Admission still fails closed when optional payment support is absent.
+                }
+            }
         }
         return $params;
     }
