@@ -2,6 +2,11 @@
 $this->loadClass('link','htmlelements');
 $this->loadClass('textinput','htmlelements');
 $this->loadClass('dropdown','htmlelements');
+$escape = static function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
+$csrfTokens = is_array($moduleUpdateCsrfTokens ?? null) ? $moduleUpdateCsrfTokens : array();
+$updateAllCsrf = (string) ($moduleUpdateAllCsrfToken ?? '');
 
 
 $objH = $this->newObject('htmlheading','htmlelements');
@@ -109,27 +114,29 @@ if (isset($error)) {
     $tString .= "<br /><span class='error'>$error</span>";
 }
 
-$updateAll->link($this->uri(array('action'=>'patchall')));
-$updateAll->link = $this->objLanguage->languageText('mod_modulecatalogue_patchall','modulecatalogue');
 $str = '';
 if (!empty($patchArray)) {
     foreach ($patchArray as $patch) {
         $uri = $this->uri(array('action'=>'update','mod'=>$patch['module_id'],'patchver'=>$patch['new_version']),'modulecatalogue');
-        $link = new Link($uri);
-        $link->link = $this->objLanguage->languageText('mod_modulecatalogue_applypatch','modulecatalogue');
+        $applyLabel = $this->objLanguage->languageText('mod_modulecatalogue_applypatch','modulecatalogue');
+        $applyForm = '<form class="module-update-form" method="post" action="' . $escape($uri) . '">'
+            . '<input type="hidden" name="csrf_token" value="' . $escape($csrfTokens[$patch['module_id']] ?? '') . '">'
+            . '<button class="button chisimba-button-secondary" type="submit">' . $escape($applyLabel) . '</button></form>';
         $pIcon = $this->getObject('geticon','htmlelements');
         $pIcon->setModuleIcon($patch['module_id']);
         $modIcon=$pIcon->show();
-        $pIcon->setModuleIcon('update');
-        $pIcon->alt = $link->link;
         $time = date("d/m/y",filemtime($this->objModFile->findRegisterFile($patch['module_id'])));
         $str .= '<div class="moduleupdate"><b>'
           . $modIcon.ucwords($patch['module_id'])
-          . " version:</b> {$patch['new_version']} - $time <div class='floatright'>{$pIcon->show()}{$link->show()}</div><br />"
+          . " version:</b> {$patch['new_version']} - $time <div class='floatright'>{$applyForm}</div><br />"
           . " <span class='modcatdesc'><b>{$this->objLanguage->languageText('mod_modulecatalogue_description','modulecatalogue')}:</b> {$patch['desc']}</span><br /></div>";
     }
-    $patchAll = "<span class='floatright'><div class='adminicon'></div>"
-      . $updateAll->show() . '</span>';
+    $patchAll = '<form class="module-update-all-form" method="post" action="'
+        . $escape($this->uri(array('action' => 'patchall'), 'modulecatalogue')) . '">'
+        . '<input type="hidden" name="csrf_token" value="' . $escape($updateAllCsrf) . '">'
+        . '<button class="button chisimba-button-secondary" type="submit">'
+        . $escape($this->objLanguage->languageText('mod_modulecatalogue_patchall', 'modulecatalogue'))
+        . '</button></form>';
 } else {
     $str = $this->objLanguage->languageText('mod_modulecatalogue_noupdates','modulecatalogue');
     $patchAll = '';

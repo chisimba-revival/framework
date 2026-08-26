@@ -44,6 +44,9 @@
  */
 
 class modulecatalogue extends controller {
+
+    private const UPDATE_CSRF_CONTEXT = 'modulecatalogue_apply_update';
+    private const UPDATE_ALL_CSRF_CONTEXT = 'modulecatalogue_apply_all_updates';
     /**
      * Object to connect to Module Catalogue table
      *
@@ -149,6 +152,8 @@ class modulecatalogue extends controller {
     protected $extzip = FALSE;
 
     private $ajaxInstall = FALSE;
+
+    private $csrf;
 
     /**
      * Standard initialisation function
@@ -328,7 +333,7 @@ class modulecatalogue extends controller {
                     }
 
                     if (strtolower ( $activeCat ) == 'local updates') {
-                        $this->setVar ( 'patchArray', $this->objPatch->checkModules () );
+                        $this->preparePatchView();
                         return 'updates_tpl.php';
                     } else if (strtolower ( $activeCat == 'languages' )) {
                         return 'languages_tpl.php';
@@ -527,11 +532,29 @@ class modulecatalogue extends controller {
                 case 'update' :
                     $patchver = $this->getParam ( 'patchver' );
                     $modname = $this->getParam ( 'mod' );
+                    if (!$this->validUpdateRequest(self::UPDATE_CSRF_CONTEXT)) {
+                        return $this->updateFailureResponse(
+                            'invalid_request',
+                            $this->objLanguage->languageText('mod_modulecatalogue_update_invalid_request', 'modulecatalogue'),
+                            400
+                        );
+                    }
+                    if (!$this->pendingUpdateMatches($modname, $patchver)) {
+                        return $this->updateFailureResponse(
+                            'update_not_available',
+                            $this->objLanguage->languageText('mod_modulecatalogue_update_not_available', 'modulecatalogue'),
+                            409
+                        );
+                    }
                     $ins = $this->getPatchObject ( $modname );
                     if ($ins !== null && method_exists ( $ins, 'preinstall' )) {
                         $ins->preinstall ($patchver);
                     }
-                    if (($this->output = $this->objPatch->applyUpdates ( $modname )) === FALSE) {
+                    $updateSucceeded = true;
+                    if (($this->output = $this->objPatch->applyUpdates ( $modname )) === FALSE
+                        || !is_array($this->output)
+                        || !isset($this->output['current'])) {
+                        $updateSucceeded = false;
                         $this->setVar ( 'error', str_replace ( '[MODULE]', $modname, $this->objLanguage->languageText ( 'mod_modulecatalogue_failed', 'modulecatalogue' ) ) );
                     } else {
                         $this->setVar ( 'output', $this->output );
@@ -542,28 +565,75 @@ class modulecatalogue extends controller {
                         $ins->postinstall ($patchver);
                     }
 
-                    $this->setVar ( 'patchArray', $this->objPatch->checkModules () );
+                    if ($this->wantsUpdateJson()) {
+                        if (!$updateSucceeded) {
+                            $this->sendUpdateJson(array(
+                                'ok' => false,
+                                'code' => 'update_failed',
+                                'message' => $this->objLanguage->languageText('mod_modulecatalogue_update_failed', 'modulecatalogue'),
+                                'csrfToken' => $this->csrf()->issue(self::UPDATE_CSRF_CONTEXT),
+                            ), 500);
+                        }
+                        $this->sendUpdateJson(array(
+                            'ok' => true,
+                            'code' => 'update_applied',
+                            'module' => $modname,
+                            'oldVersion' => $this->output['old'],
+                            'currentVersion' => $this->output['current'],
+                            'message' => $this->objLanguage->languageText('mod_modulecatalogue_update_applied', 'modulecatalogue'),
+                            'remaining' => count($this->objPatch->checkModules()),
+                        ));
+                    }
+
+                    $this->preparePatchView();
                     return 'updates_tpl.php';
 
                 case 'patchall' :
+                    if (!$this->validUpdateRequest(self::UPDATE_ALL_CSRF_CONTEXT)) {
+                        return $this->updateFailureResponse(
+                            'invalid_request',
+                            $this->objLanguage->languageText('mod_modulecatalogue_update_invalid_request', 'modulecatalogue'),
+                            400,
+                            self::UPDATE_ALL_CSRF_CONTEXT
+                        );
+                    }
                     $mods = $this->objPatch->checkModules ();
                     $this->output = array ();
-                    $error = '';
-                    $success = true;
+                    $failedModules = array();
                     foreach ( $mods as $mod ) {
-                        $success = true;
-                        if (($this->output  = $this->objPatch->applyUpdates ( $mod ['module_id'] )) === FALSE) {
-                            $success = false;
-                            $error .= str_replace ( '[MODULE]', $mod ['module_id'], $this->objLanguage->languageText ( 'mod_modulecatalogue_failed', 'modulecatalogue' ) ) . "<br />";
+                        $result = $this->objPatch->applyUpdates($mod['module_id']);
+                        if ($result === false || !is_array($result) || !isset($result['current'])) {
+                            $failedModules[] = $mod['module_id'];
+                        } else {
+                            $this->output[] = $result;
                         }
                     }
-                    //var_dump($error);
-                    //var_dump($this->output);
-                    if (! $success) {
-                        $this->setVar ( 'error', $error );
+                    if ($failedModules) {
+                        $error = $this->objLanguage->languageText('mod_modulecatalogue_update_some_failed', 'modulecatalogue')
+                            . ': ' . implode(', ', $failedModules);
+                        $this->setVar('error', $error);
                     }
                     $this->setVar ( 'output', $this->output );
-                    $this->setVar ( 'patchArray', $this->objPatch->checkModules () );
+                    if ($this->wantsUpdateJson()) {
+                        $this->sendUpdateJson(array(
+                            'ok' => !$failedModules,
+                            'code' => $failedModules ? 'some_updates_failed' : 'all_updates_applied',
+                            'message' => $failedModules
+                                ? $this->objLanguage->languageText('mod_modulecatalogue_update_some_failed', 'modulecatalogue')
+                                : $this->objLanguage->languageText('mod_modulecatalogue_all_updates_applied', 'modulecatalogue'),
+                            'updated' => count($this->output),
+                            'failedModules' => $failedModules,
+                            'remaining' => count($this->objPatch->checkModules()),
+                            'updatedModules' => array_values(array_map(
+                                static fn($result) => (string) ($result['modname'] ?? ''),
+                                $this->output
+                            )),
+                            'csrfToken' => $failedModules
+                                ? $this->csrf()->issue(self::UPDATE_ALL_CSRF_CONTEXT)
+                                : '',
+                        ), $failedModules ? 500 : 200);
+                    }
+                    $this->preparePatchView();
                     return 'updates_tpl.php';
 
                 case 'makepatch' :
@@ -1119,6 +1189,84 @@ EOT;
             }
             exit ();
         }
+    }
+
+    private function preparePatchView($patches = null)
+    {
+        $patches = is_array($patches) ? $patches : $this->objPatch->checkModules();
+        $tokens = array();
+        foreach ($patches as $patch) {
+            if (!empty($patch['module_id'])) {
+                $tokens[(string) $patch['module_id']] = $this->csrf()->issue(self::UPDATE_CSRF_CONTEXT);
+            }
+        }
+        $this->setVar('patchArray', $patches);
+        $this->setVar('moduleUpdateCsrfTokens', $tokens);
+        $this->setVar('moduleUpdateAllCsrfToken', $this->csrf()->issue(self::UPDATE_ALL_CSRF_CONTEXT));
+    }
+
+    private function validUpdateRequest($context)
+    {
+        return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST'
+            && $this->csrf()->consume($context, (string) $this->getParam('csrf_token', ''));
+    }
+
+    private function pendingUpdateMatches($moduleId, $version)
+    {
+        $moduleId = is_scalar($moduleId) ? (string) $moduleId : '';
+        $version = is_scalar($version) ? (string) $version : '';
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{0,127}$/', $moduleId)) {
+            return false;
+        }
+        foreach ($this->objPatch->checkModules() as $pending) {
+            if ((string) ($pending['module_id'] ?? '') === $moduleId
+                && (string) ($pending['new_version'] ?? '') === $version) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function wantsUpdateJson()
+    {
+        return (string) $this->getParam('ajax', '') === '1'
+            || stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false;
+    }
+
+    private function updateFailureResponse($code, $message, $status, $context = self::UPDATE_CSRF_CONTEXT)
+    {
+        if ($this->wantsUpdateJson()) {
+            $this->sendUpdateJson(array(
+                'ok' => false,
+                'code' => $code,
+                'message' => $message,
+                'csrfToken' => $this->csrf()->issue($context),
+            ), $status);
+        }
+        $this->setVar('error', $message);
+        $this->preparePatchView();
+        return 'updates_tpl.php';
+    }
+
+    private function sendUpdateJson(array $payload, $status = 200)
+    {
+        if (!headers_sent()) {
+            http_response_code((int) $status);
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store, private');
+            header('X-Content-Type-Options: nosniff');
+        }
+        echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    private function csrf()
+    {
+        if ($this->csrf === null) {
+            $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $this->csrf = $nativeAuth['csrf'];
+        }
+        return $this->csrf;
     }
 
     /**
