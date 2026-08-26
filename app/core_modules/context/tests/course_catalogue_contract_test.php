@@ -45,14 +45,31 @@ $expect(
 $expect(
     strpos($renderer, "'mod_context_viewcourse'") !== false
       && strpos($renderer, "'mod_context_loginorjoinsite'") !== false
-      && strpos($renderer, "'mod_context_applyforcourse'") !== false,
-    'All three catalogue actions must be represented.'
+      && strpos($renderer, "'mod_context_buycourse'") !== false
+      && strpos($renderer, "'mod_context_choosemembership'") !== false,
+    'Catalogue actions must include direct course and membership purchase routes.'
 );
 $expect(
     strpos($renderer, "'type' => 'notice'") !== false
       && strpos($renderer, 'data-course-application-notice') !== false
       && strpos($renderer, 'window.alert') !== false,
-    'Private non-members must receive the translated application notice.'
+    'Manual admission and unavailable sales must receive an honest notice.'
+);
+$expect(
+    strpos($renderer, "getObject(\n                'paymentcatalogservice', 'payment-service'") !== false
+      && strpos($renderer, "'product' => (string) \$product['code']") !== false
+      && strpos($renderer, "number_format(((int) \$price['amount_minor']) / 100, 2)") !== false,
+    'A priced gated course must link directly to its server-owned checkout offer.'
+);
+$expect(
+    strpos($renderer, 'specific course entitlement') === false
+      && strpos($renderer, 'Purchasing is not yet available') !== false
+      && strpos($renderer, 'This course requires approval before you can join.') !== false,
+    'Learners must see a concrete next step rather than internal entitlement language.'
+);
+$expect(
+    strpos($renderer, "array('action' => 'showlogin'), 'security'") === false,
+    'Course acquisition must use the canonical site entrance, not legacy showlogin.'
 );
 $expect(
     strpos($renderer, "\$this->escape(\$action['url'])") === false

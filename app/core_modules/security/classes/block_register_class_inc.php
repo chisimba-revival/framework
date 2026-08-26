@@ -66,7 +66,8 @@ class block_register extends ChisimbaObject
             $this->objLanguage =  $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             $this->objConf = $this->getObject('altconfig', 'config');
-            if($this->objConf->getallowSelfRegister() == 'FALSE')
+            if($this->objConf->getallowSelfRegister() == 'FALSE'
+                || $this->objUser->isLoggedIn())
             {
                 $this->blockType="invisible";
             }
@@ -84,6 +85,12 @@ class block_register extends ChisimbaObject
     public function show()
     {
         try {
+            // This is an acquisition block, not account navigation.  Keeping
+            // it visible after authentication tells an existing account
+            // holder to register again and creates a broken learner journey.
+            if ($this->objUser->isLoggedIn()) {
+                return '';
+            }
             $label = $this->objLanguage->languageText(
                 'word_register', 'system', 'Create an account'
             );

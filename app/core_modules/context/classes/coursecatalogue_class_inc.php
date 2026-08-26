@@ -200,6 +200,9 @@ class coursecatalogue extends ChisimbaObject
               . $action['url'] . '">'
               . $this->escape($action['label']) . '</a>';
         }
+        $actionHint = empty($action['hint']) ? ''
+            : '<p class="course-card__access-detail">'
+              . $this->escape($action['hint']) . '</p>';
 
         $media = '<div class="course-card__placeholder" aria-hidden="true">'
           . '<span></span></div>';
@@ -239,7 +242,7 @@ class coursecatalogue extends ChisimbaObject
           ) . '</span>' . $formatBadge . '</div></div>'
           . '<div class="course-card__body"><h3 class="course-card__title">'
           . $this->escape($title) . '</h3>' . $summaryHtml . $lecturerHtml
-          . '<div class="course-card__footer">' . $actionHtml
+          . '<div class="course-card__footer">' . $actionHint . $actionHtml
           . '</div></div></article>';
     }
 
@@ -264,7 +267,9 @@ class coursecatalogue extends ChisimbaObject
             if ($mappedPolicy !== 'public' && !$isLoggedIn) {
                 return array(
                     'label' => $this->text('mod_context_loginorjoinsite', 'Log in or join site'),
-                    'url' => $this->uri(array('action' => 'showlogin'), 'security'),
+                    'url' => rtrim((string) $this->getObject(
+                        'altconfig', 'config'
+                    )->getItem('KEWL_SITE_ROOT'), '/') . '/',
                 );
             }
             // Public catalogue actions are intrinsic and must not bootstrap
@@ -284,11 +289,7 @@ class coursecatalogue extends ChisimbaObject
                 }
             }
             if (!$allowed) {
-                return array(
-                    'type' => 'notice',
-                    'label' => $this->text('mod_context_courseaccessrequired', 'Access required'),
-                    'message' => $this->text('mod_context_courseaccessrequirement', 'This course requires the indicated membership or a specific course entitlement.'),
-                );
+                return $this->purchaseOrAdmissionAction($context, $mappedPolicy);
             }
             return array(
                 'label' => $this->text('mod_context_viewcourse', 'View course'),
@@ -316,7 +317,9 @@ class coursecatalogue extends ChisimbaObject
                     'mod_context_loginorjoinsite',
                     'Log in or join site'
                 ),
-                'url' => $this->uri(array('action' => 'showlogin'), 'security'),
+                'url' => rtrim((string) $this->getObject(
+                    'altconfig', 'config'
+                )->getItem('KEWL_SITE_ROOT'), '/') . '/',
             );
         }
 
@@ -329,6 +332,91 @@ class coursecatalogue extends ChisimbaObject
                 array('action' => 'joincontext', 'contextcode' => $code),
                 'context'
             ),
+        );
+    }
+
+    /**
+     * Present a denied policy as a human-readable next step.
+     *
+     * Payment products are optional infrastructure.  A missing or unpriced
+     * product produces an honest unavailable state rather than exposing the
+     * internal entitlement vocabulary to a learner.
+     */
+    private function purchaseOrAdmissionAction(array $context, $policy)
+    {
+        $code = (string) $context['contextcode'];
+        if ($policy === 'private'
+            && (string) ($context['private_admission_mode'] ?? '')
+                !== 'automatic_payment') {
+            return array(
+                'type' => 'notice',
+                'label' => $this->text(
+                    'mod_context_admissionrequired', 'Admission required'
+                ),
+                'hint' => $this->text(
+                    'mod_context_manualadmissionhint',
+                    'This course requires approval before you can join.'
+                ),
+                'message' => $this->text(
+                    'mod_context_manualadmissionmessage',
+                    'This course has a manual admission process. Contact the course provider to apply.'
+                ),
+            );
+        }
+
+        $product = null;
+        try {
+            $catalog = $this->getObject(
+                'paymentcatalogservice', 'payment-service'
+            );
+            if ($policy === 'private') {
+                $product = $catalog->privateCourseProduct($code);
+            } else {
+                foreach ($catalog->listProducts(true) as $candidate) {
+                    if (($candidate['purpose_type'] ?? '') === 'membership'
+                        && ($candidate['purpose_id'] ?? '') === $policy
+                        && is_array($candidate['current_price'] ?? null)) {
+                        $product = $candidate;
+                        break;
+                    }
+                }
+            }
+        } catch (Throwable $failure) {
+            $product = null;
+        }
+
+        $requirement = $policy === 'tier_2' ? 'Tier 2 membership'
+            : ($policy === 'tier_1' ? 'Tier 1 membership' : 'Course purchase');
+        if (!is_array($product) || !is_array($product['current_price'] ?? null)) {
+            return array(
+                'type' => 'notice',
+                'label' => $this->text(
+                    'mod_context_purchasenotconfigured',
+                    'Purchasing is not yet available'
+                ),
+                'hint' => $requirement . ' is required.',
+                'message' => $this->text(
+                    'mod_context_contactforaccess',
+                    'Online purchasing has not yet been configured for this course. Contact the course provider for access.'
+                ),
+            );
+        }
+
+        $price = $product['current_price'];
+        $amount = (string) $price['currency'] . ' '
+            . number_format(((int) $price['amount_minor']) / 100, 2);
+        $period = (string) ($product['billing_period'] ?? 'one_off');
+        $suffix = $period === 'monthly' ? ' per month'
+            : ($period === 'annual' ? ' per year' : '');
+        return array(
+            'label' => $policy === 'private'
+                ? $this->text('mod_context_buycourse', 'Buy course')
+                : $this->text('mod_context_choosemembership', 'Choose membership'),
+            'hint' => $requirement . ': ' . $amount . $suffix,
+            'url' => $this->uri(array(
+                'action' => 'catalogue',
+                'product' => (string) $product['code'],
+            ), 'payment-service'),
         );
     }
 
