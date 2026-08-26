@@ -81,42 +81,89 @@ class menu extends ChisimbaObject
         if(!empty($rows)){
             // Check user permissions and get a nested array of categories and modules
             $rows = $this->isVisible($rows);
+            return $this->journeyMenus($rows);
+        }
 
-            // Menu categories describe tasks, but legacy declarations did not
-            // consistently describe their audience. Keep management surfaces
-            // out of learner navigation without changing direct module access:
-            // students still reach assigned assessments through their journey.
-            foreach (array_keys($rows) as $categoryName) {
-                $category = strtolower(trim((string) $categoryName));
-                if ($category === 'admin'
-                    && !$this->securityContext->isSiteAdministrator()) {
-                    unset($rows[$categoryName]);
+        // My Learning is intentionally a journey destination rather than a
+        // legacy module-menu declaration, so it can still form a useful menu.
+        return $this->journeyMenus(array());
+    }
+
+    /**
+     * Turn legacy module categories into a small, stable launch navigation.
+     *
+     * Direct module permissions remain authoritative. This method only decides
+     * where an already-visible destination belongs and suppresses empty menus.
+     */
+    private function journeyMenus($legacyMenus)
+    {
+        $journeys = array(
+            'learning' => array(),
+            'teaching' => array(),
+            'administration' => array(),
+            'information' => array(),
+        );
+        $moduleJourney = array(
+            'calendar' => 'learning',
+            'contextadmin' => 'teaching',
+            'contextcontent' => 'teaching',
+            'filemanager' => 'teaching',
+            'assignment' => 'teaching',
+            'essay' => 'teaching',
+            'essayadmin' => 'teaching',
+            'gradebook' => 'teaching',
+            'mcqtests' => 'teaching',
+            'offlineassessment' => 'teaching',
+            'pbl' => 'teaching',
+            'pbladmin' => 'teaching',
+            'practicals' => 'teaching',
+            'rubric' => 'teaching',
+            'tutorials' => 'teaching',
+            'worksheet' => 'teaching',
+            'worksheetadmin' => 'teaching',
+            'toolbar' => 'administration',
+            'about' => 'information',
+            'announcements' => 'information',
+            'blog' => 'information',
+            'faq' => 'information',
+            'help' => 'information',
+            'simpleblog' => 'information',
+        );
+        $mayTeach = $this->securityContext->isSiteAdministrator()
+            || $this->securityContext->isCurrentContextLecturer();
+        $isAdmin = $this->securityContext->isSiteAdministrator();
+
+        if (($isAdmin || $this->securityContext->hasStudentLearning())
+            && $this->objModule->checkIfRegistered('mylearning')) {
+            $journeys['learning'][] = 'mylearning';
+        }
+
+        foreach ((array) $legacyMenus as $modules) {
+            foreach ((array) $modules as $module) {
+                $module = strtolower(trim((string) $module));
+                if (!isset($moduleJourney[$module])) {
                     continue;
                 }
-                if ($category === 'assessment'
-                    && !$this->securityContext->isSiteAdministrator()
-                    && !$this->securityContext->isCurrentContextLecturer()) {
-                    unset($rows[$categoryName]);
+                $journey = $moduleJourney[$module];
+                if ($journey === 'teaching' && !$mayTeach) {
+                    continue;
+                }
+                if ($journey === 'administration' && !$isAdmin) {
+                    continue;
+                }
+                if (!in_array($module, $journeys[$journey], true)) {
+                    $journeys[$journey][] = $module;
                 }
             }
-
-            // put admin and about menus at the end
-            $admin = array(); $about = array();
-            foreach($rows as $key=>$item){
-                if(strtolower($key) == 'about')
-                    $about = array_shift($rows);
-                if(strtolower($key) == 'admin')
-                    $admin = array_shift($rows);
-            }
-            if(!empty($admin)){
-                $rows['Admin'] = $admin;
-            }
-            if(!empty($about)){
-                $rows['About'] = $about;
-            }
-            return $rows;
         }
-        return FALSE;
+
+        $result = array();
+        foreach ($journeys as $journey => $modules) {
+            if ($modules !== array()) {
+                $result[ucwords($journey)] = $modules;
+            }
+        }
+        return $result;
     }
 
     /**

@@ -18,6 +18,7 @@ class toolbarsecuritycontext extends ChisimbaObject
     private $user;
     private $permissions;
     private $context;
+    private $userContext;
 
     public function init()
     {
@@ -32,6 +33,7 @@ class toolbarsecuritycontext extends ChisimbaObject
             'security'
         );
         $this->context = $this->getObject('dbcontext', 'context');
+        $this->userContext = $this->getObject('usercontext', 'context');
     }
 
     public function isAuthenticated()
@@ -76,6 +78,14 @@ class toolbarsecuritycontext extends ChisimbaObject
             && $contextCode !== null
             && $contextCode !== ''
             && $this->user->isContextLecturer($userId, $contextCode);
+    }
+
+    /** Whether the account has a learner journey in at least one course. */
+    public function hasStudentLearning()
+    {
+        $userId = $this->userId();
+        return $userId !== null
+            && count((array) $this->userContext->getContextWhereStudent($userId)) > 0;
     }
 
     /**
