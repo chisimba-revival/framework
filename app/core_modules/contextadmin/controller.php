@@ -659,6 +659,9 @@ class contextadmin extends controller {
             $this->getParam('private_admission_mode', ''),
             true
         );
+        if ($accessPolicy !== 'private') {
+            $privateAdmissionMode = null;
+        }
         $goals = $this->getParam('goals');
         $mode = $this->getParam('mode');
         $emailalert = $this->getParam('emailalertopt');

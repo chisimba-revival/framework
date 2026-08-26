@@ -27,6 +27,9 @@ class coursecreationservice extends ChisimbaObject
             $request['privateAdmissionMode'] ?? null,
             true
         );
+        if ($accessPolicy !== 'private') {
+            $privateAdmissionMode = null;
+        }
         $showComment = (string) ($request['showComment'] ?? '0');
         $alerts = (string) ($request['alerts'] ?? '0');
         $design = $this->context->validateLearningDesign(

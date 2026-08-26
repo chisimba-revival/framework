@@ -609,6 +609,9 @@ class context extends controller {
             $this->getParam('private_admission_mode', ''),
             TRUE
         );
+        if ($accessPolicy !== 'private') {
+            $privateAdmissionMode = NULL;
+        }
         $about = $this->getParam('about');
         $image = $this->getParam('imageselect');
 

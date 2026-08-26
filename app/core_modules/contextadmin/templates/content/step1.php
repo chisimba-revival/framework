@@ -207,8 +207,8 @@ if ($mode == 'add' && is_array($fixup)) {
 $canvasLabel = new label($this->objLanguage->languageText('mod_contextadmin_theme', 'contextadmin', 'Theme'), 'input_canvas');
 
 
-$status = new dropdown('status');
-//$status->setBreakSpace('<br />');
+$status = new radio('status');
+$status->setBreakSpace(' ');
 $status->addOption('Published', $this->objLanguage->languageText('word_published', 'system', 'Published'));
 $status->addOption('Unpublished', $this->objLanguage->languageText('word_unpublished', 'system', 'Unpublished'));
 
@@ -232,7 +232,7 @@ $accessPolicy->addOption('public', '<strong>Public</strong> - <span class="capti
 $accessPolicy->addOption('free', '<strong>Free</strong> - <span class="caption">Any signed-in user may enter.</span>');
 $accessPolicy->addOption('tier_1', '<strong>Tier 1</strong> - <span class="caption">Members with Tier 1 or Tier 2 may enter.</span>');
 $accessPolicy->addOption('tier_2', '<strong>Tier 2</strong> - <span class="caption">Only Tier 2 members may enter.</span>');
-$accessPolicy->addOption('private', '<strong>Private</strong> - <span class="caption">An explicit entitlement to this course is required.</span>');
+$accessPolicy->addOption('private', '<strong>Paid separately</strong>');
 $legacyPolicyMap = array('public'=>'public', 'open'=>'free', 'private'=>'private');
 $selectedAccessPolicy = $legacyPolicyMap[strtolower($legacyAccess)] ?? 'private';
 if ($mode == 'add' && is_array($fixup) && isset($fixup['access_policy'])) {
@@ -380,13 +380,15 @@ $table->endRow();
 
 $table->startRow();
 $table->addCell($this->objLanguage->languageText('word_access', 'system', 'Access'));
-$table->addCell($accessPolicy->show() . $access->show() . '<span class="contextadmin-field-help">This controls entry only. Existing course membership and roles continue to control content, assessments and gradebook permissions. Legacy Public, Open and Private courses are shown as Public, Free and Private respectively.</span>');
+$table->addCell($accessPolicy->show() . $access->show());
 $table->endRow();
 
 $table->startRow();
-$table->addCell('Private-course admission');
-$table->addCell($privateAdmissionMode->show() . '<span class="contextadmin-field-help">Used only when Access is Private. Existing courses remain unchanged until this setting is saved.</span>');
+$table->addCell('Admission policy');
+$table->addCell('<div id="context_private_admission">' . $privateAdmissionMode->show() . '</div>');
 $table->endRow();
+
+$this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}jQuery("input[name=access_policy]").on("change",admissionPolicy);admissionPolicy();});</script>');
 
 $button = new button('savecontext', $this->objLanguage->languageText('mod_contextadmin_gotonextstep', 'contextadmin', 'Go to Next Step'));
 $button->cssId = 'savebutton';

@@ -110,7 +110,7 @@ class contextforms extends ChisimbaObject {
         $accessPolicy->addOption('free', '<strong>Free</strong> - <span class="caption">Any signed-in user may enter.</span>');
         $accessPolicy->addOption('tier_1', '<strong>Tier 1</strong> - <span class="caption">Tier 1 and Tier 2 members may enter.</span>');
         $accessPolicy->addOption('tier_2', '<strong>Tier 2</strong> - <span class="caption">Only Tier 2 members may enter.</span>');
-        $accessPolicy->addOption('private', '<strong>Private</strong> - <span class="caption">An explicit course entitlement is required.</span>');
+        $accessPolicy->addOption('private', '<strong>Paid separately</strong>');
         $legacyPolicyMap = array('public'=>'public', 'open'=>'free', 'private'=>'private');
         $selectedPolicy = $context != NULL && isset($context['access_policy'])
             && trim((string) $context['access_policy']) !== ''
@@ -131,8 +131,8 @@ class contextforms extends ChisimbaObject {
 
         $titleLabel = new label ($this->objLanguage->languageText('word_title', 'system', 'Title'), 'input_title');
 
-        $status = new dropdown ('status');
-        //$status->setBreakSpace('<br />');
+        $status = new radio('status');
+        $status->setBreakSpace(' ');
         $status->addOption('Published', $this->objLanguage->languageText('word_published', 'system', 'Published'));
         $status->addOption('Unpublished', $this->objLanguage->languageText('word_unpublished', 'system', 'Unpublished'));
 
@@ -175,17 +175,17 @@ class contextforms extends ChisimbaObject {
 
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('word_access', 'system', 'Access').':');
-        $table->addCell($accessPolicy->show() . $access->show() . '<span class="caption">Entry only; existing course membership and roles still govern permissions after admission. Legacy Open courses appear as Free.</span>');
+        $table->addCell($accessPolicy->show() . $access->show());
         $table->endRow();
 
         $table->startRow();
-        $table->addCell('Private-course admission:');
-        $table->addCell($privateAdmissionMode->show() . '<span class="caption">Used only when Access is Private. Existing courses remain unchanged until this is saved.</span>');
+        $table->addCell('Admission policy');
+        $table->addCell('<div id="context_private_admission">' . $privateAdmissionMode->show() . '</div>');
         $table->endRow();
 
 
         $alerts=explode("|", $context['alerts']);
-        $emailAlert = new checkbox('emailalertopt',$this->objLanguage->languageText('mod_contextadmin_emailalert', 'contextadmin', 'Email alerts'),$alerts[0] == 'e' || $alerts[0] == '1');  // this will checked
+        $emailAlert = new checkbox('emailalertopt',$this->objLanguage->languageText('mod_context_emailstudentscontent', 'context', 'Email students when course content is added or updated'),$alerts[0] == 'e' || $alerts[0] == '1');
 
         //$alerts=array();
 
@@ -199,7 +199,7 @@ class contextforms extends ChisimbaObject {
         //    $emailAlert->setChecked($emailchecked);
         //}
         $table->startRow();
-        $table->addCell($this->objLanguage->languageText('mod_contextadmin_emailalert', 'contextadmin', 'Alerts'));
+        $table->addCell($this->objLanguage->languageText('mod_context_emailalerts', 'context', 'Email alerts'));
         $table->addCell($emailAlert->show());
         $table->endRow();
 
@@ -216,7 +216,9 @@ class contextforms extends ChisimbaObject {
             }
         }
 
+        $table->cssClass = 'contextadmin-course-form';
         $table2 = $this->newObject('htmltable', 'htmlelements');
+        $table2->cssClass = 'context-settings-layout';
         $table2->startRow();
         $table2->addCell($table->show(), 600, NULL, NULL, NULL, 'colspan="2"');
         $table2->addCell($objSelectImage->show());
@@ -264,7 +266,7 @@ class contextforms extends ChisimbaObject {
 
         $form = new form ('createcontext', $this->uri(array('action'=>$this->formAction), $this->formModule));
 
-        $form->addToForm($table2->show());
+        $form->addToForm('<div class="contextadmin-course-form-wrap context-settings-form">' . $table2->show() . '</div>');
 
         if ($this->objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'true') {
             $form->addToForm($access->show());
@@ -277,6 +279,7 @@ class contextforms extends ChisimbaObject {
 
         $form->addRule('title', $this->objLanguage->code2Txt('mod_context_entertitleofcontext', 'context', NULL, 'Please enter the title of your [-context-]'),'required');
 
+        $this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}jQuery("input[name=access_policy]").on("change",admissionPolicy);admissionPolicy();});</script>');
         $str .= $form->show();
 
         return $str;
