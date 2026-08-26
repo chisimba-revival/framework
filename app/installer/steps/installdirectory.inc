@@ -341,47 +341,12 @@ class InstallDirectoryAction extends StepAction
 
         $success = true;
 
-        //make sure we can write to web root
-        if (is_dir ( $sys_root )) {
-
-            //echo $check_dir.'tmpinstallfile';
-            //die;
-
-
-            // Use str_replace to get rid of the //'s
-            $fp = @fopen ( str_replace ( '//', '/', $check_dir . '/tmpinstallfile' ), "w" );
-
-            if ($fp == false) {
-
-                $this->errors [] = 'Could not open ' . $check_dir . ' for writing. Please consult the help guides for your operating system to make this directory writeable. On GNU/Linux systems, this is normally achieved by: chmod -R 0755 ' . $sys_root . ' and ensuring that the directory is owned by the webserver user (usually apache or www-data)';
-
-                // only output what commands to perform for the first instance
-
-
-                // of a failed directory check
-
-
-                if ($check_dir == 'modules') {
-                    //chmod($check_dir, 0755);
-
-
-                    $this->errors [] = 'Please change permissions on the ' . $check_dir . ' directory and all files below it ' .
-
-                    'to have write access by the webserver by executing the following ';
-
-                    $this->errors [] = '<p><i>chmod 755 ' . $check_dir;
-
-                    $this->errors [] = 'find ' . $check_dir . ' -type d | xargs chmod 755';
-
-                    $this->errors [] = 'find ' . $check_dir . ' -type f | xargs chmod 600</i></p>';
-
-                }
-
-                $success = false;
-
-                return $success;
-            }
-        } else {
+        // Application source may be deliberately mounted read-only. The
+        // installer writes configuration and user data only to the persistent
+        // directories checked below, so requiring write access to the whole
+        // web root would weaken a production deployment without proving that
+        // installation can succeed.
+        if (!is_dir($sys_root)) {
 
             $success = false;
             return $success;
@@ -450,7 +415,7 @@ class InstallDirectoryAction extends StepAction
                 //create the dir anyway
 
 
-                mkdir ( $check_dir );
+                mkdir ( $check_dir, 0755, true );
 
                 chmod ( $check_dir, 0755 );
                 
