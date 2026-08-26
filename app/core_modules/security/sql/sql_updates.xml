@@ -133,4 +133,19 @@
             </change>
         </data>
     </update -->
+    <update>
+        <table>tbl_users</table>
+        <version>3.098</version>
+        <description>Allow canonical mobile numbers to use the complete E.164 international length.</description>
+        <data>
+            <change>
+                <cellnumber>
+                    <definition>
+                        <type>text</type>
+                        <length>16</length>
+                    </definition>
+                </cellnumber>
+            </change>
+        </data>
+    </update>
 </updates>

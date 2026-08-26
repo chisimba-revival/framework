@@ -72,7 +72,7 @@ $fields = array(
         ),
     'cellnumber' => array(
         'type' => 'text',
-        'length' => 13
+        'length' => 16
         ),
     'accesslevel' => array(
         'type' => 'text',
