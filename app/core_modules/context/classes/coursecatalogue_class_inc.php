@@ -351,7 +351,7 @@ class coursecatalogue extends ChisimbaObject
             return array(
                 'type' => 'notice',
                 'label' => $this->text(
-                    'mod_context_admissionrequired', 'Admission required'
+                    'mod_context_applyforadmission', 'Apply for admission'
                 ),
                 'hint' => $this->text(
                     'mod_context_manualadmissionhint',
@@ -403,16 +403,21 @@ class coursecatalogue extends ChisimbaObject
         }
 
         $price = $product['current_price'];
-        $amount = (string) $price['currency'] . ' '
-            . number_format(((int) $price['amount_minor']) / 100, 2);
+        $numericAmount = ((int) $price['amount_minor']) / 100;
+        $amount = strtoupper((string) $price['currency']) === 'ZAR'
+            ? 'R' . number_format($numericAmount, 2)
+            : (string) $price['currency'] . ' ' . number_format($numericAmount, 2);
         $period = (string) ($product['billing_period'] ?? 'one_off');
         $suffix = $period === 'monthly' ? ' per month'
             : ($period === 'annual' ? ' per year' : '');
         return array(
             'label' => $policy === 'private'
-                ? $this->text('mod_context_buycourse', 'Buy course')
-                : $this->text('mod_context_choosemembership', 'Choose membership'),
-            'hint' => $requirement . ': ' . $amount . $suffix,
+                ? $this->text('mod_context_buy', 'Buy') . ' — ' . $amount
+                : $this->text('mod_context_join', 'Join') . ' — '
+                  . ($policy === 'tier_2' ? 'Tier 2' : 'Tier 1'),
+            'hint' => $policy === 'private'
+                ? $this->text('mod_context_onetimepayment', 'One-time payment')
+                : $amount . $suffix,
             'url' => $this->uri(array(
                 'action' => 'catalogue',
                 'product' => (string) $product['code'],

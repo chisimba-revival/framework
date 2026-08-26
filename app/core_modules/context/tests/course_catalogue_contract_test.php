@@ -45,8 +45,8 @@ $expect(
 $expect(
     strpos($renderer, "'mod_context_viewcourse'") !== false
       && strpos($renderer, "'mod_context_loginorjoinsite'") !== false
-      && strpos($renderer, "'mod_context_buycourse'") !== false
-      && strpos($renderer, "'mod_context_choosemembership'") !== false,
+      && strpos($renderer, "'mod_context_buy'") !== false
+      && strpos($renderer, "'mod_context_join'") !== false,
     'Catalogue actions must include direct course and membership purchase routes.'
 );
 $expect(
@@ -58,7 +58,7 @@ $expect(
 $expect(
     strpos($renderer, "getObject(\n                'paymentcatalogservice', 'payment-service'") !== false
       && strpos($renderer, "'product' => (string) \$product['code']") !== false
-      && strpos($renderer, "number_format(((int) \$price['amount_minor']) / 100, 2)") !== false,
+      && strpos($renderer, "? 'R' . number_format(\$numericAmount, 2)") !== false,
     'A priced gated course must link directly to its server-owned checkout offer.'
 );
 $expect(
