@@ -806,21 +806,41 @@ class modulecatalogue extends controller {
      * @param array $modArray
      */
     private function batchRegister($modArray) {
+        $bufferLevel = ob_get_level();
+        ob_start();
+
         try {
+            $success = TRUE;
             foreach ( $modArray as $line ) {
                 if ($line != 'on') {
                     if (! $this->smartRegister ( $line )) {
-                        //$this->output = str_replace('[MODULE]',$line,$this->objLanguage->languageText('mod_modulecatalogue_failed','modulecatalogue'));
-                        return FALSE;
+                        $success = FALSE;
+                        break;
                     }
                 }
             }
-            return TRUE;
+
+            $unexpectedOutput = ob_get_clean();
+            if (trim((string) $unexpectedOutput) !== '') {
+                error_log(
+                    'Module Catalogue batch registration diagnostics: '
+                    . trim(strip_tags((string) $unexpectedOutput))
+                );
+            }
+
+            return $success;
         } catch ( Throwable $e ) {
+            $unexpectedOutput = '';
+            while (ob_get_level() > $bufferLevel) {
+                $unexpectedOutput .= (string) ob_get_clean();
+            }
             /* CHISIMBA_MODULECATALOGUE_BATCH_RETURN_BOUNDARY */
             error_log(
                 'Module Catalogue batch registration failed: '
                 . $e->getMessage()
+                . ($unexpectedOutput !== ''
+                    ? '; diagnostics: ' . trim(strip_tags($unexpectedOutput))
+                    : '')
             );
             $moduleName = isset($line) ? (string) $line : '';
             if (! $this->output) {
