@@ -1,0 +1,18 @@
+{
+    "name": "chisimba-classic",
+    "displayName": "Chisimba Classic",
+    "description": "The historic Chisimba earth, ochre and charcoal palette on the shared modern skin.",
+    "brand": {
+        "primary": "#5a3f1e",
+        "accent": "#be792f"
+    },
+    "author": {
+        "authorname": "Chisimba Revival"
+    },
+    "preview": {
+        "logo": "../../images/chisimba-logo.png",
+        "thumb": "../../default.png",
+        "fullview": "../../default.png"
+    },
+    "downloadfrom": "_NULL"
+}

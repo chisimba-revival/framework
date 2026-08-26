@@ -8,6 +8,7 @@ Its named canvases provide identity and deliberately small presentation
 overrides:
 
 - `chisimba` is the standard Chisimba identity.
+- `chisimba-classic` restores the historic earth, ochre and charcoal palette.
 - `kenga-learn` supplies KengaLearn colours and its logo.
 - `_default` remains the safe compatibility fallback.
 

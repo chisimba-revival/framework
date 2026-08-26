@@ -1,0 +1,24 @@
+/**
+ * Chisimba Classic canvas.
+ *
+ * The colours are the historic Chisimba palette recorded by the former
+ * chisimba.com canvas. Structure, components and interaction behaviour remain
+ * owned by the Chisimba Reborn skin.
+ */
+:root {
+    --chisimba-primary: #5a3f1e;
+    --chisimba-primary-hover: #be792f;
+    --chisimba-primary-dark: #4c4d4f;
+    --chisimba-primary-soft: color-mix(in srgb, #be792f 14%, white);
+    --chisimba-focus: #be792f;
+    --chisimba-grey-blue: #4c4d4f;
+    --chisimba-info: #5a3f1e;
+}
+
+.chisimba-learning-journey--polished {
+    --journey-primary: #5a3f1e;
+    --journey-accent: #be792f;
+    --journey-soft: #f6f1ed;
+    --journey-text: #30271e;
+    --journey-shadow: rgba(76, 77, 79, 0.12);
+}

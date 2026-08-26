@@ -8,6 +8,9 @@ $skin = file_get_contents($app . '/skins/chisimba-reborn/stylesheet.css');
 $chisimba = json_decode(file_get_contents(
     $app . '/skins/chisimba-reborn/canvases/chisimba/canvas.json'
 ), true);
+$classic = json_decode(file_get_contents(
+    $app . '/skins/chisimba-reborn/canvases/chisimba-classic/canvas.json'
+), true);
 $kenga = json_decode(file_get_contents(
     $app . '/skins/chisimba-reborn/canvases/kenga-learn/canvas.json'
 ), true);
@@ -25,8 +28,10 @@ $checks = array(
         && str_contains($controller, "preg_match('/^[a-z0-9][a-z0-9-]*$/', \$canvas)"),
     'skin owns card presentation' => str_contains($skin, '.chisimba-canvas-grid')
         && str_contains($skin, '.chisimba-canvas-card__preview'),
-    'both canvases have brand previews' => isset($chisimba['brand']['primary'])
+    'all canvases have brand previews' => isset($chisimba['brand']['primary'])
         && isset($chisimba['preview']['logo'])
+        && isset($classic['brand']['primary'])
+        && isset($classic['preview']['logo'])
         && isset($kenga['brand']['primary'])
         && isset($kenga['preview']['logo']),
 );
