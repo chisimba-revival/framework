@@ -79,7 +79,10 @@ if ($showOtherStuff) {
     $sysAdminEmail->link = $this->objConfig->getsiteEmail();
     $middleContent .= ' (' . $sysAdminEmail->show() . '). </p>';
     // Other links
-    $newPasswordLink = new link($this->uri(array('action' => 'needpassword')));
+    $newPasswordLink = new link($this->uri(
+        array('action' => 'forgotpassword'),
+        'registration-service'
+    ));
     $newPasswordLink->link = $this->objLanguage->languageText('mod_security_requestnewpassword', 'security');
     $registerModule = $this->objDbSysconfig->getValue('REGISTRATION_MODULE', 'security');
     $registerModule = !empty($registerModule) ? $registerModule : 'userregistration';

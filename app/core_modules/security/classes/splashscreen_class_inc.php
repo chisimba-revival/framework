@@ -87,7 +87,7 @@ class splashscreen extends ChisimbaObject
         $registerLink="<a href='".$this->uri(array('action'=>'register'),'useradmin')."'>".
         $this->objLanguage->languageText('word_register')."</a>\n";
         // the link for resetting passwords
-        $resetLink="<a href='".$this->uri(array('action'=>'needpassword'),'useradmin')."'>".
+        $resetLink="<a href='".$this->uri(array('action'=>'forgotpassword'),'registration-service')."'>".
         $this->objLanguage->languageText('mod_security_forgotpassword')."</a>\n";
         //the variable to hold the username textbox
         $userNameBox=$this->objLanguage->languageText("word_username")

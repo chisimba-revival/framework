@@ -222,12 +222,16 @@ class loginInterface extends ChisimbaObject {
                     . "<div class='loginbuttonwrap'>"
                     . $loginButton . '</div>');
 
-            $notice = $this->objLanguage->languageText('mod_security_forgotpassword');
-            $helpText = strtoupper($this->objLanguage->languageText('mod_security_helpmelogin', 'security', 'Yes, please help me to login'));
-            $resetLink = new Link($this->uri(array('action' => 'needpassword'), 'security'));
-            $resetLink->link = $helpText;
-            // the help link
-            $p = '<br />' . $notice . '<br/>' . $resetLink->show() . '<br />';
+            $resetLink = new Link($this->uri(
+                array('action' => 'forgotpassword'),
+                'registration-service'
+            ));
+            $resetLink->link = $this->objLanguage->languageText(
+                'mod_security_forgotpassword',
+                'security',
+                'Forgot your password?'
+            );
+            $p = '<br />' . $resetLink->show() . '<br />';
             $objFields->addContent($p);
             $objForm->addToForm($objFields->show());
 

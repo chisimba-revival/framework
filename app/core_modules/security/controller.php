@@ -53,6 +53,12 @@ class security extends controller
                 return $this->nativeLanding();
             case 'logout':
                 return $this->nativeLogout();
+            case 'needpassword':
+                return $this->nextAction(
+                    'forgotpassword',
+                    array(),
+                    'registration-service'
+                );
             case 'showlogin':
             default:
                 return $this->nativeLoginPage();

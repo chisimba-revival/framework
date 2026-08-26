@@ -129,16 +129,15 @@ class block_elearnlogin extends ChisimbaObject
 
         if ($this->objSysConfig->getValue('elearnlogin_forgotpassword', 'security', 'true') === 'true') {
 
-            // JOC [[ Forgot your password OK
-            $header = new htmlheading();
-            $header->type = 5;
-            $header->str = $this->objLanguage->languageText('mod_security_forgotyourpassword', 'security', 'Forgot your password').'?';
-
-            $str .= $header->show();
-
-            // JOC [[ Yes, help me login OK
-            $link = new link($this->uri(array('action'=>'needpassword')), 'security');
-            $link->link = $this->objLanguage->languageText('mod_security_helpmelogin', 'security', 'Yes, help me login');
+            $link = new link($this->uri(
+                array('action' => 'forgotpassword'),
+                'registration-service'
+            ));
+            $link->link = $this->objLanguage->languageText(
+                'mod_security_forgotpassword',
+                'security',
+                'Forgot your password?'
+            );
 
             $str .= '<p>'.$link->show().'</p>';
         }
