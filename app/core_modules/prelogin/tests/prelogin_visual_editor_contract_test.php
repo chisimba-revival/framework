@@ -41,6 +41,10 @@ $checks = array(
     'all placed blocks receive a shared flow wrapper' =>
         str_contains($template, 'prelogin-placed-block')
         && str_contains($template, '$renderPlacedBlock($block, $side)'),
+    'hidden acquisition blocks leave no empty public shell' =>
+        str_contains($template, "trim((string) \$rendered) === ''")
+        && str_contains($template, 'if (!$editing')
+        && str_contains($template, 'continue;'),
     'content blocks are available in the catalogue' =>
         str_contains($controller, 'getBlocksArr($contentType)')
         && str_contains($controller, "'moduleid' => 'contentblocks'"),

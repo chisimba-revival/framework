@@ -84,8 +84,14 @@ $renderColumn = function ($side) use ($editing, $renderPlacedBlock) {
         if (!$editing && $block['visible'] != $this->TRUE) {
             continue;
         }
+        $rendered = $renderPlacedBlock($block, $side);
+        // Acquisition blocks deliberately become empty after login. Do not
+        // retain an empty placement shell or its layout spacing for them.
+        if (!$editing && trim((string) $rendered) === '') {
+            continue;
+        }
         $output .= '<div class="prelogin-placed-block">'
-            . $renderPlacedBlock($block, $side) . '</div>';
+            . $rendered . '</div>';
     }
     return $output;
 };
