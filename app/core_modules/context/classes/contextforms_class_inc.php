@@ -140,6 +140,64 @@ class contextforms extends ChisimbaObject {
             $status->setSelected($context['status']);
         }
 
+        $deliveryFormat = new dropdown('delivery_format');
+        $deliveryFormat->addOption(
+            'standard',
+            $this->objLanguage->languageText(
+                'mod_context_formatstandard',
+                'context',
+                'Standard course'
+            )
+        );
+        $deliveryFormat->addOption(
+            'microlearning',
+            $this->objLanguage->languageText(
+                'mod_context_formatmicrolearning',
+                'context',
+                'Microlearning course'
+            )
+        );
+        $deliveryFormat->addOption(
+            'masterclass',
+            $this->objLanguage->languageText(
+                'mod_context_formatmasterclass',
+                'context',
+                'Masterclass'
+            )
+        );
+        $selectedFormat = !empty($context['delivery_format'])
+            ? strtolower(trim((string) $context['delivery_format']))
+            : 'standard';
+        if (!in_array($selectedFormat, array('standard', 'microlearning', 'masterclass'), TRUE)) {
+            $selectedFormat = 'standard';
+        }
+        $deliveryFormat->setSelected($selectedFormat);
+
+        $formatDescriptions = array(
+            'standard' => $this->objLanguage->languageText(
+                'mod_context_formatstandardhelp',
+                'context',
+                'A flexible course for varied content, activities and pacing.'
+            ),
+            'microlearning' => $this->objLanguage->languageText(
+                'mod_context_formatmicrolearninghelp',
+                'context',
+                'Short, focused learning items designed for brief study sessions.'
+            ),
+            'masterclass' => $this->objLanguage->languageText(
+                'mod_context_formatmasterclasshelp',
+                'context',
+                'A short, focused class on a specific topic, typically one to three hours in duration.'
+            ),
+        );
+        $formatHelp = '<p id="context-delivery-format-help" class="contextadmin-field-help" data-format-descriptions="'
+            . htmlspecialchars(
+                json_encode($formatDescriptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+                ENT_QUOTES,
+                'UTF-8'
+            )
+            . '">' . htmlspecialchars($formatDescriptions[$selectedFormat], ENT_QUOTES, 'UTF-8') . '</p>';
+
         $table = $this->newObject('htmltable', 'htmlelements');
 
         if ($context != NULL) {
@@ -171,6 +229,15 @@ class contextforms extends ChisimbaObject {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('word_status', 'system', 'Status').':');
         $table->addCell($status->show());
+        $table->endRow();
+
+        $table->startRow();
+        $table->addCell($this->objLanguage->languageText(
+            'mod_context_courseformat',
+            'context',
+            'Course format'
+        ).':');
+        $table->addCell($deliveryFormat->show() . $formatHelp);
         $table->endRow();
 
         $table->startRow();
@@ -263,7 +330,7 @@ class contextforms extends ChisimbaObject {
 
         $form->addRule('title', $this->objLanguage->code2Txt('mod_context_entertitleofcontext', 'context', NULL, 'Please enter the title of your [-context-]'),'required');
 
-        $this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}jQuery("input[name=access_policy]").on("change",admissionPolicy);admissionPolicy();});</script>');
+        $this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}function formatHelp(){var select=jQuery("#input_delivery_format"),help=jQuery("#context-delivery-format-help"),descriptions={};if(!select.length||!help.length){return;}try{descriptions=JSON.parse(help.attr("data-format-descriptions")||"{}");}catch(error){descriptions={};}help.text(descriptions[select.val()]||"");}jQuery("input[name=access_policy]").on("change",admissionPolicy);jQuery("#input_delivery_format").on("change",formatHelp);admissionPolicy();formatHelp();});</script>');
         $str .= $form->show();
 
         return $str;

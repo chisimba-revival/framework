@@ -70,6 +70,13 @@ $checks = array(
         $forms,
         'setDefaultPreviewUrl($currentImage)'
     ),
+    'normal settings expose every supported course format' => str_contains(
+        $forms,
+        "new dropdown('delivery_format')"
+    ) && str_contains($forms, "'standard'")
+        && str_contains($forms, "'microlearning'")
+        && str_contains($forms, "'masterclass'")
+        && str_contains($forms, 'context-delivery-format-help'),
     'course search uses the shared Lucide icon service' => str_contains(
         $sidebar,
         "render('search'"

@@ -614,6 +614,13 @@ class context extends controller {
         }
         $about = $this->getParam('about');
         $image = $this->getParam('imageselect');
+        $deliveryFormat = $this->getParam('delivery_format', '');
+        $learningDesign = $this->objContext->validateLearningDesign(
+            $deliveryFormat,
+            $contextCode === $this->contextCode
+                ? $this->objContext->getField('navigation_mode', $contextCode)
+                : NULL
+        );
 
 
         //$emailalert =
@@ -623,10 +630,12 @@ class context extends controller {
         //}
         $alerts = $this->getParam('emailalertopt') == 'on' ? '1' : '0';
         if ($contextCode == $this->contextCode && $title != ''
-            && $accessPolicy !== FALSE && $privateAdmissionMode !== FALSE) {
+            && $accessPolicy !== FALSE && $privateAdmissionMode !== FALSE
+            && $learningDesign !== FALSE) {
             $result = $this->objContext->updateContext(
                     $contextCode, $title, $status, $access, $about, FALSE, /*'Y'*/FALSE,
-                    $alerts, FALSE, FALSE, FALSE, FALSE, $accessPolicy,
+                    $alerts, FALSE, FALSE, $learningDesign['delivery_format'],
+                    $learningDesign['navigation_mode'], $accessPolicy,
                     $privateAdmissionMode);
 
             if ($image != '') {

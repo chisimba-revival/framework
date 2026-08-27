@@ -24,7 +24,7 @@ $checks = array(
         && str_contains($adminTemplate, 'JSON.parse(help.dataset.formatDescriptions'),
     'course cards identify masterclasses' => str_contains($catalogue, "\$format === 'masterclass'")
         && str_contains($contextRegister, 'mod_context_formatmasterclass'),
-    'module versions expose both updates' => str_contains($contextRegister, 'MODULE_VERSION: 2.029')
+    'module versions expose both updates' => str_contains($contextRegister, 'MODULE_VERSION: 2.030')
         && str_contains($adminRegister, 'MODULE_VERSION: 1.424'),
 );
 
