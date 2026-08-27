@@ -17,6 +17,50 @@ define("GOTOTOP", '<a href="#pagetop">Top</a>'); // @todo change this to an icon
 // Get the four banner blocks
 $objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
 $isInstalled = $objModuleCatalogue->checkIfRegistered("bannerhelper");
+$statusBadge = '';
+if ($this->objUser->isLoggedIn()) {
+    try {
+        $roleContext = $this->getObject(
+            'toolbarsecuritycontext', 'toolbar'
+        );
+        $statusLabel = null;
+        $statusHref = null;
+        if ($roleContext->isSiteAdministrator()) {
+            $statusLabel = 'Administrator';
+        } elseif ($roleContext->isCurrentContextLecturer()
+            || $roleContext->isLecturer()) {
+            $statusLabel = 'Lecturer';
+        } elseif ($objModuleCatalogue->checkIfRegistered('membership-service')) {
+            $heldTier = $this->getObject(
+                'membershipservice', 'membership-service'
+            )->effectiveTier($this->objUser->userId());
+            $statusLabel = match ((string) $heldTier) {
+                'tier_1' => 'Tier 1 member',
+                'tier_2' => 'Tier 2 member',
+                default => 'Free member',
+            };
+            if ($objModuleCatalogue->checkIfRegistered('payment-service')) {
+                $statusHref = $this->uri(array(
+                    'action' => 'catalogue', 'purpose' => 'membership'
+                ), 'payment-service');
+            }
+        } elseif ($roleContext->hasStudentLearning()) {
+            $statusLabel = 'Learner';
+        }
+        if ($statusLabel !== null) {
+            $statusBadge = '<span class="chisimba-site-banner__status">'
+                . htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8')
+                . '</span>';
+        }
+        if ($statusBadge !== '' && $statusHref !== null) {
+            $statusBadge = '<a class="chisimba-site-banner__status-link" href="'
+                . htmlspecialchars($statusHref, ENT_QUOTES, 'UTF-8') . '">'
+                . $statusBadge . '</a>';
+        }
+    } catch (Throwable $membershipFailure) {
+        $statusBadge = '';
+    }
+}
 if ($isInstalled) {
     $objBl = $this->getObject('fsbannerhelper', 'bannerhelper');
     $banner0 = $objBl->readContents("banner0");
@@ -223,6 +267,7 @@ if (!isset($pageSuppressBanner)) {
                 <?php echo htmlspecialchars($objConfig->getsiteName(), ENT_QUOTES, 'UTF-8'); ?>
             </span>
             <?php echo '</a>'; ?>
+            <?php echo $statusBadge; ?>
         </div>
         <div class='floathead' id='floathead_content3'><?php echo $banner3; ?></div>
         <div class='floathead' id='floathead_content2'><?php echo $banner2; ?></div>

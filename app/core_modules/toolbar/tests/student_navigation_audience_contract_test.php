@@ -7,6 +7,7 @@ $security = file_get_contents(
     $root . '/classes/toolbarsecuritycontext_class_inc.php'
 );
 $cssMenu = file_get_contents($root . '/classes/cssmenu_class_inc.php');
+$sideMenu = file_get_contents($root . '/classes/sidemenu_class_inc.php');
 
 $assert = static function ($condition, $message) {
     if (!$condition) {
@@ -60,6 +61,11 @@ $assert(
     strpos($cssMenu, "'params' => \$params") !== false
         && strpos($cssMenu, 'uri($params, $link)') !== false,
     'One module must support several distinct task links without URL encoding shortcuts.'
+);
+$assert(
+    strpos($sideMenu, "checkIfRegistered('payment-service')") !== false
+        && strpos($sideMenu, "'purpose' => 'membership'") !== false,
+    'The learner account card must expose the membership journey when payments are available.'
 );
 
 fwrite(STDOUT, "PASS: student navigation audience contract\n");

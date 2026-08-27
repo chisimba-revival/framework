@@ -246,6 +246,19 @@ class sidemenu extends ChisimbaObject {
             'nodeid' => 'postlogin',
             'css' => 'account-card__site-home',
         );
+        if ($objModules->checkIfRegistered('payment-service')) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_payment_service_membership', 'payment-service', 'Membership'
+                ),
+                'uri' => $this->uri(
+                    array('action' => 'catalogue', 'purpose' => 'membership'),
+                    'payment-service'
+                ),
+                'nodeid' => 'membership',
+                'css' => 'account-card__membership',
+            );
+        }
         return true;
     }
 

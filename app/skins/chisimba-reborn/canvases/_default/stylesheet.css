@@ -1587,6 +1587,34 @@ button.course-card__action {
     margin-top: 0;
 }
 
+.student-membership-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    margin: 0 0 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--chisimba-border);
+    border-left: .3rem solid var(--chisimba-primary);
+    border-radius: var(--chisimba-radius, .75rem);
+    background: var(--chisimba-surface);
+    box-shadow: var(--chisimba-shadow-sm);
+}
+
+.student-membership-summary h2,
+.student-membership-summary p { margin: 0; }
+.student-membership-summary__eyebrow {
+    color: var(--chisimba-primary);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+}
+.student-membership-summary > div { display: grid; gap: .3rem; }
+
+@media (max-width: 40rem) {
+    .student-membership-summary { align-items: stretch; flex-direction: column; }
+}
+
 /* Registration: balanced main and guidance columns. */
 #Canvas_Content_Body_Region2:has(
     > .registration-service.chisimba-form-page
