@@ -384,7 +384,10 @@ class userservice extends dbTable
             return null;
         }
         $rows = $this->getArray(
-            'SELECT * FROM tbl_users WHERE ' . $column . ' = '
+            'SELECT id, userid, username, title, firstname, surname, pass,'
+            . ' creationdate, emailaddress, logins, sex, country,'
+            . ' staffnumber, cellnumber, accesslevel, isactive, howcreated,'
+            . ' updated, last_login FROM tbl_users WHERE ' . $column . ' = '
             . $this->quoteValue($value) . ' LIMIT 2'
         );
         return is_array($rows) && count($rows) === 1 ? $rows[0] : null;

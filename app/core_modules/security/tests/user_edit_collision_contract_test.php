@@ -22,6 +22,11 @@ $expect(
         < strpos($source, "emailAvailable(\$values['emailaddress'], \$userId)"),
     'An unchanged email address must not be checked as a new collision.'
 );
+$expect(
+    !str_contains($source, 'SELECT * FROM tbl_users')
+        && str_contains($source, 'SELECT id, userid, username, title, firstname, surname, pass,'),
+    'Single-user editing must load an explicit canonical field set rather than a stale legacy wildcard row.'
+);
 
 fwrite(STDOUT, "PASS: unchanged user identity values bypass edit collision checks\n");
 ?>
