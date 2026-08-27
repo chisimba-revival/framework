@@ -179,7 +179,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             'UTF-8'
         );
         ?>
-        <form method="post" action="<?php echo $escape($editAction); ?>">
+        <form method="post" action="<?php echo $escape($editAction); ?>" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore>
             <input type="hidden" name="csrf_token" value="<?php echo $escape($csrf); ?>">
             <input type="hidden" name="userid" value="<?php echo $escape($value('userid')); ?>">
             <input type="hidden" name="q" value="<?php echo $escape($query); ?>">
@@ -199,7 +199,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                     </label>
                     <label><span class="ua-field-label">First name <span class="ua-required" aria-hidden="true">*</span></span><input name="firstname" required value="<?php echo $escape($value('firstname')); ?>"></label>
                     <label><span class="ua-field-label">Surname <span class="ua-required" aria-hidden="true">*</span></span><input name="surname" required value="<?php echo $escape($value('surname')); ?>"></label>
-                    <label><span class="ua-field-label">Email address <span class="ua-required" aria-hidden="true">*</span></span><input name="emailaddress" type="email" required value="<?php echo $escape($value('emailaddress')); ?>"></label>
+                    <label><span class="ua-field-label">Email address <span class="ua-required" aria-hidden="true">*</span></span><input name="emailaddress" type="email" required autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore value="<?php echo $escape($value('emailaddress')); ?>"></label>
                     <label>Staff or student number<input name="staffnumber" value="<?php echo $escape($value('staffnumber')); ?>"></label>
                     <label>Cell number<input name="cellnumber" value="<?php echo $escape($value('cellnumber')); ?>"></label>
                     <label><?php echo $escape($this->objLanguage->languageText('word_country')); ?>
@@ -223,9 +223,9 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             <fieldset>
                 <legend>Account</legend>
                 <div class="ua-form-grid">
-                    <label><span class="ua-field-label">Username <span class="ua-required" aria-hidden="true">*</span></span><input name="username" required autocomplete="off" value="<?php echo $escape($value('username')); ?>"></label>
-                    <label><span class="ua-field-label">Password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
-                    <label><span class="ua-field-label">Repeat password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="repeat_password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password"></label>
+                    <label><span class="ua-field-label">Username <span class="ua-required" aria-hidden="true">*</span></span><input name="username" required autocomplete="new-username" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore value="<?php echo $escape($value('username')); ?>"></label>
+                    <label><span class="ua-field-label">Password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore></label>
+                    <label><span class="ua-field-label">Repeat password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="repeat_password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore></label>
                     <label class="ua-checkbox"><input name="isactive" type="checkbox" value="1"<?php echo !$selected || !empty($selected['isactive']) ? ' checked' : ''; ?>> Active account</label>
                 </div>
             </fieldset>
