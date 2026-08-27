@@ -66,6 +66,11 @@ class block_updates extends ChisimbaObject {
         $this->title = $this->text('mod_modulecatalogue_updates_block_title', 'Updates');
         $this->objPatch = $this->getObject('patch', 'modulecatalogue');
         $this->objUser = $this->getObject('user', 'security');
+        if (!$this->objUser->isAdmin()) {
+            $this->blockType = 'invisible';
+            $this->title = '';
+            return;
+        }
         $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $this->csrf = $nativeAuth['csrf'];
     }
@@ -144,7 +149,7 @@ class block_updates extends ChisimbaObject {
         if ($this->objUser->isAdmin()) {
             return $this->getUpdates() . $this->getJavascriptFile('updates.js', 'modulecatalogue');
         } else {
-            return $this->objLanguage->languageText('mod_modulecatalogue_nonadminmsg', 'modulecatalogue');
+            return '';
         }
     }
 

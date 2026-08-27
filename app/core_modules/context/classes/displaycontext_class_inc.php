@@ -218,32 +218,24 @@ class displaycontext extends ChisimbaObject {
 
         if ($showEditDeleteLinks && $canEdit) {
             $editLabel = $this->objLanguage->code2Txt(
-                'mod_contextadmin_editcontext',
+                'mod_contextadmin_managecontext',
                 'contextadmin',
                 NULL,
-                'Edit [-context-]'
-            );
-            $deleteLabel = $this->objLanguage->code2Txt(
-                'mod_contextadmin_deletecontext',
-                'contextadmin',
-                NULL,
-                'Delete [-context-]'
+                'Manage [-context-]'
             );
 
             $editIcon = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
-            $deleteIcon = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="m19 6-1 14H6L5 6"/><path d="M8 6V4h8v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
-
-            $editLink = new link($this->uri(array('action' => 'edit', 'contextcode' => $context ['contextcode']), $this->module));
+            $editLink = new link($this->uri(array(
+                'action' => 'joincontext',
+                'contextcode' => $context ['contextcode'],
+                'contextmodule' => 'context',
+                'contextaction' => 'controlpanel',
+            ), 'context'));
             $editLink->link = $editIcon;
             $editLink->cssClass = 'chisimba-context-action chisimba-context-action-edit';
             $editLink->extra = ' aria-label="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($editLabel, ENT_QUOTES, 'UTF-8') . '"';
 
-            $deleteLink = new link($this->uri(array('action' => 'delete', 'contextcode' => $context ['contextcode']), $this->module));
-            $deleteLink->link = $deleteIcon;
-            $deleteLink->cssClass = 'chisimba-context-action chisimba-context-action-delete';
-            $deleteLink->extra = ' aria-label="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($deleteLabel, ENT_QUOTES, 'UTF-8') . '"';
-
-            $editOptions = $editLink->show() . $deleteLink->show();
+            $editOptions = $editLink->show();
             $studentCount = "";
             if (strtoupper($this->showStudentCount) == 'TRUE') {
                 $studentCount = '&nbsp;(' . count($this->objUserContext->getContextStudents($context ['contextcode'])) . ')';

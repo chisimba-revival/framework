@@ -216,8 +216,30 @@ class sidemenu extends ChisimbaObject {
         $menus = $this->dbMenu->getSideMenus('postlogin', $access, $this->context);
         $menus = $this->checkPerm($menus);
         $studentOnly = $this->addStudentHomeLinks();
+        $this->addLearningJourneyLink();
         $menu = $this->getMenuList($menus, true, !$studentOnly);
         return $menu;
+    }
+
+    /** Keep the learner's main journey close at hand whenever it is available. */
+    private function addLearningJourneyLink() {
+        $objModules = $this->getObject('modules', 'modulecatalogue');
+        if (!$objModules->checkIfRegistered('mylearning')) {
+            return;
+        }
+        foreach ($this->globalNodes as $node) {
+            if (($node['nodeid'] ?? '') === 'mylearning') {
+                return;
+            }
+        }
+        $this->globalNodes[] = array(
+            'text' => $this->objLanguage->languageText(
+                'mod_mylearning_name', 'mylearning', 'My learning journey'
+            ),
+            'uri' => $this->uri(null, 'mylearning'),
+            'nodeid' => 'mylearning',
+            'css' => 'account-card__my-learning',
+        );
     }
 
     /** Give student-only accounts explicit learning and general-site routes. */
@@ -308,8 +330,14 @@ class sidemenu extends ChisimbaObject {
     ) {
         $modulesNotToShowStr = $this->dbSysConfig->getValue('EXCLUDE_ON_SIDEMENU', 'toolbar');
         $modulesNotToShow = explode(",", $modulesNotToShowStr);
+        $objModules = $this->getObject('modules', 'modulecatalogue');
         if (!empty($modules)) {
             foreach ($modules as $line) {
+                // Catalogue rows can outlive an uninstalled module. Never leave
+                // a dead journey link behind in the account card.
+                if (!$objModules->checkIfRegistered($line['module'])) {
+                    continue;
+                }
                 $actions = explode('|', $line['category']);
                 // Check if there is an action and insert a array for a link.
                 if (isset($actions[2]) && !empty($actions[2])) {

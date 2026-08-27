@@ -64,8 +64,17 @@ $assert(
 );
 $assert(
     strpos($sideMenu, "checkIfRegistered('payment-service')") !== false
-        && strpos($sideMenu, "'purpose' => 'membership'") !== false,
+        && strpos($sideMenu, "'action' => 'tiers'") !== false,
     'The learner account card must expose the membership journey when payments are available.'
+);
+$assert(
+    strpos($sideMenu, "checkIfRegistered(\$line['module'])") !== false,
+    'Account-card links must disappear when their target module is not installed.'
+);
+$assert(
+    strpos($sideMenu, 'addLearningJourneyLink') !== false
+        && strpos($sideMenu, "'nodeid' => 'mylearning'") !== false,
+    'The account card must keep the learner journey close at hand.'
 );
 
 fwrite(STDOUT, "PASS: student navigation audience contract\n");
