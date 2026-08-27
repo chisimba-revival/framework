@@ -10,7 +10,7 @@ $checks = array(
     'managed catalogue row' => str_contains($api, '$this->objFiles->addFile'),
     'visible errors registered' => substr_count($register, 'TEXT: mod_filemanager_generated_asset_') === 6
         && !str_contains($api, "'The generated image"),
-    'module version bump' => str_contains($register, 'MODULE_VERSION: 1.097')
+    'module version bump' => str_contains($register, 'MODULE_VERSION: 1.099')
 );
 foreach ($checks as $name => $passed) { if (!$passed) { fwrite(STDERR, "FAIL: $name\n"); exit(1); } }
 echo "OK: " . count($checks) . " generated asset sink checks\n";

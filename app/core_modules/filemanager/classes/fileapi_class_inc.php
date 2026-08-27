@@ -506,6 +506,12 @@ class fileapi extends ChisimbaObject
                 'accept' => 'audio/mpeg,audio/wav,audio/x-wav,audio/ogg,audio/mp4,audio/x-m4a,audio/aac,audio/flac,audio/x-flac,.mp3,.wav,.ogg,.m4a,.aac,.flac',
                 'titleKey' => 'select_audio', 'uploadKey' => 'upload_audio', 'icon' => 'audio'
             ),
+            'video' => array(
+                'extensions' => array('mp4', 'webm', 'ogv'),
+                'mimetypes' => array('video/mp4', 'application/mp4', 'video/webm', 'video/ogg'),
+                'accept' => 'video/mp4,video/webm,video/ogg,.mp4,.webm,.ogv',
+                'titleKey' => 'select_video', 'uploadKey' => 'upload_video', 'icon' => 'video'
+            ),
             'pdf' => array(
                 'extensions' => array('pdf'), 'mimetypes' => array('application/pdf'),
                 'accept' => 'application/pdf,.pdf',
