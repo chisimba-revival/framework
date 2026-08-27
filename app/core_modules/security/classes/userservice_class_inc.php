@@ -249,11 +249,19 @@ class userservice extends dbTable
         unset($values['userid']);
 
         if (isset($values['username'])
+            && strcasecmp(
+                (string) $values['username'],
+                (string) ($existing['username'] ?? '')
+            ) !== 0
             && !$this->usernameAvailable($values['username'], $userId)) {
             return $this->result(false, 'username_taken');
         }
         if (isset($values['emailaddress'])
             && $values['emailaddress'] !== ''
+            && strcasecmp(
+                (string) $values['emailaddress'],
+                (string) ($existing['emailaddress'] ?? '')
+            ) !== 0
             && !$this->emailAvailable($values['emailaddress'], $userId)) {
             return $this->result(false, 'email_taken');
         }
