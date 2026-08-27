@@ -161,7 +161,7 @@ class menu extends ChisimbaObject
             }
         } else {
             $journeys['learning'][] = $this->journeyLink(
-                'context', array('action' => 'join'),
+                'context', array('action' => 'catalogue'),
                 'mod_toolbar_browsecourses', 'Browse courses'
             );
             if ($mayTeach && $this->objModule->checkIfRegistered('contextadmin')) {

@@ -59,6 +59,13 @@ if ($isAccessRequired) {
             . ' ' . number_format($amount / 100, 2) . '</a></div>';
     } elseif ($policy === 'private' && $admissionMode === 'manual_review') {
         echo '<p>This course requires approval by the admissions team before access can be granted.</p>';
+    } elseif (in_array($policy, array('tier_1', 'tier_2'), true)) {
+        echo '<p>Your current membership does not include this course.</p>';
+        echo '<div class="chisimba-form-actions"><a class="button" href="'
+            . htmlspecialchars(html_entity_decode($this->uri(array(
+                'action' => 'catalogue', 'purpose' => 'membership',
+            ), 'payment-service'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+            . '">View membership options</a></div>';
     } else {
         echo '<p>The required access is not currently available for purchase. Your course enrolment and role have not changed.</p>';
     }
@@ -67,25 +74,15 @@ if ($isAccessRequired) {
 }
 
 
-if (!$isAccessRequired) {
-    $objNav = $this->getObject('contextadminnav', 'contextadmin');
-    $str = $this->objLanguage->languageText('word_browse', 'glossary', 'Browse').': '.$objNav->getAlphaListingAjax();
-    $str .= '<div id="browsecontextcontent"></div>';
-    $str .= $this->getJavaScriptFile('contextbrowser.js');
-    echo $str;
-}
-
-
-
 $link = new link($isAccessRequired
     ? ($isLoggedIn ? $this->uri(NULL, 'mylearning') : $this->uri(array('action' => 'catalogue'), 'context'))
-    : $this->uri(NULL, '_default'));
+    : $this->uri(array('action' => 'catalogue'), 'context'));
 $link->link = $isAccessRequired
     ? ($isLoggedIn
         ? $this->objLanguage->languageText('mod_context_backtomylearning', 'context', 'Back to My Learning')
         : $this->objLanguage->languageText('mod_context_browsecourses', 'context', 'Browse courses'))
-    : $this->objLanguage->languageText('phrase_backhome', 'system', 'Back to home');
-$link->cssClass = $isAccessRequired ? 'button' : '';
+    : $this->objLanguage->languageText('mod_context_browsecourses', 'context', 'Browse courses');
+$link->cssClass = 'button';
 
 echo '<p><br />'.$link->show().'</p>';
 if ($isAccessRequired) {

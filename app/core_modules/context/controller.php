@@ -214,7 +214,7 @@ class context extends controller {
      */
     protected function __home() {
         if ($this->contextCode == 'root') {
-            return $this->nextAction('join');
+            return $this->nextAction('catalogue');
         }
 
         $this->_preventRootAccess();
@@ -262,6 +262,10 @@ class context extends controller {
      * Method to show a list of contexts user can join
      */
     protected function __join() {
+        if (trim((string) $this->getParam('error', '')) === ''
+            && trim((string) $this->getParam('contextcode', '')) === '') {
+            return $this->nextAction('catalogue');
+        }
         $this->setLayoutTemplate(NULL);
         return 'needtojoin_tpl.php';
     }

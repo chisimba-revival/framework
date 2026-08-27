@@ -32,6 +32,7 @@ $block = $read('classes/block_latestcourses_class_inc.php');
 $controller = $read('controller.php');
 $myCourses = $read('classes/block_mycontexts_class_inc.php');
 $allCourses = $read('classes/block_context_class_inc.php');
+$needToJoin = $read('templates/content/needtojoin_tpl.php');
 
 $expect(
     strpos($register, 'WIDEBLOCK: latestcourses') !== false,
@@ -105,6 +106,12 @@ $expect(
       && strpos($myCourses, "new dropdown") === false
       && strpos($allCourses, "new dropdown") === false,
     'My Courses and All Courses must use direct course navigation, not chooser dropdowns.'
+);
+$expect(
+    strpos($controller, "return \$this->nextAction('catalogue');") !== false
+      && strpos($needToJoin, 'getAlphaListingAjax') === false
+      && strpos($needToJoin, 'View membership options') !== false,
+    'Bare legacy join routes and failed tier entry must lead into modern discovery journeys.'
 );
 
 fwrite(STDOUT, "PASS: unified course catalogue contract\n");

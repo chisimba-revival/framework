@@ -48,7 +48,7 @@ $assert(
     'My Learning must be shown only when the account has a learner journey.'
 );
 $assert(
-    strpos($menu, "'action' => 'join'") !== false
+    strpos($menu, "'action' => 'catalogue'") !== false
         && strpos($menu, "'action' => 'add'") !== false
         && strpos($menu, "'action' => 'controlpanel'") !== false,
     'Journey menus must expose useful root and current-course tasks.'

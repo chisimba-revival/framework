@@ -50,9 +50,9 @@ $expect(strpos($controller, "\$params['error'] = 'accessrequired'") !== false
     && strpos($controller, "'tier_2', 'private'") !== false
     && strpos($template, "\$error === 'accessrequired'") !== false,
     'Tier-gate failures must explain the access requirement.');
-$expect(strpos($template, 'getAlphaListingAjax') !== false
-    && strpos($template, 'if (!$isAccessRequired)') !== false,
-    'The legacy alphabetical browser must be hidden for tier-gate failures.');
+$expect(strpos($template, 'getAlphaListingAjax') === false
+    && strpos($template, 'View membership options') !== false,
+    'The legacy alphabetical browser must be replaced by the relevant modern journey.');
 $expect(strpos($controller, "privateCourseProduct((string) \$contextCode)") !== false
     && strpos($controller, "\$params['purchaseproduct']") !== false,
     'An automatically admitted private course must expose its optional priced product at the gate.');
