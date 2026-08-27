@@ -105,6 +105,15 @@ class coursecatalogue extends ChisimbaObject
         );
     }
 
+    public function renderCatalogueByPolicy($policy,$limit=60)
+    {
+        $policy=strtolower(trim((string)$policy));
+        if(!in_array($policy,array('public','free','tier_1','tier_2','private'),true)) return $this->renderCatalogue($limit);
+        $contexts=$this->objContext->getArrayOfLatestContexts(max(1,(int)$limit));
+        $contexts=array_values(array_filter($contexts,static function($context)use($policy){return strtolower(trim((string)($context['access_policy']??'')))===$policy;}));
+        return $this->render($contexts,false);
+    }
+
     /**
      * Render a supplied collection of context records as course cards.
      *

@@ -252,7 +252,7 @@ class sidemenu extends ChisimbaObject {
                     'mod_payment_service_membership', 'payment-service', 'Membership'
                 ),
                 'uri' => $this->uri(
-                    array('action' => 'catalogue', 'purpose' => 'membership'),
+                    array('action' => 'tiers'),
                     'payment-service'
                 ),
                 'nodeid' => 'membership',

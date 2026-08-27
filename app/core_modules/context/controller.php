@@ -278,6 +278,8 @@ class context extends controller {
      */
     protected function __catalogue() {
         $this->setLayoutTemplate(NULL);
+        $access=strtolower(trim((string)$this->getParam('access','')));
+        if(!in_array($access,array('public','free','tier_1','tier_2','private'),true))$access='';
         $this->setVar(
             'catalogueTitle',
             $this->objLanguage->code2Txt(
@@ -289,8 +291,7 @@ class context extends controller {
         );
         $this->setVar(
             'catalogueContent',
-            $this->getObject('coursecatalogue', 'context')
-                ->renderCatalogue(60)
+            $access===''?$this->getObject('coursecatalogue', 'context')->renderCatalogue(60):$this->getObject('coursecatalogue', 'context')->renderCatalogueByPolicy($access,60)
         );
         return 'catalogue_tpl.php';
     }

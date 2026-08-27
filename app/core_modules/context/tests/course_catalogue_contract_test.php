@@ -113,6 +113,12 @@ $expect(
       && strpos($needToJoin, 'View membership options') !== false,
     'Bare legacy join routes and failed tier entry must lead into modern discovery journeys.'
 );
+$expect(
+    strpos($renderer, 'renderCatalogueByPolicy') !== false
+      && strpos($renderer, "['access_policy']") !== false
+      && strpos($controller, "getParam('access'") !== false,
+    'Membership comparison links must filter the modern catalogue by exact course access policy.'
+);
 
 fwrite(STDOUT, "PASS: unified course catalogue contract\n");
 
