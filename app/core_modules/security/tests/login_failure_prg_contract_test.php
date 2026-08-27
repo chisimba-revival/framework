@@ -21,6 +21,7 @@ $loginGates = array(
     'class="auth-login-error" role="alert"',
     "new textinput('username', \$username, 'text', '15')",
     "isset(\$state['return_to'])",
+    "isset(\$_GET['return_to'])",
 );
 
 foreach (array(

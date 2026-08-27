@@ -150,9 +150,11 @@ class loginInterface extends ChisimbaObject {
                 && !is_object($state['return_to'])
                 && trim((string) $state['return_to']) !== ''
                 ? (string) $state['return_to']
+                : (isset($_GET['return_to'])&&!is_array($_GET['return_to'])&&!is_object($_GET['return_to'])
+                ? (string)$_GET['return_to']
                 : (isset($_SERVER['REQUEST_URI'])
                 ? (string) $_SERVER['REQUEST_URI']
-                : '');
+                : ''));
             $objForm->addToForm('<input type="hidden" name="return_to" value="'
                 . $escapeAuthValue($currentRequest) . '">');
             $objForm->addToForm('<input type="hidden" name="abuse_issued_at" value="'
