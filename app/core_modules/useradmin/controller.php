@@ -85,16 +85,20 @@ class useradmin extends controller
         if (!is_array($records)) {
             $records = array();
         }
+        $selected = null;
+        $selectedId = trim((string) $this->getParam('userid', ''));
+        if ($selectedId !== '') {
+            foreach ($records as $record) {
+                if ((string) ($record['userid'] ?? '') === $selectedId) {
+                    $selected = $record;
+                    break;
+                }
+            }
+        }
         $total = count($records);
         $pages = max(1, (int) ceil($total / $limit));
         $page = min($page, $pages);
         $records = array_slice($records, ($page - 1) * $limit, $limit);
-
-        $selected = null;
-        $selectedId = trim((string) $this->getParam('userid', ''));
-        if ($selectedId !== '') {
-            $selected = $this->objUserService->findByUserId($selectedId);
-        }
 
         $this->setVar('userAdminRecords', $records);
         $this->setVar('userAdminSelected', $selected);
