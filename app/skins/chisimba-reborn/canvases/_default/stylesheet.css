@@ -870,6 +870,11 @@
     justify-content: center;
 }
 
+#form_loginform .loginbuttonwrap button .chisimba-icon,
+.auth-block__logout button .chisimba-icon {
+    color: currentColor;
+}
+
 .auth-block--signed-in {
     display: grid;
     gap: .85rem;
