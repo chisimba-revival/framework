@@ -106,6 +106,21 @@ if (!isset($og_content)) {
     $og_content = strip_tags($og_content);
 }
 
+// Branding assets belong to the selected canvas. Keep the skin favicon as a
+// compatibility fallback for canvases that have not supplied their own yet.
+$skinFavicon = 'skins/' . $skinName . '/favicon.png';
+$favicon = $skinFavicon;
+if (!isset($pageSuppressSkin)) {
+    $canvasFavicon = 'skins/' . $skinName . '/canvases/'
+        . $canvasName . '/favicon.png';
+    if (is_file($siteRootPath . $canvasFavicon)) {
+        $favicon = $canvasFavicon;
+    }
+}
+$faviconVersion = is_file($siteRootPath . $favicon)
+    ? '?v=' . filemtime($siteRootPath . $favicon)
+    : '';
+
 
 
 // Render the head section of the page. Note that there can be no space or
@@ -124,7 +139,12 @@ if (!isset($og_content)) {
         echo '
 
         <link rel="stylesheet" type="text/css" href="skins/_common2/css/basecss.php">
-        <link rel="icon" type="image/png" href="skins/' . $skinName . '/favicon.png" />
+        <link rel="icon" type="image/png" href="'
+            . htmlspecialchars(
+                $favicon . $faviconVersion,
+                ENT_QUOTES,
+                'UTF-8'
+            ) . '" />
             
         ';
      }

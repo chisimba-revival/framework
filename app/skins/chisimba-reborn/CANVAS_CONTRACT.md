@@ -35,3 +35,9 @@ through the canvas preference.
 Create `canvases/<identifier>/` with `canvas.json`, `settings.php` and a small
 `stylesheet.css` importing `../_default/stylesheet.css`. Keep canvas-owned
 assets below that directory. Add a contract test for any exceptional layout.
+
+A canvas may provide `favicon.png` at the root of its directory. Use a square
+PNG with a simple mark that remains recognisable at 16 and 32 pixels. When the
+file is absent, the skin's `favicon.png` is used as a compatibility fallback.
+The rendered favicon URL includes the file modification time so a replaced
+icon is not hidden by a stale browser cache.
