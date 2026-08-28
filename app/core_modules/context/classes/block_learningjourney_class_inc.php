@@ -65,6 +65,10 @@ class block_learningjourney extends ChisimbaObject
 
     private function renderJourney(array $state)
     {
+        $contextCode = $this->objContext->getContextCode();
+        $isCourseManager = $this->objUser->isLoggedIn()
+            && ($this->objUser->isAdmin()
+                || $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode));
         $started = !empty($state['started']);
         $pageId = isset($state['pageid']) ? $state['pageid'] : '';
         $pageTitle = isset($state['pagetitle']) ? $state['pagetitle'] : '';
@@ -129,6 +133,14 @@ class block_learningjourney extends ChisimbaObject
                 'Start your learning journey'
             );
 
+        if ($isCourseManager) {
+            $action = $this->objLanguage->languageText(
+                'mod_context_managecoursecontent',
+                'context',
+                'Manage course content'
+            );
+        }
+
         $status = $started
             ? $this->objLanguage->languageText(
                 'mod_context_journeystatusprogress',
@@ -187,10 +199,9 @@ class block_learningjourney extends ChisimbaObject
             'contextcontent'
         );
 
-        $url = $this->uri(
-            array('action' => 'viewpage', 'id' => $pageId),
-            'contextcontent'
-        );
+        $url = $isCourseManager
+            ? $this->uri(array('action' => 'showcontextchapters'), 'contextcontent')
+            : $this->uri(array('action' => 'viewpage', 'id' => $pageId), 'contextcontent');
 
         $e = function ($value) {
             return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
