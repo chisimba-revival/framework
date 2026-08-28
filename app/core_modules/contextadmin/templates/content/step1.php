@@ -278,6 +278,25 @@ $table->addCell($titleLabel->show());
 $table->addCell($title->show());
 $table->endRow();
 
+$table->startRow();
+$table->addCell('<h2 class="contextadmin-form-section-heading">'
+    . htmlspecialchars($this->objLanguage->languageText(
+        'mod_contextadmin_courseavailability',
+        'contextadmin',
+        'Course availability'
+    ), ENT_QUOTES, 'UTF-8') . '</h2>');
+$table->addCell('<p class="contextadmin-field-help">'
+    . htmlspecialchars($this->objLanguage->languageText(
+        'mod_contextadmin_courseavailabilityhelp',
+        'contextadmin',
+        'Publish the course when it is ready for learners. Keep it unpublished while preparing or reviewing it.'
+    ), ENT_QUOTES, 'UTF-8') . '</p>');
+$table->endRow();
+$table->startRow();
+$table->addCell($this->objLanguage->languageText('word_status', 'system', 'Status'));
+$table->addCell($status->show());
+$table->endRow();
+
 $selectedFormat = 'standard';
 $selectedNavigation = 'free';
 if ($mode == 'add' && is_array($fixup)) {
@@ -375,11 +394,6 @@ $table->endRow();
 
 $table->startRow();
 $table->addCell('<h2 class="contextadmin-form-section-heading">' . htmlspecialchars($this->objLanguage->languageText('mod_contextadmin_availability', 'contextadmin', 'Availability and participation'), ENT_QUOTES, 'UTF-8') . '</h2>', NULL, NULL, 2);
-$table->endRow();
-
-$table->startRow();
-$table->addCell($this->objLanguage->languageText('word_status', 'system', 'Status'));
-$table->addCell($status->show());
 $table->endRow();
 
 $showcomment = new dropdown('showcomment');

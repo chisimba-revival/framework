@@ -130,6 +130,18 @@ class contextsidebar extends ChisimbaObject
             }
         }
         if ($mayManageLearning) {
+            $nodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_context_coursesettings',
+                    'context',
+                    'Course settings'
+                ),
+                'uri' => $this->uri(
+                    array('action' => 'edit', 'contextcode' => $this->contextCode),
+                    'contextadmin'
+                ),
+                'nodeid' => 'contextadmin-settings'
+            );
             $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('mod_context_contextcontrolpanel', 'context', NULL, '[-context-] Control Panel')), 'uri'=>$this->uri(array('action'=>'controlpanel'), 'context'), 'nodeid'=>'controlpanel');
         }
         $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('phrase_leavecourse', 'system', NULL, 'Leave [-context-]')), 'uri'=>$this->uri(array('action'=>'leavecontext'), 'context'), 'nodeid'=>'leavecontext');
@@ -143,7 +155,10 @@ class contextsidebar extends ChisimbaObject
                 $activeId = 'context';
             }
         } else {
-            $activeId = $this->getParam('module');
+            $activeId = $this->getParam('module') === 'contextadmin'
+                && $this->getParam('action') === 'edit'
+                ? 'contextadmin-settings'
+                : $this->getParam('module');
         }
 
         foreach ($nodes as &$node) {
