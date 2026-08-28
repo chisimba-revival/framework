@@ -39,13 +39,17 @@ if ($isAccessRequired) {
     echo '<p><strong>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
         . ' access is required.</strong></p>';
     if (!$isLoggedIn) {
+        $siteEntrance = rtrim((string) $this->getObject(
+            'altconfig',
+            'config'
+        )->getItem('KEWL_SITE_ROOT'), '/') . '/';
         echo '<p>Create an account or sign in before choosing access to this course.</p>';
         echo '<div class="chisimba-form-actions">'
             . '<a class="button" href="'
             . htmlspecialchars(html_entity_decode($this->uri(array(), 'registration-service'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
             . '">Create account</a> '
             . '<a class="button chisimba-button-secondary" href="'
-            . htmlspecialchars(html_entity_decode($this->uri(array('action' => 'showlogin'), 'security'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+            . htmlspecialchars($siteEntrance, ENT_QUOTES, 'UTF-8')
             . '">Sign in</a></div>';
     } elseif ($policy === 'private' && $admissionMode === 'automatic_payment' && $purchaseProduct !== '') {
         $amount = (int) $this->getParam('purchaseamount', 0);

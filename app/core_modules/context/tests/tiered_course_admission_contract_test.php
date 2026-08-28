@@ -60,6 +60,9 @@ $expect(strpos($template, '>Create account</a>') !== false
     && strpos($template, '>Sign in</a>') !== false
     && strpos($template, 'Buy course access') !== false,
     'The access gate must give visitors and signed-in learners a clear next action.');
+$expect(strpos($template, "array('action' => 'showlogin'), 'security'") === false
+    && strpos($template, "->getItem('KEWL_SITE_ROOT')") !== false,
+    'Access-gate sign-in must use the canonical site entrance, not the stray legacy login page.');
 $expect(strpos($controlPanel, "'label' => 'Pricing and sales'") !== false
     && strpos($controlPanel, "'purpose_id' => \$contextCode") !== false
     && strpos($controlPanel, "getObject('paymentcatalogservice', 'payment-service')") !== false,
