@@ -401,6 +401,9 @@ class dbcontext extends dbTable {
                 if (!$this->mappedPolicyAllowsAdmission($line)) {
                     return FALSE;
                 }
+                if (!$this->ensureMappedPolicyCourseMembership($line)) {
+                    return FALSE;
+                }
             } elseif ($line ['access'] == 'Private') {
                 $objUserContext = $this->getObject('usercontext');
                 if (!$objUserContext->isContextMember($this->objUser->userId(), $contextCode)) {
@@ -439,7 +442,7 @@ class dbcontext extends dbTable {
             ? $mode : FALSE;
     }
 
-    /** Resolve admission without changing canonical course membership or roles. */
+    /** Resolve whether the current user may enter a mapped-policy course. */
     private function mappedPolicyAllowsAdmission(array $context) {
         // Site administrators retain their established operational access.
         if ($this->objUser->isAdmin()) {
@@ -469,6 +472,36 @@ class dbcontext extends dbTable {
             return !empty($decision['allowed']);
         } catch (Throwable $failure) {
             // A deliberately mapped course fails closed when its resolver is absent.
+            return FALSE;
+        }
+    }
+
+    /**
+     * Enrol an admitted signed-in learner in the canonical Students group.
+     *
+     * Public courses retain anonymous viewing. Private courses retain their
+     * paid or reviewed admission boundary, which owns its membership writes.
+     * Free and tier courses self-enrol only after the access policy permits
+     * entry, so course rosters, assessments, completion and gradebook agree.
+     */
+    private function ensureMappedPolicyCourseMembership(array $context) {
+        $policy = strtolower(trim((string) ($context['access_policy'] ?? '')));
+        if (!in_array($policy, array('free', 'tier_1', 'tier_2'), TRUE)
+            || $this->objUser->isAdmin()) {
+            return TRUE;
+        }
+        if (!$this->objUser->isLoggedIn()) {
+            return FALSE;
+        }
+        try {
+            $groups = $this->getObject('groupservice', 'groupadmin');
+            $groupId = $groups->groupIdForName($context['contextcode'] . '^Students');
+            $permissionUserId = $this->getObject('identityservice', 'security')
+                ->permissionUserIdForUser($this->objUser->userId());
+            return $groupId !== FALSE
+                && $permissionUserId !== NULL
+                && $groups->ensureMembership($groupId, $permissionUserId);
+        } catch (Throwable $failure) {
             return FALSE;
         }
     }
