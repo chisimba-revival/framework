@@ -5915,3 +5915,23 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
         flex-direction: column;
     }
 }
+/* CHISIMBA CONTEXT ADMINISTRATION NAVIGATION */
+.contextadmin-navigation {
+    display: grid;
+    gap: var(--space-3, 0.75rem);
+    padding: var(--space-4, 1rem);
+    border: 1px solid var(--border-color, #d8e0e8);
+    border-radius: var(--radius-lg, 0.75rem);
+    background: var(--surface, #fff);
+}
+.contextadmin-navigation h2 { margin: 0; font-size: 1.1rem; }
+.contextadmin-navigation ul { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+.contextadmin-navigation .chisimba-navigation-action {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-md, 0.5rem);
+}
+.contextadmin-navigation svg { width: 1.1rem; height: 1.1rem; }
