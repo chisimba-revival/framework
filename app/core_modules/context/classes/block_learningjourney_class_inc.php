@@ -65,10 +65,9 @@ class block_learningjourney extends ChisimbaObject
 
     private function renderJourney(array $state)
     {
-        $contextCode = $this->objContext->getContextCode();
-        $isCourseManager = $this->objUser->isLoggedIn()
-            && ($this->objUser->isAdmin()
-                || $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode));
+        $contextCode = (string) $this->objContext->getContextCode();
+        $isManager = $this->objUser->isLoggedIn()
+            && $this->objUser->isCourseAdmin($contextCode);
         $started = !empty($state['started']);
         $pageId = isset($state['pageid']) ? $state['pageid'] : '';
         $pageTitle = isset($state['pagetitle']) ? $state['pagetitle'] : '';
@@ -79,9 +78,9 @@ class block_learningjourney extends ChisimbaObject
             : array();
 
         $eyebrow = $this->objLanguage->languageText(
-            'mod_context_learningjourney',
+            $isManager ? 'mod_context_coursemanagement' : 'mod_context_learningjourney',
             'context',
-            'Your learning journey'
+            $isManager ? 'Course management' : 'Your learning journey'
         );
 
         $fullName = trim((string) $this->objUser->fullname());
@@ -109,7 +108,13 @@ class block_learningjourney extends ChisimbaObject
             $heading .= ', ' . $firstName;
         }
 
-        $lead = $started
+        $lead = $isManager
+            ? $this->objLanguage->languageText(
+                'mod_context_managerjourneylead',
+                'context',
+                'Manage learning, people and course settings'
+            )
+            : ($started
             ? $this->objLanguage->languageText(
                 'mod_context_journeypickup',
                 'context',
@@ -119,9 +124,16 @@ class block_learningjourney extends ChisimbaObject
                 'mod_context_journeyready',
                 'context',
                 'Ready to begin?'
-            );
+            ));
 
-        $action = $started
+        $action = $isManager
+            ? $this->objLanguage->code2Txt(
+                'mod_context_managerjourneyaction',
+                'context',
+                NULL,
+                'Manage this course'
+            )
+            : ($started
             ? $this->objLanguage->languageText(
                 'mod_context_journeycontinue',
                 'context',
@@ -131,17 +143,17 @@ class block_learningjourney extends ChisimbaObject
                 'mod_context_journeystart',
                 'context',
                 'Start your learning journey'
-            );
+            ));
 
-        if ($isCourseManager) {
-            $action = $this->objLanguage->languageText(
-                'mod_context_managecoursecontent',
+        $status = $isManager
+            ? $this->objLanguage->languageText(
+                $this->objUser->isAdmin()
+                    ? 'mod_context_administratorview'
+                    : 'mod_context_lecturerview',
                 'context',
-                'Manage course content'
-            );
-        }
-
-        $status = $started
+                $this->objUser->isAdmin() ? 'Administrator view' : 'Lecturer view'
+            )
+            : ($started
             ? $this->objLanguage->languageText(
                 'mod_context_journeystatusprogress',
                 'context',
@@ -151,7 +163,7 @@ class block_learningjourney extends ChisimbaObject
                 'mod_context_journeystatusnew',
                 'context',
                 'New'
-            );
+            ));
 
         $destination = $started
             ? $this->objLanguage->languageText(
@@ -199,9 +211,12 @@ class block_learningjourney extends ChisimbaObject
             'contextcontent'
         );
 
-        $url = $isCourseManager
-            ? $this->uri(array('action' => 'showcontextchapters'), 'contextcontent')
-            : $this->uri(array('action' => 'viewpage', 'id' => $pageId), 'contextcontent');
+        $url = $isManager
+            ? $this->uri(array('action' => 'controlpanel'), 'context')
+            : $this->uri(
+                array('action' => 'viewpage', 'id' => $pageId),
+                'contextcontent'
+            );
 
         $e = function ($value) {
             return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');

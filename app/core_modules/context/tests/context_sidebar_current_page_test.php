@@ -13,6 +13,9 @@ $checks = array(
     'context sidebar marks the active destination explicitly' =>
         str_contains($contextSidebar, "\$node['current']")
         && str_contains($contextSidebar, "\$node['nodeid'] === \$activeId"),
+    'course settings has its own action-aware location' =>
+        str_contains($contextSidebar, "'nodeid'=>'updatesettings'")
+        && str_contains($contextSidebar, "array('controlpanel', 'updatesettings')"),
     'navigation renders the current destination without an anchor' =>
         str_contains($sidebar, "if (!empty(\$node['current']))")
         && str_contains($sidebar, 'aria-current="page"')

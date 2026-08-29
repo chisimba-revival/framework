@@ -77,73 +77,35 @@ class contextadminnav extends ChisimbaObject
      */
     public function show()
     {
-        $str = '';
-        
-        $heading = new htmlheading();
-        $heading->type = 2;
-        $heading->str = ucwords($this->objLanguage->code2Txt('mod_contextadmin_name', 'contextadmin', NULL, '[-context-] Admin'));
-        
-        $str = $heading->show();
-        
-        $str .= '<ul id="nav-secondary">';
-        
-        $mycoursesLink = new link ($this->uri(NULL));
-        $mycoursesLink->link = ucwords($this->objLanguage->code2Txt('phrase_mycourses', 'system', NULL, 'My [-contexts-]'));
-        
-        $str .= '<li>'.$mycoursesLink->show().'</li>';
-        
         $objUser = $this->getObject('user', 'security');
-        
-        if ($objUser->isAdmin() || $objUser->isLecturer()) {
-        
-            $createCourse = new link ($this->uri(array('action'=>'add')));
-            $createCourse->link = ucwords($this->objLanguage->code2Txt('mod_contextadmin_createcontext', 'contextadmin', NULL, 'Create [-context-]'));
-            
-            $str .= '<li>'.$createCourse->show().'</li>';
-        }
-
         $objContext = $this->getObject('dbcontext', 'context');
-        $contextCode = (string) $objContext->getContextCode();
-        if ($contextCode !== '' && ($objUser->isAdmin() || $objUser->isContextLecturer($objUser->userId(), $contextCode))) {
-            $authorsLink = new link($this->uri(array('action'=>'authors','contextcode'=>$contextCode)));
-            $authorsLink->link = $this->objLanguage->code2Txt('mod_contextadmin_manageauthors','contextadmin');
-            $str .= '<li>'.$authorsLink->show().'</li>';
+        $contextCode = trim((string) $this->getParam('contextcode', $objContext->getContextCode()));
+        $currentAction = (string) $this->getParam('action', '');
+        $inContext = $contextCode !== '' && $contextCode !== 'root'
+            && ($objUser->isAdmin() || $objUser->isContextLecturer($objUser->userId(), $contextCode));
+        $items = array();
+        if ($inContext) {
+            $items[] = array('icon'=>'layout-dashboard','label'=>$this->objLanguage->code2Txt('mod_contextadmin_coursecontrolpanel','contextadmin',NULL,'[-context-] Control Panel'),'url'=>$this->uri(array('action'=>'controlpanel'), 'context'));
+            $items[] = array('icon'=>'settings','label'=>$this->objLanguage->code2Txt('mod_contextadmin_editsettings','contextadmin',NULL,'Edit settings'),'url'=>$this->uri(array('action'=>'updatesettings'), 'context'));
+            $items[] = array('icon'=>'list-checks','label'=>$this->objLanguage->code2Txt('mod_contextadmin_fullwizard','contextadmin',NULL,'Full [-context-] wizard'),'url'=>$this->uri(array('action'=>'edit','contextcode'=>$contextCode), 'contextadmin'));
+            $items[] = array('icon'=>'users','label'=>$this->objLanguage->code2Txt('mod_contextadmin_managemembers','contextadmin',NULL,'Manage [-context-] members'),'url'=>$this->uri(array(), 'contextgroups'));
+            if ($currentAction !== 'authors') {
+                $items[] = array('icon'=>'user-cog','label'=>$this->objLanguage->code2Txt('mod_contextadmin_manageauthors','contextadmin'),'url'=>$this->uri(array('action'=>'authors','contextcode'=>$contextCode), 'contextadmin'));
+            }
         }
-        
-        $str .= '</ul>';
-        
-        $heading = new htmlheading();
-        $heading->type = 3;
-        $heading->str = ucwords($this->objLanguage->code2Txt('mod_contextadmin_searchforcontext', 'contextadmin', NULL, 'Search for [-context-]'));
-        
-        $str .= '<br />'.$heading->show();
-        
-        $form = new form ('searchform', $this->uri(array('action'=>'search')));
-        $form->method = 'GET';
-        
-        $module = new hiddeninput('module', $this->getParam('module', 'contextadmin'));
-        $action = new hiddeninput('action', 'search');        
-        
-        $textinput = new textinput ('search', $this->getParam('search'));
-        $button = new button ('searchbutton', $this->objLanguage->languageText('word_search', 'system', 'Search'));
-        $button->setToSubmit();
-        
-        $form->addToForm($module->show().$action->show().$textinput->show() 
-          . $button->show());
-        
-        $str .= $form->show();
-        
-        
-        
-        $heading = new htmlheading();
-        $heading->type = 3;
-        $heading->str = ucwords($this->objLanguage->code2Txt('phrase_browsecourses', 'system', NULL, 'Browse [-contexts-]'));
-        
-        $str .= $heading->show();
-        
-        $str .= $this->getAlphaListingTable();
-        
-        return $str;
+        $items[] = array('icon'=>'book-open','label'=>$this->objLanguage->code2Txt('phrase_mycourses','system',NULL,'My [-contexts-]'),'url'=>$this->uri(NULL));
+        if ($objUser->isAdmin() || $objUser->isLecturer()) {
+            $items[] = array('icon'=>'plus','label'=>$this->objLanguage->code2Txt('mod_contextadmin_createcontext','contextadmin',NULL,'Create [-context-]'),'url'=>$this->uri(array('action'=>'add')));
+        }
+        $e = static function($value){ return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); };
+        $icons = $this->getObject('iconservice','ui');
+        $html = '<nav class="contextadmin-navigation" aria-label="' . $e($this->objLanguage->code2Txt('mod_contextadmin_navigation','contextadmin',NULL,'[-context-] administration')) . '"><h2>'
+            . $e(ucwords($this->objLanguage->code2Txt('mod_contextadmin_name','contextadmin',NULL,'[-context-] Admin'))) . '</h2><ul>';
+        foreach ($items as $item) {
+            $html .= '<li><a class="chisimba-navigation-action" href="' . $e($item['url']) . '"><span>'
+                . $icons->render($item['icon'], array('decorative'=>true)) . '</span><strong>' . $e(ucwords($item['label'])) . '</strong></a></li>';
+        }
+        return $html . '</ul></nav>';
     }
     
     /**

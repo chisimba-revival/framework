@@ -143,17 +143,17 @@ class contextsidebar extends ChisimbaObject
                 'nodeid' => 'contextadmin-settings'
             );
             $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('mod_context_contextcontrolpanel', 'context', NULL, '[-context-] Control Panel')), 'uri'=>$this->uri(array('action'=>'controlpanel'), 'context'), 'nodeid'=>'controlpanel');
+            $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('mod_context_editsettings', 'context', NULL, 'Edit settings')), 'uri'=>$this->uri(array('action'=>'updatesettings'), 'context'), 'nodeid'=>'updatesettings');
         }
         $nodes[] = array('text'=>ucwords($this->objLanguage->code2Txt('phrase_leavecourse', 'system', NULL, 'Leave [-context-]')), 'uri'=>$this->uri(array('action'=>'leavecontext'), 'context'), 'nodeid'=>'leavecontext');
         $objSideBar = $this->getObject('sidebar', 'navigation');
         $objSideBar->showHomeLink = FALSE;
 
         if ($this->getParam('module') == 'context') {
-            if ($this->getParam('action') == 'controlpanel') {
-                $activeId = 'controlpanel';
-            } else {
-                $activeId = 'context';
-            }
+            $contextAction = (string) $this->getParam('action', '');
+            $activeId = in_array($contextAction, array('controlpanel', 'updatesettings'), TRUE)
+                ? $contextAction
+                : 'context';
         } else {
             $activeId = $this->getParam('module') === 'contextadmin'
                 && $this->getParam('action') === 'edit'

@@ -591,10 +591,8 @@ class context extends controller {
     protected function __updatesettings() {
         $context = $this->objContext->getContextDetails($this->contextCode);
         $objContextForms = $this->getObject('contextforms');
-
         $form = $objContextForms->editContextForm($context);
         $this->setVarByRef('form', $form);
-
         return 'editcontextsettings_tpl.php';
     }
 
@@ -622,10 +620,10 @@ class context extends controller {
         $deliveryFormat = $this->getParam('delivery_format', '');
         $learningDesign = $this->objContext->validateLearningDesign(
             $deliveryFormat,
-            $contextCode === $this->contextCode
-                ? $this->objContext->getField('navigation_mode', $contextCode)
-                : NULL
+            $this->getParam('navigation_mode', '')
         );
+        $showComment = (string) $this->getParam('showcomment', '0');
+        $canvas = (string) $this->getParam('canvas', 'None');
 
 
         //$emailalert =
@@ -636,10 +634,11 @@ class context extends controller {
         $alerts = $this->getParam('emailalertopt') == 'on' ? '1' : '0';
         if ($contextCode == $this->contextCode && $title != ''
             && $accessPolicy !== FALSE && $privateAdmissionMode !== FALSE
-            && $learningDesign !== FALSE) {
+            && $learningDesign !== FALSE
+            && in_array($showComment, array('0', '1'), TRUE)) {
             $result = $this->objContext->updateContext(
-                    $contextCode, $title, $status, $access, $about, FALSE, /*'Y'*/FALSE,
-                    $alerts, FALSE, FALSE, $learningDesign['delivery_format'],
+                    $contextCode, $title, $status, $access, $about, FALSE, $showComment,
+                    $alerts, FALSE, $canvas, $learningDesign['delivery_format'],
                     $learningDesign['navigation_mode'], $accessPolicy,
                     $privateAdmissionMode);
 

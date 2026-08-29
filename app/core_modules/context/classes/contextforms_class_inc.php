@@ -173,6 +173,30 @@ class contextforms extends ChisimbaObject {
         }
         $deliveryFormat->setSelected($selectedFormat);
 
+        $navigation = new dropdown('navigation_mode');
+        $navigation->addOption('sequential', $this->objLanguage->languageText('mod_context_navigationsequential', 'context', 'Sequential only'));
+        $navigation->addOption('backward', $this->objLanguage->languageText('mod_context_navigationbackward', 'context', 'Backward allowed'));
+        $navigation->addOption('free', $this->objLanguage->languageText('mod_context_navigationfree', 'context', 'Free navigation'));
+        $navigation->addOption('gated', $this->objLanguage->languageText('mod_context_navigationgated', 'context', 'Gated progression'));
+        $selectedNavigation = !empty($context['navigation_mode'])
+            ? (string) $context['navigation_mode']
+            : ($selectedFormat === 'microlearning' ? 'backward' : 'free');
+        $navigation->setSelected($selectedNavigation);
+
+        $canvas = new dropdown('canvas');
+        $canvas->addOption('None', $this->objLanguage->languageText('word_none', 'system', 'None'));
+        $contextCode = isset($context['contextcode']) ? (string) $context['contextcode'] : '';
+        $validCanvases = $contextCode !== ''
+            ? array_map('basename', glob('usrfiles/context/' . $contextCode . '/canvases/*', GLOB_ONLYDIR))
+            : array();
+        foreach ($validCanvases as $validCanvas) { $canvas->addOption($validCanvas, $validCanvas); }
+        $canvas->setSelected(!empty($context['canvas']) ? (string) $context['canvas'] : 'None');
+
+        $showComment = new dropdown('showcomment');
+        $showComment->addOption('1', $this->objLanguage->languageText('word_yes', 'system', 'Yes'));
+        $showComment->addOption('0', $this->objLanguage->languageText('word_no', 'system', 'No'));
+        $showComment->setSelected(!empty($context['showcomment']) ? '1' : '0');
+
         $formatDescriptions = array(
             'standard' => $this->objLanguage->languageText(
                 'mod_context_formatstandardhelp',
@@ -238,6 +262,22 @@ class contextforms extends ChisimbaObject {
             'Course format'
         ).':');
         $table->addCell($deliveryFormat->show() . $formatHelp);
+        $table->endRow();
+
+        $table->startRow();
+        $table->addCell($this->objLanguage->languageText('mod_context_learnernavigation', 'context', 'Learner navigation') . ':');
+        $table->addCell($navigation->show());
+        $table->endRow();
+
+        $table->startRow();
+        $table->addCell($this->objLanguage->languageText('mod_context_theme', 'context', 'Theme') . ':');
+        $table->addCell($canvas->show());
+        $table->endRow();
+
+        $table->startRow();
+        $table->addCell($this->objLanguage->languageText('mod_context_comments', 'context', 'Comments') . ':');
+        $table->addCell($showComment->show() . '<p class="contextadmin-field-help">'
+            . $this->objLanguage->languageText('mod_context_commentshelp', 'context', 'Allow members to comment on course pages.') . '</p>');
         $table->endRow();
 
         $table->startRow();

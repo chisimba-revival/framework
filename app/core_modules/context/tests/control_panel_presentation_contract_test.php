@@ -19,6 +19,8 @@ $plugins = file_get_contents($root . '/classes/block_contextmodules_class_inc.ph
 $forms = file_get_contents($root . '/classes/contextforms_class_inc.php');
 $sidebar = file_get_contents($root . '/classes/contextsidebar_class_inc.php');
 $template = file_get_contents($root . '/templates/content/controlpanel_tpl.php');
+$controller = file_get_contents($root . '/controller.php');
+$journey = file_get_contents($root . '/classes/block_learningjourney_class_inc.php');
 $register = file_get_contents($root . '/register.conf');
 $reborn = file_get_contents($app . '/skins/chisimba-reborn/stylesheet.css');
 
@@ -37,6 +39,17 @@ $checks = array(
         'course-control-tasks'
     ) && str_contains($template, "'action' => 'authors'")
         && str_contains($template, "'contextcontent'"),
+    'single-page settings and the full wizard remain distinct journeys' => str_contains(
+        $controller,
+        "return 'editcontextsettings_tpl.php'"
+    ) && str_contains($template, "'action' => 'updatesettings'")
+        && str_contains($template, "'mod_context_fullcontextedit'")
+        && str_contains($template, "'action' => 'edit', 'contextcode' => \$contextCode"),
+    'course managers receive a role-aware management journey' => str_contains(
+        $journey,
+        'isCourseAdmin($contextCode)'
+    ) && str_contains($journey, "'mod_context_managerjourneyaction'")
+        && str_contains($journey, "array('action' => 'controlpanel')"),
     'task shortcuts use the shared navigation-action primitive' => str_contains(
         $template,
         'chisimba-navigation-action course-control-task'

@@ -33,8 +33,14 @@ $taskLinks = array(
     array(
         'icon' => 'settings',
         'label' => $objLanguage->code2Txt('mod_context_editsettings', 'context', null, 'Edit settings'),
-        'help' => $objLanguage->code2Txt('mod_context_editsettingshelp', 'context', null, 'Change availability, access, title and course image.'),
+        'help' => $objLanguage->code2Txt('mod_context_editsettingshelp', 'context', null, 'Change the most-used course settings on one page.'),
         'url' => $this->uri(array('action' => 'updatesettings'), 'context'),
+    ),
+    array(
+        'icon' => 'list-checks',
+        'label' => $objLanguage->code2Txt('mod_context_fullcontextedit', 'context', null, 'Full [-context-] wizard'),
+        'help' => $objLanguage->code2Txt('mod_context_fullcontextedithelp', 'context', null, 'Work through settings, information, outcomes and course tools in four guided stages.'),
+        'url' => $this->uri(array('action' => 'edit', 'contextcode' => $contextCode), 'contextadmin'),
     ),
     array(
         'icon' => 'blocks',

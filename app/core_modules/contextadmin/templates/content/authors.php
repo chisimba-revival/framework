@@ -33,6 +33,6 @@ $minus=$icons->render('user-minus',array('decorative'=>true,'class'=>'chisimba-a
 <p><?php echo $e($t('mod_contextadmin_transferownershiphelp')); ?></p>
 <?php if($available): ?><form method="post" action="<?php echo $this->uri(array('action'=>'addauthor'),'contextadmin'); ?>"><input type="hidden" name="csrf_token" value="<?php echo $e($csrf); ?>"><input type="hidden" name="contextcode" value="<?php echo $e($cc); ?>"><label><?php echo $e($t('mod_contextadmin_selectauthor')); ?> <select name="userid" required><?php foreach($available as $a): ?><option value="<?php echo $e(isset($a['userId'])?$a['userId']:''); ?>"><?php echo $e($ul($a)); ?></option><?php endforeach; ?></select></label><div class="chisimba-form-actions"><button class="button" type="submit"><?php echo $plus; ?><span><?php echo $e($t('mod_contextadmin_addauthor')); ?></span></button></div></form><?php else: ?><p><?php echo $e($t('mod_contextadmin_noavailableauthors')); ?></p><?php endif; ?></section><?php endif; ?>
 <div class="chisimba-form-actions">
-<a class="button chisimba-button-secondary" href="<?php echo $this->uri(array(), 'contextgroups'); ?>"><?php echo $e($t('mod_contextadmin_backtocoursemembers')); ?></a>
+<a class="button chisimba-button-secondary" href="<?php echo $this->uri(array('action'=>'controlpanel'), 'context'); ?>"><?php echo $e(ucwords($t('mod_contextadmin_coursecontrolpanel'))); ?></a>
 </div>
 </div>

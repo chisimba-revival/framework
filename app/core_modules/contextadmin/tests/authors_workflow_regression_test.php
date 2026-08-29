@@ -38,9 +38,9 @@ if (strpos($template, 'mod_contextadmin_transferownershiphelp') === false
 if (strpos($register, 'first add the new owner to [-authors-]') === false) {
     $errors[] = 'Ownership guidance must use the article-neutral [-authors-] system-text token.';
 }
-if (strpos($template, "uri(array(), 'contextgroups')") === false
-    || strpos($register, 'mod_contextadmin_backtocoursemembers|Back to course members|Back to Manage [-context-] members') === false) {
-    $errors[] = 'The return action must lead clearly to Manage Course Members.';
+if (strpos($template, "uri(array('action'=>'controlpanel'), 'context')") === false
+    || strpos($register, 'mod_contextadmin_coursecontrolpanel|') === false) {
+    $errors[] = 'Lecturer management must provide a clear Course Control Panel route.';
 }
 if (strpos($template, "'action'=>'edit'") !== false) {
     $errors[] = 'The lecturer workflow must not drop users into the four-step course editor.';
