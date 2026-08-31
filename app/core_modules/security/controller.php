@@ -347,6 +347,7 @@ class security extends controller
         } else {
             $stack['persistent']->clear();
         }
+        $this->clearContextScope();
         if (!$stack['sessions']->destroy()) {
             throw new RuntimeException(
                 'Canonical authenticated session could not be destroyed.'
@@ -355,6 +356,31 @@ class security extends controller
 
         header('Location: ' . $this->frontPagePath(), true, 303);
         exit;
+    }
+
+    /**
+     * Prevent the next authenticated identity inheriting the previous course.
+     *
+     * Context owns additional optional scope such as workgroups, so its
+     * service performs the normal cleanup. The direct fallback keeps the
+     * security boundary reliable if optional context cleanup cannot load.
+     *
+     * @return void
+     */
+    private function clearContextScope()
+    {
+        try {
+            $this->getObject('dbcontext', 'context')->leaveContext();
+            return;
+        } catch (Throwable $failure) {
+            foreach (array(
+                'contextCode', 'contextId', 'contextTitle', 'contextmenuText',
+                'contextabout', 'contextIsActive', 'contextIsClosed',
+                'contextDateCreated', 'contextCreatorId',
+            ) as $key) {
+                $this->unsetSession($key, 'context');
+            }
+        }
     }
 
     /**
