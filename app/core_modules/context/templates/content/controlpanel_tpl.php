@@ -101,15 +101,16 @@ foreach ($taskLinks as $task) {
 $ret .= '</ul></nav>';
 $cpBlocks = array();
 $objBlocks = $this->getObject('blocks', 'blocks');
-$cpBlocks[] = $objBlocks->showBlock('contextsettings', 'context', NULL, 20, TRUE, FALSE);
-$cpBlocks[] = $objBlocks->showBlock('sasiwebserver', 'sasicontext', NULL, 20, TRUE, FALSE);
-$cpBlocks[] = $objBlocks->showBlock('contextmembers', 'contextgroups', NULL, 20, TRUE, FALSE);
-$cpBlocks[] = $objBlocks->showBlock('contextmodules', 'context', NULL, 20, TRUE, FALSE);
+$cpBlocks[] = array('html' => $objBlocks->showBlock('contextsettings', 'context', NULL, 20, TRUE, FALSE), 'class' => '');
+$cpBlocks[] = array('html' => $objBlocks->showBlock('sasiwebserver', 'sasicontext', NULL, 20, TRUE, FALSE), 'class' => '');
+$cpBlocks[] = array('html' => $objBlocks->showBlock('contextmembers', 'contextgroups', NULL, 20, TRUE, FALSE), 'class' => ' course-control-details__item--members');
+$cpBlocks[] = array('html' => $objBlocks->showBlock('contextmodules', 'context', NULL, 20, TRUE, FALSE), 'class' => '');
 //$cpBlocks[] = $objBlocks->showBlock('contextstats', 'context', NULL, 20, TRUE, FALSE);
 $ret .= '<div class="course-control-details">';
 foreach ($cpBlocks as $block) {
-    if (trim((string) $block) !== '') {
-        $ret .= '<div class="course-control-details__item">' . $block . '</div>';
+    if (trim((string) $block['html']) !== '') {
+        $ret .= '<div class="course-control-details__item'
+            . $block['class'] . '">' . $block['html'] . '</div>';
     }
 }
 $ret .= '</div></div>';

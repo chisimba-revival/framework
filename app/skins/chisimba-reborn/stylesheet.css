@@ -4712,9 +4712,13 @@ h5.featureboxheader,
 }
 
 .course-control-members {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.65rem;
+}
+
+.course-control-details__item--members {
+    grid-column: 1 / -1;
 }
 
 .course-control-members li {
@@ -4745,7 +4749,8 @@ h5.featureboxheader,
     .course-control-tasks ul,
     .course-control-details,
     .course-control-settings,
-    .course-control-plugins {
+    .course-control-plugins,
+    .course-control-members {
         grid-template-columns: minmax(0, 1fr);
     }
 }

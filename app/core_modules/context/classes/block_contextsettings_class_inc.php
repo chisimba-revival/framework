@@ -64,7 +64,7 @@ class block_contextsettings extends ChisimbaObject
     }
 
     /**
-     * Render the active course summary and settings action.
+     * Render the active course summary.
      *
      * @return string HTML fragment.
      */
@@ -152,19 +152,9 @@ class block_contextsettings extends ChisimbaObject
         }
         $summary .= '</dl>';
 
-        $action = $this->uri(array('action' => 'updatesettings'));
-        $actionLabel = ucwords($this->objLanguage->code2Txt(
-            'mod_context_changecontextsettings',
-            'context',
-            null,
-            'Change [-context-] Settings'
-        ));
-
         return '<div class="course-control-settings"><div '
             . 'class="course-control-settings__media">' . $media . '</div>'
-            . $summary . '</div><p class="course-control-action"><a href="'
-            . $this->escape($action) . '">' . $this->escape($actionLabel)
-            . '</a></p>';
+            . $summary . '</div>';
     }
 
     /**

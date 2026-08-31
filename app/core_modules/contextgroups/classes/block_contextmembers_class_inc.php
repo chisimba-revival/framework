@@ -1,6 +1,6 @@
 <?php
 /**
- * Render course lecturers from canonical group membership.
+ * Render course members from canonical group membership.
  *
  * PHP version 8
  *
@@ -48,15 +48,15 @@ class block_contextmembers extends ChisimbaObject
         $this->contextCode = $this->objContext->getContextCode();
         $this->objLanguage = $this->getObject('language', 'language');
         $this->title = ucwords($this->objLanguage->code2Txt(
-            'mod_contextgroups_toolbarname',
+            'mod_contextgroups_contextmembers',
             'contextgroups',
             null,
-            'Manage [-CONTEXT-] members'
+            '[-CONTEXT-] members'
         ));
     }
 
     /**
-     * Render lecturers and the course-membership management action.
+     * Render lecturers, students, and guests in the active course.
      *
      * @return string HTML fragment.
      */
@@ -67,36 +67,34 @@ class block_contextmembers extends ChisimbaObject
         }
 
         $groups = $this->getObject('groupservice', 'groupadmin');
-        $lecturerGroupId = $groups->groupIdForName(
-            $this->contextCode . '^Lecturers'
-        );
-        $lecturers = $lecturerGroupId === false
-            ? array()
-            : $groups->getMembers($lecturerGroupId);
         $iconService = $this->getObject('iconservice', 'ui');
-        $roleLabel = ucwords($this->objLanguage->code2Txt(
-            'mod_contextgroups_rolelecturer',
-            'contextgroups',
-            null,
-            '[-AUTHOR-]'
-        ));
+        $roleGroups = array(
+            array('group' => 'Lecturers', 'language' => 'mod_contextgroups_rolelecturer', 'fallback' => '[-AUTHOR-]'),
+            array('group' => 'Students', 'language' => 'mod_contextgroups_rolestudent', 'fallback' => '[-READONLY-]'),
+            array('group' => 'Guests', 'language' => 'mod_contextgroups_roleguest', 'fallback' => 'Guest'),
+        );
+        $items = array();
 
-        if (count($lecturers) === 0) {
-            $content = '<p class="course-control-members__empty">'
-                . $this->escape($this->objLanguage->code2Txt(
-                    'mod_contextgroups_nolecturers',
-                    'contextgroups',
-                    null,
-                    'No [-AUTHORS-] in this [-CONTEXT-]'
-                )) . '</p>';
-        } else {
-            $items = array();
-            foreach ($lecturers as $lecturer) {
-                $name = isset($lecturer['displayName'])
-                    ? trim((string) $lecturer['displayName'])
+        foreach ($roleGroups as $roleGroup) {
+            $groupId = $groups->groupIdForName(
+                $this->contextCode . '^' . $roleGroup['group']
+            );
+            $members = $groupId === false
+                ? array()
+                : $groups->getMembers($groupId);
+            $roleLabel = ucwords($this->objLanguage->code2Txt(
+                $roleGroup['language'],
+                'contextgroups',
+                null,
+                $roleGroup['fallback']
+            ));
+
+            foreach ($members as $member) {
+                $name = isset($member['displayName'])
+                    ? trim((string) $member['displayName'])
                     : '';
-                if ($name === '' && isset($lecturer['username'])) {
-                    $name = trim((string) $lecturer['username']);
+                if ($name === '' && isset($member['username'])) {
+                    $name = trim((string) $member['username']);
                 }
                 if ($name === '') {
                     continue;
@@ -110,20 +108,21 @@ class block_contextmembers extends ChisimbaObject
                     . 'class="course-control-member__role">'
                     . $this->escape($roleLabel) . '</span></li>';
             }
+        }
+
+        if (count($items) === 0) {
+            $content = '<p class="course-control-members__empty">'
+                . $this->escape($this->objLanguage->code2Txt(
+                    'mod_contextgroups_nomembers',
+                    'contextgroups',
+                    null,
+                    'No members in this [-CONTEXT-]'
+                )) . '</p>';
+        } else {
             $content = '<ul class="course-control-members">'
                 . implode('', $items) . '</ul>';
         }
-
-        $manageLabel = $this->objLanguage->code2Txt(
-            'mod_contextgroups_toolbarname',
-            'contextgroups',
-            null,
-            'Manage [-CONTEXT-] members'
-        );
-
-        return $content . '<p class="course-control-action"><a href="'
-            . $this->escape($this->uri(null, 'contextgroups')) . '">'
-            . $this->escape($manageLabel) . '</a></p>';
+        return $content;
     }
 
     /**

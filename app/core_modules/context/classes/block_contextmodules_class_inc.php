@@ -123,18 +123,8 @@ class block_contextmodules extends ChisimbaObject
             array('plugins' => 'plugins'),
             'Unused [-plugins-]'
         );
-        $manageLabel = $this->objLanguage->code2Txt(
-            'mod_context_managepluginsabs',
-            'context',
-            array('plugins' => 'plugins'),
-            'Manage [-plugins-]'
-        );
-
         return $content . '<p class="course-control-meta">'
-            . $this->escape($unusedLabel) . ': ' . $unused . '</p>'
-            . '<p class="course-control-action"><a href="'
-            . $this->escape($this->uri(array('action' => 'manageplugins')))
-            . '">' . $this->escape($manageLabel) . '</a></p>';
+            . $this->escape($unusedLabel) . ': ' . $unused . '</p>';
     }
 
     /**
