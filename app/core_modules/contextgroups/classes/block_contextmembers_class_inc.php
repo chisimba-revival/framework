@@ -74,6 +74,7 @@ class block_contextmembers extends ChisimbaObject
             array('group' => 'Guests', 'language' => 'mod_contextgroups_roleguest', 'fallback' => 'Guest'),
         );
         $items = array();
+        $seenMembers = array();
 
         foreach ($roleGroups as $roleGroup) {
             $groupId = $groups->groupIdForName(
@@ -90,6 +91,15 @@ class block_contextmembers extends ChisimbaObject
             ));
 
             foreach ($members as $member) {
+                $identity = isset($member['userId'])
+                    ? trim((string) $member['userId'])
+                    : '';
+                if ($identity === '' && isset($member['username'])) {
+                    $identity = strtolower(trim((string) $member['username']));
+                }
+                if ($identity !== '' && isset($seenMembers[$identity])) {
+                    continue;
+                }
                 $name = isset($member['displayName'])
                     ? trim((string) $member['displayName'])
                     : '';
@@ -98,6 +108,9 @@ class block_contextmembers extends ChisimbaObject
                 }
                 if ($name === '') {
                     continue;
+                }
+                if ($identity !== '') {
+                    $seenMembers[$identity] = true;
                 }
                 $items[] = '<li><span class="course-control-member__icon">'
                     . $iconService->render('user', array(

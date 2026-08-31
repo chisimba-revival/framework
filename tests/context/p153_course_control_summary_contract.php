@@ -42,6 +42,19 @@ foreach ($requiredMemberGroups as $group) {
     }
 }
 
+if (strpos($members, '$seenMembers') === false) {
+    fwrite(STDERR, "FAIL: overlapping course roles are displayed twice\n");
+    exit(1);
+}
+
+$membersPosition = strpos($controlPanel, "showBlock('contextmembers'");
+$settingsPosition = strpos($controlPanel, "showBlock('contextsettings'");
+if ($membersPosition === false || $settingsPosition === false
+    || $membersPosition > $settingsPosition) {
+    fwrite(STDERR, "FAIL: course members are not the first summary block\n");
+    exit(1);
+}
+
 $forbidden = array(
     array($settings, "'action' => 'updatesettings'"),
     array($plugins, "'action' => 'manageplugins'"),

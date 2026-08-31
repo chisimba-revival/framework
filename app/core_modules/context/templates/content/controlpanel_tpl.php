@@ -101,9 +101,9 @@ foreach ($taskLinks as $task) {
 $ret .= '</ul></nav>';
 $cpBlocks = array();
 $objBlocks = $this->getObject('blocks', 'blocks');
+$cpBlocks[] = array('html' => $objBlocks->showBlock('contextmembers', 'contextgroups', NULL, 20, TRUE, FALSE), 'class' => ' course-control-details__item--members');
 $cpBlocks[] = array('html' => $objBlocks->showBlock('contextsettings', 'context', NULL, 20, TRUE, FALSE), 'class' => '');
 $cpBlocks[] = array('html' => $objBlocks->showBlock('sasiwebserver', 'sasicontext', NULL, 20, TRUE, FALSE), 'class' => '');
-$cpBlocks[] = array('html' => $objBlocks->showBlock('contextmembers', 'contextgroups', NULL, 20, TRUE, FALSE), 'class' => ' course-control-details__item--members');
 $cpBlocks[] = array('html' => $objBlocks->showBlock('contextmodules', 'context', NULL, 20, TRUE, FALSE), 'class' => '');
 //$cpBlocks[] = $objBlocks->showBlock('contextstats', 'context', NULL, 20, TRUE, FALSE);
 $ret .= '<div class="course-control-details">';
