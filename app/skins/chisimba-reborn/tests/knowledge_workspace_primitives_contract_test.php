@@ -13,6 +13,7 @@ $checks=array(
     'small icon glyph remains visually strong'=>str_contains($stylesheet,'width: 1.28rem;')&&str_contains($stylesheet,'stroke-width: 2.35;'),
     'toolbar primitive'=>str_contains($stylesheet,'.chisimba-toolbar {'),
     'popover primitive'=>str_contains($stylesheet,'.chisimba-popover {'),
+    'compact search field primitive'=>str_contains($stylesheet,'.chisimba-search-field {')&&str_contains($stylesheet,'.chisimba-visually-hidden {'),
     'workspace surface primitive'=>str_contains($stylesheet,'.chisimba-spatial-workspace {'),
     'collapsible drawer primitive'=>str_contains($stylesheet,'.chisimba-drawer {')&&str_contains($stylesheet,'.chisimba-drawer[aria-hidden="true"]')
 );
