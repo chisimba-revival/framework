@@ -5167,8 +5167,13 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 }
 .chisimba-icon-button--small .chisimba-icon,
 .chisimba-icon-button--small .chisimba-icon-mask {
-    width: .9rem;
-    height: .9rem;
+    width: 1.28rem;
+    height: 1.28rem;
+}
+.chisimba-icon-button--small svg {
+    width: 1.28rem;
+    height: 1.28rem;
+    stroke-width: 2.35;
 }
 .chisimba-toolbar {
     display: flex;
