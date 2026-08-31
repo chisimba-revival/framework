@@ -368,9 +368,12 @@ class patch extends dbtable {
     private function readVersion($module) {
         try {
             //Check that the register file is there.
-            if (@!$regdata = file($this->objModFile->findRegisterFile($module))) {
+            $registerFile = $this->objModFile->findRegisterFile($module);
+            if (!is_string($registerFile) || $registerFile === '' || !is_file($registerFile)) {
                 return FALSE;
             }
+            $regdata = @file($registerFile);
+            if ($regdata === false) return FALSE;
             //var_dump($regdata);
             // Now look up the version number from that file
             foreach  ($regdata as $line) {
