@@ -5134,6 +5134,101 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     mask: var(--chisimba-icon-url) center / contain no-repeat;
 }
 
+/* Shared controls for dense visual and spatial workspaces. */
+.chisimba-button-compact {
+    min-height: 2rem;
+    padding: var(--chisimba-space-1) var(--chisimba-space-2);
+    font-size: .82rem;
+    line-height: 1.2;
+}
+.chisimba-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--chisimba-border);
+    border-radius: var(--chisimba-radius-sm);
+    color: var(--chisimba-ink);
+    background: var(--chisimba-surface);
+}
+.chisimba-icon-button:hover,
+.chisimba-icon-button:focus-visible {
+    color: var(--chisimba-ink);
+    background: var(--chisimba-primary-soft);
+}
+.chisimba-icon-button--small {
+    width: 1.8rem;
+    min-width: 1.8rem;
+    height: 1.8rem;
+    border-radius: calc(var(--chisimba-radius-sm) * .8);
+}
+.chisimba-icon-button--small .chisimba-icon,
+.chisimba-icon-button--small .chisimba-icon-mask {
+    width: .9rem;
+    height: .9rem;
+}
+.chisimba-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--chisimba-space-2);
+    padding: var(--chisimba-space-2) var(--chisimba-space-3);
+    border: 1px solid var(--chisimba-border);
+    border-radius: var(--chisimba-radius-md);
+    background: var(--chisimba-surface);
+    box-shadow: var(--chisimba-shadow-sm);
+}
+.chisimba-toolbar__group {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--chisimba-space-1);
+    padding-inline-end: var(--chisimba-space-2);
+    border-inline-end: 1px solid var(--chisimba-border);
+}
+.chisimba-toolbar__group:last-child { padding-inline-end: 0; border-inline-end: 0; }
+.chisimba-popover {
+    padding: var(--chisimba-space-3);
+    border: 1px solid var(--chisimba-border);
+    border-radius: var(--chisimba-radius-md);
+    color: var(--chisimba-ink);
+    background: var(--chisimba-surface);
+    box-shadow: var(--chisimba-shadow-lg);
+}
+.chisimba-spatial-workspace {
+    position: relative;
+    overflow: auto;
+    min-height: 32rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: var(--chisimba-radius-md);
+    background-color: var(--chisimba-surface);
+    background-image: radial-gradient(var(--chisimba-border) 1px, transparent 1px);
+    background-size: 1.125rem 1.125rem;
+}
+.chisimba-spatial-workspace:focus-visible {
+    outline: 3px solid var(--chisimba-focus);
+    outline-offset: 2px;
+}
+.chisimba-drawer {
+    box-sizing: border-box;
+    overflow: auto;
+    min-width: 0;
+    border: 1px solid var(--chisimba-border);
+    background: var(--chisimba-surface);
+    box-shadow: var(--chisimba-shadow-md);
+    transition: inline-size 180ms ease, opacity 140ms ease, transform 180ms ease;
+}
+.chisimba-drawer[aria-hidden="true"] {
+    inline-size: 0 !important;
+    padding-inline: 0 !important;
+    border-inline-width: 0;
+    opacity: 0;
+    transform: translateX(1rem);
+    pointer-events: none;
+}
+
 /* Canvas chooser: branded, accessible selection cards. */
 .chisimba-canvas-grid {
     display: grid;
