@@ -353,9 +353,48 @@ class security extends controller
                 'Canonical authenticated session could not be destroyed.'
             );
         }
+        if (!$this->destroyApplicationSession()) {
+            throw new RuntimeException(
+                'Application session could not be destroyed.'
+            );
+        }
 
         header('Location: ' . $this->frontPagePath(), true, 303);
         exit;
+    }
+
+    /**
+     * Destroy every module-scoped value and invalidate the browser cookie.
+     *
+     * Authentication keys alone are not a sufficient logout boundary because
+     * Chisimba stores course, workflow and module state in the same PHP session.
+     * A shared computer must never expose any of that state to the next login.
+     *
+     * @return bool True when no active PHP session remains.
+     * @author Derek Keats
+     */
+    private function destroyApplicationSession()
+    {
+        $_SESSION = array();
+
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return true;
+        }
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
+
+        return session_destroy();
     }
 
     /**

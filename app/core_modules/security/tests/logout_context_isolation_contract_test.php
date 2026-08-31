@@ -13,9 +13,13 @@ if ($source === false) {
 
 $required = array(
     '$this->clearContextScope();',
+    '$this->destroyApplicationSession()',
     "->leaveContext()",
     "'contextCode'",
     "\$this->unsetSession(\$key, 'context');",
+    '$_SESSION = array();',
+    'session_destroy()',
+    'session_get_cookie_params()',
 );
 foreach ($required as $needle) {
     if (strpos($source, $needle) === false) {
