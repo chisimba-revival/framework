@@ -6038,6 +6038,14 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     color: var(--chisimba-primary-dark);
 }
 
+.chisimba-icon-button--bare,
+.chisimba-icon-button--bare:hover,
+.chisimba-icon-button--bare:focus-visible {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+}
+
 @media (max-width: 52rem) {
     .mcq-overview__heading,
     .mcq-overview__bulk {
