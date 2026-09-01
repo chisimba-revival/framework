@@ -5251,6 +5251,19 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     color: var(--chisimba-ink);
     background: var(--chisimba-primary-soft);
 }
+.chisimba-table a.chisimba-icon-button { color:var(--chisimba-ink); }
+.chisimba-icon-button.chisimba-button-danger,
+.chisimba-table a.chisimba-icon-button.chisimba-button-danger {
+    color:var(--chisimba-danger);
+    border-color:var(--chisimba-danger);
+}
+.chisimba-icon-button.chisimba-button-danger:hover,
+.chisimba-icon-button.chisimba-button-danger:focus-visible,
+.chisimba-table a.chisimba-icon-button.chisimba-button-danger:hover,
+.chisimba-table a.chisimba-icon-button.chisimba-button-danger:focus-visible {
+    color:var(--chisimba-text-inverse);
+    background:var(--chisimba-danger);
+}
 .chisimba-icon-button--small {
     width: 1.8rem;
     min-width: 1.8rem;
