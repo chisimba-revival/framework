@@ -4230,6 +4230,81 @@ h5.featureboxheader,
 }
 /* END CHISIMBA-REBORN WORKSHEET AUTHORING UI */
 
+/* BEGIN CHISIMBA-REBORN WORKSHEET REVIEW UI */
+.worksheet-review-action {
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: var(--chisimba-surface-subtle, #f8f9fa);
+}
+
+.worksheet-review-action > p,
+.worksheet-review-action .chisimba-form-actions {
+    margin-top: 0;
+}
+
+.worksheet-review-action > p:last-of-type { margin-bottom: 0.75rem; }
+
+.worksheet-review-shared-rubric {
+    margin: 1.5rem 0;
+    padding: 1.1rem;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: var(--chisimba-surface, #fff);
+}
+
+.worksheet-review-shared-rubric > h2,
+.worksheet-review-rubric > h3,
+.worksheet-review-block > h3 {
+    margin: 0 0 0.7rem;
+}
+
+.worksheet-review-rubric .chisimba-table-wrap { margin-top: 0.75rem; }
+.worksheet-rubric-table th,
+.worksheet-rubric-table td { vertical-align: top; line-height: 1.45; }
+
+.worksheet-review-question {
+    margin: 1.25rem 0;
+    overflow: hidden;
+    border: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    border-radius: var(--chisimba-radius-md, 0.5rem);
+    background: var(--chisimba-surface-subtle, #f8f9fa);
+}
+
+.worksheet-review-question__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--chisimba-border-subtle, #d8dee5);
+    background: var(--chisimba-surface-muted, #f1f5f9);
+}
+
+.worksheet-review-question__header h2 { margin: 0; font-size: 1.08rem; }
+.worksheet-review-question__worth { white-space: nowrap; font-weight: 700; }
+.worksheet-review-question__prompt,
+.worksheet-review-block,
+.worksheet-review-fields { padding: 1rem 1.1rem; }
+.worksheet-review-question__prompt { background: var(--chisimba-surface, #fff); }
+.worksheet-review-block { border-top: 1px solid var(--chisimba-border-subtle, #d8dee5); }
+.worksheet-review-block--response { background: var(--chisimba-surface, #fff); }
+.worksheet-review-block--model { background: var(--chisimba-surface-subtle, #f8f9fa); }
+.worksheet-review-prose > :first-child { margin-top: 0; }
+.worksheet-review-prose > :last-child { margin-bottom: 0; }
+.worksheet-review-fields { border-top: 1px solid var(--chisimba-border-subtle, #d8dee5); }
+.worksheet-review-fields .chisimba-form-field:last-child { margin-bottom: 0; }
+.worksheet-review-mark { max-width: 18rem; }
+.worksheet-review-comment textarea { width: 100%; min-height: 7rem; box-sizing: border-box; resize: vertical; }
+.worksheet-review-save { justify-content: flex-end; margin: 1.5rem 0; }
+
+@media (max-width: 48rem) {
+    .worksheet-review-question__header { align-items: flex-start; flex-direction: column; }
+    .worksheet-rubric-table { min-width: 48rem; }
+}
+/* END CHISIMBA-REBORN WORKSHEET REVIEW UI */
+
 /* BEGIN CHISIMBA-REBORN ASSESSMENT PLAN WORKSPACE */
 /* Gradebook provides semantic sections; this skin owns their presentation. */
 .assessment-plan-workspace {
