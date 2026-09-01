@@ -146,13 +146,21 @@ class menu extends ChisimbaObject
                     'context', array('action' => 'controlpanel'),
                     'mod_toolbar_coursecontrolpanel', 'Course control panel'
                 );
-                if ($this->objModule->checkIfRegistered('contextcontent')) {
+                if ($this->objModule->checkIfRegistered('contextcontent')
+                    && $this->objDbConMod->isContextPlugin(
+                        $this->contextCode,
+                        'contextcontent'
+                    )) {
                     $journeys['teaching'][] = $this->journeyLink(
                         'contextcontent', NULL,
                         'mod_toolbar_coursecontent', 'Course content'
                     );
                 }
-                if ($this->objModule->checkIfRegistered('contextgroups')) {
+                if ($this->objModule->checkIfRegistered('contextgroups')
+                    && $this->objDbConMod->isContextPlugin(
+                        $this->contextCode,
+                        'contextgroups'
+                    )) {
                     $journeys['teaching'][] = $this->journeyLink(
                         'contextgroups', NULL,
                         'mod_toolbar_coursemembers', 'Course members'
@@ -234,10 +242,9 @@ class menu extends ChisimbaObject
             $visibleMod = $this->objDbConMod->getContextModules($this->contextCode);
             if (!empty($visibleMod)) {
                 foreach($visibleMod as $vis){
-                    if (is_array($vis)) {
-                        if (array_key_exists('moduleid', $vis)) {
-                            $visModules[] = $vis['moduleid'];
-                        }
+                    $moduleId = is_array($vis) ? ($vis['moduleid'] ?? '') : $vis;
+                    if ($moduleId !== '') {
+                        $visModules[] = strtolower((string) $moduleId);
                     }
                 }
             }
@@ -245,24 +252,12 @@ class menu extends ChisimbaObject
 
         foreach($data as $item){
             if($this->tools->checkPermissions($item, $this->context)){
+                if ($this->context
+                    && !empty($item['dependscontext'])
+                    && !in_array(strtolower($item['module']), $visModules, true)) {
+                    continue;
+                }
                 if(!empty($item['category'])){
-                    /*switch($item['contextplugin']){
-                        case '1':
-                            // Check if module is visible in context
-                            if($this->context){
-                                //if($this->objDbConMod->isVisible($item['module'],$this->contextCode)){
-                                if(!empty($visModules) && in_array(strtolower($item['module']), $visModules)){
-                                    $menu[$item['category']][] = $item['module'];
-                                }
-                            }else{
-                                $menu[$item['category']][]=$item['module'];
-                            }
-                            break;
-
-                        default:
-                            $menu[$item['category']][]=$item['module'];
-                    }
-                    $i++;*/
                     $menu[$item['category']][]=$item['module'];
                 }
             }

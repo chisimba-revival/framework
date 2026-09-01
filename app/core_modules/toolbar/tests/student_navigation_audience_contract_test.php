@@ -76,5 +76,16 @@ $assert(
         && strpos($sideMenu, "'nodeid' => 'mylearning'") !== false,
     'The account card must keep the learner journey close at hand.'
 );
+$assert(
+    strpos($menu, "!empty(\$item['dependscontext'])") !== false
+        && strpos($menu, "in_array(strtolower(\$item['module']), \$visModules, true)") !== false
+        && strpos($menu, "isContextPlugin(\n                        \$this->contextCode,\n                        'contextcontent'") !== false,
+    'Course toolbar destinations must be gated by Manage Course Tools.'
+);
+$assert(
+    strpos($sideMenu, "!empty(\$module['dependscontext'])") !== false
+        && strpos($sideMenu, 'getContextModules($this->contextcode)') !== false,
+    'Course sidebar destinations must be gated by Manage Course Tools.'
+);
 
 fwrite(STDOUT, "PASS: student navigation audience contract\n");

@@ -292,7 +292,20 @@ class sidemenu extends ChisimbaObject {
      */
     function checkPerm($modules) {
         $menus = array();
+        $enabledModules = array();
+        if ($this->context && !empty($this->contextcode)) {
+            $objContextModules = $this->getObject('dbcontextmodules', 'context');
+            $enabledModules = array_map(
+                'strtolower',
+                (array) $objContextModules->getContextModules($this->contextcode)
+            );
+        }
         foreach ($modules as $module) {
+            if ($this->context
+                && !empty($module['dependscontext'])
+                && !in_array(strtolower($module['module']), $enabledModules, true)) {
+                continue;
+            }
             if (!empty($module['permissions'])) {
                 if ($this->objTools->checkPermissions($module, $this->context)) {
                     $menus[] = $module;
