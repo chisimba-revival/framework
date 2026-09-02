@@ -260,7 +260,7 @@ class userdetailsops extends ChisimbaObject
         $stateLabel = $this->objLanguage->languageText('word_state', 'system', 'ERROR: word_state');
         $countryLabel = $this->objLanguage->languageText('word_country', 'system', 'ERROR: word_country');
         $postalCodeLabel = $this->objLanguage->languageText('phrase_postalcode', 'system', 'ERROR: phrase_postalcode');
-        $emailAddressLabel = $this->objLanguage->languageText('phrase_emailaddress', 'system', 'ERROR: phrase_emailaddress');
+        $emailAddressLabel = $this->objLanguage->languageText('phrase_emailaddress', 'system', 'Email address');
         $contactNumberLabel = $this->objLanguage->languageText('phrase_contactnumber', 'system', 'ERROR: phrase_contactnumber');
         $usernameLabel = $this->objLanguage->languageText('word_username', 'system', 'ERROR: word_username');
         $passwordLabel = $this->objLanguage->languageText('word_password', 'system', 'ERROR: word_password');
