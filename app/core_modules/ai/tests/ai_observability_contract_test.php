@@ -4,6 +4,7 @@ $root = dirname(__DIR__);
 $service = file_get_contents($root . '/classes/aiservice_class_inc.php');
 $controller = file_get_contents($root . '/controller.php');
 $template = file_get_contents($root . '/templates/content/dashboard_tpl.php');
+$noAccess = file_get_contents($root . '/templates/content/noaccess_tpl.php');
 $schema = file_get_contents($root . '/sql/tbl_ai_requests.sql');
 $register = file_get_contents($root . '/register.conf');
 $checks = array(
@@ -18,6 +19,9 @@ $checks = array(
         && strpos($schema, "'response'") === false
         && strpos($schema, "'input_text'") === false,
     'controller validates dashboard filters'=>strpos($controller, 'analyticsFilters') !== false,
+    'dispatch enforces administrator boundary'=>strpos($controller, "if (!\$this->objUser->isAdmin())") !== false
+        && strpos($controller, "return 'noaccess_tpl.php'") !== false
+        && strpos($noAccess, 'Administrator access required') !== false,
     'dashboard uses shared icon service'=>strpos($template, "getObject('iconservice', 'ui')") !== false,
     'dashboard includes visual trend'=>strpos($template, 'dashboard-bar-chart') !== false,
     'dashboard includes reliability and cost'=>strpos($template, 'Success rate') !== false

@@ -37,6 +37,9 @@ class ai extends controller
 
     public function dispatch($action)
     {
+        if (!$this->objUser->isAdmin()) {
+            return 'noaccess_tpl.php';
+        }
         $result = null;
         if ((string) $action === 'diagnostic') { $result = $this->runDiagnostic(); }
         $this->setVar('aiStatus', $this->service->providerStatus());
