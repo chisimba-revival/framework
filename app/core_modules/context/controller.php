@@ -56,6 +56,8 @@ if (!/**
  */
 class context extends controller {
 
+    const COURSE_LAUNCH_CSRF = 'context_course_activity_launch';
+
     /**
      * Public context object
      *
@@ -85,6 +87,10 @@ class context extends controller {
 
             $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
+            $this->objUserContext = $this->getObject('usercontext', 'context');
+            $this->courseLauncher = $this->getObject('courseawarelaunchservice', 'context');
+            $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $this->csrf = $nativeAuth['csrf'];
 
             $this->objContextBlocks = $this->getObject('dbcontextblocks');
             $this->objDynamicBlocks = $this->getObject('dynamicblocks', 'blocks');
@@ -127,7 +133,7 @@ class context extends controller {
      * Method to turn off login requirement for certain actions
      */
     public function requiresLogin($action) {
-        $requiresLogin = array('controlpanel', 'manageplugins', 'updateplugins', 'renderblock', 'addblock', 'removeblock', 'moveblock', 'updatesettings', 'updatecontext', 'viewuseractivitybyid', 'showuseractivitybymodule', 'selectuseractivitybymodulesdates', 'selectcontextactivitydates', 'selecttoolsactivitydates', 'showcontextactivity', 'showtoolsactivity', 'joincontextrequirelogin');
+        $requiresLogin = array('controlpanel', 'manageplugins', 'updateplugins', 'renderblock', 'addblock', 'removeblock', 'moveblock', 'updatesettings', 'updatecontext', 'viewuseractivitybyid', 'showuseractivitybymodule', 'selectuseractivitybymodulesdates', 'selectcontextactivitydates', 'selecttoolsactivitydates', 'showcontextactivity', 'showtoolsactivity', 'joincontextrequirelogin', 'launchcourseactivity', 'entercourseactivity');
         if (in_array($action, $requiresLogin)) {
             return TRUE;
         } else {
@@ -142,6 +148,9 @@ class context extends controller {
      * @return boolean
      */
     public function isValid($action, $default = true) {
+        if (in_array($action, array('launchcourseactivity', 'entercourseactivity'), true)) {
+            return $this->objUser->isLoggedIn();
+        }
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
             return TRUE;
         } else {
@@ -391,6 +400,79 @@ class context extends controller {
                 return $this->nextAction('join', $this->joinFailure($contextCode));
             }
         }
+    }
+
+    /**
+     * Resolve a deep link without allowing it to inherit root or stale scope.
+     *
+     * @return string|null Recovery template or destination dispatch.
+     */
+    protected function __launchcourseactivity()
+    {
+        $target = $this->courseLaunchRequest();
+        if (!$this->mayLaunchCourseTarget($target)) {
+            return $this->courseLaunchDenied($target);
+        }
+        if ((string) $this->contextCode === (string) $target['coursecode']) {
+            return $this->dispatchCourseTarget($target);
+        }
+        $details = $this->objContext->getContextDetails($target['coursecode']);
+        $this->setVar('courseLaunchTarget', $target);
+        $this->setVar('courseLaunchTitle', is_array($details) ? (string) ($details['title'] ?? '') : '');
+        $this->setVar('courseLaunchCsrf', $this->csrf->issue(self::COURSE_LAUNCH_CSRF));
+        $this->setLayoutTemplate(NULL);
+        return 'course_activity_launch_tpl.php';
+    }
+
+    /**
+     * Confirm course entry using POST and a one-time CSRF token.
+     *
+     * @return string|null Denial template or destination dispatch.
+     */
+    protected function __entercourseactivity()
+    {
+        $target = $this->courseLaunchRequest();
+        if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST'
+            || !$this->csrf->consume(self::COURSE_LAUNCH_CSRF, (string) $this->getParam('csrf_token', ''))
+            || !$this->mayLaunchCourseTarget($target)) {
+            return $this->courseLaunchDenied($target);
+        }
+        if (!$this->objContext->joinContext($target['coursecode'])) {
+            return $this->courseLaunchDenied($target);
+        }
+        return $this->dispatchCourseTarget($target);
+    }
+
+    /** Read and validate the shared course-launch request fields. */
+    private function courseLaunchRequest()
+    {
+        return $this->courseLauncher->request(
+            $this->getParam('coursecode', ''),
+            $this->getParam('targetmodule', ''),
+            $this->getParam('targetaction', ''),
+            $this->getParam('targetparams', '')
+        );
+    }
+
+    /** Require genuine course membership and a valid internal destination. */
+    private function mayLaunchCourseTarget(array $target)
+    {
+        return $target['coursecode'] !== '' && $target['module'] !== ''
+            && $this->objUserContext->isContextMember($this->objUser->userId(), $target['coursecode']);
+    }
+
+    /** Dispatch only after course scope has been proven active. */
+    private function dispatchCourseTarget(array $target)
+    {
+        return $this->nextAction($target['action'], $target['params'], $target['module']);
+    }
+
+    /** Show a safe recovery rather than executing a destination out of scope. */
+    private function courseLaunchDenied(array $target)
+    {
+        $this->setVar('courseLaunchTarget', $target);
+        $this->setLayoutTemplate(NULL);
+        return 'course_activity_denied_tpl.php';
     }
 
     /**
