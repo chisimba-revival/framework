@@ -31,7 +31,10 @@ class studentlearningoverview extends ChisimbaObject
         $userId = $this->user->userId();
         $journey = $this->getObject('learningjourney', 'contextcontent');
         $courses = array();
-        foreach ((array) $this->userContext->getUserContext($userId) as $code) {
+        $contextCodes = array_values(array_unique(
+            (array) $this->userContext->getUserContext($userId)
+        ));
+        foreach ($contextCodes as $code) {
             $details = $this->context->getContextDetails($code);
             if (!is_array($details) || empty($details['title'])) {
                 continue;
