@@ -661,6 +661,106 @@ ul#menuList li li ul {
     .dashboard-agenda-item__meta { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
+.dashboard-filterbar {
+    align-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    padding: 1rem 1.5rem 0;
+}
+
+.dashboard-filterbar label { flex: 1 1 10rem; }
+.dashboard-filterbar label > span { color: var(--chisimba-text-muted); display: block; font-size: .72rem; font-weight: 700; margin-bottom: .2rem; text-transform: uppercase; }
+.dashboard-filterbar select { width: 100%; }
+
+.dashboard-metric-grid {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    padding: 1rem 1.5rem 1.5rem;
+}
+
+.dashboard-metric {
+    align-items: center;
+    background: var(--chisimba-surface-subtle);
+    border: 1px solid var(--chisimba-border);
+    border-radius: 14px;
+    display: flex;
+    gap: .75rem;
+    min-width: 0;
+    padding: .85rem;
+}
+
+.dashboard-metric__icon {
+    align-items: center;
+    background: var(--chisimba-primary-soft);
+    border-radius: 11px;
+    color: var(--chisimba-primary-dark);
+    display: flex;
+    flex: 0 0 2.5rem;
+    font-size: 1.3rem;
+    height: 2.5rem;
+    justify-content: center;
+}
+
+.dashboard-metric > div { min-width: 0; }
+.dashboard-metric > div span { color: var(--chisimba-text-muted); display: block; font-size: .75rem; }
+.dashboard-metric > div strong { display: block; font-size: 1.2rem; overflow: hidden; text-overflow: ellipsis; }
+.dashboard-metric--success .dashboard-metric__icon { color: var(--chisimba-success); }
+.dashboard-metric--warning .dashboard-metric__icon { color: var(--chisimba-warning); }
+.dashboard-metric--danger .dashboard-metric__icon { color: var(--chisimba-danger); }
+
+.dashboard-split {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1.65fr) minmax(16rem, 1fr);
+}
+
+.dashboard-chart-panel > header,
+.dashboard-breakdown > header,
+.dashboard-attention > header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem .5rem;
+}
+
+.dashboard-chart-panel h2,
+.dashboard-breakdown h2,
+.dashboard-attention h2 { font-size: 1.1rem; margin: 0; }
+.dashboard-chart-panel header > span { color: var(--chisimba-text-muted); font-size: .78rem; }
+
+.dashboard-bar-chart {
+    align-items: end;
+    display: grid;
+    gap: .45rem;
+    grid-template-columns: repeat(14, minmax(.6rem, 1fr));
+    height: 12rem;
+    padding: 1rem 1.25rem 1.25rem;
+}
+
+.dashboard-bar-chart__column { align-items: center; display: flex; flex-direction: column; height: 100%; justify-content: end; }
+.dashboard-bar-chart__column > span { background: linear-gradient(180deg, var(--chisimba-primary), var(--chisimba-primary-dark)); border-radius: .4rem .4rem .15rem .15rem; min-height: .25rem; width: min(100%, 1.4rem); }
+.dashboard-bar-chart__column > span.has-failures { background: linear-gradient(180deg, var(--chisimba-danger), var(--chisimba-warning)); }
+.dashboard-bar-chart__column small { color: var(--chisimba-text-muted); font-size: .62rem; margin-top: .3rem; }
+
+.dashboard-breakdown__list { display: grid; gap: .25rem; padding: .5rem 1.25rem 1.25rem; }
+.dashboard-breakdown__list > div { align-items: center; border-bottom: 1px solid var(--chisimba-border); display: flex; gap: .75rem; justify-content: space-between; padding: .65rem 0; }
+.dashboard-breakdown__list > div span { align-items: center; display: flex; gap: .45rem; }
+.dashboard-breakdown__list .chisimba-icon { color: var(--chisimba-primary); }
+.dashboard-muted { color: var(--chisimba-text-muted); }
+.dashboard-attention { border-color: color-mix(in srgb, var(--chisimba-danger) 35%, var(--chisimba-border)); }
+.dashboard-attention > header > .chisimba-icon { color: var(--chisimba-danger); font-size: 1.5rem; }
+.ai-dashboard__diagnostic { padding: 1.25rem; }
+.ai-dashboard__diagnostic h2 { margin-top: 0; }
+
+@media (max-width: 780px) {
+    .dashboard-split { grid-template-columns: 1fr; }
+    .dashboard-filterbar { padding-inline: 1rem; }
+    .dashboard-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-inline: 1rem; }
+    .dashboard-bar-chart { gap: .25rem; }
+}
+
 .student-learning-overview__header {
     display: flex;
     align-items: flex-start;

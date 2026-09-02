@@ -40,7 +40,8 @@ class ai extends controller
         $result = null;
         if ((string) $action === 'diagnostic') { $result = $this->runDiagnostic(); }
         $this->setVar('aiStatus', $this->service->providerStatus());
-        $this->setVar('aiUsage', $this->service->usageSummary());
+        $this->setVar('aiFilters', $this->analyticsFilters());
+        $this->setVar('aiUsage', $this->service->usageAnalytics($this->analyticsFilters()));
         $this->setVar('aiDiagnostic', $result);
         $this->setVar('aiToken', $this->csrf->issue(self::CSRF_CONTEXT));
         $this->setVar('aiText', $this->languageItems());
@@ -81,6 +82,22 @@ class ai extends controller
         $items = array();
         foreach ($keys as $key) { $items[$key] = $this->text($key); }
         return $items;
+    }
+
+    /** Return the deliberately small, validated dashboard filter set. */
+    private function analyticsFilters()
+    {
+        $days = (int) $this->getParam('days', 30);
+        if (!in_array($days, array(7, 30, 90), true)) { $days = 30; }
+        $clean = static function ($value) {
+            $value = strtolower(trim((string) $value));
+            return preg_match('/^[a-z][a-z0-9_-]{0,95}$/', $value) ? $value : '';
+        };
+        return array(
+            'days'=>$days,
+            'consumer'=>$clean($this->getParam('consumer', '')),
+            'provider'=>$clean($this->getParam('provider', '')),
+        );
     }
 
     private function text($key)

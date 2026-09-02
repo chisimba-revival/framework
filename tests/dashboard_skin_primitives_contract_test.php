@@ -10,6 +10,9 @@ $required = array(
     '.dashboard-agenda',
     '.dashboard-agenda-item',
     '.dashboard-empty-state',
+    '.dashboard-metric-grid',
+    '.dashboard-bar-chart',
+    '.dashboard-breakdown',
 );
 $missing = array_values(array_filter($required, static function ($selector) use ($css) {
     return strpos($css, $selector) === false;
