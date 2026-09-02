@@ -644,6 +644,36 @@ class engine {
         } else {
             $requestedAction = $presetAction;
         }
+        /*
+         * Apply optional operational policy before dispatch so direct module
+         * URLs cannot bypass maintenance mode. Authentication and the
+         * maintenance surface remain reachable, and administrators bypass it.
+         */
+        $moduleRegistry = $this->getObject('modules', 'modulecatalogue');
+        if ($moduleRegistry->checkIfRegistered('systemmanagement')) {
+            $operations = $this->getObject(
+                'systemmanagementservice',
+                'systemmanagement'
+            );
+            if ($operations->shouldBlock($requestedModule)) {
+                $requestedModule = 'systemmanagement';
+                $requestedAction = 'offline';
+            } else {
+                foreach ($operations->activeNotices() as $notice) {
+                    $title = htmlspecialchars(
+                        (string) $notice['title'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    $message = nl2br(htmlspecialchars(
+                        (string) $notice['message'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ));
+                    $this->addMessage('<strong>' . $title . '</strong><br>' . $message);
+                }
+            }
+        }
         list ( $template, $moduleName ) = $this->_dispatch ( $requestedAction, $requestedModule );
         if ($template != NULL) {
             $this->_content = $this->_callTemplate ( $template, $moduleName, 'content', TRUE );
