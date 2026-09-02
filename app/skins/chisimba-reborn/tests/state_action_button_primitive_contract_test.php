@@ -8,6 +8,7 @@
 $stylesheet=file_get_contents(dirname(__DIR__).'/stylesheet.css');
 $checks=array(
     'neutral state-action surface'=>str_contains($stylesheet,'.chisimba-state-action {')&&str_contains($stylesheet,'background: var(--chisimba-surface);'),
+    'strong state icon'=>str_contains($stylesheet,'.chisimba-state-action .chisimba-icon')&&str_contains($stylesheet,'width: 1.3rem;')&&str_contains($stylesheet,'stroke-width: 2.5;'),
     'online state icon'=>str_contains($stylesheet,'.chisimba-state-action--online .chisimba-icon')&&str_contains($stylesheet,'color: var(--chisimba-success);'),
     'offline state icon'=>str_contains($stylesheet,'.chisimba-state-action--offline .chisimba-icon')&&str_contains($stylesheet,'color: var(--chisimba-danger);')
 );

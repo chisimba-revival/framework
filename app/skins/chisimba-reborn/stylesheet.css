@@ -5221,6 +5221,14 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     color: var(--chisimba-ink);
     background: var(--chisimba-primary-soft);
 }
+.chisimba-state-action .chisimba-icon,
+.chisimba-state-action .chisimba-icon-mask {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+.chisimba-state-action .chisimba-icon {
+    stroke-width: 2.5;
+}
 .chisimba-state-action--online .chisimba-icon,
 .chisimba-state-action--online .chisimba-icon-mask {
     color: var(--chisimba-success);
