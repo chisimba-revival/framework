@@ -88,6 +88,7 @@ class context extends controller {
             $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             $this->objUserContext = $this->getObject('usercontext', 'context');
+            $this->objContextModules = $this->getObject('dbcontextmodules', 'context');
             $this->courseLauncher = $this->getObject('courseawarelaunchservice', 'context');
             $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
             $this->csrf = $nativeAuth['csrf'];
@@ -458,7 +459,8 @@ class context extends controller {
     private function mayLaunchCourseTarget(array $target)
     {
         return $target['coursecode'] !== '' && $target['module'] !== ''
-            && $this->objUserContext->isContextMember($this->objUser->userId(), $target['coursecode']);
+            && $this->objUserContext->isContextMember($this->objUser->userId(), $target['coursecode'])
+            && $this->objContextModules->isVisible($target['module'], $target['coursecode']);
     }
 
     /** Dispatch only after course scope has been proven active. */
