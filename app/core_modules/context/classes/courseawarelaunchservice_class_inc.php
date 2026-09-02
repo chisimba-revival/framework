@@ -33,8 +33,7 @@ class courseawarelaunchservice extends ChisimbaObject
         if (!$user->isAdmin() && !$membership->isContextMember($userId, $courseCode)) {
             return false;
         }
-        $module = $this->identifier($module, true);
-        return $module === '' || $this->getObject('dbcontextmodules', 'context')->isVisible($module, $courseCode);
+        return true;
     }
 
     /**

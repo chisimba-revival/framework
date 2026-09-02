@@ -14,16 +14,17 @@ $checks = array(
     'non-members keep the destination while course entry is attempted' => str_contains($controller, 'validCourseLaunchTarget($target)')
         && str_contains($controller, 'objContext->joinContext(')
         && strpos($controller, 'objContext->joinContext(') < strrpos($controller, 'mayLaunchCourseTarget($target)'),
-    'destination module must be enabled in the course' => str_contains($controller, 'objContextModules->isVisible('),
+    'known course is enough to offer direct continuation' => str_contains($controller, 'getContextDetails(')
+        && !str_contains($controller, 'objContextModules->isVisible('),
     'direct module URLs have a reusable active-scope guard' => str_contains($service, 'mayUseActiveCourse(')
         && str_contains($service, '$courseCode === \'root\'') && str_contains($service, 'isContextMember('),
     'active scope may dispatch directly' => str_contains($controller, '$this->contextCode === (string) $target[\'coursecode\']'),
     'course change requires POST and CSRF' => str_contains($controller, "REQUEST_METHOD")
         && str_contains($controller, 'COURSE_LAUNCH_CSRF') && str_contains($controller, 'csrf->consume'),
     'confirmation names the course' => str_contains($confirm, 'You are not in this course')
-        && str_contains($confirm, '$courseLaunchTitle') && str_contains($confirm, 'Enter course'),
+        && str_contains($confirm, '$courseLaunchTitle') && str_contains($confirm, 'and continue'),
     'non-members receive recovery not a destination' => str_contains($denied, 'not a member of this course')
-        && str_contains($denied, 'Return to My Learning'),
+        && str_contains($denied, 'Return to My Learning') && !str_contains($denied, 'Course catalogue'),
     'destination is internal and bounded' => str_contains($service, "preg_match('/^[A-Za-z0-9_-]{1,128}$/")
         && str_contains($service, 'count($values) > 20'),
 );

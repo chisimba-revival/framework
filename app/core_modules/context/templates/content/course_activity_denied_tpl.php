@@ -11,6 +11,5 @@ $icons = $this->getObject('iconservice', 'ui');
     </div><?php echo $icons->render('shield-alert', array('decorative'=>true)); ?></header>
     <div class="chisimba-actions">
         <a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array(), 'mylearning')); ?>"><?php echo $icons->render('arrow-left', array('decorative'=>true)); ?> Return to My Learning</a>
-        <a class="button" href="<?php echo $e($this->uri(array('action'=>'catalogue'), 'context')); ?>"><?php echo $icons->render('library-big', array('decorative'=>true)); ?> Course catalogue</a>
     </div>
 </section>

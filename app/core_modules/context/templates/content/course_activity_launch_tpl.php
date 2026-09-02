@@ -7,7 +7,7 @@ $icons = $this->getObject('iconservice', 'ui');
     <header class="dashboard-panel__header"><div>
         <p class="dashboard-eyebrow">Course required</p>
         <h1 id="course-launch-title">You are not in this course</h1>
-        <p>Would you like to enter <?php echo $e($courseLaunchTitle); ?> now?</p>
+        <p>This request belongs to <?php echo $e($courseLaunchTitle); ?>.</p>
     </div><?php echo $icons->render('log-in', array('decorative'=>true)); ?></header>
     <form class="chisimba-form" method="post" action="<?php echo $e($this->uri(array('action'=>'entercourseactivity'), 'context')); ?>">
         <input type="hidden" name="csrf_token" value="<?php echo $e($courseLaunchCsrf); ?>">
@@ -16,7 +16,7 @@ $icons = $this->getObject('iconservice', 'ui');
         <input type="hidden" name="targetaction" value="<?php echo $e($courseLaunchTarget['action']); ?>">
         <input type="hidden" name="targetparams" value="<?php echo $e($this->getParam('targetparams', '')); ?>">
         <div class="chisimba-actions">
-            <button type="submit"><?php echo $icons->render('log-in', array('decorative'=>true)); ?> Enter course</button>
+            <button type="submit"><?php echo $icons->render('log-in', array('decorative'=>true)); ?> Enter “<?php echo $e($courseLaunchTitle); ?>” and continue</button>
             <a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array(), 'mylearning')); ?>"><?php echo $icons->render('arrow-left', array('decorative'=>true)); ?> Return to My Learning</a>
         </div>
     </form>
