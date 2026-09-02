@@ -7,6 +7,7 @@ $escape = static function ($value) {
 };
 $csrfTokens = is_array($moduleUpdateCsrfTokens ?? null) ? $moduleUpdateCsrfTokens : array();
 $updateAllCsrf = (string) ($moduleUpdateAllCsrfToken ?? '');
+$icons = $this->getObject('iconservice', 'ui');
 
 
 $objH = $this->newObject('htmlheading','htmlelements');
@@ -122,9 +123,10 @@ if (!empty($patchArray)) {
         $applyForm = '<form class="module-update-form" method="post" action="' . $escape($uri) . '">'
             . '<input type="hidden" name="csrf_token" value="' . $escape($csrfTokens[$patch['module_id']] ?? '') . '">'
             . '<button class="button chisimba-button-secondary" type="submit">' . $escape($applyLabel) . '</button></form>';
-        $pIcon = $this->getObject('geticon','htmlelements');
-        $pIcon->setModuleIcon($patch['module_id']);
-        $modIcon=$pIcon->show();
+        $modIcon = $icons->render('refresh-cw', array(
+            'decorative' => true,
+            'class' => 'module-update__icon',
+        ));
         $time = date("d/m/y",filemtime($this->objModFile->findRegisterFile($patch['module_id'])));
         $str .= '<div class="moduleupdate"><b>'
           . $modIcon.ucwords($patch['module_id'])
