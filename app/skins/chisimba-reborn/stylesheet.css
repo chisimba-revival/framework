@@ -82,6 +82,26 @@
     --chisimba-brand-logo: url("images/chisimba-logo.png");
 }
 
+/* Long-form writing and reading primitives shared by assessment modules. */
+.chisimba-writing-workspace { max-width:72rem; margin-inline:auto; }
+.chisimba-writing-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:.75rem; }
+.chisimba-writing-header h2 { margin:.1rem 0 0; }
+.chisimba-save-state { display:inline-flex; align-items:center; min-height:2rem; padding:.35rem .7rem; border:1px solid var(--chisimba-border); border-radius:999px; background:var(--chisimba-surface-subtle); color:var(--chisimba-text-muted); font-size:.88rem; font-weight:650; }
+.chisimba-editor-toolbar { display:flex; flex-wrap:wrap; gap:.35rem; padding:.5rem; border:1px solid var(--chisimba-border); border-bottom:0; border-radius:.65rem .65rem 0 0; background:var(--chisimba-surface-subtle); }
+.chisimba-longform-editor { min-height:32rem; padding:clamp(1rem,3vw,2.5rem); border:1px solid var(--chisimba-border); border-radius:0 0 .65rem .65rem; background:var(--chisimba-surface); color:var(--chisimba-text); line-height:1.7; outline:none; box-shadow:inset 0 1px 2px rgb(15 23 42 / 4%); }
+.chisimba-longform-editor:focus { border-color:var(--chisimba-primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--chisimba-primary) 18%,transparent); }
+.chisimba-longform-editor:empty::before { content:'Begin writing your Essay…'; color:var(--chisimba-text-muted); pointer-events:none; }
+.chisimba-writing-footer { display:flex; justify-content:space-between; gap:1rem; padding:.55rem .2rem 1rem; color:var(--chisimba-text-muted); font-size:.88rem; }
+.chisimba-longform-reading { max-width:72rem; margin:1rem auto; padding:clamp(1rem,3vw,2.5rem); border:1px solid var(--chisimba-border); border-radius:.65rem; background:var(--chisimba-surface); }
+.chisimba-prose { overflow-wrap:anywhere; }
+.chisimba-prose > :first-child { margin-top:0; }
+.chisimba-prose > :last-child { margin-bottom:0; }
+.chisimba-prose p,.chisimba-prose li { max-width:75ch; }
+@media (max-width:42rem) {
+    .chisimba-writing-header,.chisimba-writing-footer { align-items:flex-start; flex-direction:column; }
+    .chisimba-longform-editor { min-height:24rem; }
+}
+
 *,
 *::before,
 *::after {
