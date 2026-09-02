@@ -411,10 +411,11 @@ class context extends controller {
     protected function __launchcourseactivity()
     {
         $target = $this->courseLaunchRequest();
-        if (!$this->mayLaunchCourseTarget($target)) {
+        if (!$this->validCourseLaunchTarget($target)) {
             return $this->courseLaunchDenied($target);
         }
-        if ((string) $this->contextCode === (string) $target['coursecode']) {
+        if ((string) $this->contextCode === (string) $target['coursecode']
+            && $this->mayLaunchCourseTarget($target)) {
             return $this->dispatchCourseTarget($target);
         }
         $details = $this->objContext->getContextDetails($target['coursecode']);
@@ -435,10 +436,13 @@ class context extends controller {
         $target = $this->courseLaunchRequest();
         if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST'
             || !$this->csrf->consume(self::COURSE_LAUNCH_CSRF, (string) $this->getParam('csrf_token', ''))
-            || !$this->mayLaunchCourseTarget($target)) {
+            || !$this->validCourseLaunchTarget($target)) {
             return $this->courseLaunchDenied($target);
         }
         if (!$this->objContext->joinContext($target['coursecode'])) {
+            return $this->courseLaunchDenied($target);
+        }
+        if (!$this->mayLaunchCourseTarget($target)) {
             return $this->courseLaunchDenied($target);
         }
         return $this->dispatchCourseTarget($target);
@@ -466,8 +470,15 @@ class context extends controller {
     /** Require genuine course membership and a valid internal destination. */
     private function mayLaunchCourseTarget(array $target)
     {
+        return $this->validCourseLaunchTarget($target)
+            && ($this->objUser->isAdmin()
+                || $this->objUserContext->isContextMember($this->objUser->userId(), $target['coursecode']));
+    }
+
+    /** Confirm the course and enabled module before offering course entry. */
+    private function validCourseLaunchTarget(array $target)
+    {
         return $target['coursecode'] !== '' && $target['module'] !== ''
-            && $this->objUserContext->isContextMember($this->objUser->userId(), $target['coursecode'])
             && $this->objContextModules->isVisible($target['module'], $target['coursecode']);
     }
 

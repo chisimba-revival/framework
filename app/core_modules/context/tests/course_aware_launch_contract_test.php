@@ -11,6 +11,9 @@ $checks = array(
     'course launch requires login' => str_contains($controller, "'launchcourseactivity', 'entercourseactivity'"),
     'membership is checked before dispatch' => str_contains($controller, 'isContextMember(')
         && strpos($controller, 'mayLaunchCourseTarget($target)') < strpos($controller, 'dispatchCourseTarget($target)'),
+    'non-members keep the destination while course entry is attempted' => str_contains($controller, 'validCourseLaunchTarget($target)')
+        && str_contains($controller, 'objContext->joinContext(')
+        && strpos($controller, 'objContext->joinContext(') < strrpos($controller, 'mayLaunchCourseTarget($target)'),
     'destination module must be enabled in the course' => str_contains($controller, 'objContextModules->isVisible('),
     'direct module URLs have a reusable active-scope guard' => str_contains($service, 'mayUseActiveCourse(')
         && str_contains($service, '$courseCode === \'root\'') && str_contains($service, 'isContextMember('),
