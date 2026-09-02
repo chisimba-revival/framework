@@ -15,6 +15,29 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 class courseawarelaunchservice extends ChisimbaObject
 {
     /**
+     * Confirm that a user may operate inside the currently active course.
+     *
+     * @param string $userId Current user identifier.
+     * @param string $module Optional module that must be enabled in the course.
+     * @return bool True only for a usable active course scope.
+     */
+    public function mayUseActiveCourse($userId, $module = '')
+    {
+        $context = $this->getObject('dbcontext', 'context');
+        $courseCode = trim((string) $context->getContextCode());
+        if ($courseCode === '' || $courseCode === 'root') {
+            return false;
+        }
+        $user = $this->getObject('user', 'security');
+        $membership = $this->getObject('usercontext', 'context');
+        if (!$user->isAdmin() && !$membership->isContextMember($userId, $courseCode)) {
+            return false;
+        }
+        $module = $this->identifier($module, true);
+        return $module === '' || $this->getObject('dbcontextmodules', 'context')->isVisible($module, $courseCode);
+    }
+
+    /**
      * Wrap a module destination in the canonical course-entry journey.
      *
      * @param string $contextCode Target course code.

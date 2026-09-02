@@ -12,6 +12,8 @@ $checks = array(
     'membership is checked before dispatch' => str_contains($controller, 'isContextMember(')
         && strpos($controller, 'mayLaunchCourseTarget($target)') < strpos($controller, 'dispatchCourseTarget($target)'),
     'destination module must be enabled in the course' => str_contains($controller, 'objContextModules->isVisible('),
+    'direct module URLs have a reusable active-scope guard' => str_contains($service, 'mayUseActiveCourse(')
+        && str_contains($service, '$courseCode === \'root\'') && str_contains($service, 'isContextMember('),
     'active scope may dispatch directly' => str_contains($controller, '$this->contextCode === (string) $target[\'coursecode\']'),
     'course change requires POST and CSRF' => str_contains($controller, "REQUEST_METHOD")
         && str_contains($controller, 'COURSE_LAUNCH_CSRF') && str_contains($controller, 'csrf->consume'),

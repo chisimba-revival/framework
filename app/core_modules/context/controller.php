@@ -134,7 +134,7 @@ class context extends controller {
      * Method to turn off login requirement for certain actions
      */
     public function requiresLogin($action) {
-        $requiresLogin = array('controlpanel', 'manageplugins', 'updateplugins', 'renderblock', 'addblock', 'removeblock', 'moveblock', 'updatesettings', 'updatecontext', 'viewuseractivitybyid', 'showuseractivitybymodule', 'selectuseractivitybymodulesdates', 'selectcontextactivitydates', 'selecttoolsactivitydates', 'showcontextactivity', 'showtoolsactivity', 'joincontextrequirelogin', 'launchcourseactivity', 'entercourseactivity');
+        $requiresLogin = array('controlpanel', 'manageplugins', 'updateplugins', 'renderblock', 'addblock', 'removeblock', 'moveblock', 'updatesettings', 'updatecontext', 'viewuseractivitybyid', 'showuseractivitybymodule', 'selectuseractivitybymodulesdates', 'selectcontextactivitydates', 'selecttoolsactivitydates', 'showcontextactivity', 'showtoolsactivity', 'joincontextrequirelogin', 'launchcourseactivity', 'entercourseactivity', 'courseactivitydenied');
         if (in_array($action, $requiresLogin)) {
             return TRUE;
         } else {
@@ -149,7 +149,7 @@ class context extends controller {
      * @return boolean
      */
     public function isValid($action, $default = true) {
-        if (in_array($action, array('launchcourseactivity', 'entercourseactivity'), true)) {
+        if (in_array($action, array('launchcourseactivity', 'entercourseactivity', 'courseactivitydenied'), true)) {
             return $this->objUser->isLoggedIn();
         }
         if ($this->objUser->isAdmin() || $this->objContextGroups->isContextLecturer()) {
@@ -442,6 +442,14 @@ class context extends controller {
             return $this->courseLaunchDenied($target);
         }
         return $this->dispatchCourseTarget($target);
+    }
+
+    /** Render the shared denial journey for a direct out-of-scope module URL. */
+    protected function __courseactivitydenied()
+    {
+        return $this->courseLaunchDenied(array(
+            'coursecode' => '', 'module' => '', 'action' => '', 'params' => array(),
+        ));
     }
 
     /** Read and validate the shared course-launch request fields. */
