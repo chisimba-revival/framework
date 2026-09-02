@@ -616,6 +616,21 @@ ul#menuList li li ul {
 .dashboard-agenda-item__meta,
 .dashboard-agenda-item__due { color: var(--chisimba-text-muted, #5e6c7b); font-size: .78rem; }
 .dashboard-agenda-item--overdue .dashboard-agenda-item__due { color: var(--chisimba-danger); font-weight: 700; }
+.dashboard-agenda-item__status { align-items: center; display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .45rem; }
+.dashboard-days-badge {
+    align-items: center;
+    background: var(--chisimba-primary, #087bc1);
+    border-radius: 999px;
+    color: var(--chisimba-text-inverse, #fff);
+    display: inline-flex;
+    gap: .3rem;
+    min-height: 2rem;
+    padding: .2rem .7rem;
+}
+.dashboard-days-badge strong { font-size: 1.05rem; line-height: 1; }
+.dashboard-days-badge small { font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+.dashboard-mark { align-items: center; display: inline-flex; gap: .2rem; }
+.dashboard-mark svg { height: 1.05rem; stroke-width: 2.4; width: 1.05rem; }
 
 .dashboard-agenda-item__action.icon-button {
     align-items: center;
@@ -5434,6 +5449,14 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 }
 .chisimba-workspace { max-width: 78rem; }
 .chisimba-actions { display:flex; flex-wrap:wrap; gap:.65rem; margin:0 0 1.1rem; }
+.assessment-choice-grid { display:grid; gap:1rem; margin:0 0 1.25rem; }
+.assessment-choice-card { background:var(--chisimba-surface); border:1px solid var(--chisimba-border); border-radius:12px; box-shadow:var(--chisimba-shadow-sm); padding:1rem; }
+.assessment-choice-card header { align-items:center; display:flex; flex-wrap:wrap; gap:.6rem; }
+.assessment-choice-card header h2 { flex-basis:100%; font-size:1.08rem; margin:.15rem 0 0; }
+.assessment-choice-card__notes { background:var(--chisimba-surface-subtle); border-radius:8px; margin:.8rem 0; padding:.75rem; }
+.assessment-choice-card__notes p { margin:.3rem 0 0; }
+.essay-context-recovery__courses { display:grid; gap:.75rem; margin:0 0 1rem; }
+.essay-context-choice { align-items:center; display:grid; gap:.7rem; grid-template-columns:auto minmax(0, 1fr) auto; padding:.85rem 1rem; text-decoration:none; }
 .chisimba-table-wrap { overflow-x:auto; }
 .chisimba-table { width:100%; border-collapse:collapse; background:var(--chisimba-surface); }
 .chisimba-table th,
