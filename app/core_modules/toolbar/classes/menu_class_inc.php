@@ -438,7 +438,7 @@ class menu extends ChisimbaObject
                 . '</li>';
             $menuEnd = strrpos($menu, '</ul>');
             if ($menuEnd !== false) {
-                $menu = substr_replace($menu, $logoutItem, $menuEnd, 0);
+                $menu = substr_replace($menu, $this->getObject('notificationmenu', 'toolbar')->show() . $logoutItem, $menuEnd, 0);
             }
         }
 

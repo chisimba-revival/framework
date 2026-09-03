@@ -201,6 +201,7 @@ class toolbar_elearn extends ChisimbaObject
             $str .= '<li '.$css.'>'.$link->show().'</li>';
         }
 
+        $str .= $this->getObject('notificationmenu', 'toolbar')->show();
         $str .= '<li>'
             . $this->securityContext->logoutForm(
                 $this->objLanguage->languageText(

@@ -163,6 +163,7 @@ class tabsmenu extends ChisimbaObject
         }
 
         if ($this->securityContext->isAuthenticated()) {
+            $str .= $this->getObject('notificationmenu', 'toolbar')->show();
             $str .= '<li>'
                 . $this->securityContext->logoutForm(
                     $this->objLanguage->languageText(
