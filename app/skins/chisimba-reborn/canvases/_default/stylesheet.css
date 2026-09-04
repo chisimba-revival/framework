@@ -308,12 +308,15 @@
 #Canvas_Content_Body:has(#form_loginform)
     > #Canvas_Content_Body_Region1 {
     align-self: start !important;
+    box-sizing: border-box;
     float: none !important;
     grid-area: supplementary-top !important;
     height: auto !important;
     max-height: none !important;
     min-height: 0 !important;
+    padding: 0 !important;
     position: static !important;
+    width: 100% !important;
 }
 
 #Canvas_Content_Body:has(#form_loginform)
