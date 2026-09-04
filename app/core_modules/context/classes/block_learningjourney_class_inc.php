@@ -146,13 +146,18 @@ class block_learningjourney extends ChisimbaObject
             ));
 
         $status = $isManager
-            ? $this->objLanguage->languageText(
-                $this->objUser->isAdmin()
-                    ? 'mod_context_administratorview'
-                    : 'mod_context_lecturerview',
-                'context',
-                $this->objUser->isAdmin() ? 'Administrator view' : 'Lecturer view'
-            )
+            ? ($this->objUser->isAdmin()
+                ? $this->objLanguage->languageText(
+                    'mod_context_administratorview',
+                    'context',
+                    'Administrator view'
+                )
+                : $this->objLanguage->code2Txt(
+                    'mod_context_lecturerview',
+                    'context',
+                    null,
+                    '[-author-] view'
+                ))
             : ($started
             ? $this->objLanguage->languageText(
                 'mod_context_journeystatusprogress',
