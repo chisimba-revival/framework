@@ -1,0 +1,19 @@
+{
+    "name": "ecotraining",
+    "displayName": "EcoTraining",
+    "description": "EcoTraining branding on the shared modern Chisimba skin.",
+    "brand": {
+        "primary": "#3b6641",
+        "accent": "#9bb35c",
+        "footer": "#64453b"
+    },
+    "author": {
+        "authorname": "EcoTraining"
+    },
+    "preview": {
+        "logo": "images/ecotraining-logo.svg",
+        "thumb": "../../default.png",
+        "fullview": "../../default.png"
+    },
+    "downloadfrom": "_NULL"
+}

@@ -1,0 +1,27 @@
+/**
+ * EcoTraining canvas.
+ *
+ * The complete organisation name is part of the logo, so this canvas hides
+ * the separate site-name label rendered by the shared banner.
+ */
+:root {
+    --chisimba-primary: #3b6641;
+    --chisimba-primary-hover: #304f35;
+    --chisimba-primary-dark: #3b6641;
+    --chisimba-primary-soft: #9bb35c;
+    --chisimba-focus: #9bb35c;
+    --chisimba-grey-blue: #9bb35c;
+    --chisimba-info: #3b6641;
+    --chisimba-charcoal: #64453b;
+    --chisimba-brand-logo: url("canvases/ecotraining/images/ecotraining-logo.svg");
+}
+
+.chisimba-site-banner__name,
+#sitename.chisimba-site-banner__name {
+    display: none;
+}
+
+.chisimba-site-banner__identity {
+    height: clamp(4.25rem, 8vw, 5.5rem);
+    width: clamp(13rem, 24vw, 20rem);
+}
