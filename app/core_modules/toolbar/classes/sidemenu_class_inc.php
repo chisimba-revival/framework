@@ -217,8 +217,39 @@ class sidemenu extends ChisimbaObject {
         $menus = $this->checkPerm($menus);
         $studentOnly = $this->addStudentHomeLinks();
         $this->addLearningJourneyLink();
+        $this->addTeachingJourneyLink();
         $menu = $this->getMenuList($menus, true, !$studentOnly);
         return $menu;
+    }
+
+    /** Keep personal teaching and page management as separate journeys. */
+    private function addTeachingJourneyLink() {
+        $modules = $this->getObject('modules', 'modulecatalogue');
+        if (!$modules->checkIfRegistered('myteaching')) { return; }
+        $nodeIds = array_column($this->globalNodes, 'nodeid');
+        if ($this->securityContext->isLecturer()
+            && !in_array('myteaching', $nodeIds, true)) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_myteaching_name', 'myteaching', 'My Teaching'
+                ),
+                'uri' => $this->uri(null, 'myteaching'),
+                'nodeid' => 'myteaching',
+                'css' => 'account-card__my-teaching',
+            );
+        }
+        if ($this->securityContext->isSiteAdministrator()
+            && !in_array('manage-myteaching', $nodeIds, true)) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_myteaching_manage', 'myteaching',
+                    'Manage My Teaching page'
+                ),
+                'uri' => $this->uri(array('action' => 'manage'), 'myteaching'),
+                'nodeid' => 'manage-myteaching',
+                'css' => 'account-card__manage-my-teaching',
+            );
+        }
     }
 
     /** Keep the learner's main journey close at hand whenever it is available. */

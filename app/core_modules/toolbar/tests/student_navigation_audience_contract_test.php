@@ -22,6 +22,13 @@ $assert(
     'Administration journey must be restricted to site administrators.'
 );
 $assert(
+    strpos($menu, "checkIfRegistered('myteaching')") !== false
+        && strpos($menu, "'mod_toolbar_managemyteaching'") !== false
+        && strpos($sideMenu, "'nodeid' => 'myteaching'") !== false
+        && strpos($sideMenu, "'nodeid' => 'manage-myteaching'") !== false,
+    'Personal teaching and administrator page management must be separate journeys.'
+);
+$assert(
     strpos($menu, "'teaching' => array()") !== false
         && strpos($menu, "\$journey === 'teaching' && !\$mayTeach") !== false,
     'Teaching journey must be restricted to course lecturers and admins.'
