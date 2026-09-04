@@ -858,7 +858,11 @@ ul#menuList li li ul {
 .myteaching-course {
     position: relative;
     overflow: hidden;
-    padding-right: 5.75rem;
+}
+
+.myteaching-course > .student-learning-course__topline,
+.myteaching-course > h2 {
+    padding-right: 4.75rem;
 }
 
 .myteaching-course__image {
@@ -931,22 +935,11 @@ ul#menuList li li ul {
     gap: 1rem;
 }
 
-.teaching-insight-course {
-    padding: 1rem;
-    border: 1px solid var(--chisimba-border);
-    border-radius: 0.65rem;
-    background: var(--chisimba-surface-subtle);
-}
-
-.teaching-insight-course h3 {
-    margin: 0 0 0.8rem;
-}
-
 .teaching-insight-course dl {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.75rem;
-    margin: 0 0 1rem;
+    margin: 0.25rem 0 1rem;
 }
 
 .teaching-insight-course dl > div {

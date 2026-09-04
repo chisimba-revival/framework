@@ -1571,10 +1571,16 @@ button.course-card__action {
 }
 /* END CHISIMBA_STRUCTURAL_MAIN */
 
-/* My Learning components own both visible cards; regions only place them. */
+/* Role-dashboard components own their cards; canvas regions only place them. */
 #Canvas_Content_Body_Region2:has(> .mylearning-page),
+#Canvas_Content_Body_Region2:has(> .myteaching-page),
+#Canvas_Content_Body_Region2:has(> .myadmin-page),
 #Canvas_Content_Body_Region1:has(> .mylearning-sidebar),
-#Canvas_Content_Body_Region3:has(> .mylearning-sidebar) {
+#Canvas_Content_Body_Region1:has(> .myteaching-sidebar),
+#Canvas_Content_Body_Region1:has(> .myadmin-sidebar),
+#Canvas_Content_Body_Region3:has(> .mylearning-sidebar),
+#Canvas_Content_Body_Region3:has(> .myteaching-sidebar),
+#Canvas_Content_Body_Region3:has(> .myadmin-sidebar) {
     background: transparent;
     border: 0;
     border-radius: 0;
@@ -1583,6 +1589,8 @@ button.course-card__action {
 }
 
 .mylearning-page > .student-learning-overview,
+.myteaching-page > .student-learning-overview,
+.myadmin-page > .student-learning-overview,
 .mylearning-sidebar > .featurebox:first-child {
     margin-top: 0;
 }
