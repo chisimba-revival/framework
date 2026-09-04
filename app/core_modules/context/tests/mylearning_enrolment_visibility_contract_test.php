@@ -22,6 +22,7 @@ if (strpos(
 }
 
 $required = array(
+    'getContextWhereStudent($userId)',
     '$hasContent',
     "'mylearningavailable'",
     "'mylearningnocontent'",

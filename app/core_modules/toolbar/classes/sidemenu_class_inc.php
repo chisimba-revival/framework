@@ -227,19 +227,29 @@ class sidemenu extends ChisimbaObject {
         if (!$objModules->checkIfRegistered('mylearning')) {
             return;
         }
-        foreach ($this->globalNodes as $node) {
-            if (($node['nodeid'] ?? '') === 'mylearning') {
-                return;
-            }
+        $nodeIds = array_column($this->globalNodes, 'nodeid');
+        if ($this->securityContext->hasStudentLearning()
+            && !in_array('mylearning', $nodeIds, true)) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_mylearning_name', 'mylearning', 'My Learning'
+                ),
+                'uri' => $this->uri(null, 'mylearning'),
+                'nodeid' => 'mylearning',
+                'css' => 'account-card__my-learning',
+            );
         }
-        $this->globalNodes[] = array(
-            'text' => $this->objLanguage->languageText(
-                'mod_mylearning_name', 'mylearning', 'My learning journey'
-            ),
-            'uri' => $this->uri(null, 'mylearning'),
-            'nodeid' => 'mylearning',
-            'css' => 'account-card__my-learning',
-        );
+        if ($this->securityContext->isSiteAdministrator()
+            && !in_array('manage-mylearning', $nodeIds, true)) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_mylearning_manage', 'mylearning', 'Manage My Learning page'
+                ),
+                'uri' => $this->uri(array('action' => 'manage'), 'mylearning'),
+                'nodeid' => 'manage-mylearning',
+                'css' => 'account-card__manage-my-learning',
+            );
+        }
     }
 
     /** Give student-only accounts explicit learning and general-site routes. */

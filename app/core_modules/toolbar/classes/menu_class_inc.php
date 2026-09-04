@@ -132,9 +132,15 @@ class menu extends ChisimbaObject
                 : $this->securityContext->isLecturer());
         $isAdmin = $this->securityContext->isSiteAdministrator();
 
-        if (($isAdmin || $this->securityContext->hasStudentLearning())
+        if ($this->securityContext->hasStudentLearning()
             && $this->objModule->checkIfRegistered('mylearning')) {
             $journeys['learning'][] = 'mylearning';
+        }
+        if ($isAdmin && $this->objModule->checkIfRegistered('mylearning')) {
+            $journeys['administration'][] = $this->journeyLink(
+                'mylearning', array('action' => 'manage'),
+                'mod_toolbar_managemylearning', 'Manage My Learning page'
+            );
         }
 
         if ($this->context) {

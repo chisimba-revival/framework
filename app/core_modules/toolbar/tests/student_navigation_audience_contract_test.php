@@ -77,6 +77,13 @@ $assert(
     'The account card must keep the learner journey close at hand.'
 );
 $assert(
+    strpos($menu, "'mod_toolbar_managemylearning'") !== false
+        && strpos($menu, "array('action' => 'manage')") !== false
+        && strpos($sideMenu, "'nodeid' => 'manage-mylearning'") !== false
+        && strpos($sideMenu, 'hasStudentLearning()') !== false,
+    'Personal learning and administrator page management must be separate journeys.'
+);
+$assert(
     strpos($menu, "!empty(\$item['dependscontext'])") !== false
         && strpos($menu, "in_array(strtolower(\$item['module']), \$visModules, true)") !== false
         && strpos($menu, "isContextPlugin(\n                        \$this->contextCode,\n                        'contextcontent'") !== false,

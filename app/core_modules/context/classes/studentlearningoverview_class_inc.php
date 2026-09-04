@@ -32,7 +32,7 @@ class studentlearningoverview extends ChisimbaObject
         $journey = $this->getObject('learningjourney', 'contextcontent');
         $courses = array();
         $contextCodes = array_values(array_unique(
-            (array) $this->userContext->getUserContext($userId)
+            (array) $this->userContext->getContextWhereStudent($userId)
         ));
         foreach ($contextCodes as $code) {
             $details = $this->context->getContextDetails($code);
