@@ -6666,3 +6666,13 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     border-radius: var(--radius-md, 0.5rem);
 }
 .contextadmin-navigation svg { width: 1.1rem; height: 1.1rem; }
+
+/* Pre-login visual editing uses shared controls around placed components. */
+.prelogin-edit-control{margin:0 0 var(--chisimba-space-3,12px)}
+.prelogin-edit-block{position:relative;margin:0 0 var(--chisimba-space-3,12px);padding-top:3rem;border:2px solid var(--chisimba-primary);border-radius:var(--chisimba-region-radius);background:var(--chisimba-surface);overflow:hidden}
+.prelogin-edit-block__tools{position:absolute;inset:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:3rem;padding:.4rem .55rem;background:var(--chisimba-primary-soft);color:var(--chisimba-ink)}
+.prelogin-edit-block__tools strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prelogin-edit-block__actions{display:flex;align-items:center;gap:.3rem}
+.prelogin-fixed-block__label{display:flex;align-items:center;gap:.4rem;margin:0 0 .45rem;color:var(--chisimba-muted);font-size:.8rem;font-weight:700}
+.prelogin-add-block{display:grid;gap:.55rem;margin:.75rem 0;padding:.75rem;border:1px dashed var(--chisimba-border-strong);border-radius:var(--chisimba-region-radius);background:var(--chisimba-surface-muted)}
+.prelogin-add-block label{display:grid;gap:.35rem}.prelogin-add-block select{width:100%;min-width:0}.prelogin-add-block button{justify-self:start}

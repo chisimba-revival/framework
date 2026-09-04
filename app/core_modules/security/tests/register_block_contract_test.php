@@ -18,7 +18,7 @@ $checks = array(
         "\$this->blockType = 'invisible';"
     ) && str_contains($login, "\$this->title = '';")
         && str_contains($login, "if (\$this->objUser->isLoggedIn()) {\n                return '';"),
-    'module update recorded' => str_contains($register, 'MODULE_VERSION: 3.101'),
+    'module update recorded' => str_contains($register, 'MODULE_VERSION: 3.103'),
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) { fwrite(STDERR, "FAIL: {$name}\n"); exit(1); }

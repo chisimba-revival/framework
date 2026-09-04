@@ -26,6 +26,7 @@ class block_skinchooser extends ChisimbaObject
     {
          //Create an instance of the language object
         $this->objLanguage = $this->getObject('language','language');
+        $this->objUser = $this->getObject('user','security');
         //Set the title
         $this->title=$this->objLanguage->languageText('mod_skin_name', 'skin');
     }
@@ -35,6 +36,7 @@ class block_skinchooser extends ChisimbaObject
     */
     function show()
     {
+        if (!$this->objUser->isAdmin()) return '';
         $objSkin = $this->getObject('skinchooser', 'skin');
         return $objSkin->show();
     }

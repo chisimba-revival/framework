@@ -69,6 +69,7 @@ class block_language extends ChisimbaObject
     {
         try {
             $this->objLanguage =  $this->getObject('language', 'language');
+            $this->availableLanguages = $this->getObject('dblanguage_available');
             $this->title = $this->objLanguage->languageText("word_languages");
         } catch (customException $e) {
             customException::cleanUp();
@@ -82,6 +83,9 @@ class block_language extends ChisimbaObject
     public function show()
     {
         try {
+            if (count((array) $this->availableLanguages->getLanguageList()) < 2) {
+                return '';
+            }
             return $this->objLanguage->putlanguageChooser();
         } catch (customException $e) {
             customException::cleanUp();

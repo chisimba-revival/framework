@@ -28,15 +28,15 @@ $expect = function ($condition, $message) {
 $register = $read('register.conf');
 $database = $read('classes/dbcontext_class_inc.php');
 $renderer = $read('classes/coursecatalogue_class_inc.php');
-$block = $read('classes/block_latestcourses_class_inc.php');
 $controller = $read('controller.php');
 $myCourses = $read('classes/block_mycontexts_class_inc.php');
-$allCourses = $read('classes/block_context_class_inc.php');
 $needToJoin = $read('templates/content/needtojoin_tpl.php');
 
 $expect(
-    strpos($register, 'WIDEBLOCK: latestcourses') !== false,
-    'Latest courses must be registered as a wide block.'
+    strpos($register, 'WIDEBLOCK: latestcourses') === false
+      && !file_exists($module . '/classes/block_latestcourses_class_inc.php')
+      && !file_exists($module . '/classes/block_context_class_inc.php'),
+    'Legacy public course listing blocks must remain retired.'
 );
 $expect(
     strpos($database, 'function getArrayOfLatestContexts') !== false
@@ -78,11 +78,6 @@ $expect(
     'Internally generated catalogue routes must be HTML encoded exactly once.'
 );
 $expect(
-    strpos($renderer, 'renderLatest(6)') === false
-      && strpos($block, 'renderLatest(6)') !== false,
-    'The block must limit its rendered collection to six courses.'
-);
-$expect(
     strpos($controller, 'protected function __catalogue()') !== false
       && strpos($controller, 'protected function __apply()') !== false,
     'Catalogue and temporary application actions must both be available.'
@@ -102,10 +97,8 @@ $expect(
 );
 $expect(
     strpos($myCourses, 'course-shortcuts__list') !== false
-      && strpos($allCourses, 'course-shortcuts__list') !== false
-      && strpos($myCourses, "new dropdown") === false
-      && strpos($allCourses, "new dropdown") === false,
-    'My Courses and All Courses must use direct course navigation, not chooser dropdowns.'
+      && strpos($myCourses, "new dropdown") === false,
+    'My Courses must use direct course navigation, not a chooser dropdown.'
 );
 $expect(
     strpos($controller, "return \$this->nextAction('catalogue');") !== false

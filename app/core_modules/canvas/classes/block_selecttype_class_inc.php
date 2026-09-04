@@ -107,6 +107,7 @@ class block_selecttype extends ChisimbaObject
      */
     public function show()
     {
+        if (!$this->objUser->isAdmin()) return '';
         $ret = "";
         $persCan = $this->objLanguage->languageText("mod_canvas_typepersonal", "canvas");
         $persUri = $this->uri(array('action' => 'select', 'ctype' => 'personal'), 'canvas');

@@ -18,8 +18,9 @@ $escape = static function ($value) {
 };
 $editing = !empty($preloginEditing);
 $canEdit = !empty($preloginCanEdit);
+$icons = $this->getObject('iconservice', 'ui');
 
-$renderPlacedBlock = function ($block, $side) use ($escape, $editing) {
+$renderPlacedBlock = function ($block, $side) use ($escape, $editing, $icons) {
     if ($block['isblock'] == $this->TRUE) {
         $blockType = $side === 'middle' ? 'none' : NULL;
         $content = $this->objBlocks->showBlock(
@@ -46,29 +47,30 @@ $renderPlacedBlock = function ($block, $side) use ($escape, $editing) {
     }
 
     $id = $block['id'];
+    $moveUp = $this->objLanguage->languageText('phrase_moveup');
+    $moveDown = $this->objLanguage->languageText('phrase_movedown');
+    $delete = $this->objLanguage->languageText('word_delete');
     $links = array(
-        '<a href="' . $this->uri(array(
+        '<a class="chisimba-icon-button" aria-label="' . $escape($moveUp)
+            . '" title="' . $escape($moveUp) . '" href="' . $this->uri(array(
             'action' => 'moveup',
             'id' => $id,
-        ), 'prelogin') . '">'
-            . $escape($this->objLanguage->languageText('phrase_moveup'))
-            . '</a>',
-        '<a href="' . $this->uri(array(
+        ), 'prelogin') . '">' . $icons->render('arrow-up', array('decorative' => true)) . '</a>',
+        '<a class="chisimba-icon-button" aria-label="' . $escape($moveDown)
+            . '" title="' . $escape($moveDown) . '" href="' . $this->uri(array(
             'action' => 'movedown',
             'id' => $id,
-        ), 'prelogin') . '">'
-            . $escape($this->objLanguage->languageText('phrase_movedown'))
-            . '</a>',
-        '<a href="' . $this->uri(array(
+        ), 'prelogin') . '">' . $icons->render('arrow-down', array('decorative' => true)) . '</a>',
+        '<a class="chisimba-icon-button chisimba-button-danger" aria-label="'
+            . $escape($delete) . '" title="' . $escape($delete) . '" href="' . $this->uri(array(
             'action' => 'delete',
             'id' => $id,
         ), 'prelogin') . '" data-prelogin-delete="1">'
-            . $escape($this->objLanguage->languageText('word_delete'))
-            . '</a>',
+            . $icons->render('trash-2', array('decorative' => true)) . '</a>',
     );
-    return '<div class="prelogin-edit-block"><div class="prelogin-edit-block__tools">'
+    return '<div class="prelogin-edit-block"><div class="prelogin-edit-block__tools"><strong>'
         . $escape($block['title'])
-        . '<span>' . implode(' · ', $links) . '</span></div>'
+        . '</strong><span class="prelogin-edit-block__actions">' . implode('', $links) . '</span></div>'
         . $content . '</div>';
 };
 
@@ -81,6 +83,13 @@ $renderColumn = function ($side) use ($editing, $renderPlacedBlock) {
         return $output;
     }
     foreach ($blocks as $block) {
+        // Login is part of the public page itself. Ignore stale installations
+        // that still hold it as a movable pre-login block.
+        if ($block['isblock'] == $this->TRUE
+            && $block['blockmodule'] === 'security'
+            && $block['blockname'] === 'login') {
+            continue;
+        }
         if (!$editing && $block['visible'] != $this->TRUE) {
             continue;
         }
@@ -124,7 +133,13 @@ $renderAddControl = function ($side, $blocks) use ($escape) {
     return $output;
 };
 
-$leftContent = $renderColumn('left');
+$loginContent = $this->objBlocks->showBlock('login', 'security');
+$fixedLabel = $editing ? '<p class="prelogin-fixed-block__label">'
+    . $icons->render('lock-keyhole', array('decorative' => true)) . '<span>'
+    . $escape($this->objLanguage->languageText('mod_prelogin_builtinlogin', 'prelogin'))
+    . '</span></p>' : '';
+$leftContent = '<div class="prelogin-fixed-block">' . $fixedLabel . $loginContent . '</div>'
+    . $renderColumn('left');
 $middleContent = $renderColumn('middle');
 $rightContent = $renderColumn('right');
 
@@ -146,26 +161,17 @@ if ($canEdit) {
     $editControl = '<div id="editmode" class="prelogin-edit-control">'
         . '<div id="modeswitch_wrapper" class="'
         . ($editing ? 'editing_on' : 'editing_off') . '">'
-        . '<a href="' . $editUrl . '">'
+        . '<a class="button chisimba-button-secondary" href="' . $editUrl . '">'
+        . $icons->render($editing ? 'eye' : 'settings', array('decorative' => true))
+        . '<span>'
         . $escape($this->objLanguage->languageText($editKey, 'context'))
-        . '</a></div></div>';
+        . '</span></a></div></div>';
 }
 
 if ($editing) {
     $deletePrompt = $escape(
         $this->objLanguage->languageText('phrase_delete')
     );
-    $style = <<<'CSS'
-<style>
-.prelogin-edit-block { position: relative; margin-bottom: .75rem; padding-top: 2.35rem; border: 2px solid var(--color-primary, #087bc1); border-radius: .65rem; overflow: hidden; }
-.prelogin-edit-block__tools { position: absolute; inset: 0 0 auto; display: flex; justify-content: space-between; gap: .75rem; padding: .45rem .65rem; background: #e7f2fa; font-size: .85rem; }
-.prelogin-add-block { display: grid; gap: .5rem; margin: .75rem 0; padding: .75rem; border: 1px dashed #8ea4b8; border-radius: .65rem; background: #f5f8fb; }
-.prelogin-add-block label { display: grid; gap: .35rem; }
-.prelogin-add-block select { width: 100%; min-width: 0; padding: .45rem; }
-.prelogin-add-block button { justify-self: start; padding: .5rem .8rem; }
-</style>
-CSS;
-    $this->appendArrayVar('headerParams', $style);
     $script = '<script>(function(){document.addEventListener("click",function(event){'
         . 'var link=event.target.closest("[data-prelogin-delete]");'
         . 'if(link&&!window.confirm("' . addslashes($deletePrompt) . '"))'

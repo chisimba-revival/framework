@@ -2,11 +2,10 @@
 /** Canonical password-recovery route contract. */
 $root = dirname(__DIR__);
 $controller = file_get_contents($root . '/controller.php');
-$block = file_get_contents($root . '/classes/block_elearnlogin_class_inc.php');
 $interface = file_get_contents($root . '/classes/logininterface_class_inc.php');
 $error = file_get_contents($root . '/templates/content/error_message.php');
 $splash = file_get_contents($root . '/classes/splashscreen_class_inc.php');
-$active = $controller . $block . $interface . $error . $splash;
+$active = $controller . $interface . $error . $splash;
 $checks = array(
     'legacy request redirects to canonical recovery' => str_contains(
         $controller,
@@ -16,17 +15,16 @@ $checks = array(
     'active login surfaces use canonical recovery' => substr_count(
         $active,
         "'registration-service'"
-    ) >= 5,
+    ) >= 4,
     'active login surfaces do not generate legacy recovery links' => !str_contains(
-        $block . $interface . $error . $splash,
+        $interface . $error . $splash,
         "'action'=>'needpassword'"
     ) && !str_contains(
-        $block . $interface . $error . $splash,
+        $interface . $error . $splash,
         "'action' => 'needpassword'"
     ),
-    'login block has one understandable recovery prompt' => !str_contains(
-        $block,
-        'mod_security_helpmelogin'
+    'unsafe legacy eLearning login is retired' => !file_exists(
+        $root . '/classes/block_elearnlogin_class_inc.php'
     ),
 );
 foreach ($checks as $name => $passed) {
