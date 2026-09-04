@@ -22,6 +22,17 @@ $assert(
     'Administration journey must be restricted to site administrators.'
 );
 $assert(
+    strpos($menu, "\$journeys['learning'][] = \$this->journeyLink(\n                'mylearning', array('action' => 'manage')") !== false
+        && strpos($menu, "\$journeys['teaching'][] = \$this->journeyLink(\n                'myteaching', array('action' => 'manage')") !== false,
+    'Dashboard management must stay with its corresponding journey menu.'
+);
+$assert(
+    strpos($menu, "checkIfRegistered('myadmin')") !== false
+        && strpos($sideMenu, "'nodeid' => 'myadmin'") !== false
+        && strpos($sideMenu, "'nodeid' => 'manage-myadmin'") !== false,
+    'Administrators must have separate My Administration view and management journeys.'
+);
+$assert(
     strpos($menu, "checkIfRegistered('myteaching')") !== false
         && strpos($menu, "'mod_toolbar_managemyteaching'") !== false
         && strpos($sideMenu, "'nodeid' => 'myteaching'") !== false

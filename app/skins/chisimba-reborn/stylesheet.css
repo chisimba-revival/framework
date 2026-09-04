@@ -855,6 +855,59 @@ ul#menuList li li ul {
     background: var(--chisimba-surface-subtle);
 }
 
+.myteaching-course {
+    position: relative;
+    overflow: hidden;
+    padding-right: 5.75rem;
+}
+
+.myteaching-course__image {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 4.25rem;
+    height: 4.25rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.55rem;
+    object-fit: cover;
+    background: var(--chisimba-surface);
+}
+
+.site-health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 1rem;
+}
+
+.site-health-card,
+.site-health-attention {
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.65rem;
+    background: var(--chisimba-surface-subtle);
+}
+
+.site-health-card > span,
+.site-health-card > p {
+    color: var(--chisimba-text-muted);
+}
+
+.site-health-card > strong {
+    display: block;
+    margin: 0.35rem 0;
+    color: var(--chisimba-primary-dark);
+    font-size: 2rem;
+}
+
+.site-health-card > p,
+.site-health-attention p:last-child {
+    margin-bottom: 0;
+}
+
+.site-health-attention {
+    margin-top: 1rem;
+}
+
 .student-learning-course--next {
     border-color: var(--chisimba-primary);
     background: color-mix(in srgb, var(--chisimba-primary-soft) 55%, var(--chisimba-surface));

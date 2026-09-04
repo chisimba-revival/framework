@@ -218,8 +218,38 @@ class sidemenu extends ChisimbaObject {
         $studentOnly = $this->addStudentHomeLinks();
         $this->addLearningJourneyLink();
         $this->addTeachingJourneyLink();
+        $this->addAdministrationJourneyLink();
         $menu = $this->getMenuList($menus, true, !$studentOnly);
         return $menu;
+    }
+
+    /** Add the operational administration dashboard for site administrators. */
+    private function addAdministrationJourneyLink() {
+        $modules = $this->getObject('modules', 'modulecatalogue');
+        if (!$this->securityContext->isSiteAdministrator()
+            || !$modules->checkIfRegistered('myadmin')) { return; }
+        $nodeIds = array_column($this->globalNodes, 'nodeid');
+        if (!in_array('myadmin', $nodeIds, true)) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_myadmin_name', 'myadmin', 'My Administration'
+                ),
+                'uri' => $this->uri(null, 'myadmin'),
+                'nodeid' => 'myadmin',
+                'css' => 'account-card__my-administration',
+            );
+        }
+        if (!in_array('manage-myadmin', $nodeIds, true)) {
+            $this->globalNodes[] = array(
+                'text' => $this->objLanguage->languageText(
+                    'mod_myadmin_manage', 'myadmin',
+                    'Manage My Administration page'
+                ),
+                'uri' => $this->uri(array('action' => 'manage'), 'myadmin'),
+                'nodeid' => 'manage-myadmin',
+                'css' => 'account-card__manage-my-administration',
+            );
+        }
     }
 
     /** Keep personal teaching and page management as separate journeys. */
