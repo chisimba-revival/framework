@@ -78,7 +78,9 @@ class systext_facet extends dbTable
 
         // The abstract list is persistent for this session.
         // Initialize the abstract list for this instance.
-        if($this -> getSession('systext')){
+        $activeType = $this->_getActiveSystemType();
+        if($this -> getSession('systext')
+            && $this -> getSession('systext_type') === $activeType){
             // The abstract list is available so fetch it from the session variable.
             $this -> fetchSession();
         }else{
@@ -279,6 +281,7 @@ class systext_facet extends dbTable
         $this -> abstractList = $this -> _getAbstractList();
                 // Set the session variable
         $this -> setSession('systext', $this -> abstractList);
+        $this -> setSession('systext_type', $this -> _getActiveSystemType());
     }
 
     /**
@@ -300,10 +303,16 @@ class systext_facet extends dbTable
     * the abstracts as values
     * @access private
     */
+    /** Return the currently configured terminology set. */
+    private function _getActiveSystemType()
+    {
+        $record = $this -> getRow('pname', 'SYSTEM_TYPE');
+        return isset($record['pvalue']) ? (string) $record['pvalue'] : 'default';
+    }
+
     public function _getAbstractList()
     {
-        $rs = $this->getRow('pname','SYSTEM_TYPE');
-        $system_type = $rs['pvalue'];
+        $system_type = $this -> _getActiveSystemType();
 
         $systemTypeList = $this -> listSystemTypes();
         $textItemList = $this -> listTextItems();
