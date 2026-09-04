@@ -26,6 +26,10 @@ $checks = array(
         $css,
         'images/ecotraining-logo.webp'
     ),
+    'banner preserves the logo aspect ratio' => str_contains(
+        $css,
+        'aspect-ratio: 4 / 1;'
+    ),
 );
 
 foreach ($checks as $name => $passed) {

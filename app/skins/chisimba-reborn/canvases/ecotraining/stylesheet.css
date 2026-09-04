@@ -22,6 +22,7 @@
 }
 
 .chisimba-site-banner__identity {
+    aspect-ratio: 4 / 1;
     height: clamp(4.25rem, 8vw, 5.5rem);
-    width: clamp(13rem, 24vw, 20rem);
+    width: auto;
 }
