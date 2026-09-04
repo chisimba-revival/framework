@@ -77,10 +77,11 @@ class block_learningjourney extends ChisimbaObject
             ? $state['bookmarks']
             : array();
 
-        $eyebrow = $this->objLanguage->languageText(
+        $eyebrow = $this->objLanguage->code2Txt(
             $isManager ? 'mod_context_coursemanagement' : 'mod_context_learningjourney',
             'context',
-            $isManager ? 'Course management' : 'Your learning journey'
+            NULL,
+            $isManager ? '[-context-] management' : 'Your learning journey'
         );
 
         $fullName = trim((string) $this->objUser->fullname());
@@ -109,10 +110,11 @@ class block_learningjourney extends ChisimbaObject
         }
 
         $lead = $isManager
-            ? $this->objLanguage->languageText(
+            ? $this->objLanguage->code2Txt(
                 'mod_context_managerjourneylead',
                 'context',
-                'Manage learning, people and course settings'
+                NULL,
+                'Manage learning, people and [-context-] settings'
             )
             : ($started
             ? $this->objLanguage->languageText(

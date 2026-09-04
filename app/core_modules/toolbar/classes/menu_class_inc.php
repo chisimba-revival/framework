@@ -162,12 +162,12 @@ class menu extends ChisimbaObject
 
         if ($this->context) {
             $journeys['learning'][] = $this->journeyLink(
-                'context', NULL, 'mod_toolbar_coursehome', 'Course home'
+                'context', NULL, 'mod_toolbar_coursehome', '[-context-] home'
             );
             if ($mayTeach) {
                 $journeys['teaching'][] = $this->journeyLink(
                     'context', array('action' => 'controlpanel'),
-                    'mod_toolbar_coursecontrolpanel', 'Course control panel'
+                    'mod_toolbar_coursecontrolpanel', '[-context-] control panel'
                 );
                 if ($this->objModule->checkIfRegistered('contextcontent')
                     && $this->objDbConMod->isContextPlugin(
@@ -176,7 +176,7 @@ class menu extends ChisimbaObject
                     )) {
                     $journeys['teaching'][] = $this->journeyLink(
                         'contextcontent', NULL,
-                        'mod_toolbar_coursecontent', 'Course content'
+                        'mod_toolbar_coursecontent', '[-context-] content'
                     );
                 }
                 if ($this->objModule->checkIfRegistered('contextgroups')
@@ -186,23 +186,23 @@ class menu extends ChisimbaObject
                     )) {
                     $journeys['teaching'][] = $this->journeyLink(
                         'contextgroups', NULL,
-                        'mod_toolbar_coursemembers', 'Course members'
+                        'mod_toolbar_coursemembers', '[-context-] members'
                     );
                 }
             }
         } else {
             $journeys['learning'][] = $this->journeyLink(
                 'context', array('action' => 'catalogue'),
-                'mod_toolbar_browsecourses', 'Browse courses'
+                'mod_toolbar_browsecourses', 'Browse [-contexts-]'
             );
             if ($mayTeach && $this->objModule->checkIfRegistered('contextadmin')) {
                 $journeys['teaching'][] = $this->journeyLink(
                     'contextadmin', NULL,
-                    'mod_toolbar_courseadministration', 'Course administration'
+                    'mod_toolbar_courseadministration', '[-context-] administration'
                 );
                 $journeys['teaching'][] = $this->journeyLink(
                     'contextadmin', array('action' => 'add'),
-                    'mod_toolbar_createcourse', 'Create course'
+                    'mod_toolbar_createcourse', 'Create [-context-]'
                 );
             }
         }
@@ -241,9 +241,9 @@ class menu extends ChisimbaObject
         return array(
             'module' => $module,
             'params' => $params,
-            'label' => $this->objLanguage->languageText(
-                $languageKey, 'toolbar', $fallback
-            ),
+            'label' => ucwords($this->objLanguage->code2Txt(
+                $languageKey, 'toolbar', NULL, $fallback
+            )),
         );
     }
 

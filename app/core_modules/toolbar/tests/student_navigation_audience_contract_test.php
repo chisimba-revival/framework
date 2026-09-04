@@ -8,6 +8,7 @@ $security = file_get_contents(
 );
 $cssMenu = file_get_contents($root . '/classes/cssmenu_class_inc.php');
 $sideMenu = file_get_contents($root . '/classes/sidemenu_class_inc.php');
+$register = file_get_contents($root . '/register.conf');
 
 $assert = static function ($condition, $message) {
     if (!$condition) {
@@ -111,6 +112,12 @@ $assert(
     strpos($sideMenu, "!empty(\$module['dependscontext'])") !== false
         && strpos($sideMenu, 'getContextModules($this->contextcode)') !== false,
     'Course sidebar destinations must be gated by Manage Course Tools.'
+);
+$assert(
+    strpos($menu, "'label' => ucwords(\$this->objLanguage->code2Txt(") !== false
+        && strpos($register, 'mod_toolbar_coursehome|Current context home journey action|[-context-] home') !== false
+        && strpos($register, 'mod_toolbar_coursecontent|Current context content journey action|[-context-] content') !== false,
+    'Shared journey labels must preserve configured context terminology.'
 );
 
 fwrite(STDOUT, "PASS: student navigation audience contract\n");

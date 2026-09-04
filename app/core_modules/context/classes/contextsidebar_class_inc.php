@@ -131,11 +131,12 @@ class contextsidebar extends ChisimbaObject
         }
         if ($mayManageLearning) {
             $nodes[] = array(
-                'text' => $this->objLanguage->languageText(
+                'text' => ucwords($this->objLanguage->code2Txt(
                     'mod_context_coursesettings',
                     'context',
-                    'Course settings'
-                ),
+                    NULL,
+                    '[-context-] settings'
+                )),
                 'uri' => $this->uri(
                     array('action' => 'edit', 'contextcode' => $this->contextCode),
                     'contextadmin'
