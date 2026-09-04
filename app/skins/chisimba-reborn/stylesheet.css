@@ -878,6 +878,13 @@ ul#menuList li li ul {
     background: var(--chisimba-surface);
 }
 
+.myteaching-course__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: auto;
+}
+
 .site-health-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
