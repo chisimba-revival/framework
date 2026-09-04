@@ -90,9 +90,10 @@ class studentlearningoverview extends ChisimbaObject
             return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
         };
         $text = function ($key, $fallback) {
-            return $this->language->languageText(
+            return $this->language->code2Txt(
                 'mod_context_' . $key,
                 'context',
+                null,
                 $fallback
             );
         };
