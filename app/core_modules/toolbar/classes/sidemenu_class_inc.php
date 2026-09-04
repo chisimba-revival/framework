@@ -497,6 +497,13 @@ class sidemenu extends ChisimbaObject {
     function addNavigationRow($moduleName, $module, $icon, $linkArray=null) {
         $this->loadClass('link', 'htmlelements');
 
+        $moduleUri = $this->uri($linkArray, $module);
+        foreach ($this->globalNodes as $node) {
+            if (isset($node['uri']) && $node['uri'] === $moduleUri) {
+                return;
+            }
+        }
+
         $this->globalTable->startRow();
 
         // Replace icon with the default icon if it can't be found (done by geticon class).
@@ -507,7 +514,7 @@ class sidemenu extends ChisimbaObject {
 
         $this->globalTable->addCell($this->objIcon->show(), 20, 'absmiddle', 'center');
 
-        $moduleLink = new link($this->uri($linkArray, $module));
+        $moduleLink = new link($moduleUri);
         $moduleLink->link = $moduleName;
 
         $this->globalTable->addCell($moduleLink->show(), null, 'absmiddle');
@@ -521,7 +528,7 @@ class sidemenu extends ChisimbaObject {
             $cssClass = '';
         }
 
-        $this->globalNodes[] = array('text' => $moduleName, 'uri' => $this->uri($linkArray, $module), 'nodeid' => $module, 'css' => $cssClass);
+        $this->globalNodes[] = array('text' => $moduleName, 'uri' => $moduleUri, 'nodeid' => $module, 'css' => $cssClass);
     }
 
     /**

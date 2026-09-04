@@ -114,6 +114,10 @@ $assert(
     'Course sidebar destinations must be gated by Manage Course Tools.'
 );
 $assert(
+    strpos($sideMenu, "isset(\$node['uri']) && \$node['uri'] === \$moduleUri") !== false,
+    'Account-card aggregation must suppress duplicate destinations.'
+);
+$assert(
     strpos($menu, "'label' => ucwords(\$this->objLanguage->code2Txt(") !== false
         && strpos($register, 'mod_toolbar_coursehome|Current context home journey action|[-context-] home') !== false
         && strpos($register, 'mod_toolbar_coursecontent|Current context content journey action|[-context-] content') !== false,
