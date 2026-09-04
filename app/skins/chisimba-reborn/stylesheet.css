@@ -866,10 +866,11 @@ ul#menuList li li ul {
     top: 0.75rem;
     right: 0.75rem;
     width: 4.25rem;
-    height: 4.25rem;
+    height: auto;
+    max-height: 4.25rem;
     border: 1px solid var(--chisimba-border);
     border-radius: 0.55rem;
-    object-fit: cover;
+    object-fit: contain;
     background: var(--chisimba-surface);
 }
 
@@ -906,6 +907,89 @@ ul#menuList li li ul {
 
 .site-health-attention {
     margin-top: 1rem;
+}
+
+.teaching-insights {
+    margin-top: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.75rem;
+    background: var(--chisimba-surface);
+    box-shadow: var(--chisimba-shadow-sm);
+}
+
+.teaching-insights > header > h2 {
+    margin: 0.2rem 0 0.35rem;
+}
+
+.teaching-insights > header > p:last-child {
+    color: var(--chisimba-text-muted);
+}
+
+.teaching-insights__courses {
+    display: grid;
+    gap: 1rem;
+}
+
+.teaching-insight-course {
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.65rem;
+    background: var(--chisimba-surface-subtle);
+}
+
+.teaching-insight-course h3 {
+    margin: 0 0 0.8rem;
+}
+
+.teaching-insight-course dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+}
+
+.teaching-insight-course dl > div {
+    padding: 0.7rem;
+    border-radius: 0.5rem;
+    background: var(--chisimba-surface);
+}
+
+.teaching-insight-course dt {
+    color: var(--chisimba-text-muted);
+    font-size: 0.82rem;
+}
+
+.teaching-insight-course dd {
+    margin: 0.2rem 0 0;
+    color: var(--chisimba-primary-dark);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.teaching-insight-course__queue {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) auto;
+    gap: 0.45rem 0.75rem;
+    align-items: end;
+}
+
+.teaching-insight-course__queue label {
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.teaching-insight-course__queue button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 38rem) {
+    .teaching-insight-course dl,
+    .teaching-insight-course__queue {
+        grid-template-columns: 1fr;
+    }
 }
 
 .student-learning-course--next {
