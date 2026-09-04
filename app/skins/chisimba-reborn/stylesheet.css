@@ -620,6 +620,7 @@ ul#menuList li li ul {
 }
 
 .dashboard-agenda-item--overdue { border-left-color: var(--chisimba-danger); }
+.dashboard-agenda-item--pending { border-left-color: var(--chisimba-primary); }
 .dashboard-agenda-item--complete { border-left-color: var(--chisimba-success); opacity: .78; }
 
 .dashboard-agenda-item time {
