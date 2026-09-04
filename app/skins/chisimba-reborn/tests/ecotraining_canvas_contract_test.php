@@ -22,9 +22,9 @@ $checks = array(
         '/#sitename\.chisimba-site-banner__name\s*\{[^}]*display: none;/s',
         $css
     ) === 1,
-    'canvas expects its combined SVG logo' => str_contains(
+    'canvas expects its combined transparent WebP logo' => str_contains(
         $css,
-        'images/ecotraining-logo.svg'
+        'images/ecotraining-logo.webp'
     ),
 );
 
