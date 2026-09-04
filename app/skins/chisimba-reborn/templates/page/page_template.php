@@ -29,7 +29,9 @@ if ($this->objUser->isLoggedIn()) {
             $statusLabel = 'Administrator';
         } elseif ($roleContext->isCurrentContextLecturer()
             || $roleContext->isLecturer()) {
-            $statusLabel = 'Lecturer';
+            $statusLabel = ucfirst($this->objLanguage->code2Txt(
+                'word_lecturer', 'system', null, '[-author-]'
+            ));
         } elseif ($objModuleCatalogue->checkIfRegistered('membership-service')) {
             $heldTier = $this->getObject(
                 'membershipservice', 'membership-service'
