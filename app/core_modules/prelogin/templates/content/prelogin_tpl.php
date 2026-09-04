@@ -124,8 +124,15 @@ $renderAddControl = function ($side, $blocks) use ($escape) {
         . '<select name="blockid" required><option value="">'
         . $escape($label) . '</option>';
     foreach ($blocks as $block) {
+        // Registry labels can contain legacy HTML entities. Decode them once
+        // before escaping the option text for safe, normal presentation.
+        $displayTitle = html_entity_decode(
+            (string) $block['displaytitle'],
+            ENT_QUOTES | ENT_HTML5,
+            'UTF-8'
+        );
         $output .= '<option value="' . $escape($block['descriptor']) . '">'
-            . $escape($block['displaytitle']) . ' ('
+            . $escape($displayTitle) . ' ('
             . $escape($block['moduleid']) . ')</option>';
     }
     $output .= '</select></label><button type="submit">'

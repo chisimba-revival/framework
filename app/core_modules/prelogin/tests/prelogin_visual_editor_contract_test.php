@@ -34,6 +34,9 @@ $checks = array(
         str_contains($template, '$renderAddControl(\'left\'')
         && str_contains($template, '$renderAddControl(\'middle\'')
         && str_contains($template, '$renderAddControl(\'right\''),
+    'catalogue titles decode legacy entities before escaping' =>
+        str_contains($template, '$displayTitle = html_entity_decode(')
+        && str_contains($template, '$escape($displayTitle)'),
     'placed blocks can be reordered and removed' =>
         str_contains($template, "'action' => 'moveup'")
         && str_contains($template, "'action' => 'movedown'")

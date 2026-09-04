@@ -881,6 +881,7 @@
     inline-size: 100%;
     margin: 0;
     min-width: 0;
+    outline: none;
     padding: .7rem 0;
 }
 

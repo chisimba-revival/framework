@@ -16,6 +16,10 @@ $checks = array(
         $css,
         ".auth-block__logout button .chisimba-icon {\n    color: currentColor;"
     ),
+    'inner login input delegates focus treatment to its field' => preg_match(
+        '/#form_loginform \.auth-field input \{[^}]*outline: none;/s',
+        $css
+    ) === 1,
 );
 
 foreach ($checks as $name => $ok) {
