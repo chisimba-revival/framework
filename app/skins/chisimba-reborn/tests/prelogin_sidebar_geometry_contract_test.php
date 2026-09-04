@@ -10,6 +10,18 @@ $checks = array(
     'sidebar region adds no inset' => strpos($rule, 'padding: 0 !important') !== false,
     'sidebar fills its grid track' => strpos($rule, 'width: 100% !important') !== false,
     'sidebar starts at the grid baseline' => strpos($rule, 'align-self: start !important') !== false,
+    'prelogin wrapper geometry is normalised' => strpos(
+        $css,
+        '> :is(.prelogin-fixed-block, .prelogin-placed-block) {'
+    ) !== false,
+    'prelogin wrappers add no margin' => preg_match(
+        '/> :is\(\.prelogin-fixed-block, \.prelogin-placed-block\) \{[^}]*margin: 0;/s',
+        $css
+    ) === 1,
+    'wrapped feature boxes fill the sidebar' => preg_match(
+        '/> :is\(\.prelogin-fixed-block, \.prelogin-placed-block\)\s*> \.featurebox \{[^}]*margin: 0;[^}]*width: 100%;/s',
+        $css
+    ) === 1,
 );
 foreach ($checks as $name => $passed) {
     if (!$passed) {

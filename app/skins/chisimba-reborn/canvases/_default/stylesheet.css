@@ -319,6 +319,31 @@
     width: 100% !important;
 }
 
+/*
+ * Pre-login components are wrapped so administrators can arrange them. Keep
+ * those structural wrappers invisible to the layout and remove the legacy
+ * feature-box inset so the login card shares the main content's top edge and
+ * fills the supplementary grid track.
+ */
+#Canvas_Content_Body:has(#form_loginform)
+    > #Canvas_Content_Body_Region1
+    > :is(.prelogin-fixed-block, .prelogin-placed-block) {
+    box-sizing: border-box;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#Canvas_Content_Body:has(#form_loginform)
+    > #Canvas_Content_Body_Region1
+    > :is(.prelogin-fixed-block, .prelogin-placed-block)
+    > .featurebox {
+    box-sizing: border-box;
+    margin: 0;
+    width: 100%;
+}
+
 #Canvas_Content_Body:has(#form_loginform)
     > #Canvas_Content_Body_Region2 {
     align-self: stretch !important;
