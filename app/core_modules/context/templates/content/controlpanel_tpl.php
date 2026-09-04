@@ -21,7 +21,7 @@ $taskLinks = array(
     array(
         'icon' => 'users',
         'label' => $objLanguage->code2Txt('mod_context_managepeople', 'context', null, 'Manage members'),
-        'help' => $objLanguage->code2Txt('mod_context_managepeoplehelp', 'context', null, 'Add or remove students, lecturers and guests.'),
+        'help' => $objLanguage->code2Txt('mod_context_managepeoplehelp', 'context', null, 'Add or remove [-readonlys-], [-authors-] and guests.'),
         'url' => $this->uri(null, 'contextgroups'),
     ),
     array(
@@ -33,18 +33,18 @@ $taskLinks = array(
     array(
         'icon' => 'settings',
         'label' => $objLanguage->code2Txt('mod_context_editsettings', 'context', null, 'Edit settings'),
-        'help' => $objLanguage->code2Txt('mod_context_editsettingshelp', 'context', null, 'Change the most-used course settings on one page.'),
+        'help' => $objLanguage->code2Txt('mod_context_editsettingshelp', 'context', null, 'Change availability, access, title and [-context-] image.'),
         'url' => $this->uri(array('action' => 'updatesettings'), 'context'),
     ),
     array(
         'icon' => 'list-checks',
         'label' => $objLanguage->code2Txt('mod_context_fullcontextedit', 'context', null, 'Full [-context-] wizard'),
-        'help' => $objLanguage->code2Txt('mod_context_fullcontextedithelp', 'context', null, 'Work through settings, information, outcomes and course tools in four guided stages.'),
+        'help' => $objLanguage->code2Txt('mod_context_fullcontextedithelp', 'context', null, 'Work through settings, information, outcomes and [-context-] tools in four guided stages.'),
         'url' => $this->uri(array('action' => 'edit', 'contextcode' => $contextCode), 'contextadmin'),
     ),
     array(
         'icon' => 'blocks',
-        'label' => $objLanguage->code2Txt('mod_context_managetools', 'context', null, 'Manage course tools'),
+        'label' => $objLanguage->code2Txt('mod_context_managetools', 'context', null, 'Manage [-context-] tools'),
         'help' => $objLanguage->code2Txt('mod_context_managetoolshelp', 'context', null, 'Choose the learning and assessment tools used here.'),
         'url' => $this->uri(array('action' => 'manageplugins'), 'context'),
     ),
@@ -87,7 +87,7 @@ if ($currentUser->isAdmin()) {
 }
 
 $ret = '<div class="course-control-workspace"><header class="course-control-header">'
-    . '<h1>' . $escape($objLanguage->code2Txt('mod_context_courseadministration', 'context', null, '[-context-] administration')) . '</h1>'
+    . '<h1>' . $escape(ucfirst($objLanguage->code2Txt('mod_context_courseadministration', 'context', null, '[-context-] administration'))) . '</h1>'
     . '<p>' . $escape($contextTitle) . '</p></header>'
     . '<nav class="course-control-tasks" aria-label="'
     . $escape($objLanguage->code2Txt('mod_context_commontasks', 'context', null, 'Common course-administration tasks')) . '"><h2>'
@@ -95,7 +95,7 @@ $ret = '<div class="course-control-workspace"><header class="course-control-head
 foreach ($taskLinks as $task) {
     $ret .= '<li><a class="chisimba-navigation-action course-control-task" href="' . $escape($task['url']) . '"><span class="course-control-task__icon">'
         . $iconService->render($task['icon'], array('decorative' => true))
-        . '</span><span><strong>' . $escape($task['label']) . '</strong><small>'
+        . '</span><span><strong>' . $escape(ucfirst($task['label'])) . '</strong><small>'
         . $escape($task['help']) . '</small></span></a></li>';
 }
 $ret .= '</ul></nav>';
