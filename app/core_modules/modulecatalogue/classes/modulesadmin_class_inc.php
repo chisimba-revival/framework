@@ -288,6 +288,10 @@ class modulesadmin extends dbTableManager
                 $permList = array();
                 $groupArray = array();
                 $groupArray2 = array();
+                // The current manifest is authoritative. Without clearing the
+                // previous declarations, removed blocks remain selectable and
+                // can make a page load a class which no longer exists.
+                $this->objModuleBlocks->deleteModuleBlocks($moduleId);
                 if(isset($registerdata['BLOCK'])) {
                     foreach ($registerdata['BLOCK'] as $block) {
 
