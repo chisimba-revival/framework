@@ -2590,6 +2590,11 @@ h5.featureboxheader,
     min-height: 1.65rem;
     padding: .2rem .55rem;
     text-decoration: none;
+    transition:
+        background-color 120ms ease,
+        border-color 120ms ease,
+        box-shadow 120ms ease,
+        transform 120ms ease;
 }
 
 .chisimba-site-banner__journey span {
@@ -2621,8 +2626,12 @@ h5.featureboxheader,
 
 .chisimba-site-banner__journey[href]:hover,
 .chisimba-site-banner__journey[href]:focus-visible {
-    background: rgb(255 255 255 / .25);
+    background: rgb(255 255 255 / .38);
+    border-color: rgb(255 255 255 / .9);
+    box-shadow: 0 .2rem .6rem rgb(0 0 0 / .22);
     color: var(--chisimba-text-inverse);
+    text-decoration: none;
+    transform: translateY(-1px);
 }
 
 .chisimba-site-banner__journey--active {

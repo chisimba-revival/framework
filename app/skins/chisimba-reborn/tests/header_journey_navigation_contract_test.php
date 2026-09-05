@@ -75,7 +75,13 @@ $checks = array(
         && str_contains($css, 'min-height: 1.65rem;'),
     'only linked journey pills receive interaction styling' =>
         str_contains($css, '.chisimba-site-banner__journey[href]:hover,')
-        && !str_contains($css, '.chisimba-site-banner__journey:hover,'),
+        && !str_contains($css, '.chisimba-site-banner__journey:hover,')
+        && preg_match(
+            '/\.chisimba-site-banner__journey\[href\]:hover,[^{]*\{[^}]*'
+                . 'box-shadow:[^;]+;[^}]*text-decoration: none;[^}]*'
+                . 'transform: translateY\(-1px\);/s',
+            $css
+        ) === 1,
     'utility rail sits at the foot of the banner' => preg_match(
         '/\.chisimba-site-banner__utilities \{[^}]*inset-block-end: \.55rem;'
             . '[^}]*position: absolute;/s',
