@@ -164,6 +164,26 @@ class menu extends ChisimbaObject
             $journeys['learning'][] = $this->journeyLink(
                 'context', NULL, 'mod_toolbar_coursehome', '[-context-] home'
             );
+            if (!$mayTeach
+                && $this->objModule->checkIfRegistered('mylearning')) {
+                try {
+                    $dueItems = $this->getObject(
+                        'studentdueitems', 'mylearning'
+                    )->actionableItemsForContext(
+                        $this->contextCode,
+                        $this->objUserId
+                    );
+                    foreach (array_slice($dueItems, 0, 6) as $dueItem) {
+                        $journeys['learning'][] = array(
+                            'module' => $dueItem['target']['module'],
+                            'params' => $dueItem['target']['params'] ?? array(),
+                            'label' => $dueItem['title'],
+                        );
+                    }
+                } catch (Throwable $failure) {
+                    // Optional due-work discovery must not break navigation.
+                }
+            }
             if ($mayTeach) {
                 $journeys['teaching'][] = $this->journeyLink(
                     'context', array('action' => 'controlpanel'),

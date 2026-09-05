@@ -121,6 +121,12 @@ $assert(
     'Course sidebar destinations must be gated by Manage Course Tools.'
 );
 $assert(
+    strpos($menu, "'studentdueitems', 'mylearning'") !== false
+        && strpos($menu, 'actionableItemsForContext(') !== false
+        && strpos($menu, "'label' => \$dueItem['title']") !== false,
+    'Student Learning must expose activity-level due work without assessment management indexes.'
+);
+$assert(
     strpos($sideMenu, "isset(\$node['uri']) && \$node['uri'] === \$moduleUri") !== false,
     'Account-card aggregation must suppress duplicate destinations.'
 );

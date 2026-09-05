@@ -253,7 +253,20 @@ if ($this->isValid('addblock')) {
 $button = new button('addmiddleblock', $objLanguage->languageText('mod_prelogin_addblock', 'prelogin', 'Add Block'));
 $button->cssId = 'middlebutton';
 
-$objCssLayout->middleColumnContent = '<div id="middleblocks">' . $middleBlocksStr . '</div>';
+$studentDueWork = '';
+if (!$this->objUser->isAdmin()
+    && !$this->getObject('managegroups', 'contextgroups')->isContextLecturer()
+    && $objModule->checkIfRegistered('mylearning')) {
+    try {
+        $studentDueWork = $this->getObject(
+            'studentdueitems', 'mylearning'
+        )->showForContext($contextCode, $this->objUser->userId());
+    } catch (Throwable $failure) {
+        $studentDueWork = '';
+    }
+}
+$objCssLayout->middleColumnContent = $studentDueWork
+    . '<div id="middleblocks">' . $middleBlocksStr . '</div>';
 
 if ($this->isValid('addblock')) {
     $objCssLayout->middleColumnContent .= '<div id="middleaddblock">' . $header->show() . $wideBlocksDropDown->show();

@@ -19,6 +19,7 @@ $plugins = file_get_contents($root . '/classes/block_contextmodules_class_inc.ph
 $forms = file_get_contents($root . '/classes/contextforms_class_inc.php');
 $sidebar = file_get_contents($root . '/classes/contextsidebar_class_inc.php');
 $template = file_get_contents($root . '/templates/content/controlpanel_tpl.php');
+$home = file_get_contents($root . '/templates/content/context_home_tpl.php');
 $controller = file_get_contents($root . '/controller.php');
 $journey = file_get_contents($root . '/classes/block_learningjourney_class_inc.php');
 $register = file_get_contents($root . '/register.conf');
@@ -101,6 +102,9 @@ $checks = array(
         && str_contains($sidebar, "'gradebook'")
         && str_contains($sidebar, "'mcqtests'")
         && str_contains($sidebar, '$mayManageLearning'),
+    'student class home exposes activity-level due work' =>
+        str_contains($home, "'studentdueitems', 'mylearning'")
+        && str_contains($home, '->showForContext($contextCode'),
     'plugin links separate icons from labels' => str_contains(
         $plugins,
         'course-control-plugin__label'
