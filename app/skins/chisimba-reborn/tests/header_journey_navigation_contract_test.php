@@ -57,7 +57,12 @@ $checks = array(
         && str_contains($template, "'isCurrent' => \$isJourneyCurrent('mylearning')")
         && str_contains($template, "'isCurrent' => \$isJourneyCurrent('myteaching')")
         && str_contains($template, "'isCurrent' => \$isJourneyCurrent('myadmin')")
-        && str_contains($css, '.chisimba-site-banner__journey--active {'),
+        && str_contains($css, '.chisimba-site-banner__journey--active {')
+        && preg_match(
+            '/\.chisimba-site-banner__journey--active \{[^}]*'
+                . 'color: var\(--chisimba-ink\);/s',
+            $css
+        ) === 1,
     'journey labels use the language system' => str_contains(
         $language,
         'mod_toolbar_currentcontext'

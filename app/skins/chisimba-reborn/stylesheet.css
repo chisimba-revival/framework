@@ -2627,7 +2627,7 @@ h5.featureboxheader,
 .chisimba-site-banner__journey--active {
     background: var(--chisimba-surface);
     border-color: var(--chisimba-surface);
-    color: var(--chisimba-brand-strong);
+    color: var(--chisimba-ink);
     cursor: default;
 }
 
