@@ -4,12 +4,15 @@ $block = file_get_contents(dirname(__FILE__)
     . '/../classes/block_login_class_inc.php');
 $login = file_get_contents(dirname(__FILE__)
     . '/../classes/logininterface_class_inc.php');
+$template = file_get_contents(dirname(__FILE__)
+    . '/../templates/content/native_login_tpl.php');
 
 $controllerGates = array(
     "setSession('native_auth_login_failure'",
     "'message_key' => 'mod_security_authenticationfailed'",
     "'username' => substr(trim((string) \$username), 0, 255)",
-    "header('Location: ' . \$this->frontPagePath(), true, 303)",
+    "header('Location: ' . \$this->securityLoginPath(), true, 303)",
+    "return \$front . 'index.php?module=security'",
 );
 $blockGates = array(
     "getSession(\n                'native_auth_login_failure'",
@@ -23,11 +26,15 @@ $loginGates = array(
     "isset(\$state['return_to'])",
     "isset(\$_GET['return_to'])",
 );
+$templateGates = array(
+    'action="index.php?module=security&amp;action=login"',
+);
 
 foreach (array(
     'controller' => array($controller, $controllerGates),
     'block' => array($block, $blockGates),
     'login interface' => array($login, $loginGates),
+    'native login template' => array($template, $templateGates),
 ) as $label => $contract) {
     foreach ($contract[1] as $gate) {
         if (strpos($contract[0], $gate) === false) {

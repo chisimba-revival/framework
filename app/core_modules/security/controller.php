@@ -163,7 +163,7 @@ class security extends controller
             'return_to' => $returnTo === null ? '' : $returnTo,
         ));
 
-        header('Location: ' . $this->frontPagePath(), true, 303);
+        header('Location: ' . $this->securityLoginPath(), true, 303);
         exit;
     }
 
@@ -439,6 +439,16 @@ class security extends controller
         return ($basePath === '' || $basePath === '.')
             ? '/'
             : $basePath . '/';
+    }
+
+    /**
+     * Keep failed authentication on the public Security boundary. This is
+     * essential while the ordinary front page is hidden by maintenance mode.
+     */
+    private function securityLoginPath()
+    {
+        $front = $this->frontPagePath();
+        return $front . 'index.php?module=security';
     }
 
     private function nativeFailure($key)
