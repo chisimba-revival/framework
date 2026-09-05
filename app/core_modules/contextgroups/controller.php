@@ -812,29 +812,34 @@ class contextgroups extends controller
             $permissionIds[$userId] = $permissionId;
         }
 
-        foreach ($desired as $userId => $roleState) {
-            foreach ($roleState as $role => $shouldBelong) {
-                if ($before[$userId][$role] === (bool) $shouldBelong) {
-                    continue;
-                }
-                $success = $shouldBelong
-                    ? $this->objGroupService->ensureMembership(
-                        $groupIds[$role],
-                        $permissionIds[$userId]
-                    )
-                    : $this->objGroupService->removeMembership(
-                        $groupIds[$role],
-                        $permissionIds[$userId]
-                    );
-                if (!$success) {
-                    $rollbackOk = $this->restoreRoleStates(
-                        $before,
-                        $groupIds,
-                        $permissionIds
-                    );
-                    return $rollbackOk
-                        ? $this->text('mod_contextgroups_err_updaterolledback')
-                        : $this->text('mod_contextgroups_err_rollbackfailed');
+        // Remove superseded roles before adding their replacements. This
+        // preserves the class-role exclusivity invariant throughout a change.
+        foreach (array(false, true) as $shouldBelong) {
+            foreach ($desired as $userId => $roleState) {
+                foreach ($roleState as $role => $desiredMembership) {
+                    if ((bool) $desiredMembership !== $shouldBelong
+                        || $before[$userId][$role] === $shouldBelong) {
+                        continue;
+                    }
+                    $success = $shouldBelong
+                        ? $this->objGroupService->ensureMembership(
+                            $groupIds[$role],
+                            $permissionIds[$userId]
+                        )
+                        : $this->objGroupService->removeMembership(
+                            $groupIds[$role],
+                            $permissionIds[$userId]
+                        );
+                    if (!$success) {
+                        $rollbackOk = $this->restoreRoleStates(
+                            $before,
+                            $groupIds,
+                            $permissionIds
+                        );
+                        return $rollbackOk
+                            ? $this->text('mod_contextgroups_err_updaterolledback')
+                            : $this->text('mod_contextgroups_err_rollbackfailed');
+                    }
                 }
             }
         }

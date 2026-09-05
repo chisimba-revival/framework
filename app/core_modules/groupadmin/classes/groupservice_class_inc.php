@@ -233,6 +233,12 @@ class groupservice extends ChisimbaObject
      */
     public function ensureMembership($groupId, $permissionUserId)
     {
+        if ($this->hasConflictingContextRole(
+            $groupId,
+            $permissionUserId
+        )) {
+            return false;
+        }
         return $this->objMembershipDb->ensureMembership(
             $groupId,
             $permissionUserId
@@ -941,6 +947,13 @@ class groupservice extends ChisimbaObject
             return array('ok' => false, 'code' => 'already_member');
         }
 
+        if ($this->hasConflictingContextRole(
+            $group['id'],
+            $permissionUserId
+        )) {
+            return array('ok' => false, 'code' => 'conflicting_context_role');
+        }
+
         $candidate = $this->findUserById($this->getAvailableUsers($group['id']), $userId);
         if ($candidate === null) {
             return array('ok' => false, 'code' => 'user_not_available');
@@ -1159,6 +1172,42 @@ class groupservice extends ChisimbaObject
         if (!$this->objUser->isLoggedIn() || !$this->objUser->isAdmin()) {
             throw new Exception('Administrator authorization required.');
         }
+    }
+
+    /**
+     * A person may teach in one context and study in another, but may not
+     * belong to both role groups inside the same context.
+     */
+    private function hasConflictingContextRole($groupId, $permissionUserId)
+    {
+        $group = $this->findGroup($groupId);
+        if ($group === null) {
+            return false;
+        }
+
+        $storedName = (string) $group['storedName'];
+        if (!preg_match('/^(.*)\^(Lecturers|Students)$/', $storedName, $parts)) {
+            return false;
+        }
+
+        $conflictingRole = $parts[2] === 'Lecturers'
+            ? 'Students'
+            : 'Lecturers';
+        $conflictingName = $parts[1] . '^' . $conflictingRole;
+        $rows = $this->objUser->getArray(
+            'SELECT group_id FROM tbl_perms_groups'
+            . " WHERE group_define_name = UNHEX('"
+            . bin2hex($conflictingName)
+            . "') LIMIT 1"
+        );
+        if (!is_array($rows) || count($rows) !== 1) {
+            return false;
+        }
+
+        return $this->objMembershipDb->membershipExists(
+            $rows[0]['group_id'],
+            $permissionUserId
+        );
     }
 
     private function findGroup($groupId)
