@@ -72,7 +72,7 @@ class coursecreationservice extends ChisimbaObject
             $created = $this->context->createContext(
                 $code, $title, $status, $access, '', false, $showComment,
                 $alerts, '', $design['delivery_format'], $design['navigation_mode'], false,
-                $accessPolicy, $privateAdmissionMode
+                $accessPolicy, $privateAdmissionMode, !empty($request['useSections'])
             );
             if (!$created) {
                 throw new RuntimeException('context_create_failed');

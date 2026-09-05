@@ -742,7 +742,8 @@ class context extends controller {
                     $contextCode, $title, $status, $access, $about, FALSE, $showComment,
                     $alerts, FALSE, $canvas, $learningDesign['delivery_format'],
                     $learningDesign['navigation_mode'], $accessPolicy,
-                    $privateAdmissionMode);
+                    $privateAdmissionMode,
+                    $this->getParam('use_sections') === '1');
 
             if ($image != '') {
                 $objContextImage = $this->getObject('contextimage', 'context');

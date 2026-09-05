@@ -216,7 +216,21 @@
         <creatorId>1</creatorId>
         <dateCreated>2012-03-01 00:00:00</dateCreated>
         <canDelete>N</canDelete>
-    </tbl_systext_text>    
+    </tbl_systext_text>
+    <tbl_systext_text>
+        <id>init_25</id>
+        <textinfo>section</textinfo>
+        <creatorId>1</creatorId>
+        <dateCreated>2026-09-05 00:00:00</dateCreated>
+        <canDelete>N</canDelete>
+    </tbl_systext_text>
+    <tbl_systext_text>
+        <id>init_26</id>
+        <textinfo>sections</textinfo>
+        <creatorId>1</creatorId>
+        <dateCreated>2026-09-05 00:00:00</dateCreated>
+        <canDelete>N</canDelete>
+    </tbl_systext_text>
     <tbl_systext_text>
         <id>init_24</id>
         <textinfo>strands</textinfo>
@@ -937,4 +951,20 @@
         <dateCreated>2012-03-12 00:00:00</dateCreated>
         <canDelete>N</canDelete>
     </tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_85</id><systemId>init_1</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_86</id><systemId>init_1</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_87</id><systemId>init_2</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_88</id><systemId>init_2</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_89</id><systemId>init_3</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_90</id><systemId>init_3</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_91</id><systemId>init_4</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_92</id><systemId>init_4</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_93</id><systemId>init_5</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_94</id><systemId>init_5</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_95</id><systemId>init_6</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_96</id><systemId>init_6</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_97</id><systemId>init_7</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_98</id><systemId>init_7</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_99</id><systemId>init_8</systemId><textId>init_25</textId><abstract>section</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
+    <tbl_systext_abstract><id>init_100</id><systemId>init_8</systemId><textId>init_26</textId><abstract>sections</abstract><creatorId>1</creatorId><dateCreated>2026-09-05 00:00:00</dateCreated><canDelete>N</canDelete></tbl_systext_abstract>
 </defaultdata>

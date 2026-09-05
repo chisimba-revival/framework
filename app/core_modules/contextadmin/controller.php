@@ -244,6 +244,7 @@ class contextadmin extends controller {
             'privateAdmissionMode' => $this->getParam('private_admission_mode', ''),
             'deliveryFormat' => $this->getParam('delivery_format', 'standard'),
             'navigationMode' => $this->getParam('navigation_mode', ''),
+            'useSections' => $this->getParam('use_sections') === '1',
             'cpdEnabled' => $this->getParam('cpd_enabled') === '1',
             'cpdSchemeId' => $this->getParam('cpd_scheme_id'),
             'cpdCategoryId' => $this->getParam('cpd_category_id'),
@@ -270,6 +271,7 @@ class contextadmin extends controller {
                 'showcomment' => $showcomment, 'access' => $access, 'alerts' => $alerts,
                 'delivery_format' => $this->getParam('delivery_format', 'standard'),
                 'navigation_mode' => $this->getParam('navigation_mode', ''),
+                'use_sections' => $this->getParam('use_sections'),
                 'cpd_enabled' => $this->getParam('cpd_enabled'),
                 'cpd_scheme_id' => $this->getParam('cpd_scheme_id'),
                 'cpd_category_id' => $this->getParam('cpd_category_id'),
@@ -713,7 +715,8 @@ class contextadmin extends controller {
                         $alerts, null, $canvas,
                         $this->getParam('delivery_format', 'standard'),
                         $this->getParam('navigation_mode', 'free'),
-                        $accessPolicy, $privateAdmissionMode);
+                        $accessPolicy, $privateAdmissionMode,
+                        $this->getParam('use_sections') === '1');
 
                 return $this->nextAction('step2', array('mode' => 'edit'));
             }

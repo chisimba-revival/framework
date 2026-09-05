@@ -78,6 +78,7 @@ class contextforms extends ChisimbaObject {
         $this->loadClass('textinput', 'htmlelements');
         $this->loadClass('button', 'htmlelements');
         $this->loadClass('radio', 'htmlelements');
+        $this->loadClass('checkbox', 'htmlelements');
         $this->loadClass('label', 'htmlelements');
         $this->loadClass('dropdown', 'htmlelements');
         $this->loadClass('hiddeninput', 'htmlelements');
@@ -182,6 +183,12 @@ class contextforms extends ChisimbaObject {
             ? (string) $context['navigation_mode']
             : ($selectedFormat === 'microlearning' ? 'backward' : 'free');
         $navigation->setSelected($selectedNavigation);
+        $useSections = new checkbox(
+            'use_sections',
+            $this->objLanguage->code2Txt('mod_context_usesections', 'context', NULL, 'Use [-sections-] to organise [-chapters-]'),
+            !empty($context['use_sections'])
+        );
+        $useSections->value = '1';
 
         $canvas = new dropdown('canvas');
         $canvas->addOption('None', $this->objLanguage->languageText('word_none', 'system', 'None'));
@@ -267,6 +274,11 @@ class contextforms extends ChisimbaObject {
         $table->startRow();
         $table->addCell($this->objLanguage->languageText('mod_context_learnernavigation', 'context', 'Learner navigation') . ':');
         $table->addCell($navigation->show());
+        $table->endRow();
+
+        $table->startRow();
+        $table->addCell($this->objLanguage->languageText('mod_context_contentstructure', 'context', 'Content structure') . ':');
+        $table->addCell($useSections->show() . '<p class="contextadmin-field-help">' . $this->objLanguage->code2Txt('mod_context_usesectionshelp', 'context', NULL, 'Each [-section-] introduces a related group of [-chapters-].') . '</p>');
         $table->endRow();
 
         $table->startRow();

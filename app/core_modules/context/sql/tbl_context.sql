@@ -116,6 +116,12 @@ $fields = array(
         'notnull' => TRUE,
         'default' => 'free'
 	   ),
+	'use_sections' => array(
+        'type' => 'integer',
+        'length' => 1,
+        'notnull' => TRUE,
+        'default' => 0
+	   ),
 	'lastaccessed' => array(
         'type' => 'timestamp'
     )

@@ -74,12 +74,16 @@ class systext_facet extends dbTable
         $this -> _objTextItemDb = $this -> getObject('dbtext', 'systext');
         $this -> _objAbstractTextDb = $this -> getObject('dbabstract', 'systext');
 
+        $sectionTermsAdded = $this->ensureSectionTerms();
+
         $this -> _objConfig = $this -> getObject('altconfig', 'config');
 
         // The abstract list is persistent for this session.
         // Initialize the abstract list for this instance.
         $activeType = $this->_getActiveSystemType();
-        if($this -> getSession('systext')
+        $cachedSystext = $this->getSession('systext');
+        if(!$sectionTermsAdded && is_array($cachedSystext) && isset($cachedSystext['section'])
+            && isset($cachedSystext['sections'])
             && $this -> getSession('systext_type') === $activeType){
             // The abstract list is available so fetch it from the session variable.
             $this -> fetchSession();
@@ -89,6 +93,35 @@ class systext_facet extends dbTable
             // The session permissions variable is initialized as well.
             $this -> updateSession();
         }
+    }
+
+    /** Install section terminology on existing sites whose default data predates it. */
+    private function ensureSectionTerms()
+    {
+        $now = date('Y-m-d H:i:s');
+        $changed = FALSE;
+        $terms = array('init_25' => 'section', 'init_26' => 'sections');
+        foreach ($terms as $textId => $text) {
+            $existing = $this->query("SELECT id FROM tbl_systext_text WHERE id='$textId' OR textinfo='$text' LIMIT 1");
+            if (!is_array($existing) || count($existing) === 0) {
+                $this->query("INSERT INTO tbl_systext_text (id,textinfo,creatorId,dateCreated,canDelete) VALUES ('$textId','$text','1','$now','N')");
+                $changed = TRUE;
+            }
+        }
+        $systems = $this->query('SELECT id FROM tbl_systext_system');
+        if (is_array($systems)) {
+            foreach ($systems as $system) {
+                $systemId = $system['id'];
+                foreach ($terms as $textId => $text) {
+                    $mapping = $this->query("SELECT id FROM tbl_systext_abstract WHERE systemId='$systemId' AND textId='$textId' LIMIT 1");
+                    if (!is_array($mapping) || count($mapping) === 0) {
+                        $this->query("INSERT INTO tbl_systext_abstract (id,systemId,textId,abstract,creatorId,dateCreated,canDelete) VALUES (REPLACE(UUID(),'-',''),'$systemId','$textId','$text','1','$now','N')");
+                        $changed = TRUE;
+                    }
+                }
+            }
+        }
+        return $changed;
     }
 
     // -------------- tbl_systext_system methods -------------//

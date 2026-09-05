@@ -73,6 +73,10 @@ class dbcontext extends dbTable {
         parent::init('tbl_context');
         $this->table = 'tbl_context';
         $this->objUser = $this->getObject('user', 'security');
+        $existing = $this->query("SHOW COLUMNS FROM tbl_context LIKE 'use_sections'");
+        if (!is_array($existing) || count($existing) === 0) {
+            $this->query('ALTER TABLE tbl_context ADD COLUMN use_sections TINYINT(1) NOT NULL DEFAULT 0');
+        }
     }
 
     /**
@@ -138,7 +142,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of adding a context
      */
     public function createContext(
-    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL) {
+    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL, $useSections=FALSE) {
 
         $contextCode = preg_replace('/\W*/', '', $contextCode);
         $contextCode = strtolower($contextCode);
@@ -180,6 +184,7 @@ class dbcontext extends dbTable {
             'canvas' => $canvas,
             'delivery_format' => $learningDesign['delivery_format'],
             'navigation_mode' => $learningDesign['navigation_mode'],
+            'use_sections' => $useSections ? 1 : 0,
             'lastaccessed' => date("Y-m-d H:i:s"));
 
         if ($manageTransaction) {
@@ -254,7 +259,7 @@ class dbcontext extends dbTable {
      * @return boolean Result of Update
      */
     public function updateContext(
-    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE, $accessPolicy=FALSE, $privateAdmissionMode=FALSE) {
+    $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals=FALSE, $showcomment=FALSE, $alerts=FALSE, $lastaccessed=FALSE, $canvas=FALSE, $deliveryFormat=FALSE, $navigationMode=FALSE, $accessPolicy=FALSE, $privateAdmissionMode=FALSE, $useSections=FALSE) {
         $fields = array();
 
         $fields['updated'] = date('Y-m-d H:i:s');
@@ -304,6 +309,9 @@ class dbcontext extends dbTable {
         }
         if ($canvas !== FALSE) {
             $fields['canvas'] = $canvas;
+        }
+        if ($useSections !== FALSE) {
+            $fields['use_sections'] = $useSections ? 1 : 0;
         }
         if ($deliveryFormat !== FALSE || $navigationMode !== FALSE) {
             $currentFormat = $deliveryFormat !== FALSE ? $deliveryFormat : $this->getField('delivery_format', $contextCode);
