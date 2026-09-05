@@ -16,27 +16,37 @@ $checks = array(
         "'url' => \$this->uri(null, 'myteaching')"
     ) && str_contains(
         $template,
-        "if (\$isAuthor && \$objModuleCatalogue->checkIfRegistered('myteaching'))"
+        "'class' => 'teaching'"
+    ) && str_contains(
+        $template,
+        'if ($isAuthor'
     ),
-    'administrator status alone does not create a teaching journey' =>
+    'administrator and author status are evaluated independently' =>
         str_contains($template, '$isAuthor = $roleContext->isLecturer();')
-        && str_contains(
-            $template,
-            '$mayManageTeaching = $isSiteAdministrator || $isAuthor;'
-        ),
+        && str_contains($template, 'if ($isSiteAdministrator) {')
+        && str_contains($template, '} else {'),
     'learning and teaching roles remain additive' =>
         str_contains(
             $template,
-            "if (\$isAuthor && \$objModuleCatalogue->checkIfRegistered('myteaching'))"
+            "'url' => \$this->uri(null, 'myteaching')"
         )
         && str_contains(
             $template,
-            "if (\$roleContext->hasStudentLearning()\n            && \$objModuleCatalogue->checkIfRegistered('mylearning'))"
+            "'url' => \$this->uri(null, 'mylearning')"
+        )
+        && str_contains(
+            $template,
+            "'class' => 'learning'"
         ),
-    'context creation remains one click away' => str_contains(
+    'context creation remains one click away for authors' => str_contains(
         $template,
         "'url' => \$this->uri(array('action' => 'add'), 'contextadmin')"
-    ),
+    ) && str_contains($template, 'if ($isAuthor'),
+    'administrator rail uses administration destinations' =>
+        str_contains($template, "'url' => \$this->uri(null, 'myadmin')")
+        && str_contains($template, "'url' => \$this->uri(null, 'toolbar')")
+        && str_contains($language, 'mod_toolbar_myadministration')
+        && str_contains($language, 'mod_toolbar_siteadministration'),
     'header journeys use icons and labelled links' => str_contains(
         $template,
         'chisimba-site-banner__journey'

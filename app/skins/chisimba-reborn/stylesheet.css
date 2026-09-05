@@ -2610,6 +2610,14 @@ h5.featureboxheader,
     color: #ffe08a;
 }
 
+.chisimba-site-banner__journey--administration .chisimba-icon {
+    color: #bce8ff;
+}
+
+.chisimba-site-banner__journey--site-administration .chisimba-icon {
+    color: #ffe08a;
+}
+
 .chisimba-site-banner__journey:hover,
 .chisimba-site-banner__journey:focus-visible {
     background: rgb(255 255 255 / .25);

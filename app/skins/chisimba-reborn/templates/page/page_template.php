@@ -28,7 +28,6 @@ if ($this->objUser->isLoggedIn()) {
         $statusHref = null;
         $isSiteAdministrator = $roleContext->isSiteAdministrator();
         $isAuthor = $roleContext->isLecturer();
-        $mayManageTeaching = $isSiteAdministrator || $isAuthor;
         if ($isSiteAdministrator) {
             $statusLabel = 'Administrator';
         } elseif ($roleContext->isCurrentContextLecturer()
@@ -87,47 +86,75 @@ if ($this->objUser->isLoggedIn()) {
                 );
             }
         }
-        if ($isAuthor && $objModuleCatalogue->checkIfRegistered('myteaching')) {
+        if ($isSiteAdministrator) {
+            if ($objModuleCatalogue->checkIfRegistered('myadmin')) {
+                $journeyLinks[] = array(
+                    'class' => 'administration',
+                    'icon' => 'activity',
+                    'label' => $this->objLanguage->languageText(
+                        'mod_toolbar_myadministration',
+                        'toolbar',
+                        'My Administration'
+                    ),
+                    'title' => '',
+                    'url' => $this->uri(null, 'myadmin'),
+                );
+            }
             $journeyLinks[] = array(
-                'class' => 'teaching',
-                'icon' => 'layout-dashboard',
+                'class' => 'site-administration',
+                'icon' => 'settings',
                 'label' => $this->objLanguage->languageText(
-                    'mod_toolbar_allteachingcontexts',
+                    'mod_toolbar_siteadministration',
                     'toolbar',
-                    'My Teaching'
+                    'Site Administration'
                 ),
                 'title' => '',
-                'url' => $this->uri(null, 'myteaching'),
+                'url' => $this->uri(null, 'toolbar'),
             );
-        }
-        if ($roleContext->hasStudentLearning()
-            && $objModuleCatalogue->checkIfRegistered('mylearning')) {
-            $journeyLinks[] = array(
-                'class' => 'learning',
-                'icon' => 'graduation-cap',
-                'label' => $this->objLanguage->languageText(
-                    'mod_toolbar_alllearningcontexts',
-                    'toolbar',
-                    'My Learning'
-                ),
-                'title' => '',
-                'url' => $this->uri(null, 'mylearning'),
-            );
-        }
-        if ($mayManageTeaching
-            && $objModuleCatalogue->checkIfRegistered('contextadmin')) {
-            $journeyLinks[] = array(
-                'class' => 'create',
-                'icon' => 'plus',
-                'label' => ucfirst($this->objLanguage->code2Txt(
-                    'mod_toolbar_createcourse',
-                    'toolbar',
-                    null,
-                    'Create [-context-]'
-                )),
-                'title' => '',
-                'url' => $this->uri(array('action' => 'add'), 'contextadmin'),
-            );
+        } else {
+            if ($isAuthor
+                && $objModuleCatalogue->checkIfRegistered('myteaching')) {
+                $journeyLinks[] = array(
+                    'class' => 'teaching',
+                    'icon' => 'layout-dashboard',
+                    'label' => $this->objLanguage->languageText(
+                        'mod_toolbar_allteachingcontexts',
+                        'toolbar',
+                        'My Teaching'
+                    ),
+                    'title' => '',
+                    'url' => $this->uri(null, 'myteaching'),
+                );
+            }
+            if ($roleContext->hasStudentLearning()
+                && $objModuleCatalogue->checkIfRegistered('mylearning')) {
+                $journeyLinks[] = array(
+                    'class' => 'learning',
+                    'icon' => 'graduation-cap',
+                    'label' => $this->objLanguage->languageText(
+                        'mod_toolbar_alllearningcontexts',
+                        'toolbar',
+                        'My Learning'
+                    ),
+                    'title' => '',
+                    'url' => $this->uri(null, 'mylearning'),
+                );
+            }
+            if ($isAuthor
+                && $objModuleCatalogue->checkIfRegistered('contextadmin')) {
+                $journeyLinks[] = array(
+                    'class' => 'create',
+                    'icon' => 'plus',
+                    'label' => ucfirst($this->objLanguage->code2Txt(
+                        'mod_toolbar_createcourse',
+                        'toolbar',
+                        null,
+                        'Create [-context-]'
+                    )),
+                    'title' => '',
+                    'url' => $this->uri(array('action' => 'add'), 'contextadmin'),
+                );
+            }
         }
         foreach ($journeyLinks as $journeyLink) {
             $title = $journeyLink['title'] === ''
