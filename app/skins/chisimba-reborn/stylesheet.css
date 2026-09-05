@@ -2619,8 +2619,8 @@ h5.featureboxheader,
     color: #ffe08a;
 }
 
-.chisimba-site-banner__journey:hover,
-.chisimba-site-banner__journey:focus-visible {
+.chisimba-site-banner__journey[href]:hover,
+.chisimba-site-banner__journey[href]:focus-visible {
     background: rgb(255 255 255 / .25);
     color: var(--chisimba-text-inverse);
 }

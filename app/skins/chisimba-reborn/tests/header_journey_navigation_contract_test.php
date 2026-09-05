@@ -73,6 +73,9 @@ $checks = array(
         '.chisimba-site-banner__journey {'
     ) && str_contains($css, 'border-radius: 999px;')
         && str_contains($css, 'min-height: 1.65rem;'),
+    'only linked journey pills receive interaction styling' =>
+        str_contains($css, '.chisimba-site-banner__journey[href]:hover,')
+        && !str_contains($css, '.chisimba-site-banner__journey:hover,'),
     'utility rail sits at the foot of the banner' => preg_match(
         '/\.chisimba-site-banner__utilities \{[^}]*inset-block-end: \.55rem;'
             . '[^}]*position: absolute;/s',
