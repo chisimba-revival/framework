@@ -163,7 +163,7 @@ class security extends controller
             'return_to' => $returnTo === null ? '' : $returnTo,
         ));
 
-        header('Location: ' . $this->securityLoginPath(), true, 303);
+        header('Location: ' . $this->failedLoginPath(), true, 303);
         exit;
     }
 
@@ -449,6 +449,26 @@ class security extends controller
     {
         $front = $this->frontPagePath();
         return $front . 'index.php?module=security';
+    }
+
+    /**
+     * Return ordinary failures to the branded front page. During maintenance
+     * that page is intentionally unavailable, so retain the public Security
+     * boundary and its usable login form instead.
+     */
+    private function failedLoginPath()
+    {
+        $modules = $this->getObject('modules', 'modulecatalogue');
+        if ($modules->checkIfRegistered('systemmanagement')) {
+            $maintenance = $this->getObject(
+                'systemmanagementservice',
+                'systemmanagement'
+            )->maintenance();
+            if (!empty($maintenance['active'])) {
+                return $this->securityLoginPath();
+            }
+        }
+        return $this->frontPagePath();
     }
 
     private function nativeFailure($key)
