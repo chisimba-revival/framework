@@ -116,7 +116,7 @@ class toolbarsecuritycontext extends ChisimbaObject
         if (!$this->isAuthenticated()) {
             return '';
         }
-        $token = $this->csrf->issue('native_auth_logout');
+        $token = $this->csrf->issueForSession('native_auth_logout');
         $action = html_entity_decode(
             $this->uri(array('action' => 'logout'), 'security'),
             ENT_QUOTES,

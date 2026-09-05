@@ -130,7 +130,7 @@ class block_login extends ChisimbaObject
             'UTF-8'
         );
         $token = htmlspecialchars(
-            $nativeCsrf->issue('native_auth_logout'),
+            $nativeCsrf->issueForSession('native_auth_logout'),
             ENT_QUOTES,
             'UTF-8'
         );

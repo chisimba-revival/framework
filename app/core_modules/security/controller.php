@@ -314,7 +314,7 @@ class security extends controller
 
         $this->setVar(
             'nativeLogoutToken',
-            $stack['csrf']->issue(self::LOGOUT_CSRF_CONTEXT)
+            $stack['csrf']->issueForSession(self::LOGOUT_CSRF_CONTEXT)
         );
         $this->setVar('nativeLandingLabels', array(
             'title' => $this->text('mod_security_nativeauthenticatedtitle'),

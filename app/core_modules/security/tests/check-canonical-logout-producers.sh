@@ -16,6 +16,8 @@ rg -q "method=\"post\"" \
     "$APP_ROOT/core_modules/toolbar/classes/toolbarsecuritycontext_class_inc.php"
 rg -q "native_auth_logout" \
     "$APP_ROOT/core_modules/toolbar/classes/toolbarsecuritycontext_class_inc.php"
+rg -q "issueForSession('native_auth_logout')" \
+    "$APP_ROOT/core_modules/toolbar/classes/toolbarsecuritycontext_class_inc.php"
 rg -q "MAX_TOKENS_PER_CONTEXT" \
     "$APP_ROOT/core_modules/security/classes/nativeauth/csrftokenservice.php"
 

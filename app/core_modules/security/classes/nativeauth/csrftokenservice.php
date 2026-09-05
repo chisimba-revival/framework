@@ -35,13 +35,30 @@ class CsrfTokenService
 
     public function issue($context)
     {
+        return $this->issueWithExpiry($context, $this->now() + $this->lifetime);
+    }
+
+    /**
+     * Issue a single-use token whose lifetime is bounded by the PHP session.
+     *
+     * This is intended for logout controls on pages that may remain open for
+     * longer than the normal form-token lifetime. The token is still stored
+     * only as a hash and disappears when the session is destroyed.
+     */
+    public function issueForSession($context)
+    {
+        return $this->issueWithExpiry($context, PHP_INT_MAX);
+    }
+
+    private function issueWithExpiry($context, $expiresAt)
+    {
         $context = $this->normaliseContext($context);
         $token = bin2hex(random_bytes(32));
         $tokens = $this->purgeExpired($this->load());
         $records = $this->recordsForContext($tokens, $context);
         $records[] = array(
             'hash' => hash('sha256', $token),
-            'expires_at' => $this->now() + $this->lifetime,
+            'expires_at' => (int) $expiresAt,
         );
         $tokens[$context] = array_slice(
             $records,
