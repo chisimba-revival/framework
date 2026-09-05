@@ -35,11 +35,17 @@ $assert(
 );
 $assert(
     strpos($menu, "checkIfRegistered('myteaching')") !== false
-        && strpos($menu, "if (\$mayTeach\n            && \$this->objModule->checkIfRegistered('myteaching'))") !== false
+        && strpos($menu, "if (\$this->securityContext->isLecturer()\n            && \$this->objModule->checkIfRegistered('myteaching'))") !== false
         && strpos($menu, "'mod_toolbar_managemyteaching'") !== false
         && strpos($sideMenu, "'nodeid' => 'myteaching'") !== false
         && strpos($sideMenu, "'nodeid' => 'manage-myteaching'") !== false,
     'Personal teaching and administrator page management must be separate journeys.'
+);
+$assert(
+    strpos($menu, "if (\$this->securityContext->isLecturer()") !== false
+        && strpos($menu, "if (\$isAdmin && \$this->objModule->checkIfRegistered('myteaching'))") !== false
+        && strpos($menu, "if (\$isAdmin && \$this->objModule->checkIfRegistered('mylearning'))") !== false,
+    'Administrator, author and student journeys must remain additive.'
 );
 $assert(
     strpos($menu, "'teaching' => array()") !== false

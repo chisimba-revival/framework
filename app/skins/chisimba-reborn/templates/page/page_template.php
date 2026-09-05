@@ -27,7 +27,8 @@ if ($this->objUser->isLoggedIn()) {
         $statusLabel = null;
         $statusHref = null;
         $isSiteAdministrator = $roleContext->isSiteAdministrator();
-        $mayTeach = $isSiteAdministrator || $roleContext->isLecturer();
+        $isAuthor = $roleContext->isLecturer();
+        $mayManageTeaching = $isSiteAdministrator || $isAuthor;
         if ($isSiteAdministrator) {
             $statusLabel = 'Administrator';
         } elseif ($roleContext->isCurrentContextLecturer()
@@ -86,7 +87,7 @@ if ($this->objUser->isLoggedIn()) {
                 );
             }
         }
-        if ($mayTeach && $objModuleCatalogue->checkIfRegistered('myteaching')) {
+        if ($isAuthor && $objModuleCatalogue->checkIfRegistered('myteaching')) {
             $journeyLinks[] = array(
                 'class' => 'teaching',
                 'icon' => 'layout-dashboard',
@@ -98,7 +99,8 @@ if ($this->objUser->isLoggedIn()) {
                 'title' => '',
                 'url' => $this->uri(null, 'myteaching'),
             );
-        } elseif ($roleContext->hasStudentLearning()
+        }
+        if ($roleContext->hasStudentLearning()
             && $objModuleCatalogue->checkIfRegistered('mylearning')) {
             $journeyLinks[] = array(
                 'class' => 'learning',
@@ -112,7 +114,8 @@ if ($this->objUser->isLoggedIn()) {
                 'url' => $this->uri(null, 'mylearning'),
             );
         }
-        if ($mayTeach && $objModuleCatalogue->checkIfRegistered('contextadmin')) {
+        if ($mayManageTeaching
+            && $objModuleCatalogue->checkIfRegistered('contextadmin')) {
             $journeyLinks[] = array(
                 'class' => 'create',
                 'icon' => 'plus',

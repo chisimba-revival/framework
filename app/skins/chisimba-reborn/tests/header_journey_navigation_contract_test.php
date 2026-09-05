@@ -14,7 +14,25 @@ $checks = array(
     'teaching dashboard remains one click away' => str_contains(
         $template,
         "'url' => \$this->uri(null, 'myteaching')"
+    ) && str_contains(
+        $template,
+        "if (\$isAuthor && \$objModuleCatalogue->checkIfRegistered('myteaching'))"
     ),
+    'administrator status alone does not create a teaching journey' =>
+        str_contains($template, '$isAuthor = $roleContext->isLecturer();')
+        && str_contains(
+            $template,
+            '$mayManageTeaching = $isSiteAdministrator || $isAuthor;'
+        ),
+    'learning and teaching roles remain additive' =>
+        str_contains(
+            $template,
+            "if (\$isAuthor && \$objModuleCatalogue->checkIfRegistered('myteaching'))"
+        )
+        && str_contains(
+            $template,
+            "if (\$roleContext->hasStudentLearning()\n            && \$objModuleCatalogue->checkIfRegistered('mylearning'))"
+        ),
     'context creation remains one click away' => str_contains(
         $template,
         "'url' => \$this->uri(array('action' => 'add'), 'contextadmin')"
