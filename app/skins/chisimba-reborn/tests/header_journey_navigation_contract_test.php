@@ -48,7 +48,18 @@ $checks = array(
     'journey pills have a shared compact treatment' => str_contains(
         $css,
         '.chisimba-site-banner__journey {'
-    ) && str_contains($css, 'border-radius: 999px;'),
+    ) && str_contains($css, 'border-radius: 999px;')
+        && str_contains($css, 'min-height: 1.65rem;'),
+    'utility rail sits at the foot of the banner' => preg_match(
+        '/\.chisimba-site-banner__utilities \{[^}]*inset-block-end: \.55rem;'
+            . '[^}]*position: absolute;/s',
+        $css
+    ) === 1,
+    'utility rail returns to flow on narrower screens' => preg_match(
+        '/@media \(max-width: 64rem\) \{.*?'
+            . '\.chisimba-site-banner__utilities \{[^}]*position: static;/s',
+        $css
+    ) === 1,
 );
 
 foreach ($checks as $name => $passed) {

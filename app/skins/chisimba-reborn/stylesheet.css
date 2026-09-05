@@ -2545,6 +2545,7 @@ h5.featureboxheader,
     flex: 1 1 24rem;
     min-height: 7rem;
     padding: var(--chisimba-space-4) var(--chisimba-shell-gutter);
+    position: relative;
 }
 
 .chisimba-site-banner__brand {
@@ -2565,9 +2566,12 @@ h5.featureboxheader,
     align-items: center;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--chisimba-space-2);
+    gap: .35rem;
+    inset-block-end: .55rem;
+    inset-inline-end: var(--chisimba-shell-gutter);
     justify-content: flex-end;
-    margin-inline-start: auto;
+    max-width: calc(100% - (2 * var(--chisimba-shell-gutter)));
+    position: absolute;
 }
 
 .chisimba-site-banner__journey {
@@ -2577,13 +2581,13 @@ h5.featureboxheader,
     border-radius: 999px;
     color: var(--chisimba-text-inverse);
     display: inline-flex;
-    font-size: var(--chisimba-font-size-sm);
+    font-size: .75rem;
     font-weight: var(--chisimba-font-weight-semibold);
-    gap: .4rem;
+    gap: .3rem;
     line-height: 1.2;
     max-width: min(19rem, 42vw);
-    min-height: 2.1rem;
-    padding: .35rem .7rem;
+    min-height: 1.65rem;
+    padding: .2rem .55rem;
     text-decoration: none;
 }
 
@@ -2646,12 +2650,13 @@ h5.featureboxheader,
 .chisimba-site-banner__status {
     display: inline-flex;
     align-items: center;
-    padding: .4rem .75rem;
+    min-height: 1.65rem;
+    padding: .2rem .55rem;
     border: 1px solid rgb(255 255 255 / .65);
     border-radius: 999px;
     background: rgb(255 255 255 / .14);
     color: var(--chisimba-text-inverse);
-    font-size: .85rem;
+    font-size: .75rem;
     font-weight: 700;
     white-space: nowrap;
 }
@@ -2721,6 +2726,22 @@ h5.featureboxheader,
     color: var(--chisimba-primary-soft);
 }
 
+@media (max-width: 64rem) {
+    .chisimba-site-banner__inner,
+    #header.chisimba-site-banner__inner {
+        flex-wrap: wrap;
+    }
+
+    .chisimba-site-banner__utilities {
+        flex: 1 1 100%;
+        inset: auto;
+        justify-content: flex-start;
+        margin-block-start: .35rem;
+        max-width: 100%;
+        position: static;
+    }
+}
+
 @media (max-width: 48rem) {
     .Canvas_Content_Head.chisimba-site-banner,
     .chisimba-site-banner__inner,
@@ -2745,6 +2766,10 @@ h5.featureboxheader,
     .chisimba-site-banner__name,
     #sitename.chisimba-site-banner__name {
         font-size: var(--chisimba-font-size-xl);
+    }
+
+    .chisimba-site-banner__journey {
+        max-width: min(100%, 16rem);
     }
 
     .chisimba-site-banner .floathead:not(:empty) {
