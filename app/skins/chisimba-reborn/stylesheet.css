@@ -32,6 +32,7 @@
     --chisimba-surface: #ffffff;
     --chisimba-surface-muted: #ededed;
     --chisimba-surface-subtle: #f8f9fa;
+    --chisimba-surface-translucent: rgb(255 255 255 / .82);
 
     /* Text */
     --chisimba-ink: #111111;
@@ -2625,8 +2626,8 @@ h5.featureboxheader,
 }
 
 .chisimba-site-banner__journey--active {
-    background: var(--chisimba-surface);
-    border-color: var(--chisimba-surface);
+    background: var(--chisimba-surface-translucent);
+    border-color: var(--chisimba-surface-translucent);
     color: var(--chisimba-ink);
     cursor: default;
 }

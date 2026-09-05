@@ -60,6 +60,7 @@ $checks = array(
         && str_contains($css, '.chisimba-site-banner__journey--active {')
         && preg_match(
             '/\.chisimba-site-banner__journey--active \{[^}]*'
+                . 'background: var\(--chisimba-surface-translucent\);[^}]*'
                 . 'color: var\(--chisimba-ink\);/s',
             $css
         ) === 1,
