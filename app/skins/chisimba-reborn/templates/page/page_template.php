@@ -65,6 +65,15 @@ if ($this->objUser->isLoggedIn()) {
 
         $icons = $this->getObject('iconservice', 'ui');
         $journeyLinks = array();
+        $requestedModule = (string) $this->getParam('module', '');
+        $requestedAction = (string) $this->getParam('action', '');
+        $isJourneyCurrent = static function ($module, $action = '') use (
+            $requestedModule,
+            $requestedAction
+        ) {
+            return $requestedModule === $module
+                && $requestedAction === $action;
+        };
         $context = $this->getObject('dbcontext', 'context');
         if ($context->isInContext()) {
             $contextCode = $context->getContextCode();
@@ -83,6 +92,7 @@ if ($this->objUser->isLoggedIn()) {
                     'label' => $contextTitle,
                     'title' => $currentLabel . ': ' . $contextTitle,
                     'url' => $this->uri(array('action' => 'home'), 'context'),
+                    'isCurrent' => $isJourneyCurrent('context', 'home'),
                 );
             }
         }
@@ -98,6 +108,7 @@ if ($this->objUser->isLoggedIn()) {
                     ),
                     'title' => '',
                     'url' => $this->uri(null, 'myadmin'),
+                    'isCurrent' => $isJourneyCurrent('myadmin'),
                 );
             }
             $journeyLinks[] = array(
@@ -110,6 +121,7 @@ if ($this->objUser->isLoggedIn()) {
                 ),
                 'title' => '',
                 'url' => $this->uri(null, 'toolbar'),
+                'isCurrent' => $isJourneyCurrent('toolbar'),
             );
         } else {
             if ($isAuthor
@@ -124,6 +136,7 @@ if ($this->objUser->isLoggedIn()) {
                     ),
                     'title' => '',
                     'url' => $this->uri(null, 'myteaching'),
+                    'isCurrent' => $isJourneyCurrent('myteaching'),
                 );
             }
             if ($roleContext->hasStudentLearning()
@@ -138,6 +151,7 @@ if ($this->objUser->isLoggedIn()) {
                     ),
                     'title' => '',
                     'url' => $this->uri(null, 'mylearning'),
+                    'isCurrent' => $isJourneyCurrent('mylearning'),
                 );
             }
             if ($isAuthor
@@ -153,6 +167,7 @@ if ($this->objUser->isLoggedIn()) {
                     )),
                     'title' => '',
                     'url' => $this->uri(array('action' => 'add'), 'contextadmin'),
+                    'isCurrent' => $isJourneyCurrent('contextadmin', 'add'),
                 );
             }
         }
@@ -164,16 +179,25 @@ if ($this->objUser->isLoggedIn()) {
                     ENT_QUOTES,
                     'UTF-8'
                 ) . '"';
-            $journeyBadges .= '<a class="chisimba-site-banner__journey '
+            $tag = $journeyLink['isCurrent'] ? 'span' : 'a';
+            $currentClass = $journeyLink['isCurrent']
+                ? ' chisimba-site-banner__journey--active'
+                : '';
+            $journeyBadges .= '<' . $tag
+                . ' class="chisimba-site-banner__journey '
                 . 'chisimba-site-banner__journey--'
                 . htmlspecialchars($journeyLink['class'], ENT_QUOTES, 'UTF-8')
-                . '" href="'
-                . htmlspecialchars($journeyLink['url'], ENT_QUOTES, 'UTF-8')
-                . '"' . $title . '>'
+                . $currentClass . '"'
+                . ($journeyLink['isCurrent']
+                    ? ' aria-current="page"'
+                    : ' href="' . htmlspecialchars(
+                        $journeyLink['url'], ENT_QUOTES, 'UTF-8'
+                    ) . '"')
+                . $title . '>'
                 . $icons->render($journeyLink['icon'], array('decorative' => true))
                 . '<span>'
                 . htmlspecialchars($journeyLink['label'], ENT_QUOTES, 'UTF-8')
-                . '</span></a>';
+                . '</span></' . $tag . '>';
         }
     } catch (Throwable $membershipFailure) {
         $statusBadge = '';

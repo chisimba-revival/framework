@@ -51,6 +51,13 @@ $checks = array(
         $template,
         'chisimba-site-banner__journey'
     ) && str_contains($template, "\$icons->render(\$journeyLink['icon']"),
+    'current journey is indicated without linking to itself' =>
+        str_contains($template, "\$tag = \$journeyLink['isCurrent'] ? 'span' : 'a';")
+        && str_contains($template, "' aria-current=\"page\"'")
+        && str_contains($template, "'isCurrent' => \$isJourneyCurrent('mylearning')")
+        && str_contains($template, "'isCurrent' => \$isJourneyCurrent('myteaching')")
+        && str_contains($template, "'isCurrent' => \$isJourneyCurrent('myadmin')")
+        && str_contains($css, '.chisimba-site-banner__journey--active {'),
     'journey labels use the language system' => str_contains(
         $language,
         'mod_toolbar_currentcontext'

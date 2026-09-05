@@ -2624,6 +2624,17 @@ h5.featureboxheader,
     color: var(--chisimba-text-inverse);
 }
 
+.chisimba-site-banner__journey--active {
+    background: var(--chisimba-surface);
+    border-color: var(--chisimba-surface);
+    color: var(--chisimba-brand-strong);
+    cursor: default;
+}
+
+.chisimba-site-banner__journey--active .chisimba-icon {
+    color: currentColor;
+}
+
 .chisimba-site-banner__identity {
     background: var(--chisimba-brand-logo) center / contain no-repeat;
     display: block;
