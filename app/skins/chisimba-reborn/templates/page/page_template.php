@@ -19,7 +19,20 @@ $objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
 $isInstalled = $objModuleCatalogue->checkIfRegistered("bannerhelper");
 $statusBadge = '';
 $journeyBadges = '';
-if ($this->objUser->isLoggedIn()) {
+$bannerPillsDisabled = false;
+try {
+    $bannerPillsSetting = strtolower(trim((string) $this->getObject(
+        'dbsysconfig', 'sysconfig'
+    )->getValue('TOOLBAR_DISABLE_BANNER_PILLS', 'toolbar', 'FALSE')));
+    $bannerPillsDisabled = in_array(
+        $bannerPillsSetting,
+        array('1', 'true', 'yes', 'on'),
+        true
+    );
+} catch (Throwable $configurationFailure) {
+    $bannerPillsDisabled = false;
+}
+if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
     try {
         $roleContext = $this->getObject(
             'toolbarsecuritycontext', 'toolbar'

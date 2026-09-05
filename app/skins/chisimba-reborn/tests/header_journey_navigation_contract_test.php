@@ -68,6 +68,16 @@ $checks = array(
         $language,
         'mod_toolbar_currentcontext'
     ) && str_contains($language, 'mod_toolbar_allteachingcontexts'),
+    'hosts can disable the complete banner pill rail' =>
+        str_contains($language, 'CONFIG: TOOLBAR_DISABLE_BANNER_PILLS|FALSE|')
+        && str_contains(
+            $template,
+            "->getValue('TOOLBAR_DISABLE_BANNER_PILLS', 'toolbar', 'FALSE')"
+        )
+        && str_contains(
+            $template,
+            'if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {'
+        ),
     'journey pills have a shared compact treatment' => str_contains(
         $css,
         '.chisimba-site-banner__journey {'
