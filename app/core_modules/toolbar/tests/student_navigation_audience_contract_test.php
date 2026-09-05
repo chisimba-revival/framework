@@ -35,6 +35,7 @@ $assert(
 );
 $assert(
     strpos($menu, "checkIfRegistered('myteaching')") !== false
+        && strpos($menu, "if (\$mayTeach\n            && \$this->objModule->checkIfRegistered('myteaching'))") !== false
         && strpos($menu, "'mod_toolbar_managemyteaching'") !== false
         && strpos($sideMenu, "'nodeid' => 'myteaching'") !== false
         && strpos($sideMenu, "'nodeid' => 'manage-myteaching'") !== false,

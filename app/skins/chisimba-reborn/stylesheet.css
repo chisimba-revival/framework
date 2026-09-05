@@ -2561,6 +2561,57 @@ h5.featureboxheader,
     color: var(--chisimba-text-inverse);
 }
 
+.chisimba-site-banner__utilities {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--chisimba-space-2);
+    justify-content: flex-end;
+    margin-inline-start: auto;
+}
+
+.chisimba-site-banner__journey {
+    align-items: center;
+    background: rgb(255 255 255 / .14);
+    border: 1px solid rgb(255 255 255 / .55);
+    border-radius: 999px;
+    color: var(--chisimba-text-inverse);
+    display: inline-flex;
+    font-size: var(--chisimba-font-size-sm);
+    font-weight: var(--chisimba-font-weight-semibold);
+    gap: .4rem;
+    line-height: 1.2;
+    max-width: min(19rem, 42vw);
+    min-height: 2.1rem;
+    padding: .35rem .7rem;
+    text-decoration: none;
+}
+
+.chisimba-site-banner__journey span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chisimba-site-banner__journey .chisimba-icon {
+    color: #dff3b0;
+    flex: 0 0 auto;
+}
+
+.chisimba-site-banner__journey--current .chisimba-icon {
+    color: #fff;
+}
+
+.chisimba-site-banner__journey--create .chisimba-icon {
+    color: #ffe08a;
+}
+
+.chisimba-site-banner__journey:hover,
+.chisimba-site-banner__journey:focus-visible {
+    background: rgb(255 255 255 / .25);
+    color: var(--chisimba-text-inverse);
+}
+
 .chisimba-site-banner__identity {
     background: var(--chisimba-brand-logo) center / contain no-repeat;
     display: block;
@@ -2584,7 +2635,7 @@ h5.featureboxheader,
 
 .chisimba-site-banner__status-link,
 .chisimba-site-banner__status {
-    margin-inline-start: auto;
+    margin-inline-start: 0;
 }
 
 .chisimba-site-banner__status-link {

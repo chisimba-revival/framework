@@ -136,7 +136,7 @@ class menu extends ChisimbaObject
             && $this->objModule->checkIfRegistered('mylearning')) {
             $journeys['learning'][] = 'mylearning';
         }
-        if ($this->securityContext->isLecturer()
+        if ($mayTeach
             && $this->objModule->checkIfRegistered('myteaching')) {
             $journeys['teaching'][] = 'myteaching';
         }

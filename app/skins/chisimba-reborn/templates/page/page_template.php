@@ -18,6 +18,7 @@ define("GOTOTOP", '<a href="#pagetop">Top</a>'); // @todo change this to an icon
 $objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
 $isInstalled = $objModuleCatalogue->checkIfRegistered("bannerhelper");
 $statusBadge = '';
+$journeyBadges = '';
 if ($this->objUser->isLoggedIn()) {
     try {
         $roleContext = $this->getObject(
@@ -25,7 +26,9 @@ if ($this->objUser->isLoggedIn()) {
         );
         $statusLabel = null;
         $statusHref = null;
-        if ($roleContext->isSiteAdministrator()) {
+        $isSiteAdministrator = $roleContext->isSiteAdministrator();
+        $mayTeach = $isSiteAdministrator || $roleContext->isLecturer();
+        if ($isSiteAdministrator) {
             $statusLabel = 'Administrator';
         } elseif ($roleContext->isCurrentContextLecturer()
             || $roleContext->isLecturer()) {
@@ -59,8 +62,92 @@ if ($this->objUser->isLoggedIn()) {
                 . htmlspecialchars($statusHref, ENT_QUOTES, 'UTF-8') . '">'
                 . $statusBadge . '</a>';
         }
+
+        $icons = $this->getObject('iconservice', 'ui');
+        $journeyLinks = array();
+        $context = $this->getObject('dbcontext', 'context');
+        if ($context->isInContext()) {
+            $contextCode = $context->getContextCode();
+            $contextDetails = $context->getContextDetails($contextCode);
+            $contextTitle = trim((string) ($contextDetails['title'] ?? ''));
+            if ($contextTitle !== '') {
+                $currentLabel = ucfirst($this->objLanguage->code2Txt(
+                    'mod_toolbar_currentcontext',
+                    'toolbar',
+                    null,
+                    'Current [-context-]'
+                ));
+                $journeyLinks[] = array(
+                    'class' => 'current',
+                    'icon' => 'book-open',
+                    'label' => $contextTitle,
+                    'title' => $currentLabel . ': ' . $contextTitle,
+                    'url' => $this->uri(array('action' => 'home'), 'context'),
+                );
+            }
+        }
+        if ($mayTeach && $objModuleCatalogue->checkIfRegistered('myteaching')) {
+            $journeyLinks[] = array(
+                'class' => 'teaching',
+                'icon' => 'layout-dashboard',
+                'label' => $this->objLanguage->languageText(
+                    'mod_toolbar_allteachingcontexts',
+                    'toolbar',
+                    'My Teaching'
+                ),
+                'title' => '',
+                'url' => $this->uri(null, 'myteaching'),
+            );
+        } elseif ($roleContext->hasStudentLearning()
+            && $objModuleCatalogue->checkIfRegistered('mylearning')) {
+            $journeyLinks[] = array(
+                'class' => 'learning',
+                'icon' => 'graduation-cap',
+                'label' => $this->objLanguage->languageText(
+                    'mod_toolbar_alllearningcontexts',
+                    'toolbar',
+                    'My Learning'
+                ),
+                'title' => '',
+                'url' => $this->uri(null, 'mylearning'),
+            );
+        }
+        if ($mayTeach && $objModuleCatalogue->checkIfRegistered('contextadmin')) {
+            $journeyLinks[] = array(
+                'class' => 'create',
+                'icon' => 'plus',
+                'label' => ucfirst($this->objLanguage->code2Txt(
+                    'mod_toolbar_createcourse',
+                    'toolbar',
+                    null,
+                    'Create [-context-]'
+                )),
+                'title' => '',
+                'url' => $this->uri(array('action' => 'add'), 'contextadmin'),
+            );
+        }
+        foreach ($journeyLinks as $journeyLink) {
+            $title = $journeyLink['title'] === ''
+                ? ''
+                : ' title="' . htmlspecialchars(
+                    $journeyLink['title'],
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) . '"';
+            $journeyBadges .= '<a class="chisimba-site-banner__journey '
+                . 'chisimba-site-banner__journey--'
+                . htmlspecialchars($journeyLink['class'], ENT_QUOTES, 'UTF-8')
+                . '" href="'
+                . htmlspecialchars($journeyLink['url'], ENT_QUOTES, 'UTF-8')
+                . '"' . $title . '>'
+                . $icons->render($journeyLink['icon'], array('decorative' => true))
+                . '<span>'
+                . htmlspecialchars($journeyLink['label'], ENT_QUOTES, 'UTF-8')
+                . '</span></a>';
+        }
     } catch (Throwable $membershipFailure) {
         $statusBadge = '';
+        $journeyBadges = '';
     }
 }
 if ($isInstalled) {
@@ -269,7 +356,11 @@ if (!isset($pageSuppressBanner)) {
                 <?php echo htmlspecialchars($objConfig->getsiteName(), ENT_QUOTES, 'UTF-8'); ?>
             </span>
             <?php echo '</a>'; ?>
-            <?php echo $statusBadge; ?>
+            <?php if ($journeyBadges !== '' || $statusBadge !== ''): ?>
+                <div class="chisimba-site-banner__utilities">
+                    <?php echo $journeyBadges . $statusBadge; ?>
+                </div>
+            <?php endif; ?>
         </div>
         <div class='floathead' id='floathead_content3'><?php echo $banner3; ?></div>
         <div class='floathead' id='floathead_content2'><?php echo $banner2; ?></div>
