@@ -91,5 +91,10 @@ class block_language extends ChisimbaObject
             customException::cleanUp();
         }
     }
+
+    public function isAvailableForBlockChooser()
+    {
+        return count((array) $this->availableLanguages->getLanguageList()) > 1;
+    }
 }
 ?>

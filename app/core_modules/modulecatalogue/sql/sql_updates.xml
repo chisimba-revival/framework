@@ -28,4 +28,17 @@
             </change>
         </data>
     </update>
+    <update>
+        <table>tbl_module_blocks</table>
+        <version>3.133</version>
+        <description>Classify blocks by the dashboard audiences for which they are intended</description>
+        <data>
+            <add>
+                <name>blockaudience</name>
+                <type>text</type>
+                <length>100</length>
+                <default>general</default>
+            </add>
+        </data>
+    </update>
 </updates>

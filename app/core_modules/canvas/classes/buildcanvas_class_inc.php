@@ -484,6 +484,10 @@ class buildcanvas extends ChisimbaObject {
             if ($smallBlock['moduleid'] != "contentblocks") {
                 $block = $this->newObject('block_'
                         . $smallBlock['blockname'], $smallBlock['moduleid']);
+                if (method_exists($block, 'isAvailableForBlockChooser')
+                    && !$block->isAvailableForBlockChooser()) {
+                    continue;
+                }
                 $title = $block->title;
                 if ($title == '') {
                     $title = $smallBlock['blockname'] . ' (' . $smallBlock['moduleid'] . ')';
@@ -550,11 +554,15 @@ class buildcanvas extends ChisimbaObject {
         foreach ($this->wideDynamicBlocks as $wideBlock) {
             $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
         }
-        $wideBlocks = $this->objBlocks->getBlocks('wide', 'site|user');
+        $wideBlocks = $this->objBlocks->getBlocks('wide', 'site|user|postlogin');
         foreach ($wideBlocks as $wideBlock) {
             if ($wideBlock["moduleid"] != "contentblocks") {
                 $block = $this->newObject('block_'
                         . $wideBlock['blockname'], $wideBlock['moduleid']);
+                if (method_exists($block, 'isAvailableForBlockChooser')
+                    && !$block->isAvailableForBlockChooser()) {
+                    continue;
+                }
                 $title = $block->title;
 
                 if ($title == '') {

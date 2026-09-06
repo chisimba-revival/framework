@@ -301,7 +301,7 @@ class modulesadmin extends dbTableManager
                         }
                         //var_dump($blockInfo); die();
 
-                       $this->objModuleBlocks->addBlock($moduleId, $blockInfo[0], 'normal', $blockInfo[1]);
+                       $this->objModuleBlocks->addBlock($moduleId, $blockInfo[0], 'normal', $blockInfo[1], isset($blockInfo[2]) ? $blockInfo[2] : 'general');
                     }
                 }
                 if(isset($registerdata['WIDEBLOCK'])) {
@@ -312,7 +312,7 @@ class modulesadmin extends dbTableManager
                             $blockInfo[1] = 'site';
                         }
 
-                        $this->objModuleBlocks->addBlock($moduleId, $blockInfo[0],'wide', $blockInfo[1]);
+                        $this->objModuleBlocks->addBlock($moduleId, $blockInfo[0],'wide', $blockInfo[1], isset($blockInfo[2]) ? $blockInfo[2] : 'general');
                     }
                 }
                 if(isset($registerdata['MODULE_ISADMIN'])){

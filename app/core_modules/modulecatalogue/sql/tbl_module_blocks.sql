@@ -31,6 +31,11 @@ $fields = array(
         'type' => 'text',
         'length' => 150,
         'default' => 'site',
+        ),
+    'blockaudience' => array(
+        'type' => 'text',
+        'length' => 100,
+        'default' => 'general',
         )
     );
 

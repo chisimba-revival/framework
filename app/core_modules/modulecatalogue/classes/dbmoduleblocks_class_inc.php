@@ -109,7 +109,7 @@ class dbmoduleblocks extends dbTable
      * @return array An array of all the blocks
      * @access public
      */
-    public function getBlocks($width=NULL, $type=NULL)
+    public function getBlocks($width=NULL, $type=NULL, $audience=NULL)
     {
         $filter = array();
         
@@ -131,6 +131,21 @@ class dbmoduleblocks extends dbTable
             $typeFilter .= ')';
             
             $filter[] = $typeFilter;
+        }
+
+        if ($audience != NULL) {
+            $audience = strtolower(trim((string) $audience));
+            $allowed = array('readonly', 'author', 'admin', 'root');
+            if (in_array($audience, $allowed, true)) {
+                $safeAudience = addslashes($audience);
+                $audienceFilter = "(blockaudience IS NULL OR blockaudience = ''"
+                    . " OR FIND_IN_SET('general', REPLACE(blockaudience, ' ', ''))"
+                    . " OR FIND_IN_SET('{$safeAudience}', REPLACE(blockaudience, ' ', ''))";
+                if ($audience === 'root') {
+                    $audienceFilter .= " OR FIND_IN_SET('admin', REPLACE(blockaudience, ' ', ''))";
+                }
+                $filter[] = $audienceFilter . ')';
+            }
         }
         
         $filterStr = '';
@@ -159,9 +174,10 @@ class dbmoduleblocks extends dbTable
      * @return void
      * @access public
      */
-    public function addBlock($moduleid,$blockName,$width, $type='site')
+    public function addBlock($moduleid,$blockName,$width, $type='site', $audience='general')
     {
-        $arrData = array('moduleid'=>$moduleid, 'blockname'=>$blockName, 'blockwidth'=>$width, 'blocktype'=>$type);
+        $audience = $this->normaliseAudience($audience);
+        $arrData = array('moduleid'=>$moduleid, 'blockname'=>$blockName, 'blockwidth'=>$width, 'blocktype'=>$type, 'blockaudience'=>$audience);
         $exists = $this->getAll(" WHERE moduleid = '$moduleid' AND blockname = '$blockName' AND blockwidth = '$width' AND blocktype='$type'");
         if ((is_countable($exists) ? count($exists) : 0) < 1) {
             
@@ -170,6 +186,19 @@ class dbmoduleblocks extends dbTable
         else {
             $this->update('id', $exists[0]['id'], $arrData);
         }
+    }
+
+    private function normaliseAudience($audience)
+    {
+        $allowed = array('general', 'readonly', 'author', 'admin', 'root');
+        $values = array();
+        foreach (explode(',', strtolower((string) $audience)) as $value) {
+            $value = trim($value);
+            if (in_array($value, $allowed, true) && !in_array($value, $values, true)) {
+                $values[] = $value;
+            }
+        }
+        return empty($values) ? 'general' : implode(',', $values);
     }
 
     /**
