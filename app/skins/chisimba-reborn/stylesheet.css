@@ -6115,6 +6115,31 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     transform: translateX(1rem);
     pointer-events: none;
 }
+.chisimba-contextual-help {
+    margin-block: 0 1rem;
+    overflow: hidden;
+}
+.chisimba-contextual-help > summary {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .8rem 1rem;
+    color: var(--chisimba-link);
+    font-weight: 750;
+    cursor: pointer;
+}
+.chisimba-contextual-help > summary:hover,
+.chisimba-contextual-help > summary:focus-visible {
+    background: var(--chisimba-primary-soft);
+}
+.chisimba-contextual-help__body {
+    padding: 0 1.15rem 1.15rem;
+    border-top: 1px solid var(--chisimba-border);
+}
+.chisimba-contextual-help__body h2 { margin-block: 1rem .5rem; }
+.chisimba-help-guide { max-width: 58rem; margin-inline: auto; }
+.chisimba-help-guide__summary { font-size: 1.1rem; color: var(--chisimba-text-muted); }
+.chisimba-help-guide .chisimba-card { padding: 1rem 1.25rem; }
 
 /* Canvas chooser: branded, accessible selection cards. */
 .chisimba-canvas-grid {

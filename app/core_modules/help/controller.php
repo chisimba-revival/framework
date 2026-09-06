@@ -33,20 +33,27 @@ class help extends controller
     */
     public function dispatch()
     {
-        //$this->setPageTemplate('help_page_tpl.php');
-        $this->setVar('pageSuppressContainer', TRUE);
-        $this->setVar('suppressFooter', TRUE); // suppress default page footer
-        $this->setVar('pageSuppressIM', TRUE);
-        $this->setVar('pageSuppressToolbar', TRUE);
-        $this->setVar('pageSuppressBanner', TRUE);
-
-        $bodyParams = 'class="popupwindow help-popup" onLoad="window.focus();"';
-        $this->setVar('bodyParams', $bodyParams);
-        
+        $action = $this->getParam('action');
+        if ($action !== 'topic') {
+            $this->setVar('pageSuppressContainer', TRUE);
+            $this->setVar('suppressFooter', TRUE);
+            $this->setVar('pageSuppressIM', TRUE);
+            $this->setVar('pageSuppressToolbar', TRUE);
+            $this->setVar('pageSuppressBanner', TRUE);
+            $this->setVar('bodyParams', 'class="popupwindow help-popup" onLoad="window.focus();"');
+        }
         $helpId = $this->getParam('helpid');
         $rootModule = $this->getParam('rootModule');
             
-        if ($this->getParam('action') == 'view') {
+        if ($action == 'topic') {
+            $contextual = $this->getObject('contextualhelp', 'help');
+            $topic = $contextual->getTopic($rootModule, $helpId);
+            if ($topic === null) {
+                return 'contextual_unavailable_tpl.php';
+            }
+            $this->setVar('helpTopic', $topic);
+            return 'contextual_topic_tpl.php';
+        } elseif ($action == 'view') {
             return $this->showHelp($helpId, $rootModule);
         } else {
             $this->setVar('help_text', $this->objLanguage->code2Txt($helpId, $rootModule));
@@ -60,7 +67,7 @@ class help extends controller
     */
     public function requiresLogin($action = null)
     {
-        return FALSE;
+        return $action === 'topic';
     }
 
     /**
