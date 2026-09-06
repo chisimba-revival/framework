@@ -67,14 +67,7 @@ class LocalPasswordProvider implements AuthenticationProviderInterface
             ? (string) $user['password_hash']
             : '';
 
-        if ($userId === '' || !$this->users->isUserActive($userId)) {
-            return CanonicalAuthenticationResult::failure(
-                self::PROVIDER_ID,
-                CanonicalAuthenticationResult::STATUS_INACTIVE
-            );
-        }
-
-        if (!$this->passwords->verify(
+        if ($userId === '' || !$this->passwords->verify(
             $plainTextPassword,
             $storedHash,
             $user
@@ -84,6 +77,16 @@ class LocalPasswordProvider implements AuthenticationProviderInterface
             return CanonicalAuthenticationResult::failure(
                 self::PROVIDER_ID,
                 CanonicalAuthenticationResult::STATUS_INVALID_CREDENTIALS
+            );
+        }
+
+        if (!$this->users->isUserActive($userId)) {
+            $reason = ($user['created_by'] ?? '') === 'registration-service'
+                ? 'pending_verification' : 'inactive_account';
+            return CanonicalAuthenticationResult::failure(
+                self::PROVIDER_ID,
+                CanonicalAuthenticationResult::STATUS_INACTIVE,
+                $reason
             );
         }
 

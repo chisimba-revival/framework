@@ -9,7 +9,8 @@ $template = file_get_contents(dirname(__FILE__)
 
 $controllerGates = array(
     "setSession('native_auth_login_failure'",
-    "'message_key' => 'mod_security_authenticationfailed'",
+    "'mod_security_authenticationfailed'",
+    "'mod_security_pendingverification'",
     "'username' => substr(trim((string) \$username), 0, 255)",
     "header('Location: ' . \$this->failedLoginPath(), true, 303)",
     "return \$front . 'index.php?module=security'",

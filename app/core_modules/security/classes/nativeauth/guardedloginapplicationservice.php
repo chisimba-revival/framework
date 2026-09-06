@@ -90,7 +90,10 @@ final class GuardedLoginApplicationService
             || !method_exists($proof['result'], 'isSuccess')
             || !$proof['result']->isSuccess()) {
             $this->abuse->record('native.login', $abuseContext, false);
-            return array('status' => self::STATUS_INVALID);
+            $failureStatus=method_exists($this->credentials,'getCredentialFailureStatus')
+                ? (string)$this->credentials->getCredentialFailureStatus() : '';
+            return array('status' => $failureStatus==='pending_verification'
+                ? 'pending_verification' : self::STATUS_INVALID);
         }
 
         $context = $this->policyContext->resolve($proof['result']);

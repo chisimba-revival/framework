@@ -158,7 +158,9 @@ class security extends controller
             $username = '';
         }
         $this->setSession('native_auth_login_failure', array(
-            'message_key' => 'mod_security_authenticationfailed',
+            'message_key' => $status === 'pending_verification'
+                ? 'mod_security_pendingverification'
+                : 'mod_security_authenticationfailed',
             'username' => substr(trim((string) $username), 0, 255),
             'return_to' => $returnTo === null ? '' : $returnTo,
         ));

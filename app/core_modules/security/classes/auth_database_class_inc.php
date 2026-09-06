@@ -19,6 +19,7 @@ $this->loadClass("ifauth", "security");
 class auth_database extends abauth implements ifauth
 {
     private $credentialProof = null;
+    private $credentialFailureStatus = '';
 
     /**
     *
@@ -67,6 +68,11 @@ class auth_database extends abauth implements ifauth
         return $this->credentialProof;
     }
 
+    public function getCredentialFailureStatus()
+    {
+        return $this->credentialFailureStatus;
+    }
+
     /**
      * Verify primary credentials without creating authenticated state.
      *
@@ -74,6 +80,7 @@ class auth_database extends abauth implements ifauth
      */
     public function verifyCredentials($username, $password)
     {
+        $this->credentialFailureStatus = '';
         require_once dirname(__FILE__)
             . '/nativeauth/mdb2nativedatabaseadapter.php';
         require_once dirname(__FILE__)
@@ -117,6 +124,8 @@ class auth_database extends abauth implements ifauth
         );
 
         if (!$result->isSuccess()) {
+            $this->credentialFailureStatus = $result->getReason()
+                ?: $result->getStatus();
             if ($result->getStatus()
                 === CanonicalAuthenticationResult::STATUS_INACTIVE) {
                 if (!defined('STATUS')) {
