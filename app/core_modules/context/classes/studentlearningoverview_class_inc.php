@@ -68,6 +68,11 @@ class studentlearningoverview extends ChisimbaObject
         }
 
         usort($courses, static function ($left, $right) {
+            $leftCompleted = !empty($left['state']['completed']);
+            $rightCompleted = !empty($right['state']['completed']);
+            if ($leftCompleted !== $rightCompleted) {
+                return $leftCompleted <=> $rightCompleted;
+            }
             $leftDate = (string) ($left['state']['lastactivity'] ?? '');
             $rightDate = (string) ($right['state']['lastactivity'] ?? '');
             if ($leftDate !== $rightDate) {
@@ -118,6 +123,7 @@ class studentlearningoverview extends ChisimbaObject
             $state = $course['state'];
             $hasContent = !empty($state['available']);
             $started = !empty($state['started']);
+            $completed = !empty($state['completed']);
             $total = max(0, (int) ($state['total'] ?? 0));
             $visited = min($total, max(0, (int) ($state['visited'] ?? 0)));
             $percent = $total > 0 ? (int) round(($visited / $total) * 100) : 0;
@@ -127,7 +133,13 @@ class studentlearningoverview extends ChisimbaObject
                 'contextcode' => $course['code'],
             );
             if ($hasContent) {
-                if (!$started && !empty($state['sectionid'])) {
+                if ($completed) {
+                    $actionParams += array(
+                        'contextmodule' => 'contextcontent',
+                        'contextaction' => 'coursecompletion',
+                    );
+                    $nextTitle = '';
+                } elseif (!$started && !empty($state['sectionid'])) {
                     $actionParams += array(
                         'contextmodule' => 'contextcontent',
                         'contextaction' => 'viewsection',
@@ -149,10 +161,12 @@ class studentlearningoverview extends ChisimbaObject
             $html .= '<div class="student-learning-course__topline"><span>'
                 . $e(!$hasContent
                     ? $text('mylearningavailable', 'Course available')
+                    : ($completed
+                    ? $text('mylearningcompleted', 'Completed')
                     : ($started
                     ? $text('mylearninginprogress', 'In progress')
-                    : $text('mylearningnew', 'Not started'))) . '</span>';
-            if ($index === 0 && $hasContent) {
+                    : $text('mylearningnew', 'Not started')))) . '</span>';
+            if ($index === 0 && $hasContent && !$completed) {
                 $html .= '<strong>'
                     . $e($text('mylearningnext', 'Continue next')) . '</strong>';
             }
@@ -183,9 +197,11 @@ class studentlearningoverview extends ChisimbaObject
                 $html .= '<a class="button student-learning-course__action" href="'
                     . $e($actionUrl) . '">' . $e(!$hasContent
                         ? $text('mylearningopen', 'Open course')
+                        : ($completed
+                        ? $text('mylearningreviewcompletion', 'Review completion')
                         : ($started
                         ? $text('mylearningcontinue', 'Continue learning')
-                        : $text('mylearningstart', 'Start course'))) . '</a>';
+                        : $text('mylearningstart', 'Start course')))) . '</a>';
             } else {
                 $label = $course['accessPolicy'] === 'tier_2'
                     ? $text('mylearningtier2required', 'Tier 2 access required')

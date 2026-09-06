@@ -42,4 +42,11 @@ if (!str_contains($source, "!\$started && !empty(\$state['sectionid'])")
     exit(1);
 }
 
+if (!str_contains($source, "\$completed = !empty(\$state['completed'])")
+    || !str_contains($source, "'contextaction' => 'coursecompletion'")
+    || !str_contains($source, "'mylearningcompleted'")) {
+    fwrite(STDERR, "FAIL: completed courses do not have a finished dashboard state\n");
+    exit(1);
+}
+
 echo "PASS: My Learning retains enrolled courses without content pages.\n";
