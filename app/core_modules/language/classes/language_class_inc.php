@@ -165,10 +165,10 @@ class language extends dbTable {
             && $default !== FALSE
             && $default !== NULL
         ) {
-            return $default;
+            return $this->abstractText($default);
         }
     
-        return $result;
+        return is_string($result) ? $this->abstractText($result) : $result;
     }
     
     public function languageTextLegacy($itemName, $modulename='system', $default = false) {
@@ -263,6 +263,7 @@ class language extends dbTable {
             $ret = $this->languageText($str, "{$modulename}", $default);
             //$abstractList = $this->objAbstract->getSession('systext');
             foreach ($this->abstractList as $textItem => $abstractText) {
+                $ret = preg_replace('/\[\-' . preg_quote(strtoupper($textItem), '/') . '\-\]/sU', ucfirst($abstractText), $ret);
                 $ret = preg_replace($this->_match($textItem), $abstractText, $ret);
             }
             // Process other tags
@@ -289,6 +290,7 @@ class language extends dbTable {
         $ret = $str;
         //$abstractList = $this->objAbstract->getSession('systext');
         foreach ($this->abstractList as $textItem => $abstractText) {
+            $ret = preg_replace('/\[\-' . preg_quote(strtoupper($textItem), '/') . '\-\]/sU', ucfirst($abstractText), $ret);
             $ret = preg_replace($this->_match($textItem), $abstractText, $ret);
         }
         return $ret;
