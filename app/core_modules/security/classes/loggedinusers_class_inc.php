@@ -257,7 +257,7 @@ class loggedInUsers extends dbTable {
      * Count active users.
      */
     public function getActiveUserCount() {
-        $sql = "SELECT COUNT(id) AS usercount FROM tbl_loggedinusers";
+        $sql = "SELECT COUNT(DISTINCT userid) AS usercount FROM tbl_loggedinusers";
         $results = $this->getArray($sql);
         if (!empty($results)) {
             $activeUserCount = intval($results[0]['usercount']);
@@ -265,6 +265,50 @@ class loggedInUsers extends dbTable {
             $activeUserCount = 0;
         }
         return $activeUserCount;
+    }
+
+    /**
+     * Return one current-presence record per person.
+     *
+     * A person may have more than one browser session. Dashboard presence is
+     * about people, so the most recently active session supplies the scope.
+     */
+    public function getActiveUsers()
+    {
+        $sql = 'SELECT logged.userid, logged.coursecode, logged.whenloggedin, '
+            . 'logged.whenlastactive, users.username, users.firstname, users.surname '
+            . 'FROM tbl_loggedinusers AS logged '
+            . 'INNER JOIN tbl_users AS users ON users.userid = logged.userid '
+            . 'ORDER BY logged.whenlastactive DESC';
+        $rows = $this->getArray($sql);
+        $people = array();
+        foreach ((array) $rows as $row) {
+            $userId = (string) $row['userid'];
+            if ($userId !== '' && !isset($people[$userId])) {
+                $people[$userId] = $row;
+            }
+        }
+        return array_values($people);
+    }
+
+    /** Return current people in one context, most recently active first. */
+    public function getActiveUsersInContext($contextCode)
+    {
+        $contextCode = addslashes((string) $contextCode);
+        $sql = 'SELECT logged.userid, logged.coursecode, logged.whenloggedin, '
+            . 'logged.whenlastactive, users.username, users.firstname, users.surname '
+            . 'FROM tbl_loggedinusers AS logged '
+            . 'INNER JOIN tbl_users AS users ON users.userid = logged.userid '
+            . "WHERE logged.coursecode = '{$contextCode}' "
+            . 'ORDER BY logged.whenlastactive DESC';
+        $people = array();
+        foreach ((array) $this->getArray($sql) as $row) {
+            $userId = (string) $row['userid'];
+            if ($userId !== '' && !isset($people[$userId])) {
+                $people[$userId] = $row;
+            }
+        }
+        return array_values($people);
     }
 
     /**

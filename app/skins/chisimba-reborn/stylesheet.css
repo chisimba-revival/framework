@@ -921,6 +921,98 @@ ul#menuList li li ul {
     margin-top: 1rem;
 }
 
+.presence-overview {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.65rem;
+    background: color-mix(in srgb, var(--chisimba-primary-soft) 35%, var(--chisimba-surface));
+}
+
+.presence-overview > header,
+.presence-scope-summary,
+.presence-role-card,
+.teaching-presence__person {
+    display: flex;
+    align-items: center;
+}
+
+.presence-overview > header {
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.presence-overview h2 {
+    margin: 0.15rem 0 0;
+}
+
+.presence-scope-summary {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem;
+}
+
+.presence-scope-summary span {
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 999px;
+    background: var(--chisimba-surface);
+    color: var(--chisimba-text-muted);
+    font-size: 0.82rem;
+}
+
+.presence-role-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.presence-role-card {
+    gap: 0.7rem;
+    padding: 0.8rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.6rem;
+    background: var(--chisimba-surface);
+}
+
+.presence-role-card--administrators .presence-role-card__icon {
+    color: var(--chisimba-primary);
+}
+
+.presence-role-card--authors .presence-role-card__icon {
+    color: var(--chisimba-info, #2b6cb0);
+}
+
+.presence-role-card--readonlys .presence-role-card__icon,
+.presence-dot--online {
+    color: var(--chisimba-success, #2f855a);
+}
+
+.presence-role-card--other .presence-role-card__icon {
+    color: var(--chisimba-text-muted);
+}
+
+.presence-role-card strong,
+.presence-role-card span:last-child {
+    display: block;
+}
+
+.presence-role-card strong {
+    color: var(--chisimba-primary-dark);
+    font-size: 1.4rem;
+}
+
+.presence-role-card span:last-child,
+.presence-overview__help {
+    color: var(--chisimba-text-muted);
+    font-size: 0.82rem;
+}
+
+.presence-overview__help {
+    margin-bottom: 0;
+}
+
 .teaching-insights {
     margin-top: 1.25rem;
     padding: 1.5rem;
@@ -945,7 +1037,7 @@ ul#menuList li li ul {
 
 .teaching-insight-course dl {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.75rem;
     margin: 0.25rem 0 1rem;
 }
@@ -986,9 +1078,73 @@ ul#menuList li li ul {
     opacity: 0.45;
 }
 
+.teaching-presence {
+    margin-top: 0.85rem;
+    border-top: 1px solid var(--chisimba-border);
+    padding-top: 0.75rem;
+}
+
+.teaching-presence summary {
+    color: var(--chisimba-link);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.teaching-presence__list {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.65rem;
+}
+
+.teaching-presence__person {
+    display: grid;
+    grid-template-columns: auto minmax(8rem, 1fr) auto;
+    gap: 0.6rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.45rem;
+    background: var(--chisimba-surface);
+}
+
+.teaching-presence__person > span:last-child {
+    color: var(--chisimba-text-muted);
+    font-size: 0.82rem;
+}
+
+.presence-dot {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: var(--chisimba-border);
+}
+
+.presence-dot--online {
+    background: currentColor;
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, currentColor 16%, transparent);
+}
+
 @media (max-width: 38rem) {
     .teaching-insight-course dl,
     .teaching-insight-course__queue {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 52rem) {
+    .presence-role-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .presence-overview > header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .presence-scope-summary {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 38rem) {
+    .presence-role-grid,
+    .teaching-presence__person {
         grid-template-columns: 1fr;
     }
 }

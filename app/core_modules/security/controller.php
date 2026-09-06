@@ -252,6 +252,11 @@ class security extends controller
      */
     private function returnAfterAuthentication()
     {
+        $userId = $this->getObject('user', 'security')->userId();
+        if ((string) $userId !== '') {
+            $this->getObject('userloginhistory', 'security')->addHistoryEntry($userId);
+            $this->getObject('loggedinusers', 'security')->insertLogin($userId);
+        }
         $returnTo = $this->getSession('native_auth_return_to');
         $this->unsetSession('native_auth_return_to');
         $returnTo = $this->validatedReturnTo($returnTo);
@@ -346,6 +351,7 @@ class security extends controller
         $userId = $stack['sessions']->getUserId();
         if ($userId !== null) {
             $stack['persistent']->revokeAllForUser($userId, time());
+            $this->getObject('loggedinusers', 'security')->doLogout($userId);
         } else {
             $stack['persistent']->clear();
         }
