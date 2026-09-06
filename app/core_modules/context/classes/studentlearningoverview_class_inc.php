@@ -127,11 +127,20 @@ class studentlearningoverview extends ChisimbaObject
                 'contextcode' => $course['code'],
             );
             if ($hasContent) {
-                $actionParams += array(
-                    'contextmodule' => 'contextcontent',
-                    'contextaction' => 'viewpage',
-                    'contextdata' => (string) ($state['pageid'] ?? ''),
-                );
+                if (!$started && !empty($state['sectionid'])) {
+                    $actionParams += array(
+                        'contextmodule' => 'contextcontent',
+                        'contextaction' => 'viewsection',
+                        'contextdata' => (string) $state['sectionid'],
+                    );
+                    $nextTitle = trim((string) ($state['sectiontitle'] ?? $nextTitle));
+                } else {
+                    $actionParams += array(
+                        'contextmodule' => 'contextcontent',
+                        'contextaction' => 'viewpage',
+                        'contextdata' => (string) ($state['pageid'] ?? ''),
+                    );
+                }
             }
             $actionUrl = $this->uri($actionParams, 'context');
 

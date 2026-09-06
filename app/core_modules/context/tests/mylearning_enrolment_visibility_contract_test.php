@@ -36,4 +36,10 @@ foreach ($required as $needle) {
     }
 }
 
+if (!str_contains($source, "!\$started && !empty(\$state['sectionid'])")
+    || !str_contains($source, "'contextaction' => 'viewsection'")) {
+    fwrite(STDERR, "FAIL: new section classes do not start at their informational section\n");
+    exit(1);
+}
+
 echo "PASS: My Learning retains enrolled courses without content pages.\n";
