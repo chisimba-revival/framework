@@ -401,11 +401,20 @@ class dbcontext extends dbTable {
                 return FALSE;
             }
 
+            // Teaching responsibility is authoritative. Paid admission rules
+            // belong to the student journey, not to authors or administrators.
+            $hasTeachingAccess = $this->objUser->isAdmin()
+                || $this->objUser->isContextLecturer(
+                    $this->objUser->userId(),
+                    $contextCode
+                );
+
             // Tiered admission is deliberately opt-in. A NULL policy leaves the
             // legacy Public/Open/Private path below completely authoritative.
             if (array_key_exists('access_policy', $line)
                 && $line['access_policy'] !== NULL
-                && trim((string) $line['access_policy']) !== '') {
+                && trim((string) $line['access_policy']) !== ''
+                && !$hasTeachingAccess) {
                 if (!$this->mappedPolicyAllowsAdmission($line)) {
                     return FALSE;
                 }
@@ -413,10 +422,12 @@ class dbcontext extends dbTable {
                     return FALSE;
                 }
             } elseif ($line ['access'] == 'Private') {
-                $objUserContext = $this->getObject('usercontext');
-                if (!$objUserContext->isContextMember($this->objUser->userId(), $contextCode)) {
-                    if (!$this->objUser->isAdmin()) {
-                        return FALSE;
+                if (!$hasTeachingAccess) {
+                    $objUserContext = $this->getObject('usercontext');
+                    if (!$objUserContext->isContextMember($this->objUser->userId(), $contextCode)) {
+                        if (!$this->objUser->isAdmin()) {
+                            return FALSE;
+                        }
                     }
                 }
             }

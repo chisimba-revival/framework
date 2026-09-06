@@ -1,7 +1,6 @@
 <?php
 
 $this->loadClass('htmlheading', 'htmlelements');
-$this->loadClass('link', 'htmlelements');
 
 $header = new htmlheading();
 $header->type = 1;
@@ -78,17 +77,25 @@ if ($isAccessRequired) {
 }
 
 
-$link = new link($isAccessRequired
-    ? ($isLoggedIn ? $this->uri(NULL, 'mylearning') : $this->uri(array('action' => 'catalogue'), 'context'))
-    : $this->uri(array('action' => 'catalogue'), 'context'));
-$link->link = $isAccessRequired
-    ? ($isLoggedIn
-        ? $this->objLanguage->languageText('mod_context_backtomylearning', 'context', 'Back to My Learning')
-        : $this->objLanguage->languageText('mod_context_browsecourses', 'context', 'Browse courses'))
-    : $this->objLanguage->languageText('mod_context_browsecourses', 'context', 'Browse courses');
-$link->cssClass = 'button';
-
-echo '<p><br />'.$link->show().'</p>';
+$contextCode = (string) $this->getParam('contextcode', '');
+$returnModule = 'mylearning';
+$returnLabel = $this->objLanguage->languageText('mod_context_backtomylearning', 'context', 'Back to My Learning');
+if ($isLoggedIn && $contextCode !== ''
+    && $this->objUser->isContextLecturer($this->objUser->userId(), $contextCode)) {
+    $returnModule = 'myteaching';
+    $returnLabel = $this->objLanguage->languageText('mod_context_backtomyteaching', 'context', 'Back to My Teaching');
+} elseif ($isLoggedIn && $this->objUser->isAdmin()) {
+    $returnModule = 'myadmin';
+    $returnLabel = $this->objLanguage->languageText('mod_context_backtomyadministration', 'context', 'Back to My Administration');
+} elseif (!$isLoggedIn || !$isAccessRequired) {
+    $returnModule = 'context';
+    $returnLabel = $this->objLanguage->code2Txt('mod_context_browsecourses', 'context', NULL, 'Browse [-contexts-]');
+}
+$icons = $this->getObject('iconservice', 'ui');
+echo '<div class="chisimba-form-actions"><a class="button chisimba-button-secondary" href="'
+    . htmlspecialchars(html_entity_decode($this->uri($returnModule === 'context' ? array('action' => 'catalogue') : array(), $returnModule), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+    . '">' . $icons->render('arrow-left', array('decorative' => true)) . ' '
+    . htmlspecialchars($returnLabel, ENT_QUOTES, 'UTF-8') . '</a></div>';
 if ($isAccessRequired) {
     echo '</section>';
 }

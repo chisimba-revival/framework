@@ -26,6 +26,10 @@ $expect(strpos($schema, "'private_admission_mode'") !== false,
     'Context must own its optional private-admission workflow.');
 $expect(strpos($database, "&& trim((string) \$line['access_policy']) !== ''") !== false,
     'Only deliberately mapped courses may invoke tiered admission.');
+$expect(strpos($database, '$hasTeachingAccess') !== false
+    && strpos($database, 'isContextLecturer(') !== false
+    && strpos($database, "&& !\$hasTeachingAccess") !== false,
+    'Existing authors and administrators must bypass student admission policies.');
 $expect(strpos($database, "elseif (\$line ['access'] == 'Private')") !== false,
     'Null policy must retain the legacy private membership path.');
 $expect(strpos($database, "'resourceType' => 'course'") !== false
