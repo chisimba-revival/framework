@@ -6132,6 +6132,12 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-contextual-help > summary:focus-visible {
     background: var(--chisimba-primary-soft);
 }
+.chisimba-contextual-help > summary > .chisimba-icon {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    flex: 0 0 1.25rem;
+    stroke-width: 2.25;
+}
 .chisimba-contextual-help__body {
     padding: 0 1.15rem 1.15rem;
     border-top: 1px solid var(--chisimba-border);
@@ -6157,6 +6163,11 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-contextual-help-drawer > header .chisimba-eyebrow,
 .chisimba-contextual-help-drawer > header h2 { grid-column: 1; margin: 0; }
 .chisimba-contextual-help-drawer > header .chisimba-icon-button { grid-column: 2; grid-row: 1 / span 2; }
+.chisimba-contextual-help-drawer > header .chisimba-icon-button .chisimba-icon {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    stroke-width: 2.25;
+}
 .chisimba-contextual-help-drawer h3 { margin-block: 1.25rem .45rem; }
 .chisimba-contextual-help-drawer li + li { margin-block-start: .45rem; }
 .chisimba-help-guide { max-width: 58rem; margin-inline: auto; }
