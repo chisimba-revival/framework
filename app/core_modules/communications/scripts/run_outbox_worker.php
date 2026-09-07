@@ -25,11 +25,17 @@ if ($limit === false) {
 
 try {
     $engine = new engine();
+    $scheduled = array();
+    $catalogue = $engine->getObject('modules', 'modulecatalogue');
+    if ($catalogue->checkIfRegistered('liveclass')) {
+        $scheduled['liveclass'] = $engine->getObject('liveclassreminderservice', 'liveclass')->run((int) $limit);
+    }
     $worker = $engine->getObject('communicationworker', 'communications');
     $summary = $worker->run((int) $limit);
     if (!is_array($summary)) {
         throw new RuntimeException('Communications worker returned an invalid summary.');
     }
+    if ($scheduled) { $summary['scheduled'] = $scheduled; }
     echo json_encode($summary, JSON_UNESCAPED_SLASHES) . PHP_EOL;
     exit(0);
 } catch (Throwable $exception) {
