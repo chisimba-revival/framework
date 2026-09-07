@@ -400,7 +400,27 @@ class modulecatalogue extends controller {
                 case 'installwithdeps' :
                     $error = false;
                     $mod = trim ( $this->getParam ( 'mod' ) );
-                    $regResult = $this->smartRegister ( $mod );
+                    /*
+                     * Dependency installers are legacy code and some still
+                     * print diagnostics. Contain that output so it cannot
+                     * consume the response before the catalogue redirect.
+                     */
+                    $bufferLevel = ob_get_level();
+                    ob_start();
+                    try {
+                        $regResult = $this->smartRegister ( $mod );
+                    } finally {
+                        $unexpectedOutput = '';
+                        while (ob_get_level() > $bufferLevel) {
+                            $unexpectedOutput .= (string) ob_get_clean();
+                        }
+                        if (trim($unexpectedOutput) !== '') {
+                            error_log(
+                                'Module Catalogue dependency installation diagnostics: '
+                                . trim(strip_tags($unexpectedOutput))
+                            );
+                        }
+                    }
                     if ($regResult) {
                         $this->output = str_replace ( '[MODULE]', $mod, $this->objLanguage->languageText ( 'mod_modulecatalogue_installsuccess', 'modulecatalogue' ) ); //success
                     } else {
@@ -412,7 +432,7 @@ class modulecatalogue extends controller {
                             $error = - 1;
                     }
                     $this->setSession ( 'output', $this->output );
-                    return $this->nextAction ( null, array ('cat' => $activeCat, 'lastError' => $error ) );
+                    return $this->nextAction ( 'list', array ('cat' => $activeCat, 'lastError' => $error ) );
                 case 'info' :
                     $filepath = $this->objModFile->findRegisterFile ( $this->getParm ( 'mod' ) );
                     if ($filepath) { // if there were no file it would be FALSE

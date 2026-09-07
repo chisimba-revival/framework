@@ -1,6 +1,11 @@
 <?php
 /** Verify that batch installation cannot corrupt its post/redirect/get response. */
 $source = file_get_contents(dirname(__DIR__) . '/controller.php');
+$dependencyStart = strpos($source, "case 'installwithdeps'");
+$dependencyEnd = strpos($source, "case 'info'", $dependencyStart ?: 0);
+$dependencyAction = ($dependencyStart !== false && $dependencyEnd !== false)
+    ? substr($source, $dependencyStart, $dependencyEnd - $dependencyStart)
+    : '';
 
 $checks = array(
     'batch registration starts an output boundary' => preg_match(
@@ -19,6 +24,14 @@ $checks = array(
         $source,
         "return \$this->nextAction ( 'list', array ('cat' => \$activeCat, 'lastError' => \$error ) );"
     ),
+    'dependency install contains legacy output and uses an explicit destination' =>
+        str_contains($dependencyAction, 'ob_start()')
+        && str_contains($dependencyAction, 'smartRegister ( $mod )')
+        && str_contains($dependencyAction, 'ob_get_clean()')
+        && str_contains(
+            $dependencyAction,
+            "nextAction ( 'list', array ('cat' => \$activeCat, 'lastError' => \$error ) )"
+        ),
 );
 
 foreach ($checks as $name => $ok) {
