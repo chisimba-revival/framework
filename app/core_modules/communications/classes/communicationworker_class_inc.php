@@ -44,13 +44,30 @@ class communicationworker extends dbTable
         $now = date('Y-m-d H:i:s');
         $rows = $this->getArray("SELECT * FROM tbl_communications_outbox WHERE status = 'queued' AND available_at <= '" . $now . "' ORDER BY date_created ASC LIMIT " . $limit);
         $summary = array('selected' => 0, 'sent' => 0, 'retried' => 0, 'failed' => 0);
-        if (!is_array($rows)) { return $summary; }
+        if (!is_array($rows)) { $this->recordHeartbeat($summary, 'completed'); return $summary; }
         foreach ($rows as $row) {
             $summary['selected']++;
             $outcome = $this->deliverOne($row);
             $summary[$outcome]++;
         }
+        $this->recordHeartbeat($summary, 'completed');
         return $summary;
+    }
+
+    /** Record a durable heartbeat so administrators can distinguish an idle queue from a stopped timer. */
+    private function recordHeartbeat(array $summary, $status)
+    {
+        $now = date('Y-m-d H:i:s');
+        $row = array('status' => (string) $status, 'last_run_at' => $now,
+            'selected_count' => (int) $summary['selected'], 'sent_count' => (int) $summary['sent'],
+            'retried_count' => (int) $summary['retried'], 'failed_count' => (int) $summary['failed'],
+            'date_updated' => $now);
+        $previous = $this->_tableName;
+        $this->_tableName = 'tbl_communications_worker_state';
+        $existing = $this->getRow('id', 'mail');
+        if (is_array($existing) && !empty($existing['id'])) $this->update('id', 'mail', $row);
+        else { $row['id'] = 'mail'; $this->insert($row); }
+        $this->_tableName = $previous;
     }
 
     private function deliverOne(array $row)

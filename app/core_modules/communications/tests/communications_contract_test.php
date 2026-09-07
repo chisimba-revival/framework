@@ -11,6 +11,7 @@ $required = array(
     'classes/communicationworker_class_inc.php', 'classes/nulltransport_class_inc.php',
     'classes/sendgridtransport_class_inc.php', 'classes/communicationtransportinterface.php',
     'sql/tbl_communications_outbox.sql', 'sql/tbl_communications_attempts.sql',
+    'sql/tbl_communications_worker_state.sql',
 );
 foreach ($required as $path) {
     if (!is_file($root . '/' . $path)) { fwrite(STDERR, "Missing: $path\n"); exit(1); }
