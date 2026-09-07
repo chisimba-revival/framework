@@ -100,6 +100,13 @@
             }
             status.classList.add('is-error');
             status.textContent = payload.message || root.dataset.requestFailedMessage || '';
+            (payload.dependencyActions || []).forEach(function (action) {
+                const link = document.createElement('a');
+                link.href = action.url;
+                link.textContent = action.label;
+                status.appendChild(document.createElement('br'));
+                status.appendChild(link);
+            });
             button.disabled = false;
         }).finally(function () {
             button.removeAttribute('aria-busy');

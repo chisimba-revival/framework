@@ -270,8 +270,20 @@ class modulecatalogue extends controller {
             $this->setVar ( 'connected', false );
             switch ($action) { //check action
                 case 'updatedeps' :
-                    $this->updateDeps ( $this->getParam ( 'modname' ) );
-                    return $this->nextAction ( 'list', array ('cat' => 'Updates', 'message' => $this->objLanguage->languageText ( 'mod_modulecatalogue_installeddeps', 'modulecatalogue' ) ) );
+                    $modname = $this->getParam('modname');
+                    $this->output = $this->updateDependenciesAndPatch($modname);
+                    if (is_array($this->output) && isset($this->output['current'])) {
+                        $this->setVar('output', $this->output);
+                    } else {
+                        $this->setVar('error', htmlspecialchars(
+                            $this->patchFailureMessage($modname, $this->output),
+                            ENT_QUOTES, 'UTF-8'
+                        ));
+                        $this->setVar('dependencyActions',
+                            $this->patchDependencyActions($modname, $this->output));
+                    }
+                    $this->preparePatchView();
+                    return 'updates_tpl.php';
                 case null :
                 case 'list' :
                     /*
@@ -577,13 +589,16 @@ class modulecatalogue extends controller {
                         || !is_array($this->output)
                         || !isset($this->output['current'])) {
                         $updateSucceeded = false;
-                        $this->setVar ( 'error', str_replace ( '[MODULE]', $modname, $this->objLanguage->languageText ( 'mod_modulecatalogue_failed', 'modulecatalogue' ) ) );
+                        $updateError = $this->patchFailureMessage($modname, $this->output);
+                        $this->setVar('error', htmlspecialchars($updateError, ENT_QUOTES, 'UTF-8'));
+                        $dependencyActions = $this->patchDependencyActions($modname, $this->output);
+                        $this->setVar('dependencyActions', $dependencyActions);
                     } else {
                         $this->setVar ( 'output', $this->output );
                     }
                     // postinstall
                     $ins = $this->getPatchObject ( $modname );
-                    if ($ins !== null && method_exists ( $ins, 'postinstall' )) {
+                    if ($updateSucceeded && $ins !== null && method_exists ( $ins, 'postinstall' )) {
                         $ins->postinstall ($patchver);
                     }
 
@@ -592,7 +607,8 @@ class modulecatalogue extends controller {
                             $this->sendUpdateJson(array(
                                 'ok' => false,
                                 'code' => 'update_failed',
-                                'message' => $this->objLanguage->languageText('mod_modulecatalogue_update_failed', 'modulecatalogue'),
+                                'message' => $updateError,
+                                'dependencyActions' => $dependencyActions,
                                 'csrfToken' => $this->csrf()->issue($updateCsrfContext),
                             ), 500);
                         }
@@ -622,29 +638,35 @@ class modulecatalogue extends controller {
                     $mods = $this->objPatch->checkModules ();
                     $this->output = array ();
                     $failedModules = array();
+                    $failureMessages = array();
+                    $dependencyActions = array();
                     foreach ( $mods as $mod ) {
                         $result = $this->objPatch->applyUpdates($mod['module_id']);
                         if ($result === false || !is_array($result) || !isset($result['current'])) {
                             $failedModules[] = $mod['module_id'];
+                            $failureMessages[] = $this->patchFailureMessage($mod['module_id'], $result);
+                            $dependencyActions = array_merge($dependencyActions,
+                                $this->patchDependencyActions($mod['module_id'], $result));
                         } else {
                             $this->output[] = $result;
                         }
                     }
                     if ($failedModules) {
-                        $error = $this->objLanguage->languageText('mod_modulecatalogue_update_some_failed', 'modulecatalogue')
-                            . ': ' . implode(', ', $failedModules);
-                        $this->setVar('error', $error);
+                        $error = implode('; ', $failureMessages);
+                        $this->setVar('error', htmlspecialchars($error, ENT_QUOTES, 'UTF-8'));
                     }
                     $this->setVar ( 'output', $this->output );
+                    $this->setVar('dependencyActions', $dependencyActions);
                     if ($this->wantsUpdateJson()) {
                         $this->sendUpdateJson(array(
                             'ok' => !$failedModules,
                             'code' => $failedModules ? 'some_updates_failed' : 'all_updates_applied',
                             'message' => $failedModules
-                                ? $this->objLanguage->languageText('mod_modulecatalogue_update_some_failed', 'modulecatalogue')
+                                ? $error
                                 : $this->objLanguage->languageText('mod_modulecatalogue_all_updates_applied', 'modulecatalogue'),
                             'updated' => count($this->output),
                             'failedModules' => $failedModules,
+                            'dependencyActions' => $dependencyActions,
                             'remaining' => count($this->objPatch->checkModules()),
                             'updatedModules' => array_values(array_map(
                                 static fn($result) => (string) ($result['modname'] ?? ''),
@@ -997,6 +1019,39 @@ class modulecatalogue extends controller {
      *
      * @param string $moduleId the module whose dependencies must be updated
      */
+    private function updateDependenciesAndPatch($moduleId) {
+        $bufferLevel = ob_get_level();
+        ob_start();
+        try {
+            // Dependency installation writes progress into output as a string.
+            $this->output = '';
+            $this->updateDeps($moduleId);
+            $registration = $this->objModFile->readRegisterFile(
+                $this->objModFile->findRegisterFile($moduleId)
+            );
+            $version = $registration['MODULE_VERSION'];
+            $installer = $this->getPatchObject($moduleId);
+            if ($installer !== null && method_exists($installer, 'preinstall')) {
+                $installer->preinstall($version);
+            }
+            $result = $this->objPatch->applyUpdates($moduleId);
+            if (is_array($result) && isset($result['current'])
+                && $installer !== null && method_exists($installer, 'postinstall')) {
+                $installer->postinstall($version);
+            }
+            return $result;
+        } finally {
+            $diagnostics = '';
+            while (ob_get_level() > $bufferLevel) {
+                $diagnostics .= (string) ob_get_clean();
+            }
+            if (trim($diagnostics) !== '') {
+                error_log('Module Catalogue dependency update diagnostics: '
+                    . trim(strip_tags($diagnostics)));
+            }
+        }
+    }
+
     private function updateDeps($moduleId) {
         $rData = $this->objModFile->readRegisterFile ( $this->objModFile->findRegisterFile ( $moduleId ) );
         foreach ( $rData ['DEPENDS'] as $dep ) {
@@ -1231,6 +1286,47 @@ EOT;
             }
             exit ();
         }
+    }
+
+    private function patchDependencyActions($module, $result)
+    {
+        if (!is_array($result) || !isset($result['unMetDep'])
+            || empty($result['modules']) || !empty($result['missing'])) {
+            return array();
+        }
+        return array(array(
+            'url' => html_entity_decode($this->uri(array(
+                'action' => 'updatedeps', 'modname' => $module,
+            ), 'modulecatalogue'), ENT_QUOTES, 'UTF-8'),
+            'label' => str_replace('{MODULE}', $module,
+                $this->objLanguage->languageText(
+                    'mod_modulecatalogue_updatedeps', 'modulecatalogue'
+                )),
+        ));
+    }
+
+    private function patchFailureMessage($module, $result)
+    {
+        $message = $module . ': ' . $this->objLanguage->languageText(
+            'mod_modulecatalogue_update_failed', 'modulecatalogue'
+        );
+        if (is_array($result) && isset($result['unMetDep'])) {
+            $details = array();
+            if (!empty($result['modules'])) {
+                $details[] = $this->objLanguage->languageText(
+                    'mod_modulecatalogue_unmetdependencies', 'modulecatalogue'
+                ) . ': ' . implode(', ', $result['modules']);
+            }
+            if (!empty($result['missing'])) {
+                $details[] = $this->objLanguage->languageText(
+                    'mod_modulecatalogue_downloadmissing', 'modulecatalogue'
+                ) . ': ' . implode(', ', $result['missing']);
+            }
+            if ($details) {
+                $message = $module . ': ' . implode('; ', $details);
+            }
+        }
+        return $message;
     }
 
     private function preparePatchView($patches = null)

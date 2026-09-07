@@ -118,6 +118,11 @@ if (isset($out)) {
 if (isset($error)) {
     $tString .= "<br /><span class='error'>$error</span>";
 }
+foreach (($dependencyActions ?? array()) as $dependencyAction) {
+    $tString .= '<br /><a href="'
+        . htmlspecialchars($dependencyAction['url'], ENT_QUOTES, 'UTF-8') . '">'
+        . htmlspecialchars($dependencyAction['label'], ENT_QUOTES, 'UTF-8') . '</a>';
+}
 
 $str = '';
 if (!empty($patchArray)) {
