@@ -552,11 +552,13 @@ class modulecatalogue extends controller {
                 case 'update' :
                     $patchver = $this->getParam ( 'patchver' );
                     $modname = $this->getParam ( 'mod' );
-                    if (!$this->validUpdateRequest(self::UPDATE_CSRF_CONTEXT)) {
+                    $updateCsrfContext = $this->moduleUpdateCsrfContext($modname);
+                    if (!$this->validUpdateRequest($updateCsrfContext)) {
                         return $this->updateFailureResponse(
                             'invalid_request',
                             $this->objLanguage->languageText('mod_modulecatalogue_update_invalid_request', 'modulecatalogue'),
-                            400
+                            400,
+                            $updateCsrfContext
                         );
                     }
                     if (!$this->pendingUpdateMatches($modname, $patchver)) {
@@ -591,7 +593,7 @@ class modulecatalogue extends controller {
                                 'ok' => false,
                                 'code' => 'update_failed',
                                 'message' => $this->objLanguage->languageText('mod_modulecatalogue_update_failed', 'modulecatalogue'),
-                                'csrfToken' => $this->csrf()->issue(self::UPDATE_CSRF_CONTEXT),
+                                'csrfToken' => $this->csrf()->issue($updateCsrfContext),
                             ), 500);
                         }
                         $this->sendUpdateJson(array(
@@ -1237,7 +1239,8 @@ EOT;
         $tokens = array();
         foreach ($patches as $patch) {
             if (!empty($patch['module_id'])) {
-                $tokens[(string) $patch['module_id']] = $this->csrf()->issue(self::UPDATE_CSRF_CONTEXT);
+                $moduleId = (string) $patch['module_id'];
+                $tokens[$moduleId] = $this->csrf()->issue($this->moduleUpdateCsrfContext($moduleId));
             }
         }
         $this->setVar('patchArray', $patches);
@@ -1249,6 +1252,11 @@ EOT;
     {
         return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'POST'
             && $this->csrf()->consume($context, (string) $this->getParam('csrf_token', ''));
+    }
+
+    private function moduleUpdateCsrfContext($moduleId)
+    {
+        return 'modulecatalogue_update_' . substr(hash('sha256', (string) $moduleId), 0, 32);
     }
 
     private function pendingUpdateMatches($moduleId, $version)

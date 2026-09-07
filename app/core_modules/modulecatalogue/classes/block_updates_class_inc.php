@@ -120,7 +120,7 @@ class block_updates extends ChisimbaObject {
                 . '<button type="button" class="button chisimba-button-secondary module-updates__action" data-update-module'
                 . ' data-url="' . $escape($updateUrl) . '" data-module="' . $escape($moduleId)
                 . '" data-version="' . $escape($module['new_version']) . '" data-csrf="'
-                . $escape($this->csrf->issue('modulecatalogue_apply_update')) . '">'
+                . $escape($this->csrf->issue($this->moduleUpdateCsrfContext($moduleId))) . '">'
                 . $escape($this->objLanguage->languageText('phrase_update', 'system')) . ' '
                 . $escape($module['old_version']) . ' '
                 . $escape($this->objLanguage->languageText('word_to', 'system')) . ' '
@@ -164,6 +164,11 @@ class block_updates extends ChisimbaObject {
         // assigned through textContent, so normalise them to plain UTF-8 before
         // they are safely escaped into data attributes.
         return html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    private function moduleUpdateCsrfContext($moduleId)
+    {
+        return 'modulecatalogue_update_' . substr(hash('sha256', (string) $moduleId), 0, 32);
     }
 
 }

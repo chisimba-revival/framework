@@ -319,7 +319,7 @@ class patch extends dbtable {
                                         foreach ($pData['deleteRows'] as $field => $value) {
                                             $where[] = $field . "='" . addslashes($value) . "'";
                                         }
-                                        $deleteResult = $this->objModules->query(
+                                        $deleteResult = $this->objModule->query(
                                             'DELETE FROM ' . $table . ' WHERE ' . implode(' AND ', $where)
                                         );
                                         if ($deleteResult === false || PEAR::isError($deleteResult)) {

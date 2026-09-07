@@ -18,6 +18,10 @@ $checks = array(
         && str_contains($script, "credentials: 'same-origin'"),
     'controller verifies csrf' => str_contains($controller, 'validUpdateRequest(')
         && str_contains($controller, '->consume($context,'),
+    'each module update has an independent csrf context' =>
+        str_contains($controller, 'moduleUpdateCsrfContext($modname)')
+        && str_contains($controller, 'moduleUpdateCsrfContext($moduleId)')
+        && str_contains($block, 'moduleUpdateCsrfContext($moduleId)'),
     'controller returns bounded json' => str_contains($controller, 'sendUpdateJson(')
         && str_contains($controller, "X-Content-Type-Options: nosniff"),
     'stale updates cannot be applied' => str_contains($controller, 'pendingUpdateMatches('),
