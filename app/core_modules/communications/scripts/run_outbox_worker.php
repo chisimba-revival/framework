@@ -28,7 +28,11 @@ try {
     $scheduled = array();
     $catalogue = $engine->getObject('modules', 'modulecatalogue');
     if ($catalogue->checkIfRegistered('liveclass')) {
-        $scheduled['liveclass'] = $engine->getObject('liveclassreminderservice', 'liveclass')->run((int) $limit);
+        try {
+            $scheduled['liveclass'] = $engine->getObject('liveclassreminderservice', 'liveclass')->run((int) $limit);
+        } catch (Throwable $scheduledFailure) {
+            $scheduled['liveclass'] = array('failed' => 1, 'detail' => $scheduledFailure->getMessage());
+        }
     }
     $worker = $engine->getObject('communicationworker', 'communications');
     $summary = $worker->run((int) $limit);
