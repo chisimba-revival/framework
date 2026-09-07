@@ -8,6 +8,10 @@ $escape = static function ($value) {
 $csrfTokens = is_array($moduleUpdateCsrfTokens ?? null) ? $moduleUpdateCsrfTokens : array();
 $updateAllCsrf = (string) ($moduleUpdateAllCsrfToken ?? '');
 $icons = $this->getObject('iconservice', 'ui');
+$this->appendArrayVar(
+    'headerParams',
+    '<link rel="stylesheet" href="' . $escape($this->getResourceUri('modulecatalogue.css', 'modulecatalogue')) . '" />'
+);
 
 
 $objH = $this->newObject('htmlheading','htmlelements');
@@ -117,6 +121,7 @@ if (isset($error)) {
 
 $str = '';
 if (!empty($patchArray)) {
+    $str = '<div class="module-patch-list">';
     foreach ($patchArray as $patch) {
         $uri = $this->uri(array('action'=>'update','mod'=>$patch['module_id'],'patchver'=>$patch['new_version']),'modulecatalogue');
         $applyLabel = $this->objLanguage->languageText('mod_modulecatalogue_applypatch','modulecatalogue');
@@ -128,11 +133,21 @@ if (!empty($patchArray)) {
             'class' => 'module-update__icon',
         ));
         $time = date("d/m/y",filemtime($this->objModFile->findRegisterFile($patch['module_id'])));
-        $str .= '<div class="moduleupdate"><b>'
-          . $modIcon.ucwords($patch['module_id'])
-          . " version:</b> {$patch['new_version']} - $time <div class='floatright'>{$applyForm}</div><br />"
-          . " <span class='modcatdesc'><b>{$this->objLanguage->languageText('mod_modulecatalogue_description','modulecatalogue')}:</b> {$patch['desc']}</span><br /></div>";
+        $moduleName = ucwords(str_replace('-', ' ', (string) $patch['module_id']));
+        $versionLabel = $this->objLanguage->languageText('mod_modulecatalogue_version', 'modulecatalogue');
+        $descriptionLabel = $this->objLanguage->languageText('mod_modulecatalogue_description', 'modulecatalogue');
+        $str .= '<article class="module-patch-card">'
+            . '<div class="module-patch-card__content">'
+            . '<h3 class="module-patch-card__title">' . $modIcon
+            . '<span>' . $escape($moduleName) . '</span></h3>'
+            . '<p class="module-patch-card__meta">' . $escape($versionLabel) . ' '
+            . $escape($patch['new_version']) . ' · ' . $escape($time) . '</p>'
+            . '<p class="module-patch-card__description"><strong>' . $escape($descriptionLabel)
+            . ':</strong> ' . $escape($patch['desc']) . '</p></div>'
+            . '<div class="module-patch-card__action">' . $applyForm . '</div>'
+            . '</article>';
     }
+    $str .= '</div>';
     $patchAll = '<form class="module-update-all-form" method="post" action="'
         . $escape($this->uri(array('action' => 'patchall'), 'modulecatalogue')) . '">'
         . '<input type="hidden" name="csrf_token" value="' . $escape($updateAllCsrf) . '">'

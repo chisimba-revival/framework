@@ -27,6 +27,10 @@ $checks = array(
     'stale updates cannot be applied' => str_contains($controller, 'pendingUpdateMatches('),
     'normal catalogue uses protected forms' => substr_count($template, 'name="csrf_token"') >= 2
         && str_contains($template, 'method="post"'),
+    'catalogue groups every patch into a responsive card' =>
+        str_contains($template, '<article class="module-patch-card">')
+        && str_contains($template, 'module-patch-card__description')
+        && str_contains($template, 'module-patch-card__action'),
     'block uses valid semantic controls' => str_contains($block, '<article class="module-updates__item"')
         && str_contains($block, '<button type="button"')
         && str_contains($block, '<img class="module-updates__icon"')
