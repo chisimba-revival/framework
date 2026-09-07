@@ -290,11 +290,51 @@ class patch extends dbtable {
                                             $pData[$op] = $change;
                                             break;
 
+                                        case 'deleteRows':
+                                            $conditions = array();
+                                            foreach ($opValue as $rowKey => $rowVal) {
+                                                $field = (string) $rowKey;
+                                                if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field) !== 1) {
+                                                    throw new customException('invalid deleteRows field');
+                                                }
+                                                $conditions[$field] = (string) $rowVal;
+                                            }
+                                            if ($conditions === array()) {
+                                                throw new customException('deleteRows requires conditions');
+                                            }
+                                            $pData[$opKey] = $conditions;
+                                            break;
+
                                         default:
                                             throw new customException('error in patch data');
                                             break;
                                     }
                                     log_debug('patch::applyUpdates::'.var_export($pData, TRUE));
+                                    if (isset($pData['deleteRows'])) {
+                                        $table = (string) $update->table;
+                                        if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $table) !== 1) {
+                                            throw new customException('invalid deleteRows table');
+                                        }
+                                        $where = array();
+                                        foreach ($pData['deleteRows'] as $field => $value) {
+                                            $where[] = $field . "='" . addslashes($value) . "'";
+                                        }
+                                        $deleteResult = $this->objModules->query(
+                                            'DELETE FROM ' . $table . ' WHERE ' . implode(' AND ', $where)
+                                        );
+                                        if ($deleteResult === false || PEAR::isError($deleteResult)) {
+                                            return false;
+                                        }
+                                        $patch = array(
+                                            'moduleid'=>$modname,
+                                            'version'=>$ver,
+                                            'tablename'=>$table,
+                                            'patchdata'=>$pData,
+                                            'applied'=>$this->objModule->now()
+                                        );
+                                        $this->objModule->insert($patch, 'tbl_module_patches');
+                                        continue;
+                                    }
                                     if(isset($pData['change']) && is_array($pData['change'])) {
                                         $field2change = array_keys($pData['change']);
                                         $existfields = $this->objModuleAdmin->listTblFields($update->table);

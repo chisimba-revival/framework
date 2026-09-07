@@ -108,4 +108,21 @@
             </add>
         </data>
     </update>
+    <update>
+        <table>tbl_module_blocks</table>
+        <version>2.049</version>
+        <description>Remove registrations for the retired Context browser blocks</description>
+        <data>
+            <deleteRows>
+                <moduleid>context</moduleid>
+                <blockname>browsecontext</blockname>
+            </deleteRows>
+        </data>
+        <data>
+            <deleteRows>
+                <moduleid>context</moduleid>
+                <blockname>context</blockname>
+            </deleteRows>
+        </data>
+    </update>
 </updates>

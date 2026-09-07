@@ -1,6 +1,7 @@
 <?php
 $root = dirname(__DIR__);
 $manifest = file_get_contents($root . '/register.conf');
+$updates = file_get_contents($root . '/sql/sql_updates.xml');
 $retired = array(
     'classes/block_browsecontext_class_inc.php',
     'resources/Ext.ux.grid.Search.js',
@@ -22,6 +23,11 @@ foreach ($retired as $path) {
 }
 if (strpos($manifest, 'BLOCK: mycontexts|postlogin') === false) {
     $failed[] = 'the maintained My Classes block was removed';
+}
+if (strpos($updates, '<version>2.049</version>') === false
+    || strpos($updates, '<blockname>browsecontext</blockname>') === false
+    || strpos($updates, '<blockname>context</blockname>') === false) {
+    $failed[] = 'the module update does not remove retired block rows';
 }
 if ($failed) {
     fwrite(STDERR, "Legacy context browser retirement failed:\n- " . implode("\n- ", $failed) . "\n");
