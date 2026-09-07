@@ -93,6 +93,8 @@ class selectfile extends filemanagerobject
         $this->context = FALSE;
         $this->workgroup = FALSE;
         $this->objIcon = $this->newObject('geticon', 'htmlelements');
+        $this->objModernIcon = $this->getObject('iconservice', 'ui');
+        $this->objLanguage = $this->getObject('language', 'language');
         $this->objFile = $this->getObject('dbfile');
         $this->loadClass('hiddeninput', 'htmlelements');
         $this->loadClass('textinput', 'htmlelements');
@@ -205,8 +207,8 @@ function clearFileInputJS(name)
         $this->objIcon->setIcon('find_file');
         $this->objIcon->alt = 'Select File';
         $this->objIcon->title = 'Select File';
-        $objPop->set('linktext', $this->objIcon->show());
-        $objPop->set('linktext', 'Browse');
+        $browseText = $this->objLanguage->languageText('word_browse', 'system', 'Browse');
+        $objPop->set('linktext', $this->objModernIcon->render('folder-open', array('decorative' => true)) . ' ' . htmlspecialchars($browseText, ENT_QUOTES, 'UTF-8'));
         $objPop->set('linkType', 'button');
         $objPop->set('width','750');
         $objPop->set('height','500');
@@ -220,8 +222,12 @@ function clearFileInputJS(name)
         $textinput = new textinput ('selectfile_'.$this->name, $defaultName);
         $textinput->setId('input_selectfile_'.$this->name);
         $textinput->extra = ' readonly="true" style="width:'.$this->widthOfInput.'" ';
-        $button = new button('clear', 'Clear', 'clearFileInputJS(\''.$this->name.'\');');
-        return $input->show().$textinput->show().' '.$objPop->show().' '.$button->show();
+        $clearText = $this->objLanguage->languageText('word_clear', 'system', 'Clear');
+        $clear = '<button type="button" name="clear" class="button chisimba-button-secondary" onclick="clearFileInputJS(\''
+            . htmlspecialchars($this->name, ENT_QUOTES, 'UTF-8') . '\');">'
+            . $this->objModernIcon->render('x', array('decorative' => true)) . ' '
+            . htmlspecialchars($clearText, ENT_QUOTES, 'UTF-8') . '</button>';
+        return $input->show().$textinput->show().' '.$objPop->show().' '.$clear;
     }
 }
 ?>

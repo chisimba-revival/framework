@@ -949,6 +949,21 @@ ul#menuList li li ul {
 .mail-health > footer { margin-top: 1rem; }
 .mail-health > footer p { margin: 0; color: var(--chisimba-text-muted); }
 
+/* Discussion dashboard blocks can appear outside the Discussion module layout. */
+.discussion-dashboard { padding: clamp(1rem,3vw,1.5rem); }
+.discussion-dashboard > header,
+.discussion-dashboard > footer,
+.discussion-dashboard__topics a { display:flex; align-items:center; }
+.discussion-dashboard > header { gap:.8rem; }
+.discussion-dashboard__icon { display:grid; place-items:center; width:2.8rem; height:2.8rem; border-radius:50%; color:var(--chisimba-primary); background:var(--chisimba-primary-soft); }
+.discussion-dashboard__eyebrow { margin:0; color:var(--chisimba-primary-dark); font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+.discussion-dashboard h2 { margin:.1rem 0 0; }
+.discussion-dashboard__count { margin-inline-start:auto; padding:.3rem .65rem; border-radius:999px; background:var(--chisimba-primary-soft); font-weight:700; }
+.discussion-dashboard__topics { display:grid; gap:.45rem; margin-block:1rem; }
+.discussion-dashboard__topics a { justify-content:space-between; gap:1rem; padding:.7rem; border:1px solid var(--chisimba-border); border-radius:.5rem; text-decoration:none; }
+.discussion-dashboard__topics small { color:var(--chisimba-text-muted); }
+.discussion-dashboard > footer { flex-wrap:wrap; gap:.55rem; margin-top:1rem; }
+
 @media (max-width: 760px) {
     .mail-health__grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     .mail-health > footer { align-items: flex-start; flex-direction: column; }
