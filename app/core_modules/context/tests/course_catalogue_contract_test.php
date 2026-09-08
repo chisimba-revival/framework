@@ -28,15 +28,21 @@ $expect = function ($condition, $message) {
 $register = $read('register.conf');
 $database = $read('classes/dbcontext_class_inc.php');
 $renderer = $read('classes/coursecatalogue_class_inc.php');
+$block = $read('classes/block_latestcourses_class_inc.php');
 $controller = $read('controller.php');
 $myCourses = $read('classes/block_mycontexts_class_inc.php');
 $needToJoin = $read('templates/content/needtojoin_tpl.php');
 
 $expect(
-    strpos($register, 'WIDEBLOCK: latestcourses') === false
-      && !file_exists($module . '/classes/block_latestcourses_class_inc.php')
+    strpos($register, 'WIDEBLOCK: latestcourses') !== false
+      && file_exists($module . '/classes/block_latestcourses_class_inc.php')
       && !file_exists($module . '/classes/block_context_class_inc.php'),
-    'Legacy public course listing blocks must remain retired.'
+    'The maintained catalogue-card block must be available while the legacy public list remains retired.'
+);
+$expect(
+    strpos($block, "renderLatest(6)") !== false
+      && strpos($block, "getObject('coursecatalogue', 'context')") !== false,
+    'The front-page block must reuse the availability-aware catalogue renderer.'
 );
 $expect(
     strpos($database, 'function getArrayOfLatestContexts') !== false
