@@ -34,6 +34,7 @@ try {
 }
 if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
     try {
+        $bannerLanguage = $this->getObject('language', 'language');
         $roleContext = $this->getObject(
             'toolbarsecuritycontext', 'toolbar'
         );
@@ -45,7 +46,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
             $statusLabel = 'Administrator';
         } elseif ($roleContext->isCurrentContextLecturer()
             || $roleContext->isLecturer()) {
-            $statusLabel = ucfirst($this->objLanguage->code2Txt(
+            $statusLabel = ucfirst($bannerLanguage->code2Txt(
                 'word_lecturer', 'system', null, '[-author-]'
             ));
         } elseif ($objModuleCatalogue->checkIfRegistered('membership-service')) {
@@ -93,7 +94,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
             $contextDetails = $context->getContextDetails($contextCode);
             $contextTitle = trim((string) ($contextDetails['title'] ?? ''));
             if ($contextTitle !== '') {
-                $currentLabel = ucfirst($this->objLanguage->code2Txt(
+                $currentLabel = ucfirst($bannerLanguage->code2Txt(
                     'mod_toolbar_currentcontext',
                     'toolbar',
                     null,
@@ -114,7 +115,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
                 $journeyLinks[] = array(
                     'class' => 'administration',
                     'icon' => 'activity',
-                    'label' => $this->objLanguage->languageText(
+                    'label' => $bannerLanguage->languageText(
                         'mod_toolbar_myadministration',
                         'toolbar',
                         'My Administration'
@@ -127,7 +128,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
             $journeyLinks[] = array(
                 'class' => 'site-administration',
                 'icon' => 'settings',
-                'label' => $this->objLanguage->languageText(
+                'label' => $bannerLanguage->languageText(
                     'mod_toolbar_siteadministration',
                     'toolbar',
                     'Site Administration'
@@ -142,7 +143,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
                 $journeyLinks[] = array(
                     'class' => 'teaching',
                     'icon' => 'layout-dashboard',
-                    'label' => $this->objLanguage->languageText(
+                    'label' => $bannerLanguage->languageText(
                         'mod_toolbar_allteachingcontexts',
                         'toolbar',
                         'My Teaching'
@@ -157,7 +158,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
                 $journeyLinks[] = array(
                     'class' => 'learning',
                     'icon' => 'graduation-cap',
-                    'label' => $this->objLanguage->languageText(
+                    'label' => $bannerLanguage->languageText(
                         'mod_toolbar_alllearningcontexts',
                         'toolbar',
                         'My Learning'
@@ -172,7 +173,7 @@ if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
                 $journeyLinks[] = array(
                     'class' => 'create',
                     'icon' => 'plus',
-                    'label' => ucfirst($this->objLanguage->code2Txt(
+                    'label' => ucfirst($bannerLanguage->code2Txt(
                         'mod_toolbar_createcourse',
                         'toolbar',
                         null,

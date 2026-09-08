@@ -67,7 +67,10 @@ $checks = array(
     'journey labels use the language system' => str_contains(
         $language,
         'mod_toolbar_currentcontext'
-    ) && str_contains($language, 'mod_toolbar_allteachingcontexts'),
+    ) && str_contains($language, 'mod_toolbar_allteachingcontexts')
+        && str_contains($template, "\$bannerLanguage = \$this->getObject('language', 'language');")
+        && str_contains($template, '$bannerLanguage->languageText(')
+        && str_contains($template, '$bannerLanguage->code2Txt('),
     'hosts can disable the complete banner pill rail' =>
         str_contains($language, 'CONFIG: TOOLBAR_DISABLE_BANNER_PILLS|FALSE|')
         && str_contains(
