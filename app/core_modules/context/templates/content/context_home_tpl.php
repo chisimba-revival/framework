@@ -182,6 +182,24 @@ if ($this->isValid('addblock')) {
 $header = new htmlheading();
 $header->type = 3;
 $header->str = $objLanguage->languageText('mod_context_addablock', 'context', 'Add a Block');
+$manageLandingContentAction = '';
+if ($this->isValid('addblock') && $objModule->checkIfRegistered('contentblocks')) {
+    $manageLandingContentLabel = $objLanguage->code2Txt(
+        'mod_contentblocks_managecontextlanding',
+        'contentblocks',
+        NULL,
+        'Manage [-context-] landing content'
+    );
+    $manageLandingContentUrl = html_entity_decode(
+        $this->uri(array('action' => 'manage', 'scope' => 'context'), 'contentblocks'),
+        ENT_QUOTES,
+        'UTF-8'
+    );
+    $manageLandingContentAction = '<p><a class="button chisimba-button-secondary chisimba-button-compact" href="'
+        . htmlspecialchars($manageLandingContentUrl, ENT_QUOTES, 'UTF-8') . '">'
+        . $objIconService->render('edit-3', array('decorative' => TRUE)) . ' '
+        . htmlspecialchars($manageLandingContentLabel, ENT_QUOTES, 'UTF-8') . '</a></p>';
+}
 $toolbar = $this->getObject('contextsidebar');
 $contextContentIsRegistered = $objModule->checkIfRegistered('contextcontent');
 $utillink = "";
@@ -269,7 +287,8 @@ $objCssLayout->middleColumnContent = $studentDueWork
     . '<div id="middleblocks">' . $middleBlocksStr . '</div>';
 
 if ($this->isValid('addblock')) {
-    $objCssLayout->middleColumnContent .= '<div id="middleaddblock">' . $header->show() . $wideBlocksDropDown->show();
+    $objCssLayout->middleColumnContent .= '<div id="middleaddblock">' . $header->show()
+        . $manageLandingContentAction . $wideBlocksDropDown->show();
     $objCssLayout->middleColumnContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $button->show() . ' </div>';
     $objCssLayout->middleColumnContent .= '</div>';
 }
