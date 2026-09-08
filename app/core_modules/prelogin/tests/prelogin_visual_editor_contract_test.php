@@ -51,9 +51,10 @@ $checks = array(
     'content blocks are available in the catalogue' =>
         str_contains($controller, 'getBlocksArr($contentType)')
         && str_contains($controller, "'moduleid' => 'contentblocks'"),
-    'curation is dormant and uses prelogin registry types later' =>
+    'normal catalogue is public-safe and curation narrows it further' =>
         str_contains($register, 'CONFIG: CURATE_PUBLIC_BLOCKS|FALSE|')
-        && str_contains($controller, "? 'prelogin' : NULL"),
+        && str_contains($controller, "? 'prelogin'")
+        && str_contains($controller, ": 'site|prelogin'"),
     'repeated audience registrations update their exact row' =>
         str_contains($registry, '$exists[0][\'id\']')
         && !str_contains($registry, 'WHERE blockname = \'$blockName\''),

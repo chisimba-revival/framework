@@ -175,8 +175,8 @@ class prelogin extends controller
     /**
      * Return registered blocks for one editor width.
      *
-     * Curation is deliberately dormant. When enabled later, registrations
-     * such as `BLOCK: example|prelogin` become the public catalogue.
+     * The normal catalogue contains site and prelogin blocks. Optional
+     * curation narrows it to blocks explicitly registered for prelogin.
      *
      * @param string $width normal or wide
      *
@@ -185,7 +185,9 @@ class prelogin extends controller
     private function getBlockCatalogue($width)
     {
         $registry = $this->getObject('dbmoduleblocks', 'modulecatalogue');
-        $type = $this->usesCuratedCatalogue() ? 'prelogin' : NULL;
+        $type = $this->usesCuratedCatalogue()
+            ? 'prelogin'
+            : 'site|prelogin';
         $catalogue = array();
 
         foreach ($registry->getBlocks($width, $type) as $row) {
