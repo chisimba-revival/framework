@@ -283,7 +283,12 @@ if (!$this->objUser->isAdmin()
         $studentDueWork = '';
     }
 }
-$objCssLayout->middleColumnContent = $studentDueWork
+$contextHomeHelp = '';
+if ($objModule->checkIfRegistered('help')) {
+    $contextHomeHelp = $this->getObject('contextualhelp', 'help')
+        ->show('context', 'managing-the-context-home');
+}
+$objCssLayout->middleColumnContent = $contextHomeHelp . $studentDueWork
     . '<div id="middleblocks">' . $middleBlocksStr . '</div>';
 
 if ($this->isValid('addblock')) {
