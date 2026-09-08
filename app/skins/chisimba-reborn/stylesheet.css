@@ -949,6 +949,29 @@ ul#menuList li li ul {
 .mail-health > footer { margin-top: 1rem; }
 .mail-health > footer p { margin: 0; color: var(--chisimba-text-muted); }
 
+.registration-health {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: 0.65rem;
+    background: var(--chisimba-surface-subtle);
+}
+.registration-health h2 { margin: 0.15rem 0 0; }
+.registration-health__metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.75rem; margin-top: 1rem; }
+.registration-health__metrics article { padding: 0.85rem; border: 1px solid var(--chisimba-border); border-radius: 0.6rem; background: var(--chisimba-surface); }
+.registration-health__metrics span,.registration-health__recent time,.registration-health__pending span,.registration-health__pending small { display: block; color: var(--chisimba-text-muted); }
+.registration-health__metrics strong { display: block; margin-top: 0.25rem; color: var(--chisimba-primary-dark); font-size: 1.65rem; }
+.registration-health__columns { display: grid; grid-template-columns: minmax(0,0.85fr) minmax(0,1.4fr); gap: 1rem; margin-top: 1rem; }
+.registration-health__columns > section { padding: 1rem; border: 1px solid var(--chisimba-border); border-radius: 0.6rem; background: var(--chisimba-surface); }
+.registration-health__columns h3 { margin-top: 0; }
+.registration-health__recent { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.registration-health__recent li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--chisimba-border); }
+.registration-health__recent li:last-child { border-bottom: 0; }
+.registration-health__pending { display: grid; gap: 0.65rem; }
+.registration-health__pending article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem; border: 1px solid var(--chisimba-border); border-radius: 0.55rem; }
+.registration-health__pending form { margin: 0; }
+.registration-health__reminded { color: var(--chisimba-success, #2f855a) !important; font-weight: 700; }
+
 /* Discussion dashboard blocks can appear outside the Discussion module layout. */
 .discussion-dashboard { padding: clamp(1rem,3vw,1.5rem); }
 .discussion-dashboard > header,
@@ -967,6 +990,8 @@ ul#menuList li li ul {
 @media (max-width: 760px) {
     .mail-health__grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     .mail-health > footer { align-items: flex-start; flex-direction: column; }
+    .registration-health__columns { grid-template-columns: 1fr; }
+    .registration-health__pending article { align-items: flex-start; flex-direction: column; }
 }
 
 .presence-overview {
