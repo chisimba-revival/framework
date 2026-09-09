@@ -80,7 +80,7 @@ if ($modules) {
     (($count % 2) == 0)? $oddOrEven = 'even' : $oddOrEven = 'odd';
     $objTable->addHeader($head,'heading','align="left"');
     $objTable->row_attributes=" onmouseover=\"this.className='tbl_ruler';\" onmouseout=\"this.className='".$oddOrEven."'; \"";
-    $batchuninstall = $moduleFilter === 'new' ? false : $this->getParm('uninstall');
+    $batchuninstall = $moduleFilter === 'uninstalled' ? false : $this->getParm('uninstall');
     if ($batchuninstall) {
         $actiontotake = 'batchuninstall';
         $batchButton = new Link($this->uri(array('cat'=>$activeCat),'modulecatalogue'));
@@ -109,7 +109,7 @@ if ($modules) {
     $topTable = $this->newObject('htmltable','htmlelements');
     $topTable->cellpadding = 2;
     $topTable->addRow(array($batchChange),null,'align="right"');
-    $top = $moduleFilter === 'new' ? '' : $topTable->show();
+    $top = $moduleFilter === 'uninstalled' ? '' : $topTable->show();
     $bottomTable = $this->newObject('htmltable','htmlelements');
     $bottomTable->cellpadding = 2;
     $bottomTable->startRow();
@@ -120,7 +120,7 @@ if ($modules) {
     $rClass = 'odd';
     foreach ($modules as $moduleId => $moduleName) {
         $isInstalled = in_array($moduleId, $rMods, true);
-        if (!$viewFilter->includes($moduleFilter, $isInstalled)) {
+        if (!$viewFilter->includes($moduleFilter, $isInstalled, $moduleFilter === 'new' ? $viewFilter->createdDate($moduleId) : null)) {
             continue;
         }
         //echo $moduleId;
@@ -240,7 +240,7 @@ if ($count === 0) {
     if ($modules) {
         $objTable->startRow();
         $objTable->addCell(htmlspecialchars($this->objLanguage->languageText(
-            $moduleFilter === 'new' ? 'mod_modulecatalogue_nonewmodules' : 'mod_modulecatalogue_noitems',
+            $moduleFilter === 'uninstalled' ? 'mod_modulecatalogue_nonewmodules' : 'mod_modulecatalogue_noitems',
             'modulecatalogue'
         ), ENT_QUOTES, 'UTF-8'), null, null, null, null, 'colspan="7"');
         $objTable->endRow();

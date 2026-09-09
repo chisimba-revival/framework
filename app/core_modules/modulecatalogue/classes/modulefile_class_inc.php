@@ -434,6 +434,7 @@ class modulefile extends ChisimbaObject {
                         case 'MODULE_LANGTERMS':
                         case 'CONTEXT_AWARE':
                         case 'DEPENDS_CONTEXT':
+                        case 'MODULE_CREATEDATE':
                         case 'MODULE_RELEASEDATE':
                         case 'ASSESSMENT_PROVIDER':
                         case 'ASSESSMENT_PROVIDER_LABEL':

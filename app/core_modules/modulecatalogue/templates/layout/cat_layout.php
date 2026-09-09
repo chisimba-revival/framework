@@ -18,12 +18,15 @@ $moduleFilter = $moduleFilter ?? 'all';
 $localIds = $this->getObject('catalogueviewfilter', 'modulecatalogue')
     ->localIds($this->objModFile->getLocalModuleList());
 $installedIds = array_column($this->objModule->getAll(), 'module_id');
-$newCount = count(array_diff($localIds, $installedIds));
+$uninstalledCount = count(array_diff($localIds, $installedIds));
+$viewFilter = $this->getObject('catalogueviewfilter', 'modulecatalogue');
+$newCount = count(array_filter($localIds, fn($id) => $viewFilter->isRecent($viewFilter->createdDate($id))));
 $escape = static fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 $filterBar = '<nav class="chisimba-actions" aria-label="'
     . $escape($this->objLanguage->languageText('mod_modulecatalogue_filterlabel', 'modulecatalogue')) . '">';
-foreach (array('all' => 'allmodules', 'installed' => 'installedmodules', 'new' => 'newmodules') as $value => $key) {
+foreach (array('all' => 'allmodules', 'installed' => 'installedmodules', 'uninstalled' => 'uninstalledmodules', 'new' => 'newmodules') as $value => $key) {
     $label = $this->objLanguage->languageText('mod_modulecatalogue_' . $key, 'modulecatalogue');
+    if ($value === 'uninstalled') { $label .= ' (' . $uninstalledCount . ')'; }
     if ($value === 'new') { $label .= ' (' . $newCount . ')'; }
     $filterBar .= '<a class="button chisimba-button-secondary chisimba-selectable"'
         . ($moduleFilter === $value ? ' aria-current="page"' : '')

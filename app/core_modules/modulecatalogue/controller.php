@@ -247,7 +247,7 @@ class modulecatalogue extends controller {
             );
             $this->setSession('modulecatalogue_view_filter', $moduleFilter);
             $this->setVar('moduleFilter', $moduleFilter);
-            if ($moduleFilter === 'new' && $this->getParam('cat', null) === null) {
+            if (in_array($moduleFilter, array('new', 'uninstalled'), true) && $this->getParam('cat', null) === null) {
                 $activeCat = 'all';
                 $this->setVar('activeCat', $activeCat);
             }
