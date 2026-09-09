@@ -3734,9 +3734,8 @@ h5.featureboxheader,
 }
 
 .contextgroups-result {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--chisimba-space-4, 1rem);
     padding: var(--chisimba-space-4, 1rem);
     border: 1px solid var(--chisimba-border, #d8dee5);
@@ -3745,11 +3744,11 @@ h5.featureboxheader,
 }
 
 .contextgroups-role-explanation {
-    flex: 1 0 100%;
     margin: 0;
     color: var(--chisimba-text-muted, #5d6772);
     font-size: 0.9rem;
-    text-align: end;
+    text-align: start;
+    overflow-wrap: anywhere;
 }
 
 .contextgroups-person {
@@ -3775,10 +3774,21 @@ h5.featureboxheader,
 
 .contextgroups-role-actions {
     display: flex;
-    flex: 0 0 auto;
+    min-width: 0;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--chisimba-space-2, 0.5rem);
+}
+
+.contextgroups-role-actions form {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.contextgroups-role-actions .contextgroups-button {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .contextgroups-role-actions form,
@@ -3856,10 +3866,14 @@ h5.featureboxheader,
 
 @media (max-width: 48rem) {
     .contextgroups-author-journey,
-    .contextgroups-search-controls,
-    .contextgroups-result {
+    .contextgroups-search-controls {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .contextgroups-search-controls input[type='search'] {
+        flex: 0 1 auto;
+        width: 100%;
     }
 
     .contextgroups-author-journey .contextgroups-button {
