@@ -72,9 +72,21 @@ class communicationservice extends dbTable
             'recipient' => $recipient,
             'recipient_name' => isset($input['toName']) ? trim((string) $input['toName']) : null,
             'sender' => $sender,
-            'sender_name' => trim((string) $this->objConfig->getValue('COMMUNICATION_FROM_NAME', 'communications')),
+            'sender_name' => $this->senderName(),
             'subject' => $subject, 'body_text' => $text, 'body_html' => $html === '' ? null : $html,
         ));
+    }
+
+    /** Use site identity for the default sender; retain a deliberate custom name. */
+    private function senderName()
+    {
+        $configured = trim((string) $this->objConfig->getValue('COMMUNICATION_FROM_NAME', 'communications'));
+        // Existing installations retain the original Chisimba default in sysconfig.
+        if ($configured !== '' && strcasecmp($configured, 'Chisimba') !== 0) {
+            return mb_substr($configured, 0, 255);
+        }
+        $siteName = trim((string) $this->getObject('altconfig', 'config')->getSiteName());
+        return $siteName === '' ? null : mb_substr($siteName, 0, 255);
     }
 
     private function result($ok, $code, $messageId = null)
