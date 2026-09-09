@@ -12,7 +12,31 @@ $ret = "<div class='modcat_left'>$ret</div>";
 $cssLayout->setLeftColumnContent($ret);
 unset($ret);
 //set middle content
-$ret = $this->getContent();
+$content = $this->getContent();
+// Visible on Updates as well as category/search pages, so new modules are discoverable.
+$moduleFilter = $moduleFilter ?? 'all';
+$localIds = $this->getObject('catalogueviewfilter', 'modulecatalogue')
+    ->localIds($this->objModFile->getLocalModuleList());
+$installedIds = array_column($this->objModule->getAll(), 'module_id');
+$newCount = count(array_diff($localIds, $installedIds));
+$escape = static fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+$filterBar = '<nav class="chisimba-actions" aria-label="'
+    . $escape($this->objLanguage->languageText('mod_modulecatalogue_filterlabel', 'modulecatalogue')) . '">';
+foreach (array('all' => 'allmodules', 'installed' => 'installedmodules', 'new' => 'newmodules') as $value => $key) {
+    $label = $this->objLanguage->languageText('mod_modulecatalogue_' . $key, 'modulecatalogue');
+    if ($value === 'new') { $label .= ' (' . $newCount . ')'; }
+    $filterBar .= '<a class="button chisimba-button-secondary chisimba-selectable"'
+        . ($moduleFilter === $value ? ' aria-current="page"' : '')
+        . ' href="' . $escape(html_entity_decode($this->uri(array('action'=>'list', 'cat'=>'all', 'modulefilter'=>$value), 'modulecatalogue'), ENT_QUOTES, 'UTF-8')) . '">'
+        . $escape($label) . '</a>';
+}
+$filterBar .= '<a class="button chisimba-button-secondary" href="'
+    . $escape(html_entity_decode($this->uri(array('action'=>'updatexml','cat'=>$activeCat,'modulefilter'=>$moduleFilter), 'modulecatalogue'), ENT_QUOTES, 'UTF-8')) . '">'
+    . $escape($this->objLanguage->languageText('mod_modulecatalogue_refreshcatalogue', 'modulecatalogue')) . '</a></nav>';
+if ($moduleFilter === 'new') {
+    $filterBar .= '<p class="chisimba-notice">' . $escape($this->objLanguage->languageText('mod_modulecatalogue_newmoduleshelp', 'modulecatalogue')) . '</p>';
+}
+$ret = $filterBar . $content;
 $ret = "<div class='modcat_main'>$ret</div>";
 $cssLayout->setMiddleColumnContent($ret);
 

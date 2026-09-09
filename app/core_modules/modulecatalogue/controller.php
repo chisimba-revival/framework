@@ -238,33 +238,19 @@ class modulecatalogue extends controller {
             }
             $this->setVar ( 'activeCat', $activeCat );
 
-            /*
-             * Remember the catalogue view independently of category and
-             * install/uninstall actions. Supplying installedonly=0 is the
-             * deliberate way to return to the complete local catalogue.
-             */
-            $installedOnlyParam = $this->getParam('installedonly', null);
-            if ($installedOnlyParam !== null) {
-                $installedOnly = ((string) $installedOnlyParam === '1');
-                $this->setSession('modulecatalogue_installed_only', $installedOnly);
-            } else {
-                $installedOnly = (bool) $this->getSession('modulecatalogue_installed_only', false);
+            // Keep one installation-state filter across browsing and mutations.
+            $moduleFilter = $this->getObject('catalogueviewfilter')->resolve(
+                $this->getParam('modulefilter', null),
+                $this->getParam('installedonly', null),
+                $this->getSession('modulecatalogue_view_filter', null),
+                (bool)$this->getSession('modulecatalogue_installed_only', false)
+            );
+            $this->setSession('modulecatalogue_view_filter', $moduleFilter);
+            $this->setVar('moduleFilter', $moduleFilter);
+            if ($moduleFilter === 'new' && $this->getParam('cat', null) === null) {
+                $activeCat = 'all';
+                $this->setVar('activeCat', $activeCat);
             }
-            $this->setVar('installedOnly', $installedOnly);
-
-            /*
-             * Remember the catalogue view independently of category and
-             * install/uninstall actions. Supplying installedonly=0 is the
-             * deliberate way to return to the complete local catalogue.
-             */
-            $installedOnlyParam = $this->getParam('installedonly', null);
-            if ($installedOnlyParam !== null) {
-                $installedOnly = ((string) $installedOnlyParam === '1');
-                $this->setSession('modulecatalogue_installed_only', $installedOnly);
-            } else {
-                $installedOnly = (bool) $this->getSession('modulecatalogue_installed_only', false);
-            }
-            $this->setVar('installedOnly', $installedOnly);
             //$this->setVar('letter',$this->getParam('letter','none'));
             $this->setLayoutTemplate ( 'cat_layout.php' );
             $this->setVar ( 'connected', false );
@@ -716,7 +702,7 @@ class modulecatalogue extends controller {
                             $message .= ' ' . htmlspecialchars(implode(', ', $summary['removed']), ENT_QUOTES, 'UTF-8');
                         }
                     }
-                    return $this->nextAction ( null, array ('message' => $message ) );
+                    return $this->nextAction('list', array('message' => $message, 'cat' => $activeCat, 'modulefilter' => $moduleFilter));
 
                 case 'uploadarchive' :
                     $file = $_FILES ['archive'] ['name'];

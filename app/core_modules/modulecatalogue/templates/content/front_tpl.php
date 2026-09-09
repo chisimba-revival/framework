@@ -7,7 +7,8 @@ $this->appendArrayVar(
     'headerParams',
     '<link rel="stylesheet" href="'.htmlspecialchars($this->getResourceUri('modulecatalogue.css', 'modulecatalogue'), ENT_QUOTES, 'UTF-8').'" />'
 );
-$installedOnly = isset($installedOnly) ? (bool) $installedOnly : false;
+$moduleFilter = $moduleFilter ?? 'all';
+$viewFilter = $this->getObject('catalogueviewfilter', 'modulecatalogue');
 $srchStr = $this->getParam('srchstr', NULL);
 $srchType = $this->getParam('srchtype', NULL);
 $lastAction = $this->getParam('action');
@@ -61,7 +62,7 @@ $head = array($masterCheck->show(),'&nbsp;',$this->objLanguage->languageText('mo
             ,$this->objLanguage->languageText('mod_modulecatalogue_info2','modulecatalogue'));
 
 $count = 0;
-$localModules = $this->objModFile->getLocalModuleList();
+$localModules = $viewFilter->localIds($this->objModFile->getLocalModuleList());
 $actiontotake = 'batchinstall';
 $root = $this->objConfig->getsiteRootPath();
 //$defaults = file_get_contents($root.'installer/dbhandlers/default_modules.txt'); TODO: replace this with the xml list of core modules
@@ -71,26 +72,6 @@ foreach ($registeredModules as $module) {
     $rMods[]=$module['module_id'];
 }
 
-$filterLink = new Link($this->uri(array(
-    'action' => 'list',
-    'cat' => $activeCat,
-    'installedonly' => $installedOnly ? '0' : '1'
-), 'modulecatalogue'));
-$filterLink->link = $this->objLanguage->languageText(
-    $installedOnly
-        ? 'mod_modulecatalogue_showallmodules'
-        : 'mod_modulecatalogue_showinstalledonly',
-    'modulecatalogue'
-);
-$filterLink->extra = 'class="modcat-filter-toggle'.($installedOnly ? ' is-active' : '').'"';
-$filterControl = '<div class="modcat-filterbar">'.$filterLink->show();
-if ($installedOnly) {
-    $filterControl .= '<span class="modcat-filter-status">'
-        .$this->objLanguage->languageText('mod_modulecatalogue_installedfilteractive', 'modulecatalogue')
-        .'</span>';
-}
-$filterControl .= '</div>';
-
 $alink = new link();
 
 if ($modules) {
@@ -99,7 +80,7 @@ if ($modules) {
     (($count % 2) == 0)? $oddOrEven = 'even' : $oddOrEven = 'odd';
     $objTable->addHeader($head,'heading','align="left"');
     $objTable->row_attributes=" onmouseover=\"this.className='tbl_ruler';\" onmouseout=\"this.className='".$oddOrEven."'; \"";
-    $batchuninstall = $this->getParm('uninstall');
+    $batchuninstall = $moduleFilter === 'new' ? false : $this->getParm('uninstall');
     if ($batchuninstall) {
         $actiontotake = 'batchuninstall';
         $batchButton = new Link($this->uri(array('cat'=>$activeCat),'modulecatalogue'));
@@ -128,7 +109,7 @@ if ($modules) {
     $topTable = $this->newObject('htmltable','htmlelements');
     $topTable->cellpadding = 2;
     $topTable->addRow(array($batchChange),null,'align="right"');
-    $top = $topTable->show();
+    $top = $moduleFilter === 'new' ? '' : $topTable->show();
     $bottomTable = $this->newObject('htmltable','htmlelements');
     $bottomTable->cellpadding = 2;
     $bottomTable->startRow();
@@ -139,7 +120,7 @@ if ($modules) {
     $rClass = 'odd';
     foreach ($modules as $moduleId => $moduleName) {
         $isInstalled = in_array($moduleId, $rMods, true);
-        if ($installedOnly && !$isInstalled) {
+        if (!$viewFilter->includes($moduleFilter, $isInstalled)) {
             continue;
         }
         //echo $moduleId;
@@ -254,6 +235,17 @@ if ($modules) {
     $objTable->addCell('<span class="empty">'.$this->objLanguage->languageText('mod_modulecatalogue_noitems','modulecatalogue').'</span>');
     $objTable->endRow();
 }
+if ($count === 0) {
+    $top = $bot = '';
+    if ($modules) {
+        $objTable->startRow();
+        $objTable->addCell(htmlspecialchars($this->objLanguage->languageText(
+            $moduleFilter === 'new' ? 'mod_modulecatalogue_nonewmodules' : 'mod_modulecatalogue_noitems',
+            'modulecatalogue'
+        ), ENT_QUOTES, 'UTF-8'), null, null, null, null, 'colspan="7"');
+        $objTable->endRow();
+    }
+}
 if (($output=$this->getSession('output'))!=null) {
     if (!isset($error)) {
         $error = $this->getParam('lastError');
@@ -279,7 +271,7 @@ if (($output=$this->getSession('output'))!=null) {
 $objForm = new form('batchform',$this->uri(array('action'=>$actiontotake,'cat'=>$activeCat),'modulecatalogue'));
 $objForm->displayType = 3;
 $objForm->addToForm($notice);
-$objForm->addToForm($filterControl);
+
 $objForm->addToForm($top);
 $objForm->addToForm($objTable->show());
 $objForm->addToForm($bot);

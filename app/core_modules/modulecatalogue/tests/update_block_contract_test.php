@@ -40,7 +40,8 @@ $checks = array(
         && !str_contains($script . $block, 'div_updates'),
     'progress language is normalised for textContent' => str_contains($block, 'html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5')
         && str_contains($block, 'assigned through textContent'),
-    'module version records replacement' => str_contains($manifest, 'MODULE_VERSION: 3.134')
+    'module version records replacement' => preg_match('/^MODULE_VERSION:\s*([0-9.]+)/m', $manifest, $version)
+        && (float)$version[1] >= 3.134
         && str_contains($manifest, 'timer-driven legacy jQuery'),
 );
 
