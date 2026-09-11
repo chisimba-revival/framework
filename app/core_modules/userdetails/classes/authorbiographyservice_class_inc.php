@@ -33,6 +33,12 @@ class authorbiographyservice extends ChisimbaObject
             'links' => $row ? (json_decode($row['links_json'], true) ?: array()) : array());
     }
 
+    /** Shared completeness rule for account reminders and course preparation. */
+    public function needsBiography($userId)
+    {
+        return trim($this->forUser($userId)['biography']) === '';
+    }
+
     /** Existing lecturer assignments remain authoritative; no parallel author membership table. */
     public function forCourse($contextCode)
     {

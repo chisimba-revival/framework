@@ -23,3 +23,5 @@ Local PHP8.5 verification on 11 September 2026:
 - PHP syntax and Git whitespace checks passed.
 
 Still separate work: Learn more landing page, product CTA/price integration and a fuller public author-profile route. Responsive skin rules are included; a dedicated narrow-screen browser pass remains advisable before production release. Existing My Profile photo selection is reused, not replaced by a parallel upload system.
+
+The signed-in account block also exposes My Bio immediately after My Profile. Empty biographies have an accessible “Biography needed” alert icon; completed biographies retain the link without the alert. Both states use authorbiographyservice::needsBiography. The link position, missing-state icon and destination were verified in the local browser; regression coverage checks empty/whitespace versus completed biography state.

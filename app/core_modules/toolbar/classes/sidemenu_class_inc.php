@@ -480,6 +480,26 @@ class sidemenu extends ChisimbaObject {
                 'css' => 'account-card__leave-context',
             );
         }
+        // Place the reusable biography action directly after My Profile.
+        foreach ($this->globalNodes as $index => $node) {
+            if (($node['nodeid'] ?? '') !== 'userdetails'
+                || in_array('author-biography', array_column($this->globalNodes, 'nodeid'), true)) continue;
+            $label = htmlspecialchars($this->objLanguage->languageText('mod_userdetails_my_bio', 'userdetails'), ENT_QUOTES, 'UTF-8');
+            $needsBiography = $this->getObject('authorbiographyservice', 'userdetails')
+                ->needsBiography($this->securityContext->userId());
+            if ($needsBiography) {
+                $label .= ' '.$this->getObject('iconservice', 'ui')->render('circle-alert', array(
+                    'label' => $this->objLanguage->languageText('mod_userdetails_bio_needed', 'userdetails'),
+                ));
+            }
+            array_splice($this->globalNodes, $index + 1, 0, array(array(
+                'text' => $label,
+                'uri' => $this->uri(array('action' => 'biography'), 'userdetails'),
+                'nodeid' => 'author-biography',
+                'css' => 'account-card__biography',
+            )));
+            break;
+        }
         $objNav = $this->newObject('sidebar', 'navigation');
         $objNav->showHomeLink = $showHomeLink;
         return $objNav->show($this->globalNodes, $this->getParam('module'));

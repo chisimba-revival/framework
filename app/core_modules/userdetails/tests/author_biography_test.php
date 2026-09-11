@@ -13,12 +13,16 @@ check(isset(authorbiographyvalue::validate(array('biography'=>'Text','links'=>ar
 check(isset(authorbiographyvalue::validate(array('biography'=>'Text','links'=>array(array('url'=>'https://example.org'))))['errors']['links']), 'Label required');
 class ChisimbaObject { public function getObject($name,$module) { return $GLOBALS['objects'][$name]; } public function loadClass($name,$module) {} }
 require dirname(__DIR__).'/classes/authorbiographyservice_class_inc.php';
-$GLOBALS['objects']['dbauthorbiographies'] = new class { public $saved; public function forUser($id) { return array('biography'=>'Bio '.$id,'links_json'=>'[]'); } public function saveForUser($id,$value) { $this->saved=$id; return true; } };
+$GLOBALS['objects']['dbauthorbiographies'] = new class { public $saved; public $empty=false; public function forUser($id) { return array('biography'=>$this->empty ? '  ' : 'Bio '.$id,'links_json'=>'[]'); } public function saveForUser($id,$value) { $this->saved=$id; return true; } };
 $GLOBALS['objects']['user'] = new class { public $logged=true; public function isLoggedIn(){ return $this->logged; } public function userId(){return 'owner';} public function hasCustomImage($id){return false;} };
 $GLOBALS['objects']['usercontext'] = new class { public function getContextLecturers($code) { return array(array('userid'=>'b','firstname'=>'Z','surname'=>'B'),array('userid'=>'a','firstname'=>'A','surname'=>'A'),array('userid'=>'a','firstname'=>'A','surname'=>'A')); } };
 $service=new authorbiographyservice();$service->init();
 $service->saveOwn(array('userid'=>'victim','biography'=>'Good bio'));
 check($GLOBALS['objects']['dbauthorbiographies']->saved==='owner','Submitted user ID must never control ownership');
+check(!$service->needsBiography('owner'),'Completed biography has no reminder');
+$GLOBALS['objects']['dbauthorbiographies']->empty=true;
+check($service->needsBiography('owner'),'Whitespace biography needs reminder');
+$GLOBALS['objects']['dbauthorbiographies']->empty=false;
 $authors=$service->forCourse('course');check(count($authors)===2 && $authors[0]['userid']==='a','Deduplicated deterministic course authors');
 $GLOBALS['objects']['user']->logged=false;
 try { $service->saveOwn(array('biography'=>'Text')); throw new LogicException('Unauthenticated mutation accepted'); } catch (RuntimeException $e) { check($e->getMessage()==='Authentication required','Authentication boundary'); }
