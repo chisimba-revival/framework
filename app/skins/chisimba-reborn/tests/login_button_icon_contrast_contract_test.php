@@ -17,7 +17,7 @@ $checks = array(
         ".auth-block__logout button .chisimba-icon {\n    color: currentColor;"
     ),
     'inner login input delegates focus treatment to its field' => preg_match(
-        '/#form_loginform \.auth-field input \{[^}]*outline: none;/s',
+        '/#form_loginform \.auth-field input\s*,\s*\.security-native-auth \.auth-field input \{[^}]*outline: none;/s',
         $css
     ) === 1,
 );
