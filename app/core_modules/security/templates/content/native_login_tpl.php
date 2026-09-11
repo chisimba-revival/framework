@@ -19,7 +19,7 @@ $esc = function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
 ?>
-<main class="security-native-auth" aria-labelledby="native-login-title">
+<main class="security-native-auth chisimba-form-card" aria-labelledby="native-login-title">
   <h1 id="native-login-title"><?php echo $esc($labels['title']); ?></h1>
   <?php if (!empty($labels['failure'])): ?>
     <p role="alert"><?php echo $esc($labels['failure']); ?></p>
@@ -38,20 +38,24 @@ $esc = function ($value) {
       <input id="native-login-website" name="website" type="text"
         tabindex="-1" autocomplete="off">
     </div>
-    <p>
+    <div class="security-native-auth__field">
       <label for="native-login-username"><?php
           echo $esc($labels['username']);
       ?></label>
+      <div class="auth-field"><?php echo $this->getObject('iconservice','ui')->render('user',array('decorative'=>true)); ?>
       <input id="native-login-username" name="username" type="text"
         autocomplete="username" required autofocus>
-    </p>
-    <p>
+      </div>
+    </div>
+    <div class="security-native-auth__field">
       <label for="native-login-password"><?php
           echo $esc($labels['password']);
       ?></label>
+      <div class="auth-field"><?php echo $this->getObject('iconservice','ui')->render('lock',array('decorative'=>true)); ?>
       <input id="native-login-password" name="password" type="password"
         autocomplete="current-password" required>
-    </p>
+      </div>
+    </div>
     <p>
       <input id="native-login-remember" name="remember" type="checkbox">
       <label for="native-login-remember"><?php

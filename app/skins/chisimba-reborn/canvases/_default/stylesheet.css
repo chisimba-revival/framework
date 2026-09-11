@@ -857,7 +857,8 @@
     padding: .65rem .75rem;
 }
 
-#form_loginform .auth-field {
+#form_loginform .auth-field ,
+.security-native-auth .auth-field {
     align-items: center;
     background: var(--chisimba-surface, #fff);
     border: 1px solid var(--chisimba-border, #cbd5e1);
@@ -869,12 +870,14 @@
     padding-inline: .7rem;
 }
 
-#form_loginform .auth-field:focus-within {
+#form_loginform .auth-field:focus-within ,
+.security-native-auth .auth-field:focus-within {
     border-color: var(--chisimba-primary, #2563eb);
     box-shadow: 0 0 0 3px rgb(37 99 235 / 15%);
 }
 
-#form_loginform .auth-field input {
+#form_loginform .auth-field input ,
+.security-native-auth .auth-field input {
     background: transparent;
     border: 0;
     box-shadow: none;
@@ -1702,3 +1705,7 @@ button.course-card__action {
 .course-card__actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--chisimba-action-gap, .5rem); }
 .course-card__actions > a,
 .course-card__actions > button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; max-width:100%; white-space:normal; }
+
+.security-native-auth { max-inline-size:28rem; margin-block:1.5rem; }
+.security-native-auth__field > label { display:block; margin-block-end:.4rem; }
+.security-native-auth .auth-field { margin-block-end:1rem; }
