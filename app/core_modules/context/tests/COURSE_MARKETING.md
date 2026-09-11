@@ -32,3 +32,7 @@ Take normal KengaLearn backups and preserve all course/Knowledge Map data. Deplo
 - Temporary testing106 marketing data removed after tests; existing course data unchanged.
 
 Before production: finish narrow-screen/keyboard review and follow a real configured product's sign-in/checkout path up to, but not submitting, a payment. No real payment was made during these tests. Video URL mapping is tested; external playback depends on the provider and recording availability.
+
+## Contextual help
+
+The editor includes Help with this page with a quick walkthrough and the existing full-guide drawer. Marketing help covers drafting, publication, sharing, product-backed actions and automatic biographies; biography help covers writing, profile photos, links, saving, draft recovery and missing-biography reminders. My Profile also links to the biography guide. Text uses the language system and systext role terminology. Both guides were opened in the local browser; the marketing drawer was verified visible inside the viewport. The existing context-home Help contract still passes. Include language registration refresh for context and userdetails with the next deployment.

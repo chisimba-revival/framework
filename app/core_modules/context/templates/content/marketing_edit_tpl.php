@@ -4,6 +4,7 @@ $e=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8',false);
 $lang=$this->getObject('language','language');$t=static fn($k)=>ucfirst($lang->code2Txt('mod_context_'.$k,'context'));
 $course=$this->getVar('marketingCourse');$page=$this->getVar('marketingPage');$content=$page['content'];$icons=$this->getObject('iconservice','ui');
 ?>
+<?php if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) echo $this->getObject('contextualhelp','help')->show('context','course-marketing'); ?>
 <section class="chisimba-form-page"><div class="chisimba-form-card chisimba-form-card--wide"><h1><?php echo $e($t('marketing_edit')); ?></h1><h2><?php echo $e($course['title']); ?></h2><p><?php echo $e($t('marketing_help')); ?></p>
 <?php foreach ($this->getVar('marketingErrors') as $error): ?><p role="alert"><?php echo $e($t($error)); ?></p><?php endforeach; ?>
 <?php if ($this->getParam('saved')==='1'): ?><p role="status"><?php echo $e($t('marketing_saved')); ?></p><?php endif; ?>

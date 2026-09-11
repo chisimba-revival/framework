@@ -12,6 +12,11 @@ class helpcontent extends ChisimbaObject
 
     public function mayViewTopic($topicId)
     {
+        if ($topicId === 'course-marketing') {
+            $code=$this->getParam('contextcode','');
+            return is_string($code) && $code!==''
+                && $this->getObject('coursemarketingservice','context')->canManage($code);
+        }
         if ($topicId !== 'managing-the-context-home' || !$this->user->isLoggedIn()) {
             return false;
         }
@@ -21,6 +26,7 @@ class helpcontent extends ChisimbaObject
 
     public function getTopic($topicId)
     {
+        if ($topicId === 'course-marketing') return $this->marketingTopic();
         if ($topicId !== 'managing-the-context-home') { return null; }
         $defaults = array(
             'title' => 'Manage the [-context-] home page',
@@ -59,6 +65,22 @@ class helpcontent extends ChisimbaObject
                 array('heading' => $text('content_heading'), 'body' => $text('content_body')),
                 array('heading' => $text('blocks_heading'), 'body' => $text('blocks_body')),
                 array('heading' => $text('permissions_heading'), 'body' => $text('permissions_body')),
+            ),
+        );
+    }
+    /** Guide to the selected course marketing workflow. */
+    private function marketingTopic()
+    {
+        $text = fn($suffix) => ucfirst($this->language->code2Txt('mod_context_help_marketing_' . $suffix, 'context'));
+        return array(
+            'title'=>$text('title'), 'summary'=>$text('summary'),
+            'steps'=>array($text('step_open'),$text('step_write'),$text('step_video'),$text('step_draft'),$text('step_publish')),
+            'sections'=>array(
+                array('heading'=>$text('automatic_heading'),'body'=>$text('automatic_body')),
+                array('heading'=>$text('actions_heading'),'body'=>$text('actions_body')),
+                array('heading'=>$text('publication_heading'),'body'=>$text('publication_body')),
+                array('heading'=>$text('checks_heading'),'body'=>$text('checks_body')),
+                array('heading'=>$text('trouble_heading'),'body'=>$text('trouble_body')),
             ),
         );
     }

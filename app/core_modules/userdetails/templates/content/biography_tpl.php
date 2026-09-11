@@ -10,6 +10,7 @@ $errors = $this->getVar('biographyErrors');
 $this->appendArrayVar('headerParams', '<script defer src="'.$this->getResourceUri('biography-draft.js','userdetails').'"></script>');
 ob_start();
 ?>
+<?php if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) echo $this->getObject('contextualhelp','help')->show('userdetails','author-biography'); ?>
 <section class="chisimba-form-page">
 <div class="chisimba-form-card chisimba-form-card--wide">
 <nav class="chisimba-form-actions" aria-label="<?php echo $e($t('profile_navigation')); ?>"><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'main'), 'userdetails')); ?>"><?php echo $icons->render('user', array('decorative'=>true)); ?><span><?php echo $e($t('profile_details')); ?></span></a><span aria-current="page"><?php echo $e($t('my_bio')); ?></span></nav>
