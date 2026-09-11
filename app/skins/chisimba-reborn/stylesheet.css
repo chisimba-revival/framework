@@ -7096,3 +7096,14 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 @media(max-width:480px) { .chisimba-biography-card { flex-direction:column; } }
 .chisimba-biography-placeholder { display:flex; width:6rem; height:6rem; align-items:center; justify-content:center; border-radius:50%; color:var(--chisimba-text-muted); background:var(--chisimba-surface-subtle); }
 .chisimba-biography-placeholder svg { width:3rem; height:3rem; }
+
+/* Profile workspace: editing and supporting information share available width. */
+.chisimba-profile-columns { display:grid; grid-template-columns:minmax(0, 3fr) minmax(18rem, 2fr); gap:2rem; align-items:start; }
+.chisimba-profile-columns > * { min-width:0; }
+.chisimba-profile-columns .chisimba-form { max-width:none; }
+.chisimba-profile-preview .chisimba-biography-card { flex-direction:column; }
+.chisimba-profile-columns .chisimba-form-field input:not([type="radio"]):not([type="checkbox"]), .chisimba-profile-columns .chisimba-form-field select { width:100%; max-width:100%; box-sizing:border-box; }
+@media(max-width:850px) { .chisimba-profile-columns { grid-template-columns:minmax(0,1fr); gap:1rem; } }
+.chisimba-profile-columns .chisimba-form-field input[type="text"], .chisimba-profile-columns .chisimba-form-field input[type="password"] { padding:.58rem .65rem; }
+.chisimba-profile-columns .chisimba-biography-portrait img { width:6rem; height:6rem; object-fit:cover; border-radius:50%; }
+.chisimba-profile-columns fieldset.chisimba-form-field label { display:inline; margin-right:.75rem; }

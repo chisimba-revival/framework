@@ -69,6 +69,7 @@ jQuery(function() {
                     var obj = jQuery.parseJSON(data);
                     jQuery('#bizcard').html(obj.card);
                     jQuery('.toolbar_userimage').html(obj.image);
+                    jQuery('#profile-photo .chisimba-biography-portrait').html(obj.image);
                     jQuery('#hidden_imageselect').val('');
                     jQuery('#imagepreview_imageselect').attr('src', 'skins/_common/icons/imagepreview.gif');
                     jQuery("#dialog_imagechanged").dialog('open');
@@ -86,6 +87,7 @@ jQuery(function() {
                 var obj = jQuery.parseJSON(data);
                 jQuery('#bizcard').html(obj.card);
                 jQuery('.toolbar_userimage').html(obj.image);
+                    jQuery('#profile-photo .chisimba-biography-portrait').html(obj.image);
                 jQuery("#dialog_imagereset").dialog('open');
                 return false;
             }

@@ -292,25 +292,8 @@ class userdetailsops extends ChisimbaObject
         // pass password error to javascript.
         $this->objSvars->varsToJs($arrayVars);
         
-        $bizcard = $this->showBizCard();
-        
-        $objLayer = new layer();
-        $objLayer->id = 'bizcard';
-        $objLayer->str = $bizcard;
-        $bizcardLayer = $objLayer->show();
+        $string = '';
 
-        $string = $bizcardLayer;
-        
-        // Show the userid so the user has a place to find it
-        $uidExplain = $this->objLanguage->languageText('mod_userdetails_uidexplain', 'userdetails', 'Your user ID');
-        $objLayer = new layer();
-        $objLayer->id = 'userid_exp';
-        $objLayer->str = $uidExplain . ": <span class='uid'>" 
-          . $userId . "</span>";
-        $expLayer = $objLayer->show();
-        
-        $string = $string . $expLayer;
-        
         // set up html elements
         $objDrop = new dropdown('title');
         $objDrop->addOption($mr, $mr);
@@ -435,115 +418,39 @@ class userdetailsops extends ChisimbaObject
             $staffNumberInput = $objInput->show();
         }
         
-        $objTable = new htmltable();
-        $objTable->cellpadding = '4';
-        if ($this->check)
-        {
-            $objTable->startRow();
-            $objTable->addCell('<b>' . ucfirst(strtolower($schoolLabel)) . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($schoolError . $schoolIdInput . $schoolInput, '', '', '', '', '', '');
-            $objTable->endRow();
-        }
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $titleLabel . ': </b>', '200px', '', '', '', '', '');
-        $objTable->addCell($titleError . $titleDrop, '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $firstNameLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($firstNameError . $firstNameInput, '', '', '', '', '', '');
-        $objTable->endRow();
-        if ($this->check)
-        {
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $middleNameLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($middleNameInput, '', '', '', '', '', '');
-            $objTable->endRow();
-        }
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $lastNameLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($lastNameError . $lastNameInput, '', '', '', '', '', '');
-        $objTable->endRow();
-        if (!$this->check)
-        {
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $staffNumberLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($staffNumberInput, '', '', '', '', '', '');
-            $objTable->endRow();
-        }
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $genderLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($genderError . $genderRadio, '', '', '', '', '', '');
-        $objTable->endRow();
-        if ($this->check)
-        {
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $dateOfBirthLabel. ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($dateOfBirthError . $dayDrop . ' / ' . $monthDrop . ' / ' . $yearDrop, '', '', '', '', '', '');
-            $objTable->endRow();
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $addressLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($addressError . $addressOneInput, '', '', '', '', '', '');
-            $objTable->endRow();
-            $objTable->startRow();
-            $objTable->addCell('' , '', '', '', '', '', '');
-            $objTable->addCell($addressTwoInput, '', '', '', '', '', '');
-            $objTable->endRow();
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $cityLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($cityError . $cityInput, '', '', '', '', '', '');
-            $objTable->endRow();
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $stateLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($stateError . $stateInput, '', '', '', '', '', '');
-            $objTable->endRow();
-        }
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $countryLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($countryDrop, '', '', '', '', '', '');
-        $objTable->endRow();
-        if ($this->check)
-        {
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $postalCodeLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($postalCodeError . $postalCodeInput, '', '', '', '', '', '');
-            $objTable->endRow();
-        }
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $emailAddressLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($emailAddressError . $emailAddressInput, '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $contactNumberLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($contactNumberInput, '', '', '', '', '', '');
-        $objTable->endRow();
-        if ($this->check)
-        {
-            $objTable->startRow();
-            $objTable->addCell('<b>' . $descriptionLabel . ': </b>', '', '', '', '', '', '');
-            $objTable->addCell($descriptionError . $descriptionText, '', '', '', '', '', '');
-            $objTable->endRow();
-        }
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $usernameLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell('<strong>' . $userArray['username'] . '</strong>', '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $passwordLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($passwordError . $passwordInput, '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell('<b>' . $confirmPasswordLabel . ': </b>', '', '', '', '', '', '');
-        $objTable->addCell($confirmPasswordInput, '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell($updateButton . '&nbsp;' . $resetButton, '', '', '', '', 'colspan="2"', '');
-        $objTable->endRow();
-        $userTable = $objTable->show();
-        
+        // Render real form fields instead of a table used for visual layout.
+        $field = static function ($label, $control, $error = '') {
+            $escaped = htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8');
+            if (preg_match('/\bid="([^"]+)"/', $control, $match) && substr_count($control, '<input') + substr_count($control, '<select') + substr_count($control, '<textarea') === 1) {
+                return '<div class="chisimba-form-field"><label for="'.htmlspecialchars($match[1], ENT_QUOTES, 'UTF-8').'">'.$escaped.'</label>'.$error.$control.'</div>';
+            }
+            return '<fieldset class="chisimba-form-field"><legend>'.$escaped.'</legend>'.$error.$control.'</fieldset>';
+        };
+        $userTable = '<div class="chisimba-form-grid">';
+        if ($this->check) { $userTable .= $field($schoolLabel, $schoolIdInput . $schoolInput, $schoolError); }
+        $userTable .= $field($titleLabel, $titleDrop, $titleError);
+        $userTable .= $field($firstNameLabel, $firstNameInput, $firstNameError);
+        if ($this->check) { $userTable .= $field($middleNameLabel, $middleNameInput); }
+        $userTable .= $field($lastNameLabel, $lastNameInput, $lastNameError);
+        if (!$this->check) { $userTable .= $field($staffNumberLabel, $staffNumberInput); }
+        $userTable .= $field($genderLabel, $genderRadio, $genderError);
+        if ($this->check) { $userTable .= $field($dateOfBirthLabel, $dayDrop . $monthDrop . $yearDrop, $dateOfBirthError); }
+        if ($this->check) { $userTable .= $field($addressLabel, $addressOneInput . $addressTwoInput, $addressError); }
+        if ($this->check) { $userTable .= $field($cityLabel, $cityInput, $cityError); }
+        if ($this->check) { $userTable .= $field($stateLabel, $stateInput, $stateError); }
+        $userTable .= $field($countryLabel, $countryDrop);
+        if ($this->check) { $userTable .= $field($postalCodeLabel, $postalCodeInput, $postalCodeError); }
+        $userTable .= $field($emailAddressLabel, $emailAddressInput, $emailAddressError);
+        $userTable .= $field($contactNumberLabel, $contactNumberInput);
+        if ($this->check) { $userTable .= $field($descriptionLabel, $descriptionText, $descriptionError); }
+        $userTable .= '</div><details class="chisimba-form-section"><summary>'.htmlspecialchars($passwordLabel, ENT_QUOTES, 'UTF-8').'</summary><div class="chisimba-form-grid">'
+            .$field($passwordLabel, $passwordInput, $passwordError).$field($confirmPasswordLabel, $confirmPasswordInput).'</div></details>';
+        $icons = $this->getObject('iconservice', 'ui');
+        $userTable .= '<div class="chisimba-form-actions"><button type="submit" class="button chisimba-button-primary">'.$icons->render('save', array('decorative'=>true)).'<span>'.htmlspecialchars($updateLabel, ENT_QUOTES, 'UTF-8').'</span></button><button type="reset" class="button chisimba-button-secondary">'.$icons->render('rotate-ccw', array('decorative'=>true)).'<span>'.htmlspecialchars($resetLabel, ENT_QUOTES, 'UTF-8').'</span></button></div>';
         $objForm = new form('user', $this->uri(array(
             'action' => 'validate'
         ), 'userdetails'));
-        $objForm->extra = ' enctype="multipart/form-data"';
+        $objForm->extra = ' class="chisimba-form" enctype="multipart/form-data"';
         $objForm->addToForm($userTable);
         $addForm = $objForm->show();
 

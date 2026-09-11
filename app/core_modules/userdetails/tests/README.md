@@ -25,3 +25,11 @@ Local PHP8.5 verification on 11 September 2026:
 Still separate work: Learn more landing page, product CTA/price integration and a fuller public author-profile route. Responsive skin rules are included; a dedicated narrow-screen browser pass remains advisable before production release. Existing My Profile photo selection is reused, not replaced by a parallel upload system.
 
 The signed-in account block also exposes My Bio immediately after My Profile. Empty biographies have an accessible “Biography needed” alert icon; completed biographies retain the link without the alert. Both states use authorbiographyservice::needsBiography. The link position, missing-state icon and destination were verified in the local browser; regression coverage checks empty/whitespace versus completed biography state.
+
+## Profile layout and photo round trip
+
+The biography workspace uses the skin's wide form card with a two-column editor/saved-preview layout, stacking below 850px. My Profile uses the same workspace and shared section navigation, with personal fields in a semantic form grid and the existing photo picker alongside. The legacy layout table has been removed from the personal details form; account validation and persistence remain the existing implementation. Password controls are disclosed separately.
+
+The photo link targets the profile photo section, which provides Return to My Bio. Unsaved biography text and link fields are retained in tab-scoped sessionStorage, keyed by user and application path, for up to one hour and cleared after successful save. This is progressive enhancement; server-side saves remain authoritative. Browser verification confirmed the unsaved-text round trip and the original text was restored without saving over the user's biography. A live saved preview remains explicitly labelled as saved, not as an unsaved draft preview. The portrait refreshes through the existing image-update response.
+
+PHP and JavaScript syntax, existing biography regression tests and whitespace checks passed. Desktop profile fields and photo navigation inspected in Chrome. No user account changes, photo changes or production deployments were made during this layout test. School-specific fields remain supported but have not had a dedicated browser pass; narrow-screen browser verification remains pending before release.
