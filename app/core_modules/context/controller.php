@@ -221,7 +221,10 @@ class context extends controller {
         }
         $this->setVar('marketingCourse',$course); $this->setVar('marketingPage',$page);
         $this->setVar('marketingManage',$service->canManage($code)); $this->setVar('marketingErrors',$errors);
-        if ($editing) $this->setVar('marketingToken',$this->csrf->issue('course_marketing_'.substr(hash('sha256',$code),0,32)));
+        if ($editing) {
+            $this->setVar('marketingAuthors',$this->getObject('authorbiographyservice','userdetails')->forCourse($code));
+            $this->setVar('marketingToken',$this->csrf->issue('course_marketing_'.substr(hash('sha256',$code),0,32)));
+        }
         return $editing ? 'marketing_edit_tpl.php' : 'marketing_tpl.php';
     }
 

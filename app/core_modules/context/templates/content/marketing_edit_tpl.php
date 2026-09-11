@@ -5,7 +5,15 @@ $lang=$this->getObject('language','language');$t=static fn($k)=>ucfirst($lang->c
 $course=$this->getVar('marketingCourse');$page=$this->getVar('marketingPage');$content=$page['content'];$icons=$this->getObject('iconservice','ui');
 ?>
 <?php if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) echo $this->getObject('contextualhelp','help')->show('context','course-marketing'); ?>
-<section class="chisimba-form-page"><div class="chisimba-form-card chisimba-form-card--wide"><h1><?php echo $e($t('marketing_edit')); ?></h1><h2><?php echo $e($course['title']); ?></h2><p><?php echo $e($t('marketing_help')); ?></p>
+<section class="chisimba-form-page"><div class="chisimba-form-card chisimba-form-card--wide"><h1><?php echo $e($t('marketing_edit')); ?></h1>
+<section class="chisimba-card" aria-label="<?php echo $e($t('marketing_identity')); ?>">
+<h2><?php echo $e($t('marketing_identity')); ?></h2>
+<dl>
+<dt><?php echo $e($t('marketing_context_label')); ?></dt><dd><?php echo $e($course['title']); ?></dd>
+<dt><?php echo $e($t('marketing_code_label')); ?></dt><dd><?php echo $e($course['contextcode']); ?></dd>
+<dt><?php echo $e($t('marketing_authors_label')); ?></dt><dd><?php $authors=$this->getVar('marketingAuthors'); echo $e($authors ? implode(', ',array_column($authors,'name')) : $t('marketing_authors_empty')); ?></dd>
+</dl>
+</section><p><?php echo $e($t('marketing_help')); ?></p>
 <?php foreach ($this->getVar('marketingErrors') as $error): ?><p role="alert"><?php echo $e($t($error)); ?></p><?php endforeach; ?>
 <?php if ($this->getParam('saved')==='1'): ?><p role="status"><?php echo $e($t('marketing_saved')); ?></p><?php endif; ?>
 <form class="chisimba-form" method="post" action="<?php echo $e($this->uri(array('action'=>'editmarketing','contextcode'=>$course['contextcode']),'context')); ?>">
