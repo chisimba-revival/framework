@@ -7107,3 +7107,9 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-profile-columns .chisimba-form-field input[type="text"], .chisimba-profile-columns .chisimba-form-field input[type="password"] { padding:.58rem .65rem; }
 .chisimba-profile-columns .chisimba-biography-portrait img { width:6rem; height:6rem; object-fit:cover; border-radius:50%; }
 .chisimba-profile-columns fieldset.chisimba-form-field label { display:inline; margin-right:.75rem; }
+
+/* Public course hero uses the shared surface, typography and action primitives. */
+.chisimba-course-hero { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); align-items:center; gap:2rem; }
+.chisimba-course-hero img { width:100%; border-radius:.75rem; object-fit:cover; }
+.chisimba-course-video { display:block; width:100%; max-width:60rem; aspect-ratio:16/9; border:0; }
+@media(max-width:750px) { .chisimba-course-hero { grid-template-columns:minmax(0,1fr); } }

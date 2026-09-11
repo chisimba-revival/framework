@@ -209,6 +209,12 @@ class coursecatalogue extends ChisimbaObject
               . $action['url'] . '">'
               . $this->escape($action['label']) . '</a>';
         }
+        if (!$this->isCourseMember($code)
+            && $this->getObject('coursemarketingservice','context')->page($context)['published']) {
+            $actionHtml .= '<a class="button chisimba-button-secondary" href="'
+                .$this->uri(array('action'=>'marketing','contextcode'=>$code),'context').'">'
+                .$this->escape($this->text('mod_context_learnmore','Learn more')).'</a>';
+        }
         $actionHint = empty($action['hint']) ? ''
             : '<p class="course-card__access-detail">'
               . $this->escape($action['hint']) . '</p>';
@@ -268,6 +274,43 @@ class coursecatalogue extends ChisimbaObject
      * @return array Action label and URL
      * @access private
      */
+    /** Canonical membership controls the secondary discovery action. */
+    private function isCourseMember($code)
+    {
+        return $this->objUser->isLoggedIn() && ($this->objUser->isAdmin()
+            || in_array($code,$this->userContexts,true)
+            || $this->objUser->isContextLecturer($this->objUser->userId(),$code));
+    }
+
+    /** Reuse catalogue access and pricing resolution for a public marketing CTA. */
+    public function marketingAction(array $context)
+    {
+        $code=$context['contextcode'];
+        if ($this->isCourseMember($code)) return array('label'=>$this->text('mod_context_continuelearning','Continue learning'),
+            'url'=>$this->uri(array('action'=>'joincontext','contextcode'=>$code),'context'));
+        $policy=strtolower($context['access_policy'] ?? '');
+        if ($this->objUser->isLoggedIn() && in_array($policy,array('private','tier_1','tier_2'),true)) {
+            $resolved=$this->actionFor($context);
+            if (($resolved['url'] ?? '')===$this->uri(array('action'=>'joincontext','contextcode'=>$code),'context')) {
+                $resolved['label']=$this->text('mod_context_continuelearning','Continue learning');
+                return $resolved;
+            }
+        }
+        if (in_array($policy,array('private','tier_1','tier_2'),true)) {
+            $action=$this->purchaseOrAdmissionAction($context,$policy);
+            if ($policy==='private' && isset($action['price_label'])) {
+                $action['label']=$this->text('mod_context_buynow','Buy now');
+                $action['hint']=$action['price_label'];
+            }
+            return $action;
+        }
+        if ($policy==='free' || $policy==='public' || strtolower($context['access'] ?? '')==='open' || strtolower($context['access'] ?? '')==='public') {
+            return array('label'=>$this->text('mod_context_enrol','Enrol'),
+                'url'=>$this->uri(array('action'=>'joincontext','contextcode'=>$code),'context'));
+        }
+        return $this->actionFor($context);
+    }
+
     private function actionFor(array $context)
     {
         $code = (string) $context['contextcode'];
@@ -426,6 +469,7 @@ class coursecatalogue extends ChisimbaObject
         $suffix = $period === 'monthly' ? ' per month'
             : ($period === 'annual' ? ' per year' : '');
         return array(
+            'price_label' => $amount . $suffix,
             'label' => $policy === 'private'
                 ? $this->text('mod_context_buy', 'Buy') . ' — ' . $amount
                 : $this->text('mod_context_join', 'Join') . ' — '

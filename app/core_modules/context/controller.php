@@ -133,7 +133,7 @@ class context extends controller {
      * Method to turn off login requirement for certain actions
      */
     public function requiresLogin($action) {
-        $requiresLogin = array('controlpanel', 'manageplugins', 'updateplugins', 'renderblock', 'addblock', 'removeblock', 'moveblock', 'updatesettings', 'updatecontext', 'viewuseractivitybyid', 'showuseractivitybymodule', 'selectuseractivitybymodulesdates', 'selectcontextactivitydates', 'selecttoolsactivitydates', 'showcontextactivity', 'showtoolsactivity', 'joincontextrequirelogin', 'launchcourseactivity', 'entercourseactivity', 'courseactivitydenied');
+        $requiresLogin = array('editmarketing','controlpanel', 'manageplugins', 'updateplugins', 'renderblock', 'addblock', 'removeblock', 'moveblock', 'updatesettings', 'updatecontext', 'viewuseractivitybyid', 'showuseractivitybymodule', 'selectuseractivitybymodulesdates', 'selectcontextactivitydates', 'selecttoolsactivitydates', 'showcontextactivity', 'showtoolsactivity', 'joincontextrequirelogin', 'launchcourseactivity', 'entercourseactivity', 'courseactivitydenied');
         if (in_array($action, $requiresLogin)) {
             return TRUE;
         } else {
@@ -148,6 +148,8 @@ class context extends controller {
      * @return boolean
      */
     public function isValid($action, $default = true) {
+        if ($action === 'marketing') return true;
+        if ($action === 'editmarketing') return $this->objUser->isLoggedIn();
         if (in_array($action, array('launchcourseactivity', 'entercourseactivity', 'courseactivitydenied'), true)) {
             return $this->objUser->isLoggedIn();
         }
@@ -167,7 +169,7 @@ class context extends controller {
      */
     public function dispatch($action) {
         // Method to set the layout template for the given action
-        $this->setLayoutTemplate('contextlayout_tpl.php');
+        $this->setLayoutTemplate(in_array($action,array('marketing','editmarketing'),true) ? 'marketing_layout_tpl.php' : 'contextlayout_tpl.php');
         /*
          * Convert the action into a method (alternative to
          * using case selections)
@@ -178,6 +180,49 @@ class context extends controller {
          * from action
          */
         return $this->$method();
+    }
+
+    /** Public presentation does not enter the course or expose its content tree. */
+    private function __marketing()
+    {
+        return $this->marketingPage(false);
+    }
+    private function __editmarketing()
+    {
+        return $this->marketingPage(true);
+    }
+    private function marketingPage($editing)
+    {
+        $code=$this->getParam('contextcode','');
+        $course=is_string($code) && $code!=='' ? $this->objContext->getContextDetails($code) : null;
+        $service=$this->getObject('coursemarketingservice','context');
+        if (!$course || ($editing && !$service->canManage($code))) {
+            http_response_code(404); $this->setVar('marketingUnavailable',true); return 'marketing_tpl.php';
+        }
+        $page=$service->page($course);
+        $errors=array();
+        if ($editing && strtoupper($_SERVER['REQUEST_METHOD'] ?? '')==='POST') {
+            $token=$this->getParam('csrf_token','');
+            if (!is_string($token) || !$this->csrf->consume('course_marketing_'.substr(hash('sha256',$code),0,32),$token)) {
+                $errors=array('marketing_expired');
+                foreach (array_keys($page['content']) as $key) {
+                    $posted=$this->getParam($key,'');
+                    $page['content'][$key]=is_string($posted) ? $posted : '';
+                }
+                $page['published']=$this->getParam('published','')==='1';
+            } else {
+                $input=array(); foreach (array('introduction','audience','outcomes','outline','video_url','published') as $key) $input[$key]=$this->getParam($key,'');
+                $result=$service->save($course,$input); $errors=$result['errors']; $page=$result;
+                if (!$errors) return $this->nextAction('editmarketing',array('contextcode'=>$code,'saved'=>'1'));
+            }
+        }
+        if (!$editing && !$page['published'] && !$service->canManage($code)) {
+            http_response_code(404); $this->setVar('marketingUnavailable',true); return 'marketing_tpl.php';
+        }
+        $this->setVar('marketingCourse',$course); $this->setVar('marketingPage',$page);
+        $this->setVar('marketingManage',$service->canManage($code)); $this->setVar('marketingErrors',$errors);
+        if ($editing) $this->setVar('marketingToken',$this->csrf->issue('course_marketing_'.substr(hash('sha256',$code),0,32)));
+        return $editing ? 'marketing_edit_tpl.php' : 'marketing_tpl.php';
     }
 
     /**

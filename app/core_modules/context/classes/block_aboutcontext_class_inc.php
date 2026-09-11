@@ -100,6 +100,9 @@ class block_aboutcontext extends ChisimbaObject {
             $link=new link($this->uri(array('action'=>'edit','contextcode'=>$objContext->getContextCode()),'contextadmin'));
             $link->link=$objIcon->show();
             $showEdit=$link->show();
+            $showEdit .= '<a class="button chisimba-button-secondary" href="'.htmlspecialchars($this->uri(array('action'=>'editmarketing','contextcode'=>$objContext->getContextCode()),'context'),ENT_QUOTES,'UTF-8').'">'
+                .$this->getObject('iconservice','ui')->render('megaphone',array('decorative'=>true)).'<span>'
+                .htmlspecialchars($this->objLanguage->languageText('mod_context_marketing_edit','context'),ENT_QUOTES,'UTF-8').'</span></a>';
         }
         $ret = $showEdit.$objWashout->parseText($objContext->getAbout());
         $ret .= $this->getObject('authorbiographyrenderer', 'userdetails')->forCourse($objContext->getContextCode());

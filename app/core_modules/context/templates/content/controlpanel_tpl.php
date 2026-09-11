@@ -7,6 +7,12 @@ $iconService = $this->getObject('iconservice', 'ui');
 $contextCode = (string) $this->objContext->getContextCode();
 $taskLinks = array(
     array(
+        'icon' => 'megaphone',
+        'label' => $objLanguage->code2Txt('mod_context_marketing_edit', 'context'),
+        'help' => $objLanguage->code2Txt('mod_context_marketing_manage_help', 'context'),
+        'url' => $this->uri(array('action'=>'editmarketing','contextcode'=>$contextCode), 'context'),
+    ),
+    array(
         'icon' => 'house',
         'label' => $objLanguage->code2Txt('mod_context_opencontextpage', 'context', null, 'Open [-context-] page'),
         'help' => $objLanguage->code2Txt('mod_context_opencontextpagehelp', 'context', null, 'See the [-context-] as its members see it.'),
