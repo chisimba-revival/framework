@@ -7113,3 +7113,6 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-course-hero img { width:100%; border-radius:.75rem; object-fit:cover; }
 .chisimba-course-video { display:block; width:100%; max-width:60rem; aspect-ratio:16/9; border:0; }
 @media(max-width:750px) { .chisimba-course-hero { grid-template-columns:minmax(0,1fr); } }
+
+/* Prominent course marketing action, including long translated course names. */
+a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem 1.5rem; min-height:3.5rem; max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; box-sizing:border-box; }

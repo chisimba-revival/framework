@@ -32,9 +32,9 @@ $GLOBALS['objects']['user']=new class {public $logged=false;public function isLo
 $GLOBALS['objects']['paymentcatalogservice']=new class {public function privateCourseProduct($code){return array('code'=>'course-product','billing_period'=>'one_off','current_price'=>array('amount_minor'=>25000,'currency'=>'ZAR'));}};
 $GLOBALS['objects']['accesspolicyservice']=new class {public $allowed=false;public function resolve($input){return array('allowed'=>$this->allowed);}};
 $catalogue=new TestMarketingCatalogue();$catalogue->init();
-$paid=array('contextcode'=>'paid','access'=>'Private','access_policy'=>'private','private_admission_mode'=>'automatic_payment');
-$action=$catalogue->marketingAction($paid);check($action['label']==='Buy now' && $action['hint']==='R250.00','Product price and purchase CTA');
-$free=array_merge($paid,array('access_policy'=>'free'));check($catalogue->marketingAction($free)['label']==='Enrol','Free enrolment');
+$paid=array('contextcode'=>'paid','title'=>'Grasses of the Savanna','access'=>'Private','access_policy'=>'private','private_admission_mode'=>'automatic_payment');
+$action=$catalogue->marketingAction($paid);check($action['label']==='Enrol in Grasses of the Savanna' && $action['hint']==='R250.00','Product price and purchase CTA');
+$free=array_merge($paid,array('access_policy'=>'free'));check($catalogue->marketingAction($free)['label']==='Enrol in Grasses of the Savanna','Free enrolment');
 $GLOBALS['objects']['user']->logged=true;$GLOBALS['objects']['usercontext']->codes=array('paid');$catalogue->init();
 check($catalogue->marketingAction($paid)['label']==='Continue learning','Member never asked to buy');
 $GLOBALS['objects']['usercontext']->codes=array();$GLOBALS['objects']['accesspolicyservice']->allowed=true;$catalogue->init();

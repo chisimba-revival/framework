@@ -19,7 +19,7 @@ if ($page['published']) {
 $cta=static function() use($action,$e) {
     if (!empty($action['hint'])) echo '<p class="course-card__access-detail">'.$e($action['hint']).'</p>';
     if (($action['type'] ?? '')==='notice') echo '<p>'.$e($action['message']).'</p>';
-    else echo '<a class="button chisimba-button-primary" href="'.$e($action['url']).'">'.$e($action['label']).'</a>';
+    else echo '<a class="button chisimba-button-primary chisimba-course-cta" href="'.$e($action['url']).'">'.$e($action['label']).'</a>';
 };
 ?>
 <article class="chisimba-form-page"><div class="chisimba-form-card chisimba-form-card--wide">

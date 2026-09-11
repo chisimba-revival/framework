@@ -286,6 +286,8 @@ class coursecatalogue extends ChisimbaObject
     public function marketingAction(array $context)
     {
         $code=$context['contextcode'];
+        $enrolLabel=str_replace('{course}', (string)($context['title'] ?? $code),
+            $this->text('mod_context_marketing_enrol_course','Enrol in {course}'));
         if ($this->isCourseMember($code)) return array('label'=>$this->text('mod_context_continuelearning','Continue learning'),
             'url'=>$this->uri(array('action'=>'joincontext','contextcode'=>$code),'context'));
         $policy=strtolower($context['access_policy'] ?? '');
@@ -299,13 +301,13 @@ class coursecatalogue extends ChisimbaObject
         if (in_array($policy,array('private','tier_1','tier_2'),true)) {
             $action=$this->purchaseOrAdmissionAction($context,$policy);
             if ($policy==='private' && isset($action['price_label'])) {
-                $action['label']=$this->text('mod_context_buynow','Buy now');
+                $action['label']=$enrolLabel;
                 $action['hint']=$action['price_label'];
             }
             return $action;
         }
         if ($policy==='free' || $policy==='public' || strtolower($context['access'] ?? '')==='open' || strtolower($context['access'] ?? '')==='public') {
-            return array('label'=>$this->text('mod_context_enrol','Enrol'),
+            return array('label'=>$enrolLabel,
                 'url'=>$this->uri(array('action'=>'joincontext','contextcode'=>$code),'context'));
         }
         return $this->actionFor($context);
