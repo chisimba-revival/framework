@@ -102,6 +102,7 @@ class block_aboutcontext extends ChisimbaObject {
             $showEdit=$link->show();
         }
         $ret = $showEdit.$objWashout->parseText($objContext->getAbout());
+        $ret .= $this->getObject('authorbiographyrenderer', 'userdetails')->forCourse($objContext->getContextCode());
         return "<div class='context_about_block'>$ret</div>";
     }
 }

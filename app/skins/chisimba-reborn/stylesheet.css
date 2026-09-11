@@ -7082,3 +7082,17 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .prelogin-fixed-block__label{display:flex;align-items:center;gap:.4rem;margin:0 0 .45rem;color:var(--chisimba-muted);font-size:.8rem;font-weight:700}
 .prelogin-add-block{display:grid;gap:.55rem;margin:.75rem 0;padding:.75rem;border:1px dashed var(--chisimba-border-strong);border-radius:var(--chisimba-region-radius);background:var(--chisimba-surface-muted)}
 .prelogin-add-block label{display:grid;gap:.35rem}.prelogin-add-block select{width:100%;min-width:0}.prelogin-add-block button{justify-self:start}
+
+/* Reusable author biography layout; typography and colours inherit the skin. */
+.chisimba-biography-card { display:flex; align-items:flex-start; gap:1.25rem; margin:1rem 0; padding:1.25rem; border:1px solid var(--chisimba-border); border-radius:.75rem; background:var(--chisimba-surface); }
+.chisimba-biography-portrait { flex:0 0 6rem; }
+.chisimba-biography-portrait img.full_user_image { display:block; width:6rem; height:6rem; max-width:100%; object-fit:cover; border-radius:50%; }
+.chisimba-biography-copy { min-width:0; flex:1; overflow-wrap:anywhere; }
+.chisimba-biography-copy h3 { margin-top:0; }
+.chisimba-biography-links { display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; list-style:none; padding:0; }
+.chisimba-biography-links a { display:inline-flex; align-items:center; gap:.35rem; }
+.chisimba-biography-links svg { width:1rem; height:1rem; }
+.chisimba-form-field input[type="url"], .chisimba-form-field textarea { box-sizing:border-box; width:100%; padding:.58rem .65rem; }
+@media(max-width:480px) { .chisimba-biography-card { flex-direction:column; } }
+.chisimba-biography-placeholder { display:flex; width:6rem; height:6rem; align-items:center; justify-content:center; border-radius:50%; color:var(--chisimba-text-muted); background:var(--chisimba-surface-subtle); }
+.chisimba-biography-placeholder svg { width:3rem; height:3rem; }

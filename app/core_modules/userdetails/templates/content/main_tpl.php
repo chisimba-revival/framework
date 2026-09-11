@@ -10,6 +10,7 @@ $objFix = $this->getObject('cssfixlength', 'htmlelements');
 $objFix->fixThree();
 ?>
 
+<p><a class="button chisimba-button-secondary" href="<?php echo htmlspecialchars($this->uri(array('action'=>'biography'), 'userdetails'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo $this->getObject('iconservice','ui')->render('contact', array('decorative'=>true)); ?><span><?php echo htmlspecialchars(ucfirst($this->getObject('language','language')->code2Txt('mod_userdetails_author_bio','userdetails')), ENT_QUOTES, 'UTF-8'); ?></span></a></p>
 <div id="threecolumn">
     <div id="Canvas_Content_Body_Region1">
         {

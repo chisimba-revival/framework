@@ -146,6 +146,42 @@ class userdetails extends controller
     * @access private
     * 
     */
+    /** Edit the authenticated user's public author biography. */
+    private function __biography()
+    {
+        $service = $this->getObject('authorbiographyservice', 'userdetails');
+        $value = $service->forUser($this->objUser->userId());
+        $errors = array();
+        $saved = (bool)$this->getSession('authorBiographySaved', false);
+        $this->setSession('authorBiographySaved', false);
+        $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+        if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? '')) === 'POST') {
+            $token = $this->getParam('csrf_token', '');
+            if (!is_string($token) || !$csrf->consume('author_biography', $token)) {
+                $errors['form'] = 'bio_csrf';
+                $text = $this->getParam('biography', '');
+                $links = $this->getParam('links', array());
+                $value = array('biography' => is_string($text) ? $text : '', 'links' => is_array($links) ? array_slice($links, 0, 5) : array());
+            } else {
+                $input = array('biography' => $this->getParam('biography', ''), 'links' => $this->getParam('links', array()));
+                $result = $service->saveOwn($input);
+                $errors = $result['errors'];
+                $value = $result['value'];
+                // Retain invalid link entries so validation never silently drops the user's work.
+                if ($errors && is_array($input['links'])) $value['links'] = array_slice($input['links'], 0, 5);
+                if (!$errors) {
+                    $this->setSession('authorBiographySaved', true);
+                    return $this->nextAction('biography');
+                }
+            }
+        }
+        $this->setVar('biographyValue', $value);
+        $this->setVar('biographyErrors', $errors);
+        $this->setVar('biographySaved', $saved);
+        $this->setVar('biographyToken', $csrf->issue('author_biography'));
+        return 'biography_tpl.php';
+    }
+
     private function __main()
     {
         // All the action is in the blocks
