@@ -199,21 +199,25 @@ class coursecatalogue extends ChisimbaObject
         );
         $lecturers = $this->lecturerNames($code);
         $action = $this->actionFor($context);
+        $icons = $this->getObject('iconservice', 'ui');
+        $entryIcon = $icons->render('arrow-right', array('decorative'=>true));
         if (isset($action['type']) && $action['type'] === 'notice') {
             $actionHtml = '<button type="button" class="course-card__action"'
               . ' data-course-application-notice="'
               . $this->escape($action['message']) . '">'
-              . $this->escape($action['label']) . '</button>';
+              . $icons->render('info', array('decorative'=>true))
+              . '<span>' . $this->escape($action['label']) . '</span></button>';
         } else {
             $actionHtml = '<a class="course-card__action" href="'
               . $action['url'] . '">'
-              . $this->escape($action['label']) . '</a>';
+              . $entryIcon . '<span>' . $this->escape($action['label']) . '</span></a>';
         }
         if (!$this->isCourseMember($code)
             && $this->getObject('coursemarketingservice','context')->page($context)['published']) {
             $actionHtml .= '<a class="button chisimba-button-secondary" href="'
                 .$this->uri(array('action'=>'marketing','contextcode'=>$code),'context').'">'
-                .$this->escape($this->text('mod_context_learnmore','Learn more')).'</a>';
+                .$icons->render('info', array('decorative'=>true))
+                .'<span>'.$this->escape($this->text('mod_context_learnmore','Learn more')).'</span></a>';
         }
         $actionHint = empty($action['hint']) ? ''
             : '<p class="course-card__access-detail">'
@@ -263,7 +267,7 @@ class coursecatalogue extends ChisimbaObject
           ) . '</span>' . $formatBadge . '</div></div>'
           . '<div class="course-card__body"><h3 class="course-card__title">'
           . $this->escape($title) . '</h3>' . $summaryHtml . $lecturerHtml
-          . '<div class="course-card__footer">' . $actionHint . $actionHtml
+          . '<div class="course-card__footer">' . $actionHint . '<div class="course-card__actions">' . $actionHtml . '</div>'
           . '</div></div></article>';
     }
 

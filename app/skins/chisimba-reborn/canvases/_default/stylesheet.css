@@ -1697,3 +1697,8 @@ button.course-card__action {
         padding: 0;
     }
 }
+
+/* Keep catalogue actions distinct and allow translated labels to wrap. */
+.course-card__actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--chisimba-action-gap, .5rem); }
+.course-card__actions > a,
+.course-card__actions > button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; max-width:100%; white-space:normal; }
