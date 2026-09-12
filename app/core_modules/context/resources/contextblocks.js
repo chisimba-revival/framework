@@ -90,10 +90,10 @@
     function setUpSide(side)
     {
         jQuery("#dd"+side+"blocks").bind('change', function() {
-            getPreview(jQuery("#dd"+side+"blocks").attr('value'), side);
+            getPreview(jQuery("#dd"+side+"blocks").val(), side);
         });
 
-       // jQuery("#"+side+"button").hide();
+        jQuery("#"+side+"button").hide();
         jQuery("#"+side+"button").bind('click', function() {
             addBlock(window[side+'Block'], side)
         });
@@ -167,6 +167,7 @@
 
     function addBlock(blockid, side)
     {
+        if(typeof blockid!=="string" || !/^(block|dynamicblock)\|/.test(blockid))return;
 
         // DO Ajax
         jQuery.ajax({
@@ -198,10 +199,12 @@
 
     function getPreview(blockid, side)
     {
+        window[side+"Block"]=false;
+        window[side+"PendingBlock"]=blockid;
         jQuery("#"+side+"button").hide();
         // adjustLayout();
 
-        if (blockid=="") {
+        if (typeof blockid!=="string" || blockid==="") {
             jQuery("#"+side+"previewcontent").hide();
             jQuery("#"+side+"button").hide();
             // adjustLayout();
@@ -214,6 +217,7 @@
                 url: "index.php",
                 data: "module="+theModule+"&action=renderblock&blockid="+blockid+"&side="+side,
                 success: function(msg){
+                    if(window[side+"PendingBlock"]!==blockid)return;
 
                     jQuery("#"+side+"previewcontent").show();
                     jQuery("#"+side+"previewcontent").html(msg);

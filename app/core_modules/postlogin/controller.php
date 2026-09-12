@@ -119,11 +119,11 @@ class postlogin extends controller {
         $this->setVarByRef('wideDynamicBlocks', $wideDynamicBlocks);
 
         $objBlocks = $this->getObject('dbmoduleblocks', 'modulecatalogue');
-        $smallBlocks = $objBlocks->getBlocks('normal', 'site|user|postlogin');
+        $smallBlocks = $objBlocks->getBlocks('normal', 'site|postlogin');
         
         $this->setVarByRef('smallBlocks', $smallBlocks);
 
-        $wideBlocks = $objBlocks->getBlocks('wide', 'site|user|postlogin');
+        $wideBlocks = $objBlocks->getBlocks('wide', 'site|postlogin');
         $this->setVarByRef('wideBlocks', $wideBlocks);
         //Add content blocks if any
         $contentSmallBlocks = "";

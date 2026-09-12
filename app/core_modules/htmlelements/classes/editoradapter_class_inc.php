@@ -157,40 +157,14 @@ class editoradapter extends ChisimbaObject
             'file_picker_types' => 'image',
         );
 
-        $script = '<script type="text/javascript">'
-            . '(function(){'
-            . 'function start(){'
-            . 'if(typeof tinymce==="undefined"){'
-            . 'console.error("Chisimba editor: TinyMCE failed to load.");'
-            . 'return;'
-            . '}'
-            . 'var config=' . json_encode($config) . ';'
-            . '/* CHISIMBA_TINYMCE_FULLSCREEN */'
-            . 'if(Array.isArray(config.plugins)){' 
-            . 'if(config.plugins.indexOf("fullscreen")===-1){config.plugins.push("fullscreen");}'
-            . '}else if(!/(^|\\s)fullscreen(\\s|$)/.test(config.plugins||"")){' 
-            . 'config.plugins=((config.plugins||"")+" fullscreen").trim();}'
-            . 'if(Array.isArray(config.toolbar)){' 
-            . 'if(config.toolbar.indexOf("fullscreen")===-1){config.toolbar.push("fullscreen");}'
-            . '}else if(!/(^|\\s)fullscreen(\\s|$)/.test(config.toolbar||"")){' 
-            . 'config.toolbar=((config.toolbar||"")+" | fullscreen").trim();}'
-            . 'config.file_picker_callback=function(callback,value,meta){'
-            . 'if(!window.ChisimbaEditor){return;}'
-            . 'window.ChisimbaEditor.beginFilePick(callback);'
-            . 'window.open('
-            . json_encode($pickerUrl)
-            . ',"chisimba_image_picker",'
-            . '"width=1000,height=720,resizable=yes,scrollbars=yes");'
-            . '};'
-            . 'tinymce.init(config).catch(function(error){'
-            . 'console.error("Chisimba editor initialization failed.",error);'
-            . '});'
-            . '}'
-            . 'if(document.readyState==="loading"){'
-            . 'document.addEventListener("DOMContentLoaded",start,{once:true});'
-            . '}else{start();}'
-            . '}());'
-            . '</script>';
+        // Declarative configuration supports initial rendering and Ajax fragments alike.
+        $headers[] = '<script defer src="'
+            . htmlspecialchars($this->getResourceUri('editoradapter.js', 'htmlelements'), ENT_QUOTES, 'UTF-8')
+            . '"></script>';
+        $attributes = ' data-chisimba-editor="'
+            . htmlspecialchars(json_encode($config), ENT_QUOTES, 'UTF-8')
+            . '" data-editor-picker="' . htmlspecialchars($pickerUrl, ENT_QUOTES, 'UTF-8') . '"';
+        $textarea = str_replace('<textarea ', '<textarea' . $attributes . ' ', $textarea);
 
         return array(
             'headers' => $headers,
@@ -201,7 +175,6 @@ class editoradapter extends ChisimbaObject
                 . '</style>'
                 . '<div class="chisimba-editor-adapter">'
                 . $textarea
-                . $script
                 . '</div>',
         );
     }

@@ -25,10 +25,8 @@ $simpleToolbar = 'undo redo | bold italic | bullist numlist | '
     . 'link image | removeformat';
 
 $checks = array(
-    'module version records toolbar change' => str_contains(
-        $register,
-        'MODULE_VERSION: 0.613'
-    ),
+    'module version records toolbar change' => preg_match('/MODULE_VERSION: ([0-9.]+)/', $register, $version)
+        && version_compare($version[1], '0.613', '>='),
     'advanced toolbar exposes text and background colour' => str_contains(
         $adapter,
         $advancedColourGroup

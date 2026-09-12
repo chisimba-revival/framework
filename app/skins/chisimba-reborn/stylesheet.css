@@ -7194,3 +7194,16 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
     .chisimba-publication-search .chisimba-form-field { flex:1 1 10rem;min-width:0; }
     .chisimba-publication-search input[type=search] { width:100%; }
 }
+
+.chisimba-featured-image-preview { display:block;width:100%;height:auto;max-height:14rem;object-fit:contain;margin-bottom:.75rem;border-radius:var(--chisimba-region-radius,.65rem); }
+.chisimba-featured-image-preview[hidden] { display:none; }
+@media(min-width:851px) {
+    .chisimba-composition-workspace { position:sticky;top:1rem;height:calc(100dvh - 2rem);align-items:stretch; }
+    .chisimba-composition-workspace > main,.chisimba-composition-workspace > aside { overflow:auto;min-height:0;padding:.4rem;scrollbar-gutter:stable; }
+    .chisimba-composition-workspace > aside { align-content:start; }
+}
+
+.chisimba-composition-instance { scroll-margin-top:1rem; }
+
+/* Reserve feedback space so Ajax status changes do not shift the editor. */
+[data-composition-status] { min-height: 1.5em; }

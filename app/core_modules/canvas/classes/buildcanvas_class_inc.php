@@ -479,7 +479,7 @@ class buildcanvas extends ChisimbaObject {
 
         // Add Small Blocks.
         $objBlocks = $this->getObject('dbmoduleblocks', 'modulecatalogue');
-        $smallBlocks = $objBlocks->getBlocks('normal', 'prelogin|site|user');
+        $smallBlocks = $objBlocks->getBlocks('normal', $this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'prelogin|site|user');
         foreach ($smallBlocks as $smallBlock) {
             if ($smallBlock['moduleid'] != "contentblocks") {
                 $block = $this->newObject('block_'
@@ -554,7 +554,7 @@ class buildcanvas extends ChisimbaObject {
         foreach ($this->wideDynamicBlocks as $wideBlock) {
             $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
         }
-        $wideBlocks = $this->objBlocks->getBlocks('wide', 'site|user|postlogin');
+        $wideBlocks = $this->objBlocks->getBlocks('wide', $this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'site|user|postlogin');
         foreach ($wideBlocks as $wideBlock) {
             if ($wideBlock["moduleid"] != "contentblocks") {
                 $block = $this->newObject('block_'

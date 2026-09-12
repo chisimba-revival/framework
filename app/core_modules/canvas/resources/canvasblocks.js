@@ -129,6 +129,7 @@
 
     function addBlock(blockid, side)
     {
+        if(typeof blockid!=="string" || !/^(block|dynamicblock)\|/.test(blockid))return;
         // DO Ajax
         jQuery.ajax({
             type: "GET",
@@ -156,10 +157,12 @@
 
     function getPreview(blockid, side)
     {
+        window[side+"Block"]=false;
+        window[side+"PendingBlock"]=blockid;
         jQuery("#"+side+"button").hide();
         // adjustLayout();
 
-        if (blockid=="") {
+        if (typeof blockid!=="string" || blockid==="") {
             jQuery("#"+side+"previewcontent").hide();
             jQuery("#"+side+"button").hide();
             // adjustLayout();
@@ -172,6 +175,7 @@
                 url: "index.php",
                 data: "module="+theModule+"&action=renderblock&blockid="+blockid+"&side="+side+"&pageId="+pageId,
                 success: function(msg){
+                    if(window[side+"PendingBlock"]!==blockid)return;
 
                     jQuery("#"+side+"previewcontent").show();
                     jQuery("#"+side+"previewcontent").html(msg);
