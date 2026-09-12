@@ -74,7 +74,7 @@ class systext_facet extends dbTable
         $this -> _objTextItemDb = $this -> getObject('dbtext', 'systext');
         $this -> _objAbstractTextDb = $this -> getObject('dbabstract', 'systext');
 
-        $sectionTermsAdded = $this->ensureSectionTerms();
+        $coreTermsAdded = $this->ensureCoreTerms();
 
         $this -> _objConfig = $this -> getObject('altconfig', 'config');
 
@@ -82,8 +82,9 @@ class systext_facet extends dbTable
         // Initialize the abstract list for this instance.
         $activeType = $this->_getActiveSystemType();
         $cachedSystext = $this->getSession('systext');
-        if(!$sectionTermsAdded && is_array($cachedSystext) && isset($cachedSystext['section'])
+        if(!$coreTermsAdded && is_array($cachedSystext) && isset($cachedSystext['section'])
             && isset($cachedSystext['sections'])
+            && isset($cachedSystext['category']) && isset($cachedSystext['categories'])
             && $this -> getSession('systext_type') === $activeType){
             // The abstract list is available so fetch it from the session variable.
             $this -> fetchSession();
@@ -95,17 +96,21 @@ class systext_facet extends dbTable
         }
     }
 
-    /** Install section terminology on existing sites whose default data predates it. */
-    private function ensureSectionTerms()
+    /** Install core terminology on existing sites without replacing configured wording. */
+    private function ensureCoreTerms()
     {
         $now = date('Y-m-d H:i:s');
         $changed = FALSE;
-        $terms = array('init_25' => 'section', 'init_26' => 'sections');
+        $terms = array('init_25' => 'section', 'init_26' => 'sections',
+            'init_category' => 'category', 'init_categories' => 'categories');
         foreach ($terms as $textId => $text) {
-            $existing = $this->query("SELECT id FROM tbl_systext_text WHERE id='$textId' OR textinfo='$text' LIMIT 1");
+            $existing = $this->query("SELECT id FROM tbl_systext_text WHERE textinfo='$text' LIMIT 1");
             if (!is_array($existing) || count($existing) === 0) {
                 $this->query("INSERT INTO tbl_systext_text (id,textinfo,creatorId,dateCreated,canDelete) VALUES ('$textId','$text','1','$now','N')");
                 $changed = TRUE;
+            } else {
+                unset($terms[$textId]);
+                $terms[$existing[0]['id']] = $text;
             }
         }
         $systems = $this->query('SELECT id FROM tbl_systext_system');
