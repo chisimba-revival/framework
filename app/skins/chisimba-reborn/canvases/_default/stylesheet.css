@@ -1220,14 +1220,14 @@
     min-inline-size: 0;
 }
 
-.course-card-grid {
+:is(.course-card-grid, .chisimba-publication-card-grid) {
     display: grid;
     gap: 1.25rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     inline-size: 100%;
 }
 
-.course-card {
+:is(.course-card, .chisimba-publication-card) {
     background: var(--chisimba-surface, #fff);
     border: 1px solid var(--chisimba-border, #d7e0ea);
     border-radius: var(--chisimba-region-radius, 0.65rem);
@@ -1238,21 +1238,21 @@
     overflow: hidden;
 }
 
-.course-card__media {
+:is(.course-card__media, .chisimba-publication-card__media) {
     aspect-ratio: 16 / 9;
     background: color-mix(in srgb, var(--chisimba-primary, #0b78c5) 12%, #fff);
     overflow: hidden;
     position: relative;
 }
 
-.course-card__image {
+:is(.course-card__image, .chisimba-publication-card__image) {
     block-size: 100%;
     display: block;
     inline-size: 100%;
     object-fit: cover;
 }
 
-.course-card__placeholder {
+:is(.course-card__placeholder, .chisimba-publication-card__placeholder) {
     align-items: center;
     block-size: 100%;
     display: flex;
@@ -1260,7 +1260,7 @@
     justify-content: center;
 }
 
-.course-card__placeholder span {
+:is(.course-card__placeholder, .chisimba-publication-card__placeholder) span {
     border: 0.18rem solid color-mix(in srgb, var(--chisimba-primary, #0b78c5) 50%, transparent);
     border-radius: 50%;
     block-size: 3rem;
@@ -1268,7 +1268,7 @@
     inline-size: 3rem;
 }
 
-.course-card__badges {
+:is(.course-card__badges, .chisimba-publication-card__badges) {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
@@ -1277,7 +1277,7 @@
     position: absolute;
 }
 
-.course-card__badge {
+:is(.course-card__badge, .chisimba-publication-card__badge) {
     background: rgb(255 255 255 / 94%);
     border-radius: 999px;
     color: var(--chisimba-text, #172033);
@@ -1287,25 +1287,25 @@
     padding: 0.45rem 0.65rem;
 }
 
-.course-card__badge--access {
+:is(.course-card__badge--access, .chisimba-publication-card__badge--access) {
     background: var(--chisimba-primary, #0b78c5);
     color: #fff;
 }
 
-.course-card__body {
+:is(.course-card__body, .chisimba-publication-card__body) {
     display: flex;
     flex: 1;
     flex-direction: column;
     padding: 1rem;
 }
 
-.course-card__title {
+:is(.course-card__title, .chisimba-publication-card__title) {
     font-size: 1.2rem;
     line-height: 1.25;
     margin: 0;
 }
 
-.course-card__summary {
+:is(.course-card__summary, .chisimba-publication-card__summary) {
     color: var(--chisimba-muted, #536273);
     display: -webkit-box;
     line-height: 1.5;
@@ -1315,23 +1315,23 @@
     -webkit-line-clamp: 3;
 }
 
-.course-card__footer {
+:is(.course-card__footer, .chisimba-publication-card__footer) {
     margin-block-start: auto;
     padding-block-start: 0.25rem;
 }
 
-.course-card__lecturer {
+:is(.course-card__lecturer, .chisimba-publication-card__lecturer) {
     color: var(--chisimba-muted, #536273);
     font-size: 0.9rem;
     line-height: 1.35;
     margin: 0 0 1rem;
 }
 
-.course-card__lecturer span {
+:is(.course-card__lecturer, .chisimba-publication-card__lecturer) span {
     font-weight: 700;
 }
 
-.course-card__action,
+:is(.course-card__action, .chisimba-publication-card__action),
 .course-catalogue__more a {
     align-items: center;
     border-radius: 0.4rem;
@@ -1342,20 +1342,20 @@
     text-decoration: none;
 }
 
-.course-card__action {
+:is(.course-card__action, .chisimba-publication-card__action) {
     background: var(--chisimba-primary, #0b78c5);
     color: #fff;
     padding: 0.55rem 0.9rem;
 }
 
-.course-card__action:hover,
-.course-card__action:focus-visible {
+:is(.course-card__action, .chisimba-publication-card__action):hover,
+:is(.course-card__action, .chisimba-publication-card__action):focus-visible {
     background: var(--chisimba-primary-dark, #075c98);
     color: #fff;
     text-decoration: none;
 }
 
-.course-card__action:focus-visible,
+:is(.course-card__action, .chisimba-publication-card__action):focus-visible,
 .course-catalogue__more a:focus-visible {
     outline: 0.2rem solid var(--chisimba-focus, #f59e0b);
     outline-offset: 0.15rem;
@@ -1378,13 +1378,13 @@
 }
 
 @media (max-width: 64rem) {
-    .course-card-grid {
+    :is(.course-card-grid, .chisimba-publication-card-grid) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 42rem) {
-    .course-card-grid {
+    :is(.course-card-grid, .chisimba-publication-card-grid) {
         grid-template-columns: minmax(0, 1fr);
     }
 }
@@ -1472,7 +1472,7 @@
 }
 
 /* CHISIMBA COURSE APPLICATION NOTICE BUTTON */
-button.course-card__action {
+button:is(.course-card__action, .chisimba-publication-card__action) {
     border: 0;
     cursor: pointer;
     font: inherit;
@@ -1702,9 +1702,9 @@ button.course-card__action {
 }
 
 /* Keep catalogue actions distinct and allow translated labels to wrap. */
-.course-card__actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--chisimba-action-gap, .5rem); }
-.course-card__actions > a,
-.course-card__actions > button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; max-width:100%; white-space:normal; }
+:is(.course-card__actions, .chisimba-publication-card__actions) { display:flex; flex-wrap:wrap; align-items:center; gap:var(--chisimba-action-gap, .5rem); }
+:is(.course-card__actions, .chisimba-publication-card__actions) > a,
+:is(.course-card__actions, .chisimba-publication-card__actions) > button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; max-width:100%; white-space:normal; }
 
 .security-native-auth { max-inline-size:28rem; margin-block:1.5rem; }
 .security-native-auth__field > label { display:block; margin-block-end:.4rem; }

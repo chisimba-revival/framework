@@ -59,6 +59,9 @@ class classificationservice extends ChisimbaObject
         return $right && $permissions->isGranted($user->userId(),$right);
     }
 
+    public function mayManage($type,$scope,$kind)
+    { return (bool)$this->canManage(self::vocabulary($type,$scope,$kind)); }
+
     private function requireManager(array $vocabulary)
     {
         if (!$this->canManage($vocabulary)) throw new DomainException('classification_forbidden');
@@ -156,6 +159,16 @@ class classificationservice extends ChisimbaObject
     {
         $access = $this->access($module,$item,'edit');
         $vocabulary = self::vocabulary($access['scope_type'],$access['scope_id'],$kind);
+        return $this->store->terms($vocabulary['id']);
+    }
+
+    /** Authorised choices before a new content record exists; the owner validates the destination. */
+    public function creationChoices($module, $type, $scope, $kind)
+    {
+        $provider=$this->providers[$module]??null;
+        if (!$provider || !is_callable([$provider,'classificationCanCreate'])
+            || $provider->classificationCanCreate($type,$scope)!==true) throw new DomainException('classification_forbidden');
+        $vocabulary=self::vocabulary($type,$scope,$kind);
         return $this->store->terms($vocabulary['id']);
     }
 

@@ -33,7 +33,7 @@ class contextualhelp extends ChisimbaObject
         return $topic;
     }
 
-    public function show($module, $topicId)
+    public function show($module, $topicId, $compact = false)
     {
         $topic = $this->getTopic($module, $topicId);
         if ($topic === null) { return ''; }
@@ -60,6 +60,12 @@ class contextualhelp extends ChisimbaObject
             . $escape($drawerId) . '" aria-controls="' . $escape($drawerId)
             . '" aria-expanded="false">' . $this->icons->render('panel-right-open', array('decorative' => true))
             . $escape($full) . '</button></p></div></details>';
+        if ($compact) {
+            $html = '<button class="button chisimba-button-secondary" type="button" data-contextual-help-open="'
+                . $escape($drawerId) . '" aria-controls="' . $escape($drawerId)
+                . '" aria-expanded="false" aria-label="' . $escape($label) . '" title="' . $escape($label) . '">'
+                . $this->icons->render('circle-help', array('decorative' => true)) . '</button>';
+        }
         $html .= '<aside id="' . $escape($drawerId)
             . '" class="chisimba-contextual-help-drawer chisimba-drawer" aria-hidden="true" inert aria-label="'
             . $escape($topic['title']) . '" tabindex="-1"><header><p class="chisimba-eyebrow">'

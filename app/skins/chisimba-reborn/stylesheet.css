@@ -7116,3 +7116,81 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 
 /* Prominent course marketing action, including long translated course names. */
 a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem 1.5rem; min-height:3.5rem; max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; box-sizing:border-box; }
+
+/* Shared composition and publishing layout: the skin owns presentation. */
+.chisimba-publishing-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(16rem,22rem);gap:1.5rem;align-items:start; }
+.chisimba-publishing-layout > * { min-width:0; }
+.chisimba-publishing-sidebar { display:grid;gap:1rem; }
+.chisimba-composition-editor { display:grid;gap:1.25rem; }
+.chisimba-composition-instance { padding:1.25rem; }
+.chisimba-composition-instance header { margin-bottom:1rem; }
+.chisimba-content-block { margin-block:1.5rem;overflow-wrap:anywhere; }
+.chisimba-content-block figure { margin:0;min-width:0; }
+.chisimba-content-block img { display:block;width:100%;height:auto;object-fit:contain; }
+.chisimba-content-block video,.chisimba-content-block iframe { display:block;width:100%;max-width:100%;aspect-ratio:16/9;border:0; }
+.chisimba-content-block--image-left,.chisimba-content-block--image-right { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;align-items:center; }
+.chisimba-content-slider { display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:1rem; }
+.chisimba-content-slider > figure { flex:0 0 100%;scroll-snap-align:start; }
+.chisimba-content-block figcaption { padding-block:.5rem;color:var(--chisimba-text-muted,#52616b); }
+@media(max-width:850px) { .chisimba-publishing-layout { grid-template-columns:1fr; } }
+@media(max-width:600px) { .chisimba-content-block--image-left,.chisimba-content-block--image-right { grid-template-columns:1fr; } }
+.chisimba-form.chisimba-composition-form { max-width:none;width:100%; }
+.chisimba-composition-form #blog-title { width:100%;max-width:none; }
+.chisimba-publishing-sidebar > .chisimba-card { padding:1rem; }
+.chisimba-slider-controls { display:flex;gap:.75rem;margin-block:.5rem; }
+.chisimba-slider-controls[hidden] { display:none; }
+.chisimba-composition-palette .chisimba-form-actions { display:grid;grid-template-columns:1fr;gap:.5rem; }
+.chisimba-composition-palette .button { justify-content:flex-start; }
+
+.chisimba-composition-instance header .chisimba-form-actions { align-items:stretch; }
+.chisimba-composition-instance [data-composition-drag] { cursor:grab; }
+.chisimba-composition-instance [data-composition-drag]:active { cursor:grabbing; }
+
+.chisimba-composition-instance [data-composition-preview] { cursor:pointer; }
+.chisimba-composition-instance.chisimba-drop-before { box-shadow:0 -4px 0 var(--chisimba-primary,#0077b6); }
+.chisimba-composition-editor.chisimba-drop-end { border-bottom:4px solid var(--chisimba-primary,#0077b6);padding-bottom:1rem; }
+.chisimba-composition-palette button[draggable] { cursor:grab; }
+
+/* Publication cards share course-card presentation; adapt columns to their sidebar layout. */
+.chisimba-publishing-layout .chisimba-publication-card-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); }
+.chisimba-publication-card__body > p { overflow-wrap:anywhere; }
+
+.chisimba-publication-meta { display:flex;flex-wrap:wrap;gap:.4rem 1rem;font-size:var(--chisimba-font-size-sm,.875rem);color:var(--chisimba-text-muted,#52616b); }
+.chisimba-publication-meta > span { display:inline-flex;align-items:center;gap:.35rem; }
+.chisimba-publication-meta svg { width:1em;height:1em;color:inherit;flex:none; }
+.chisimba-publication-meta time { cursor:help; }
+
+/* Keep the active editor distinct from neighbouring block previews. */
+.chisimba-composition-instance--editing {
+    outline:2px solid var(--chisimba-editor-active-border,#a5adb5);
+    outline-offset:2px;
+    border-radius:var(--chisimba-region-radius,.65rem);
+}
+
+.chisimba-hero-image { position:relative; }
+.chisimba-hero-image__action { position:absolute;max-width:calc(100% - 1.5rem); }
+.chisimba-hero-image__action .button { white-space:normal;overflow-wrap:anywhere;max-width:100%;box-shadow:0 1px 6px rgb(0 0 0 / 25%); }
+.chisimba-hero-image__action--top-left { top:.75rem;left:.75rem; }
+.chisimba-hero-image__action--top-right { top:.75rem;right:.75rem; }
+.chisimba-hero-image__action--bottom-left { bottom:.75rem;left:.75rem; }
+.chisimba-hero-image__action--bottom-right { bottom:.75rem;right:.75rem; }
+
+/* Compact publication heading and search; preserve room before the card grid. */
+.chisimba-publication-list-header { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem; }
+.chisimba-publication-list-header h1,.chisimba-publication-list-header p { margin:0; }
+.chisimba-publication-search.chisimba-form { display:flex;align-items:flex-end;flex-wrap:wrap;gap:.75rem;margin:0;max-width:100%;width:auto; }
+.chisimba-publication-search .chisimba-form-field { margin:0; }
+.chisimba-publication-search input[type=search] { width:13rem;max-width:100%;min-height:2.75rem;box-sizing:border-box; }
+.chisimba-publication-search .button { margin:0;flex-shrink:0;min-width:2.75rem; }
+.chisimba-publication-list-header .button,
+.chisimba-publication-list-header input[type=search],
+.chisimba-publication-list-header select { height:2.75rem;min-height:2.75rem;box-sizing:border-box; }
+.chisimba-publication-list-header .button { display:inline-flex;align-items:center;justify-content:center;padding-block:0; }
+.chisimba-publication-list-header .chisimba-publication-list-actions { margin:0;gap:.5rem; }
+.chisimba-publication-list.chisimba-form-card { padding:1.25rem; }
+.chisimba-publication-list > .chisimba-contextual-help { margin:.5rem 0 1rem; }
+@media(max-width:600px) {
+    .chisimba-publication-search.chisimba-form { width:100%; }
+    .chisimba-publication-search .chisimba-form-field { flex:1 1 10rem;min-width:0; }
+    .chisimba-publication-search input[type=search] { width:100%; }
+}

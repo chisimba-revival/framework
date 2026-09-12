@@ -1,7 +1,17 @@
 (function () {
     'use strict';
+    if (window.ChisimbaContextualHelpReady) { return; }
+    window.ChisimbaContextualHelpReady = true;
     function drawerFor(button) {
         return document.getElementById(button.getAttribute('data-contextual-help-open'));
+    }
+    function closePanel(panel) {
+        panel.setAttribute('aria-hidden', 'true');
+        panel.setAttribute('inert', '');
+        if (panel._contextualHelpOpener) {
+            panel._contextualHelpOpener.setAttribute('aria-expanded', 'false');
+            panel._contextualHelpOpener.focus();
+        }
     }
     document.addEventListener('click', function (event) {
         var open = event.target.closest('[data-contextual-help-open]');
@@ -19,18 +29,15 @@
         if (!close) { return; }
         var panel = close.closest('.chisimba-contextual-help-drawer');
         if (!panel) { return; }
-        panel.setAttribute('aria-hidden', 'true');
-        panel.setAttribute('inert', '');
-        if (panel._contextualHelpOpener) {
-            panel._contextualHelpOpener.setAttribute('aria-expanded', 'false');
-            panel._contextualHelpOpener.focus();
-        }
+        closePanel(panel);
     });
     document.addEventListener('keydown', function (event) {
         if (event.key !== 'Escape') { return; }
         var panel = document.querySelector('.chisimba-contextual-help-drawer[aria-hidden="false"]');
         if (panel) {
-            panel.querySelector('[data-contextual-help-close]').click();
+            event.preventDefault();
+            event.stopPropagation();
+            closePanel(panel);
         }
-    });
+    }, true);
 }());
