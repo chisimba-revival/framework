@@ -279,7 +279,7 @@ class security extends controller
         }
         $candidate = trim((string) $candidate);
         if ($candidate === '' || strlen($candidate) > 2048
-            || preg_match('/[\x00-\x1F\x7F\\]/', $candidate)
+            || preg_match('/[\x00-\x1F\x7F\x5C]/', $candidate)
             || strncmp($candidate, '//', 2) === 0) {
             return null;
         }
