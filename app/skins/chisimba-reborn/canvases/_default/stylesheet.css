@@ -1709,3 +1709,7 @@ button:is(.course-card__action, .chisimba-publication-card__action) {
 .security-native-auth { max-inline-size:28rem; margin-block:1.5rem; }
 .security-native-auth__field > label { display:block; margin-block-end:.4rem; }
 .security-native-auth .auth-field { margin-block-end:1rem; }
+
+/* Natural-ratio media variant for banners whose complete contents must remain visible. */
+.chisimba-publication-card__media--natural { aspect-ratio: auto; }
+.chisimba-publication-card__media--natural img { display: block; inline-size: 100%; block-size: auto; object-fit: contain; }

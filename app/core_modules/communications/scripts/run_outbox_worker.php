@@ -34,6 +34,13 @@ try {
             $scheduled['liveclass'] = array('failed' => 1, 'detail' => $scheduledFailure->getMessage());
         }
     }
+    if ($catalogue->checkIfRegistered('webinar')) {
+        try {
+            $scheduled['webinar'] = $engine->getObject('webinarregistrationservice','webinar')->reminders();
+        } catch (Throwable $scheduledFailure) {
+            $scheduled['webinar'] = array('failed' => 1);
+        }
+    }
     $worker = $engine->getObject('communicationworker', 'communications');
     $summary = $worker->run((int) $limit);
     if (!is_array($summary)) {

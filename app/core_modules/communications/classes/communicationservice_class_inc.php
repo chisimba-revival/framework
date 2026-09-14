@@ -49,6 +49,14 @@ class communicationservice extends dbTable
         return $this->result(true, 'queued', $message['id']);
     }
 
+    /** Application-facing idempotency lookup; callers need not query outbox storage. */
+    public function messageForKey($key)
+    {
+        if (!is_string($key) || $key === '' || strlen($key) > 191) return null;
+        $row = $this->getRow('idempotency_key', $key);
+        return is_array($row) ? array('ok'=>true, 'code'=>'already_queued', 'messageId'=>$row['id']) : null;
+    }
+
     public function status($messageId)
     {
         $id = strtolower(trim((string) $messageId));
@@ -62,6 +70,7 @@ class communicationservice extends dbTable
         $subject = isset($input['subject']) ? trim((string) $input['subject']) : '';
         $text = isset($input['text']) ? (string) $input['text'] : '';
         $html = isset($input['html']) ? (string) $input['html'] : '';
+        if (!$this->getObject('communicationdeliverygate','communications')->recipientAllowed($recipient)) { return $this->result(false, 'recipient_not_allowed'); }
         if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) { return $this->result(false, 'invalid_recipient'); }
         if ($subject === '' || strlen($subject) > 998) { return $this->result(false, 'invalid_subject'); }
         if ($text === '' && $html === '') { return $this->result(false, 'missing_body'); }
