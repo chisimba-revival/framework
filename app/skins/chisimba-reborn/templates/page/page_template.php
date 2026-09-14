@@ -19,6 +19,7 @@ $objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
 $isInstalled = $objModuleCatalogue->checkIfRegistered("bannerhelper");
 $statusBadge = '';
 $journeyBadges = '';
+$siteNavigation = $this->getObject('navigationservice', 'toolbar')->usesSiteProfile();
 $bannerPillsDisabled = false;
 try {
     $bannerPillsSetting = strtolower(trim((string) $this->getObject(
@@ -32,7 +33,7 @@ try {
 } catch (Throwable $configurationFailure) {
     $bannerPillsDisabled = false;
 }
-if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
+if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled && !$siteNavigation) {
     try {
         $bannerLanguage = $this->getObject('language', 'language');
         $roleContext = $this->getObject(
@@ -441,7 +442,9 @@ if (!isset($pageSuppressBanner)) {
     echo "</header>";
     if (!isset($pageSuppressToolbar)) {
         $simulate = $this->getParam('simulate', NULL);
-        if (!$this->objUser->isLoggedIn() || ($simulate == 'prelogintoolbar')) {
+        if ($siteNavigation) {
+            echo $this->getObject('sitenavigation', 'toolbar')->show();
+        } elseif (!$this->objUser->isLoggedIn() || ($simulate == 'prelogintoolbar')) {
             if ($isInstalled) {
                 echo "\n\n<div id='prelogin_nav'>$plMenu</div>\n\n";
             }

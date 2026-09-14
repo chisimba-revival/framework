@@ -11,6 +11,7 @@ $escape = function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
 $editing = $mode === 'edit';
+$site = !empty($site);
 $parts = $editing ? explode('|', $data['category']) : array();
 $head = isset($parts[0]) ? $parts[0] : '';
 $menu = '';
@@ -27,6 +28,7 @@ if ($page && strpos($head, 'page_') === 0) {
 $action = $editing ? (isset($parts[$page ? 1 : 2]) ? $parts[$page ? 1 : 2] : '') : '';
 $icon = $editing ? (isset($parts[$page ? 2 : 3]) ? $parts[$page ? 2 : 3] : '') : '';
 $code = $editing ? (isset($parts[$page ? 3 : 4]) ? $parts[$page ? 3 : 4] : '') : '';
+if ($site) $position = $editing ? (int) substr($head, 5) : 10;
 $menuOptions = $page
     ? array('lecturer', 'admin', 'manage')
     : array('user', 'alumni', 'context', 'postlogin', 'postgrad');
@@ -38,38 +40,53 @@ $heading = $lang->languageText(
     'toolbar',
     $editing ? 'Edit Link' : 'Add New Link'
 );
-$actionName = $page ? 'savepage' : 'savemenu';
+if ($site && isset($siteSubmitted)) {
+    $position = $siteSubmitted['position']; $action = $siteSubmitted['actionName'];
+    $icon = $siteSubmitted['icon']; $code = $siteSubmitted['code'];
+    $parts[5] = $siteSubmitted['groupCode']; $selectedRight = $siteSubmitted['permissions'];
+    $data['adminonly'] = $siteSubmitted['adminOnly']; $data['dependscontext'] = $siteSubmitted['dependsContext'];
+}
+$actionName = $site ? 'savesite' : ($page ? 'savepage' : 'savemenu');
 ?>
 <h1><?php echo $escape($heading); ?></h1>
+<?php if (!empty($siteInputError)): ?><p role="alert"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_invalid','toolbar')); ?></p><?php endif; ?>
 <p><strong><?php echo $escape($lang->languageText('mod_toolbar_module', 'toolbar', 'Module')); ?>:</strong>
 <?php echo $escape($moduleName); ?></p>
-<form method="post" action="<?php echo $escape($this->uri(array('action' => $actionName))); ?>">
+<form class="chisimba-form-card" method="post" action="<?php echo $escape($this->uri(array('action' => $actionName))); ?>">
   <input type="hidden" name="toolbar_csrf" value="<?php echo $escape($toolbarCsrf); ?>" />
   <input type="hidden" name="moduleName" value="<?php echo $escape($moduleName); ?>" />
 <?php if ($editing): ?>
   <input type="hidden" name="id" value="<?php echo $escape($data['id']); ?>" />
 <?php endif; ?>
+<?php if (!$site): ?>
   <p><label for="toolbar-menu"><?php echo $escape($lang->languageText($page ? 'mod_toolbar_page' : 'mod_toolbar_sidemenu', 'toolbar', $page ? 'Page' : 'Side Menu')); ?></label>
   <select id="toolbar-menu" name="menu">
 <?php foreach ($menuOptions as $value): ?>
     <option value="<?php echo $escape($value); ?>"<?php echo $menu === $value ? ' selected="selected"' : ''; ?>><?php echo $escape($value); ?></option>
 <?php endforeach; ?>
   </select></p>
+<?php endif; ?>
   <p><label for="toolbar-position"><?php echo $escape($lang->languageText($page ? 'mod_toolbar_selectcategory' : 'mod_toolbar_positioninmenu', 'toolbar', $page ? 'Select Category' : 'Position in Menu')); ?></label>
+<?php if ($site): ?><input id="toolbar-position" name="position" type="number" min="0" max="999" required value="<?php echo $escape($position); ?>">
+</p><?php else: ?>
   <select id="toolbar-position" name="position">
 <?php foreach ($positionOptions as $value): ?>
     <option value="<?php echo $escape($value); ?>"<?php echo (string) $position === (string) $value ? ' selected="selected"' : ''; ?>><?php echo $escape($value); ?></option>
 <?php endforeach; ?>
   </select></p>
+<?php endif; ?>
   <p><label for="toolbar-action"><?php echo $escape($lang->languageText('mod_toolbar_action', 'toolbar', 'Action')); ?></label>
   <input id="toolbar-action" name="actionName" value="<?php echo $escape($action); ?>" /></p>
   <p><label for="toolbar-icon"><?php echo $escape($lang->languageText('mod_toolbar_icon', 'toolbar', 'Icon')); ?></label>
   <input id="toolbar-icon" name="icon" value="<?php echo $escape($icon); ?>" /></p>
   <p><label for="toolbar-code"><?php echo $escape($lang->languageText('mod_toolbar_langcode', 'toolbar', 'Language Code')); ?></label>
   <input id="toolbar-code" name="code" value="<?php echo $escape($code); ?>" required="required" /></p>
-  <p><label><input type="checkbox" name="adminOnly" value="1"<?php echo $editing && !empty($data['adminonly']) ? ' checked="checked"' : ''; ?> />
+<?php if ($site): ?><p><label for="toolbar-group"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_group','toolbar')); ?></label>
+<input id="toolbar-group" name="groupCode" value="<?php echo $escape($parts[5] ?? ''); ?>"></p>
+<p><?php echo $escape($lang->code2Txt('mod_toolbar_nav_labelhint','toolbar')); ?></p><?php endif; ?>
+  <p><label><input type="checkbox" name="adminOnly" value="1"<?php echo ($editing || isset($siteSubmitted)) && !empty($data['adminonly']) ? ' checked="checked"' : ''; ?> />
   <?php echo $escape($lang->languageText('mod_toolbar_adminonly', 'toolbar', 'Admin Only')); ?></label></p>
-  <p><label><input type="checkbox" name="dependsContext" value="1"<?php echo $editing && !empty($data['dependscontext']) ? ' checked="checked"' : ''; ?> />
+  <p><label><input type="checkbox" name="dependsContext" value="1"<?php echo ($editing || isset($siteSubmitted)) && !empty($data['dependscontext']) ? ' checked="checked"' : ''; ?> />
   <?php echo $escape($lang->languageText('mod_toolbar_dependscontext', 'toolbar', 'Depends Context')); ?></label></p>
   <p><label for="toolbar-right"><?php echo $escape($lang->languageText('mod_toolbar_permissions', 'toolbar', 'Permissions')); ?></label>
   <select id="toolbar-right" name="permissions">
@@ -78,6 +95,6 @@ $actionName = $page ? 'savepage' : 'savemenu';
     <option value="<?php echo $escape($right['rightId']); ?>"<?php echo (string) $selectedRight === (string) $right['rightId'] ? ' selected="selected"' : ''; ?>><?php echo $escape($right['name']); ?></option>
 <?php endforeach; ?>
   </select></p>
-  <p><button type="submit" name="save" value="<?php echo $escape($lang->languageText('word_save', 'security', 'Save')); ?>"><?php echo $escape($lang->languageText('word_save', 'security', 'Save')); ?></button>
-  <button type="submit" name="save" value="<?php echo $escape($lang->languageText('word_back', 'security', 'Back')); ?>"><?php echo $escape($lang->languageText('word_back', 'security', 'Back')); ?></button></p>
+  <p class="chisimba-form-actions"><button type="submit" name="save" value="<?php echo $escape($lang->languageText('word_save', 'security', 'Save')); ?>"><?php echo $this->getObject('iconservice','ui')->render('save',array('decorative'=>true)); ?> <?php echo $escape($lang->languageText('word_save', 'security', 'Save')); ?></button>
+  <button type="submit" name="save" value="<?php echo $escape($lang->languageText('word_back', 'security', 'Back')); ?>" formnovalidate><?php echo $this->getObject('iconservice','ui')->render('arrow-left',array('decorative'=>true)); ?> <?php echo $escape($lang->languageText('word_back', 'security', 'Back')); ?></button></p>
 </form>

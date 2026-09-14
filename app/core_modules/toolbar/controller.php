@@ -14,6 +14,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class toolbar extends controller
 {
+    // Explicit controller state; avoid PHP dynamic-property deprecations.
+    public $objPage, $objRegister, $objDbMenu, $objModules, $objContext, $objLanguage, $objSecurity, $objPermissionService, $context;
+    private $csrf;
+
     const CSRF_CONTEXT = 'toolbar_admin_mutation';
 
     public function init()
@@ -47,6 +51,29 @@ class toolbar extends controller
                 return $this->editLinks(
                     $this->moduleId($this->getParam('modulename', 'toolbar'))
                 );
+            case 'saveprofile':
+                $this->requireMutation();
+                $profile = $this->enumValue($this->getParam('profile', ''), array('dropdown', 'site', 'flat', 'elearning'));
+                $this->getObject('dbsysconfig', 'sysconfig')->changeParam('TOOLBAR_TYPE', 'toolbar', $profile);
+                return $this->nextAction('editlinks', array('modulename' => 'toolbar'));
+            case 'addsite':
+                return $this->prepareMenuForm(false, false, true);
+            case 'editsite':
+                return $this->prepareMenuForm(true, false, true);
+            case 'savesite':
+                $this->requireMutation();
+                try {
+                    return $this->saveSiteLink();
+                } catch (InvalidArgumentException $error) {
+                    $values = array();
+                    foreach (array('position','actionName','icon','code','groupCode','adminOnly','dependsContext','permissions') as $key) {
+                        $value = $this->getParam($key, '');
+                        $values[$key] = is_string($value) ? $value : '';
+                    }
+                    $this->setVar('siteSubmitted', $values);
+                    $this->setVar('siteInputError', true);
+                    return $this->prepareMenuForm($this->getParam('id', '') !== '', false, true);
+                }
             case 'addtool':
                 return $this->prepareToolForm(false);
             case 'edittool':
@@ -120,7 +147,7 @@ class toolbar extends controller
 
     private function prepareToolForm($editing)
     {
-        $module = $this->moduleId($this->getParam('modulename', ''));
+        $module = $this->moduleId($this->getParam('modulename', $this->getParam('moduleName', '')));
         $data = null;
         if ($editing) {
             $data = $this->requiredOwnedLink($module);
@@ -137,9 +164,9 @@ class toolbar extends controller
         return 'addtool_tpl.php';
     }
 
-    private function prepareMenuForm($editing, $page)
+    private function prepareMenuForm($editing, $page, $site = false)
     {
-        $module = $this->moduleId($this->getParam('modulename', ''));
+        $module = $this->moduleId($this->getParam('modulename', $this->getParam('moduleName', '')));
         $data = null;
         if ($editing) {
             $data = $this->requiredOwnedLink($module);
@@ -152,6 +179,7 @@ class toolbar extends controller
         $this->setVarByRef('data', $data);
         $this->setVarByRef('moduleName', $module);
         $this->setVar('page', $page);
+        $this->setVar('site', $site);
         $this->setVar('mode', $editing ? 'edit' : 'add');
         $this->prepareFormSecurity($module, $data);
         return 'addmenu_tpl.php';
@@ -179,11 +207,28 @@ class toolbar extends controller
             'WHERE isVisible = 1 ORDER BY module_id'
         );
         $token = $this->csrf->issue(self::CSRF_CONTEXT);
+        $this->setVar('siteNavigationRows', $this->objDbMenu->siteLinks());
+        $this->setVar('toolbarProfile', strtolower((string) $this->getObject('dbsysconfig', 'sysconfig')->getValue('TOOLBAR_TYPE', 'toolbar', 'dropdown')));
         $this->setVarByRef('moduleList', $moduleList);
         $this->setVarByRef('moduleName', $module);
         $this->setVarByRef('data', $data);
         $this->setVarByRef('toolbarCsrf', $token);
         return 'editlinks_tpl.php';
+    }
+
+    /** Extend the existing editor, ownership checks and permission selection. */
+    private function saveSiteLink()
+    {
+        $module = $this->moduleId($this->getParam('moduleName', ''));
+        if ($this->isBackRequest()) return $this->nextAction('editlinks', array('modulename' => $module));
+        $order = filter_var($this->getParam('position', ''), FILTER_VALIDATE_INT,
+            array('options' => array('min_range' => 0, 'max_range' => 999)));
+        if ($order === false) throw new InvalidArgumentException('Invalid site navigation position');
+        $category = 'site_' . sprintf('%03d', $order) . '||'
+            . $this->identifier('actionName', true) . '|' . $this->identifier('icon', true)
+            . '|' . $this->languageCode() . '|' . $this->identifier('groupCode', true);
+        if (strlen($category) > 120) throw new InvalidArgumentException('Site navigation declaration exceeds 120 characters');
+        return $this->save($module, $category);
     }
 
     private function saveToolLink()

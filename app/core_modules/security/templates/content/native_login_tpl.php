@@ -25,6 +25,7 @@ $esc = function ($value) {
     <p role="alert"><?php echo $esc($labels['failure']); ?></p>
   <?php endif; ?>
   <form method="post" action="index.php?module=security&amp;action=login">
+    <input type="hidden" name="return_to" value="<?php echo $esc($nativeReturnTo ?? ''); ?>">
     <input type="hidden" name="native_auth_begin"
       value="<?php echo $esc($token); ?>">
     <input type="hidden" name="abuse_issued_at"

@@ -13,6 +13,7 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class register extends ChisimbaObject
 {
+    public $objFileReader, $objModules, $objModulesAdmin, $objDbMenu, $objPermissionService, $objGroupService;
     public function init()
     {
         $this->objFileReader = $this->getObject(
@@ -184,6 +185,16 @@ class register extends ChisimbaObject
                     $rightId,
                     $linkContext
                 );
+            }
+        }
+
+        if (!empty($regData['SITE_NAV'])) {
+            foreach ($regData['SITE_NAV'] as $declaration) {
+                list($category, $access, $linkContext) = $this->splitMenuDeclaration($declaration, $isContext);
+                $rightId = $access === array() ? $defaultRight
+                    : $this->canonicalRightForAccessList($moduleId, 'site:' . $category, $access);
+                $this->sql('site_' . strtolower($category), $moduleId,
+                    $access === array() ? $isAdmin : 0, $rightId, $linkContext);
             }
         }
 

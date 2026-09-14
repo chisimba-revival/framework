@@ -88,6 +88,7 @@ class security extends controller
             'nativeAbuseEvidence',
             $stack['abuse']->issueFormEvidence('native.login')
         );
+        $this->setVar('nativeReturnTo', $this->validatedReturnTo($this->getParam('return_to', '')));
         $this->setVar('nativeLoginLabels', array(
             'title' => $this->text('mod_security_nativelogintitle'),
             'username' => $this->text('word_username', 'system'),

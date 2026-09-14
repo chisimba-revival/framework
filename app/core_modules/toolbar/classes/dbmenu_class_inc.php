@@ -32,7 +32,8 @@ class dbmenu extends dbtable
     public function getModules($access = 2, $context = true)
     {
         $filter = "category NOT LIKE 'menu_%'"
-            . " AND category NOT LIKE 'page_%'";
+            . " AND category NOT LIKE 'page_%'"
+            . " AND category NOT LIKE 'site_%'";
         if ($access == 2) {
             $filter .= ' AND adminonly != 1';
         }
@@ -97,6 +98,14 @@ class dbmenu extends dbtable
             . ' WHERE ' . $filter
             . ' ORDER BY category, module'
         );
+    }
+
+    /** Site links share the canonical menu table and permission fields. */
+    public function siteLinks()
+    {
+        $rows = $this->getArray('SELECT * FROM ' . $this->table
+            . " WHERE category LIKE 'site_%' ORDER BY category, module, id");
+        return is_array($rows) ? $rows : array();
     }
 
     public function linksForModule($module)
