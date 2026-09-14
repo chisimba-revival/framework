@@ -57,6 +57,11 @@ Public License
 */
 class washout extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objSysConfig;
+    public $useFilters;
+
     /**
     *
     * @var string array $classes An array to hold all the parser classes

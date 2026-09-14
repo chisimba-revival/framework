@@ -47,6 +47,16 @@
  */
 class dbfile extends dbTable {
 
+    // Services and state populated during initialisation.
+    public $objUser;
+    public $objFileParts;
+    public $objCleanUrl;
+    public $objMediaFileInfo;
+    public $objFileFolder;
+    public $objMimetypes;
+    public $objLanguage;
+
+
     /**
      * @var    array   $currentFile Record of Current File working on
      * @access private

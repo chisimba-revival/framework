@@ -60,6 +60,10 @@ define('TABLE_PREFIX', 'tbl_');
  */
 class languageConfig extends ChisimbaObject {
 
+    // State populated during initialisation and service calls.
+    public $caller;
+
+
     /**
      * Public variable to hold the new language config object
      * @access public

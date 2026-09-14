@@ -50,6 +50,11 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 class parse4smileys extends ChisimbaObject {
+
+    // Explicit state used by this component.
+    public $objIcon;
+    public $smileyIcons;
+
     /**
      *
      * The array is taken from the Moodle smiley parser. The

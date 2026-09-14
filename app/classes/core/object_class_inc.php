@@ -86,6 +86,9 @@ class ChisimbaObject
 
     public $appid;
 
+    /** Cached installation-specific session namespace. */
+    public $sessionkey;
+
     /**
      * Constructor for the object class
      *

@@ -328,10 +328,17 @@ class controller extends access {
      */
     public function callTemplate($_magic__tpl, $_magic__type, $_magic__buffer = TRUE) {
         // objects that almost every template will use
-        $this->setVarByRef('objConfig', $this->getObject('altconfig', 'config'));
-        $this->setVarByRef('objSkin', $this->getObject('skin', 'skin'));
-        $this->setVarByRef('objUser', $this->getObject('user', 'security'));
-        $this->setVarByRef('objLanguage', $this->getObject('language', 'language'));
+        // Use distinct variables: passing a function result by reference warns
+        // on modern PHP, and reusing one loop variable aliases all four services.
+        $_magic__services = array(
+            'objConfig' => $this->getObject('altconfig', 'config'),
+            'objSkin' => $this->getObject('skin', 'skin'),
+            'objUser' => $this->getObject('user', 'security'),
+            'objLanguage' => $this->getObject('language', 'language'),
+        );
+        foreach (array_keys($_magic__services) as $_magic__name) {
+            $this->setVarByRef($_magic__name, $_magic__services[$_magic__name]);
+        }
         $_magic__path = $this->objEngine->_findTemplate($_magic__tpl, $this->moduleName, $_magic__type);
         // extract the template vars
         // TODO: think some more about the extract flags to use

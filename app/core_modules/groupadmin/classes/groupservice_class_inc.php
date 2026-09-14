@@ -17,6 +17,11 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class groupservice extends ChisimbaObject
 {
+
+    // Services populated during initialisation and rendering.
+    public $objIdentityService;
+    public $objSysConfig;
+
     private $objGroups;
     private $objUserAdmin;
     private $objUser;

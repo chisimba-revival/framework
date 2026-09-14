@@ -192,7 +192,7 @@ class Zend_Search_Lucene_Index_Writer
             // write version (is initialized by current time
             // $segmentsFile->writeLong((int)microtime(true));
             $version = microtime(true);
-            $segmentsFile->writeInt((int)($version/((double)0xFFFFFFFF + 1)));
+            $segmentsFile->writeInt((int)($version/((float)0xFFFFFFFF + 1)));
             $segmentsFile->writeInt((int)($version & 0xFFFFFFFF));
 
             // write name counter
@@ -217,7 +217,7 @@ class Zend_Search_Lucene_Index_Writer
             // write version (is initialized by current time
             // $segmentsFile->writeLong((int)microtime(true));
             $version = microtime(true);
-            $segmentsFile->writeInt((int)($version/((double)0xFFFFFFFF + 1)));
+            $segmentsFile->writeInt((int)($version/((float)0xFFFFFFFF + 1)));
             $segmentsFile->writeInt((int)($version & 0xFFFFFFFF));
 
             // write name counter
@@ -457,11 +457,11 @@ class Zend_Search_Lucene_Index_Writer
             // Process version on 32-bit platforms
             $versionHigh = $segmentsFile->readInt();
             $versionLow  = $segmentsFile->readInt();
-            $version = $versionHigh * ((double)0xFFFFFFFF + 1) +
-                       (($versionLow < 0)? (double)0xFFFFFFFF - (-1 - $versionLow) : $versionLow);
+            $version = $versionHigh * ((float)0xFFFFFFFF + 1) +
+                       (($versionLow < 0)? (float)0xFFFFFFFF - (-1 - $versionLow) : $versionLow);
             $version += $this->_versionUpdate;
             $this->_versionUpdate = 0;
-            $newSegmentFile->writeInt((int)($version/((double)0xFFFFFFFF + 1)));
+            $newSegmentFile->writeInt((int)($version/((float)0xFFFFFFFF + 1)));
             $newSegmentFile->writeInt((int)($version & 0xFFFFFFFF));
 
             // Write segment name counter
@@ -527,11 +527,11 @@ class Zend_Search_Lucene_Index_Writer
                     if (!isset($this->_segmentInfos[$segName])) {
                         if (PHP_INT_SIZE > 4) {
                         	// 64-bit system
-                        	$delGen = $delGenHigh << 32  |
+                            $delGen = $delGenHigh << 32  |
                         	          $delGenLow;
                         } else {
-                        	$delGen = $delGenHigh * ((double)0xFFFFFFFF + 1) +
-                                         (($delGenLow < 0)? (double)0xFFFFFFFF - (-1 - $delGenLow) : $delGenLow);
+                            $delGen = $delGenHigh * ((float)0xFFFFFFFF + 1) +
+                                         (($delGenLow < 0)? (float)0xFFFFFFFF - (-1 - $delGenLow) : $delGenLow);
                         }
                         if ($isCompoundByte == 0xFF) {
                             // The segment is not a compound file
@@ -562,7 +562,7 @@ class Zend_Search_Lucene_Index_Writer
                                 $delGenHigh = $delGen >> 32  & 0xFFFFFFFF;
                                 $delGenLow  = $delGen        & 0xFFFFFFFF;
                             } else {
-                                $delGenHigh = (int)($delGen/((double)0xFFFFFFFF + 1));
+                                $delGenHigh = (int)($delGen/((float)0xFFFFFFFF + 1));
                                 $delGenLow  =(int)($delGen & 0xFFFFFFFF);
                             }
                         } else {

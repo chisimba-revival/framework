@@ -52,6 +52,10 @@
 class filefolder extends ChisimbaObject
 {
 
+    // Services and state populated during initialisation.
+    public $objFileParts;
+
+
     /**
     * Constructor
     */
@@ -157,7 +161,7 @@ class filefolder extends ChisimbaObject
             case 'ogg':
             case 'mp3':
                 return 'audio'; break;
-            case 'rm';
+            case 'rm':
             case '3gp':
             case 'flv':
                 return 'video'; break;

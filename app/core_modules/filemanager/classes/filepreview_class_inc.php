@@ -42,6 +42,16 @@
  */
 class filepreview extends ChisimbaObject {
 
+    // Services and state populated during initialisation.
+    public $objFileParts;
+    public $objFiles;
+    public $objCleanurl;
+    public $objThumbnails;
+    public $objFileEmbed;
+    public $objFolderAccess;
+    public $sysConf;
+
+
     //secure folder 
     private $secureFolder;
     private $isSecure = FALSE;
@@ -79,10 +89,11 @@ class filepreview extends ChisimbaObject {
 
         $this->file = $this->objFiles->getFileInfo($fileId);
 
-        if ($this->file == FALSE) {
+        if ($this->file == FALSE || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($this->file)) {
             return '';
         }
 
+        $this->isSecure = false;
         if ($this->objFolderAccess->isFileAccessPrivate($this->file)) {
             $this->isSecure = true;
         }

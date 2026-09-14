@@ -283,14 +283,17 @@ class XML_Parser extends PEAR
         switch ($this->mode) {
 
         case 'func':
-            xml_set_object($this->parser, $this->_handlerObj);
             xml_set_element_handler($this->parser,
                 array($this, 'funcStartHandler'), array($this, 'funcEndHandler'));
             break;
 
         case 'event':
-            xml_set_object($this->parser, $this->_handlerObj);
-            xml_set_element_handler($this->parser, 'startHandler', 'endHandler');
+            // Keep legacy by-reference start handlers compatible without asking
+            // the XML extension to pass its attribute argument by reference.
+            xml_set_element_handler($this->parser,
+                function ($parser, $element, $attributes) {
+                    $this->_handlerObj->startHandler($parser, $element, $attributes);
+                }, array($this->_handlerObj, 'endHandler'));
             break;
         default:
             return $this->raiseError('Unsupported mode given',
@@ -304,7 +307,7 @@ class XML_Parser extends PEAR
         foreach ($this->handler as $xml_func => $method) {
             if (method_exists($this->_handlerObj, $method)) {
                 $xml_func = 'xml_set_' . $xml_func;
-                $xml_func($this->parser, $method);
+                $xml_func($this->parser, array($this->_handlerObj, $method));
             }
         }
     }
@@ -570,7 +573,10 @@ class XML_Parser extends PEAR
     function free()
     {
         if ($this->parser) {
-            xml_parser_free($this->parser);
+            // PHP 8 uses an object; releasing our reference is sufficient.
+            if (PHP_VERSION_ID < 80000) {
+                xml_parser_free($this->parser);
+            }
             $this->parser = null;
         }
         if (isset($this->fp) && is_resource($this->fp)) {

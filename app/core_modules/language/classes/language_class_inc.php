@@ -112,6 +112,10 @@ class language extends dbTable {
     public $abstractList;
     public $objLangConfig;
 
+    // Services and state populated during initialisation.
+    public $objAbstract;
+
+
     /**
      * Constructor method for the language class
      */
@@ -121,7 +125,7 @@ class language extends dbTable {
             $this->objConfig = $this->getObject('altconfig', 'config');
             $this->lang = $this->getObject('languageConfig', 'language');
             $this->objLangConfig = $this->getObject('languageConfig', 'language');
-            $this->lang = &$this->lang->setup();
+            $this->lang = $this->lang->setup();
             $this->langAdmin = $this->objLangConfig->getLangAdmin();
             $ab = strtolower($this->objConfig->getdefaultLanguageAbbrev());
             $country = $this->objConfig->getCountry();

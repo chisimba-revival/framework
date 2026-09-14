@@ -59,6 +59,10 @@ if (!/**
  */
 class dbcontext extends dbTable {
 
+    // Explicit state used by this component.
+    public $table;
+
+
     /**
      * The user Object
      *

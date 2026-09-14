@@ -35,6 +35,26 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class sidemenu extends ChisimbaObject {
 
+    // Services and state used by the authenticated journey.
+    public $context;
+    public $contextTitle;
+    public $contextcode;
+    public $dbMenu;
+    public $dbSysConfig;
+    public $globalNodes;
+    public $globalTable;
+    public $iconFolder;
+    public $iconModFolder;
+    public $objContext;
+    public $objHead;
+    public $objIcon;
+    public $objLanguage;
+    public $objLink;
+    public $objTools;
+    public $objUserPic;
+    public $securityContext;
+
+
     /**
      * Method to construct the class.
      */
@@ -172,8 +192,7 @@ class sidemenu extends ChisimbaObject {
         $head = NULL;
         //$head .= '<div class="vcard">'."\n";
         $displayName = $this->securityContext->displayName();
-        $objUser = $this->getObject('user', 'security');
-        $username = $objUser->userName();
+        $username = $this->securityContext->userName();
         $head .= '<span class="fn">'
             . htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8')
             . ' (' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . ')'

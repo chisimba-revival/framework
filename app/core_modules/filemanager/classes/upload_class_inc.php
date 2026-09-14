@@ -52,6 +52,26 @@ $this->loadClass('filemanagerobject', 'filemanager');
 
 class upload extends filemanagerobject {
 
+    // State used by authenticated editing and file selection.
+    public $formExtra;
+    public $name;
+    public $numInputs;
+    public $objAnalyzeMediaFile;
+    public $objCleanUrl;
+    public $objFile;
+    public $objFileFolder;
+    public $objFileParts;
+    public $objFolder;
+    public $objFolderAccess;
+    public $objLanguage;
+    public $objMediaFileInfo;
+    public $objMetadataScripts;
+    public $objMkdir;
+    public $objThumbnails;
+    public $objUser;
+    public $sysConf;
+
+
     /**
      * @var string $formaction Form Action to take
      */

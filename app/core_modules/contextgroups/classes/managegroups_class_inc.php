@@ -56,6 +56,14 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class manageGroups extends ChisimbaObject
 {
+
+    // Services and state populated during initialisation.
+    public $contextCode;
+    public $currentUser;
+    public $lectGroupId;
+    public $studGroupId;
+    public $guestGroupId;
+
     /**
     * @var dbContext Reference to context module.
     */
@@ -354,7 +362,7 @@ class manageGroups extends ChisimbaObject
     * @param  string UserId
     * @return array  List of all context codes the user is a member of.
     */
-    function usercontextcodeslimited($userId=NULL, $start, $limit=50)
+    function usercontextcodeslimited($userId, $start, $limit=50)
     {
         //sql to find the user's groups
         $sql = "SELECT gu.group_id, gr.group_define_name 

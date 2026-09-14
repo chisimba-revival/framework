@@ -21,6 +21,10 @@ Public License
 */
 class textstats extends ChisimbaObject {
 
+    // Explicit state used by this component.
+    public $objElemStats;
+
+
     /**
     * @var $evaluation_string
     * Property to hold the string being evaluated

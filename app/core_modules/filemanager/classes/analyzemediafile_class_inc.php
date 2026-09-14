@@ -50,6 +50,14 @@
  */
 class analyzemediafile extends ChisimbaObject
 {
+
+    // State used by authenticated editing and file selection.
+    public $objFileParts;
+    public $objGetId3;
+    public $objOggReader;
+    public $objSingleArray;
+    public $objXMLSerializer;
+
     
     /**
     * Constructor

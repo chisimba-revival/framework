@@ -53,6 +53,11 @@ $GLOBALS['kewl_entry_point_run'])
 
 class parse4chiki extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objLanguage;
+    public $objUser;
+
     /**
      *
      * @var String chicki string

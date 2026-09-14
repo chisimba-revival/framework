@@ -27,6 +27,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class block_latestcourses extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $configData;
+
     /** @var object Language service. */
     public $objLanguage;
 

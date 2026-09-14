@@ -57,6 +57,11 @@
  */
 class dbquotas extends dbTable {
 
+    // State used by authenticated editing and file selection.
+    public $objLanguage;
+    public $objUser;
+
+
     /**
      * Constructor
      */
@@ -304,7 +309,7 @@ class dbquotas extends dbTable {
      * @param string $orderBy How results should be ordered
      * @return array
      */
-    public function getResults($searchType, $searchField='', $searchFor='', $orderBy='', $numItemsPerPage=0, $page=0) {
+    public function getResults($searchType, $searchField, $searchFor, $orderBy='', $numItemsPerPage=0, $page=0) {
         if ($searchType == 'context') {
             $substring = $this->getSubstring('tbl_files_quotas.path', 9);
 
@@ -347,7 +352,7 @@ class dbquotas extends dbTable {
      * @param string $orderBy How results should be ordered
      * @return int
      */
-    public function getNumResults($searchType, $searchField='', $searchFor='', $orderBy) {
+    public function getNumResults($searchType, $searchField, $searchFor, $orderBy) {
         if ($searchType == 'context') {
             $substring = $this->getSubstring('tbl_files_quotas.path', 9);
 
@@ -386,7 +391,7 @@ class dbquotas extends dbTable {
      * @param int $numItemsPerPage Number of items per page
      * @return int
      */
-    public function getNumPages($searchType, $searchField='', $searchFor='', $orderBy, $numItemsPerPage) {
+    public function getNumPages($searchType, $searchField, $searchFor, $orderBy, $numItemsPerPage) {
         $numResults = $this->getNumResults($searchType, $searchField, $searchFor, $orderBy);
         if ($numResults == 0) {
             $numPages = 1;

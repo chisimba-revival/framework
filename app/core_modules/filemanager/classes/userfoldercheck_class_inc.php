@@ -51,6 +51,11 @@
  */
 class userfoldercheck extends ChisimbaObject
 {
+
+    // State used by authenticated editing and file selection.
+    public $objFolder;
+    public $objMkdir;
+
     /**
     * @var array $subFolders List of Possible Subfolders for storing files
     */

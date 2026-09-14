@@ -57,6 +57,10 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class canvaschooser extends controller
 {
+
+    // Explicit state used by this component.
+    public $objSysConfig;
+
     /**
     *
     * @var string $canvas The name of the canvas to load

@@ -46,6 +46,11 @@ class toolbarsecuritycontext extends ChisimbaObject
         return $this->user->userId();
     }
 
+    public function userName()
+    {
+        return $this->isAuthenticated() ? $this->user->userName() : '';
+    }
+
     public function displayName()
     {
         if (!$this->isAuthenticated()) {

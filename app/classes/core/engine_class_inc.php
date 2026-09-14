@@ -138,6 +138,12 @@ function globalPearErrorCallback($error) {
  * @see       core
  */
 class engine {
+
+    // Services and state populated during initialisation.
+    public $objSysConfig;
+    public $_objSkin;
+    public $_action;
+
     /**
      * Version Number of the software. (engine)
      *
@@ -721,7 +727,7 @@ class engine {
                 // Connect to the database
                 require_once ('MDB2.php');
                 //trigger_error(var_export($this->dsn, TRUE));
-                $_globalObjDb = &MDB2::singleton ( $this->dsn );
+                $_globalObjDb = MDB2::singleton ( $this->dsn );
                 //Check for errors on the factory method
                 if (PEAR::isError ( $_globalObjDb )) {
                     $this->_pearErrorCallback ( $_globalObjDb );
@@ -2181,9 +2187,9 @@ class engine {
         $path = '';
         if (! empty ( $moduleName )) {
             if (in_array ( $moduleName, $this->coremods )) {
-                $path = "core_modules/" . "${moduleName}/templates/${type}/${tpl}";
+                $path = "core_modules/" . "{$moduleName}/templates/{$type}/{$tpl}";
             } else {
-                $path = $this->_objConfig->getModulePath () . "${moduleName}/templates/${type}/${tpl}";
+                $path = $this->_objConfig->getModulePath () . "{$moduleName}/templates/{$type}/{$tpl}";
             }
         }
         if (empty ( $path ) || ! file_exists ( $path )) {

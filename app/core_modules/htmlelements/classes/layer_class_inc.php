@@ -50,6 +50,11 @@ require_once("ifhtml_class_inc.php");
 */
 class layer extends ChisimbaObject implements ifhtml
 {
+
+    // Explicit state used by this component.
+    public $visibility;
+    public $clear;
+
     /**
     *
     * @var string $id: the ID tag from the CSS

@@ -31,6 +31,21 @@ if (! $GLOBALS ['kewl_entry_point_run']) {
  */
 class tools extends ChisimbaObject
 {
+
+    // Services and state populated during initialisation.
+    public $objLanguage;
+    public $objSysConfig;
+    public $securityContext;
+    public $objIcon;
+    public $objLink;
+    public $objSkin;
+    public $moduleCheck;
+    public $objHelp;
+    public $contextObject;
+    public $contextCode;
+    public $contextTitle;
+    public $contextMenu;
+
     /**
      * @var $params Holds additional parameters for the header / body onload of the page template
      * @access public

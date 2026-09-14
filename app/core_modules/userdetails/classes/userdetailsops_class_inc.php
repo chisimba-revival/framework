@@ -52,6 +52,27 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class userdetailsops extends ChisimbaObject
 {
+
+    // Services and state used by the authenticated journey.
+    public $objBizCard;
+    public $objCleanUrl;
+    public $objCountries;
+    public $objDropdown;
+    public $objFile;
+    public $objForm;
+    public $objGroups;
+    public $objIcon;
+    public $objInput;
+    public $objLanguage;
+    public $objLayer;
+    public $objRadio;
+    public $objSvars;
+    public $objTable;
+    public $objText;
+    public $objUser;
+    public $objUserAdmin;
+    public $userId;
+
     /**
      * 
      * Variable to hold then check for schoolusers

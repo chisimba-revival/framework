@@ -46,6 +46,10 @@
  * @see       core
  */
 class altconfig extends ChisimbaObject {
+
+    // State populated during initialisation and service calls.
+    public $SettingsDirective;
+
     /**
      * The pear config object
      *
@@ -148,7 +152,7 @@ class altconfig extends ChisimbaObject {
      * @return boolean   True/False result.
      *
      */
-    public function readConfig($config = FALSE, $property) {
+    public function readConfig($config, $property) {
         try {
             // read configuration data and get reference to root
             if (! isset ( $this->_path ))
@@ -375,7 +379,7 @@ class altconfig extends ChisimbaObject {
      * @return boolean TRUE for success / FALSE fail .
      *
      */
-    public function readProperties($path = false, $property) {
+    public function readProperties($path, $property) {
         // read configuration data and get reference to root
         try {
             if (! isset ( $path ))
@@ -436,7 +440,7 @@ class altconfig extends ChisimbaObject {
      * @var string  $pvalue The value of the config parameter
      * @var boolean $isAdminConfigurable TRUE | FALSE Whether the parameter is admin configurable or not
      */
-    public function updateParam($pname, $pmodule = False, $pvalue, $isAdminConfigurable = False) {
+    public function updateParam($pname, $pmodule, $pvalue, $isAdminConfigurable = False) {
         try {
             //Lets get the parent node section first
             $Settings = & $this->_root->getItem ( "section", "Settings" );
@@ -1770,7 +1774,7 @@ class altconfig extends ChisimbaObject {
      */
     public function serverName() {
         if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+            $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node

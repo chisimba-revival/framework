@@ -88,13 +88,13 @@ class access extends ChisimbaObject {
         $this->objConfig = $this->getObject('altconfig', 'config');
         $this->preloginModule = $this->objConfig->getPrelogin('KEWL_PRELOGIN_MODULE');
         $xlogoutdestroy = $this->objConfig->getValue('auth_logoutdestroy', 'security', true);
-        if (strtoupper($xlogoutdestroy) == 'TRUE') {
+        if (strtoupper((string) $xlogoutdestroy) == 'TRUE') {
             $this->logoutdestroy = true;
         } else {
             $this->logoutdestroy = false;
         }
         $modulesNotToLogStr = $this->objSysConfig->getValue('EXCLUDE_LOGGING', 'security');
-        $this->modulesNotToLog = explode(",", $modulesNotToLogStr);
+        $this->modulesNotToLog = explode(",", (string) $modulesNotToLogStr);
     }
 
     /**

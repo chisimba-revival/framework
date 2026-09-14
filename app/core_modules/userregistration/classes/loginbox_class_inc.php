@@ -68,6 +68,13 @@ Public License
 class loginbox extends ChisimbaObject
 {
 
+    // Services and state populated during initialisation.
+    public $objAltConfig;
+    public $objUser;
+    public $objSysConfig;
+    public $isEnabled;
+
+
 
     /**
      * Constructor method. It does nothing here

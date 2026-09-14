@@ -74,6 +74,10 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class blockfilter extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objBlockFilter;
+
     /**
     *
     * @var string $objJson Object the decoded json object

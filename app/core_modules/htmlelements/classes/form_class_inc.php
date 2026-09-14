@@ -64,6 +64,11 @@ require_once("ifhtml_class_inc.php");
 
 class form implements ifhtml
 {
+
+    // Explicit state used by this component.
+    public $onSubmit;
+    public $id;
+
     /**
      *
      * @var string $name
@@ -615,15 +620,15 @@ class form implements ifhtml
             case 'minnumber':
                 $this->_valMinNumber($mix,$errormsg);
                 break;
-            case 'select';
+            case 'select':
                 $this->_valSelect($mix,$errormsg);
                 break;
-            case 'compare';
+            case 'compare':
                 $this->_valCompare($mix, $errormsg);
                 break;
             case 'regex':
-            case 'nopunctuaion';
-            case 'nonzero';
+            case 'nopunctuaion':
+            case 'nonzero':
             case 'url':
                 $this->_validateURL($mix,$errormsg);
                 break;
@@ -639,10 +644,10 @@ class form implements ifhtml
             case 'twofielddate':
                 $this->_valTwoFieldDate($mix, $errormsg);
                 break;
-            case 'uploadedfile';
-            case 'maxfilesize';
-            case 'filename';
-            case 'mimetype';
+            case 'uploadedfile':
+            case 'maxfilesize':
+            case 'filename':
+            case 'mimetype':
             case 'fieldexists':
                 $this->_valFieldExists($mix);
                 break;

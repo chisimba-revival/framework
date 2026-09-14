@@ -47,6 +47,10 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class block_login extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $configData;
+
     /**
     * @var string $title The title of the block
     */

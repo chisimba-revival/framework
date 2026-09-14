@@ -47,6 +47,12 @@ if (! $GLOBALS ['kewl_entry_point_run']) {
 class useradmin_model2 extends dbtable
 {
 
+    // Services and state populated during initialisation.
+    public $objUserService;
+    public $objAuthenticationService;
+    public $objUserAccountLifecycleService;
+
+
     /**
     * @var object $objConfig Config Object
     */
@@ -225,7 +231,7 @@ class useradmin_model2 extends dbtable
     * @return boolean Result of Update
     *
     */
-    public function updateUserDetails($id, $username='', $firstname, $surname, $title, $email, $sex, $country, $cellnumber='', $staffnumber='', $password='', $accountType='', $accountstatus='')
+    public function updateUserDetails($id, $username, $firstname, $surname, $title, $email, $sex, $country, $cellnumber='', $staffnumber='', $password='', $accountType='', $accountstatus='')
     {
         // Alternative authentication belongs in provider plugins.
         if (strtolower((string) $accountType) === 'ldap') {
@@ -319,7 +325,7 @@ class useradmin_model2 extends dbtable
     * @param string $value    Search Query Value
     * @param string $orderby  How to order/sort results
     */
-    public function searchUsers($field, $value, $position='contains', $orderby)
+    public function searchUsers($field, $value, $position, $orderby)
     {
         switch ($position)
         {

@@ -13,6 +13,10 @@ if(!$GLOBALS['kewl_entry_point_run']){
 
 class dbsystem extends dbTable
 {
+
+    // State populated during initialisation and service calls.
+    public $table;
+
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
         parent::init('tbl_systext_system');

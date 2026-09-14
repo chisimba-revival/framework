@@ -82,7 +82,7 @@ class MDB2_Iterator implements Iterator
      * @return void
      * @access public
      */
-    public function seek($rownum)
+    public function seek($rownum): void
     {
         $this->row = null;
         if ($this->result) {
@@ -99,7 +99,7 @@ class MDB2_Iterator implements Iterator
      * @return void
      * @access public
      */
-    public function next()
+    public function next(): void
     {
         $this->row = null;
     }
@@ -113,7 +113,7 @@ class MDB2_Iterator implements Iterator
      * @return void
      * @access public
      */
-    public function current()
+    public function current(): mixed
     {
         if (null === $this->row) {
             $row = $this->result->fetchRow($this->fetchmode);
@@ -134,7 +134,7 @@ class MDB2_Iterator implements Iterator
      * @return bool true/false, false is also returned on failure
      * @access public
      */
-    public function valid()
+    public function valid(): bool
     {
         return (bool)$this->current();
     }
@@ -167,7 +167,7 @@ class MDB2_Iterator implements Iterator
      * @return int|bool|MDB2_Error true on success, false|MDB2_Error if result is invalid
      * @access public
      */
-    public function key()
+    public function key(): mixed
     {
         if ($this->result) {
             return $this->result->rowCount();
@@ -184,7 +184,7 @@ class MDB2_Iterator implements Iterator
      * @return void
      * @access public
      */
-    public function rewind()
+    public function rewind(): void
     {
     }
     // }}}
@@ -218,10 +218,11 @@ class MDB2_BufferedIterator extends MDB2_Iterator implements SeekableIterator
      * @return bool|MDB2_Error true on success, false|MDB2_Error if result is invalid
      * @access public
      */
-    public function valid()
+    public function valid(): bool
     {
         if ($this->result) {
-            return $this->result->valid();
+            $valid = $this->result->valid();
+            return !MDB2::isError($valid) && (bool) $valid;
         }
         return false;
     }
@@ -252,7 +253,7 @@ class MDB2_BufferedIterator extends MDB2_Iterator implements SeekableIterator
      * @return void
      * @access public
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->seek(0);
     }

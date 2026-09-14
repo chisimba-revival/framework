@@ -48,10 +48,10 @@ foreach (array(
     }
 }
 
+// cssmenu renders navigation entries only; it does not provide a logout control.
 $logoutFiles = array(
     'toolbar_elearn_class_inc.php',
     'flatmenu_class_inc.php',
-    'cssmenu_class_inc.php',
     'tabsmenu_class_inc.php',
 );
 foreach ($logoutFiles as $file) {

@@ -20,6 +20,11 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class flatmenu extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objLanguage;
+    public $securityContext;
+
     public $menu = array();
 
     /**

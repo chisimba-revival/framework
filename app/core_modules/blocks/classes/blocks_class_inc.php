@@ -57,6 +57,12 @@ if (!/**
  */
 class blocks extends ChisimbaObject {
 
+    // Explicit state used by this component.
+    public $cbExists;
+    public $objTxtBlockBase;
+    public $block;
+
+
     /**
      * Propoerty to hold the objUser object
      *

@@ -72,6 +72,11 @@ class skin extends ChisimbaObject
     */
     public $objSkinChooser;
 
+    /** Services and paths initialised for skin rendering. */
+    public $objLanguage;
+    public $browserInfo;
+    public $skinRoot;
+
     /**
     *
     * @var string object Hold configuration reading object

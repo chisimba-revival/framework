@@ -65,6 +65,10 @@ include($this->getResourcePath('imagecreatefrompsd.php', 'files'));
  */
 class imageresize extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objFileParts;
+
     
     /**
     * @var string $image Imported Content of the Image

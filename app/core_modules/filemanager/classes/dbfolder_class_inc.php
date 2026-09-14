@@ -46,6 +46,15 @@
  */
 class dbfolder extends dbTable {
 
+    // Services and state populated during initialisation.
+    public $objFiles;
+    public $objUser;
+    public $objCleanUrl;
+    public $objContext;
+    public $contextCode;
+    public $objLanguage;
+
+
     /**
      * Constructor
      */
@@ -201,7 +210,7 @@ class dbfolder extends dbTable {
      * @param string $treeType Type of Tree - Either dhtml or htmldropdown
      * @param string $selected Record Id of default selected node
      */
-    function getTree($folderType = 'users', $id, $treeType = 'dhtml', $selected = '') {
+    function getTree($folderType, $id, $treeType = 'dhtml', $selected = '') {
         //Create a new tree
         //Create the variable to contain the link's title text and assign it the value [ Contains folder(s) and file(s) ]
         $titleAttr; // = $this->objLanguage->languageText("mod_filemanager_contentsindicator","filemanager");

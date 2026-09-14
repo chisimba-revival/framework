@@ -57,6 +57,10 @@ die("You cannot view this page directly");
  */
 class fileicons extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objIcon;
+
     /**
     * @var string $size Size of the icon, either small or large
     */

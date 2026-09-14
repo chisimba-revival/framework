@@ -57,6 +57,10 @@
  * @see
  */
 class fileembed extends ChisimbaObject {
+
+    // Services and state populated during initialisation.
+    public $objCleanUrl;
+
     /**
     *
     * @var object $objLanguage The language object

@@ -84,7 +84,7 @@ foreach (array(
     }
 }
 if (strpos($menuBoundary, 'canonicalRightForRegistration') === false
-    || strpos($menuBoundary, 'canonicalRightForAccessList') === false) {
+    || strpos($menuBoundary, '$objToolbarRegister->replaceData($registerdata)') === false) {
     fwrite(STDERR, "Module registration does not use canonical toolbar API\n");
     exit(1);
 }

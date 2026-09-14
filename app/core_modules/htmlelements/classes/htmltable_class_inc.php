@@ -59,6 +59,12 @@ Public License
 */
 class htmlTable extends ChisimbaObject implements ifhtml
 {
+
+    // Explicit state used by this component.
+    public $head;
+    public $tdClasses;
+    public $trClasses;
+
     /**
     *
     * @var string $id: the ID tag from the CSS

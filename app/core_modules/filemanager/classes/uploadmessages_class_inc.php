@@ -50,6 +50,14 @@
 $this->loadClass('filemanagerobject', 'filemanager');
 class uploadmessages extends filemanagerobject
 {
+
+    // State used by authenticated editing and file selection.
+    public $objCleanUrl;
+    public $objFiles;
+    public $objLanguage;
+    public $objMediaFileInfo;
+    public $objUser;
+
     
     /**
     * Constructor

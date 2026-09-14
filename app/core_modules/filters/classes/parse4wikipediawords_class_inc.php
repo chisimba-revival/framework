@@ -51,6 +51,11 @@ $GLOBALS['kewl_entry_point_run'])
 
 class parse4wikipediawords extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objLanguage;
+    public $sysConfig;
+
     /**
     *
     * String to hold an error message

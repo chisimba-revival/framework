@@ -104,11 +104,14 @@ class dbTable extends ChisimbaObject {
     private $_db = NULL;
 
     /**
-     * Static variable that holds the system database type
+     * Database type for this instance and its connection
      *
      * @var string
      */
-    public static $dbType;
+    public $dbType;
+
+    /** Server prefix used when generating identifiers and cache keys. */
+    public $_serverName;
 
     /**
      * Are we in a transaction?
@@ -350,7 +353,7 @@ class dbTable extends ChisimbaObject {
      * @param  mixed  $pkvalue the value of the primary key field for the record
      */
     public function getRow($pk_field, $pk_value, $table = NULL) {
-        $pk_value = addslashes($pk_value);
+        $pk_value = addslashes($pk_value ?? '');
         if ($table != NULL) {
             $this->_tableName = $table;
         }

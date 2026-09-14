@@ -56,6 +56,24 @@ if (!/**
  */
 class context extends controller {
 
+    // Services and state used by the authenticated journey.
+    public $cbExists;
+    public $contextTitle;
+    public $courseLauncher;
+    public $csrf;
+    public $dbSysConfig;
+    public $eventsEnabled;
+    public $objBlocks;
+    public $objBlocksContent;
+    public $objContextBlocks;
+    public $objContextGroups;
+    public $objDynamicBlocks;
+    public $objLanguage;
+    public $objModuleCatalogue;
+    public $objTxtBlockBase;
+    public $objUserContext;
+
+
     const COURSE_LAUNCH_CSRF = 'context_course_activity_launch';
 
     /**

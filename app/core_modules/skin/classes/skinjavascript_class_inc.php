@@ -58,6 +58,10 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class skinjavascript extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $objModules;
+
     /**
      * Instance of the mischtml class in htmlelements.
      *

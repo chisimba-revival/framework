@@ -22,6 +22,8 @@ class dbsysconfig extends dbTable
     * @var object $objConfig The config object
     */
     var $objConfig;
+    /** Parameter values are data, scoped to their owning module. */
+    private $parameterValues = array();
 
     /**
     * Standard init function to set the database table and instantiate
@@ -123,11 +125,11 @@ class dbsysconfig extends dbTable
     */
     function getValue($pname, $pmodule = "_site_", $default = NULL)
     {
-        if (!isset($this->$pname)) {
+        if (!isset($this->parameterValues[$pmodule][$pname])) {
             $this->setProperties($pmodule);
         }
-        if (isset($this->$pname)) {
-            return $this->$pname;
+        if (isset($this->parameterValues[$pmodule][$pname])) {
+            return $this->parameterValues[$pmodule][$pname];
         } else {
             return $default;
         }
@@ -163,7 +165,7 @@ class dbsysconfig extends dbTable
             foreach ($ar as $line) {
                 $pname = $line['pname'];
                 $pvalue = $line['pvalue'];
-                $this->$pname = $pvalue;
+                $this->parameterValues[$pmodule][$pname] = $pvalue;
             } #foreach
         } #if
         return true; //$ar;

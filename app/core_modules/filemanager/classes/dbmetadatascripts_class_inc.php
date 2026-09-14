@@ -48,6 +48,10 @@
  */
 class dbmetadatascripts extends dbTable
 {
+
+    // State used by authenticated editing and file selection.
+    public $objUser;
+
     
     /**
     * Constructor

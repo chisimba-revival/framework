@@ -196,7 +196,7 @@ class dbTableManager extends ChisimbaObject {
      * @param  string $dumpfile
      * @return bool
      */
-    public function dumpDatabaseToFile($option = 'dump', $dumptype = 'all', $dumpfile) {
+    public function dumpDatabaseToFile($option, $dumptype, $dumpfile) {
         // lets set a time limit on this
         set_time_limit(0);
 

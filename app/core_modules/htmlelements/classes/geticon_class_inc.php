@@ -54,6 +54,8 @@ class getIcon extends ChisimbaObject implements ifhtml
     * @var string $_objConfig: string for the configuration object
     */
     public $_objConfig;
+    public $_objLanguage;
+    public $_objSkin;
     /**
     * @var string $align: optional align property
     */

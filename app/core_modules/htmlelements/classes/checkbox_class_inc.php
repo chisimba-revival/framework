@@ -60,6 +60,10 @@ require_once("ifhtml_class_inc.php");
 class checkbox  extends abhtmlbase implements ifhtml
 {
 
+    // Explicit state used by this component.
+    public $label;
+
+
     /**
      * Variable used to determine
      * whether or not the box is

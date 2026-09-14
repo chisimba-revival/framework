@@ -26,6 +26,14 @@
  */
 class folderaccess extends ChisimbaObject {
 
+    // Services and state populated during initialisation.
+    public $objLanguage;
+    public $sysConf;
+    public $objSysConfig;
+    public $objFolder;
+    public $objUser;
+
+
     //secure folder 
     private $secureFolder;
 
@@ -461,25 +469,12 @@ echo $destFilePathFull;
     function downloadFile($filepath, $filename) {
 
 
-        //check if user has access to the parent folder before accessing it
-
-        $parts = explode('/', $filepath);
-        switch ($parts[0]) {
-
-            case 'context': // this is a context folder, so we must check if this user has access to the context first
-                $contextCode = $parts[1];
-
-                $userId = $this->objUser->userid();
-                /* $groupId = $this->objGroupAdminModel->getId($contextCode);
-                  if (!$this->objGroupOps->isGroupMember($groupId, $userId)) {
-                  die("I'm sorry, you may not download that file.");
-                  } */
-
-                $objUserContext = $this->getObject('usercontext', 'context');
-                if (!$objUserContext->isContextMember($userId, $contextCode)) {
-                    return "filenotavailable_tpl.php";
-                }
-                break;
+        // Resolve legacy path links to a registered record before applying the
+        // same read policy used by ID downloads and previews.
+        $record = $this->getObject('dbfile', 'filemanager')->getFileDetailsFromPath($filepath);
+        if (!is_array($record) || $record['filename'] !== $filename
+            || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($record)) {
+            return 'filenotavailable_tpl.php';
         }
 
         $baseDir = $this->secureFolder;
@@ -502,7 +497,12 @@ echo $destFilePathFull;
             return "filenotavailable_tpl.php";
 
         // Combine the download path and the filename to create the full path to the file.
-        $file = $baseDir . '/' . $filepath;
+        $root = realpath($baseDir);
+        $file = realpath($baseDir . '/' . $filepath);
+        if ($root === false || $file === false || !is_file($file)
+            || !str_starts_with($file, $root . DIRECTORY_SEPARATOR)) {
+            return 'filenotavailable_tpl.php';
+        }
 
         // Test to ensure that the file exists.
         if (!file_exists($file)) {
@@ -511,7 +511,7 @@ echo $destFilePathFull;
         }
 
         // Extract the type of file which will be sent to the browser as a header
-        $type = filetype($file);
+        $type = (new finfo(FILEINFO_MIME_TYPE))->file($file) ?: 'application/octet-stream';
 
         // Get a date and timestamp
         $today = date("F j, Y, g:i a");

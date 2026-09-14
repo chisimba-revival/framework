@@ -46,6 +46,16 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class user extends dbTable {
 
+    // State used by authenticated editing and file selection.
+    public $objGroupService;
+
+
+    // Services and state populated during initialisation.
+    public $objSkin;
+    public $objGroups;
+    public $imageUri;
+
+
     public $objConfig;
     private $objLanguage;
     private $loggedInUsers;

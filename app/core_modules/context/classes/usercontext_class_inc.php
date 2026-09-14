@@ -57,6 +57,12 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @see       core
  */
 class usercontext extends ChisimbaObject {
+
+    // State populated during initialisation and service calls.
+    public $objGroups;
+    public $objContext;
+    public $objLanguage;
+
     /**
      * The user Object
      *

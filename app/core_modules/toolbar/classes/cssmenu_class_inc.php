@@ -20,6 +20,13 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class cssmenu extends ChisimbaObject {
 
+    // Explicit state used by this component.
+    public $objLanguage;
+    public $objSkin;
+    public $iconService;
+    public $moduleIconResolver;
+
+
         public $menu = array();
 
         /**

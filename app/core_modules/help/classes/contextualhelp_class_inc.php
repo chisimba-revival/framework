@@ -2,6 +2,11 @@
 /** Context-sensitive help renderer. @package help */
 class contextualhelp extends ChisimbaObject
 {
+
+    // Services populated during initialisation and rendering.
+    public $language;
+    public $icons;
+
     public function init()
     {
         $this->language = $this->getObject('language', 'language');

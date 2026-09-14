@@ -24,6 +24,25 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class menu extends ChisimbaObject
 {
+
+    // Services and state populated during initialisation.
+    public $cssMenu;
+    public $flatMenu;
+    public $dbmenu;
+    public $tools;
+    public $objLanguage;
+    public $objSkin;
+    public $securityContext;
+    public $objSysConfig;
+    public $objModule;
+    public $objTable;
+    public $objLayer;
+    public $objContext;
+    public $objDbConMod;
+    public $context;
+    public $im;
+    public $objUserId;
+
     /**
     * @var $contextCode The current context code
     * @access private

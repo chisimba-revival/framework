@@ -54,6 +54,27 @@ require_once 'Translation2/Decorator.php';
  */
 class Translation2_Decorator_UTF8 extends Translation2_Decorator
 {
+    /**
+     * Preserve the retired utf8_decode contract, including malformed sequences.
+     * mb_convert_encoding is not byte-compatible: it replaces some malformed
+     * three/four-byte sequences with several question marks instead of one.
+     * ASCII passes through; only valid C2/C3 pairs represent Latin-1 characters.
+     */
+    private function decodeLatin1($text)
+    {
+        return preg_replace_callback(
+            '/[\xC2-\xDF][\x80-\xC1\xF5-\xFF]?|[\xE0-\xEF][\x80-\xC1\xF5-\xFF]{0,2}|[\xF0-\xF4][\x80-\xC1\xF5-\xFF]{0,3}|[\x80-\xFF]/',
+            static function ($match) {
+                $bytes = $match[0];
+                if (strlen($bytes) === 2 && ord($bytes[0]) <= 0xC3 && ord($bytes[1]) < 0xC0) {
+                    return chr(((ord($bytes[0]) & 0x1F) << 6) | (ord($bytes[1]) & 0x3F));
+                }
+                return '?';
+            },
+            $text
+        );
+    }
+
     // {{{ get()
 
     /**
@@ -76,7 +97,7 @@ class Translation2_Decorator_UTF8 extends Translation2_Decorator
             return $str;
         }
         if (!empty($str)) {
-            $str = utf8_decode($str); //decodes an UTF-8 string to ISO-8859-1
+            $str = $this->decodeLatin1($str); //decodes an UTF-8 string to ISO-8859-1
         }
         return $str;
     }
@@ -103,7 +124,7 @@ class Translation2_Decorator_UTF8 extends Translation2_Decorator
         }
         foreach ($data as $key => $val) {
             if (!empty($val)) {
-                $data[$key] = utf8_decode($val);
+                $data[$key] = $this->decodeLatin1($val);
             }
         }
         return $data;

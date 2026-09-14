@@ -81,6 +81,12 @@ require_once("ifhtml_class_inc.php");
 class csslayout extends ChisimbaObject implements ifhtml
 {
 
+    // Explicit state used by this component.
+    public $isCanvasEnabled;
+    public $objSkin;
+    public $skinVersion;
+
+
     /**
      * The number of columns the layout should have: either two or three
      *

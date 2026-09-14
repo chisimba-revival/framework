@@ -43,6 +43,14 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * */
 class loginInterface extends ChisimbaObject {
 
+    // Services populated during initialisation and rendering.
+    public $objSysConfig;
+    public $objHelp;
+    public $objUser;
+    public $objDbSysconfig;
+    public $objMods;
+
+
     /**
      * @var object $objLanguage String to hold the language object
      */
@@ -237,7 +245,7 @@ class loginInterface extends ChisimbaObject {
             $objFields->addContent($p);
             $objForm->addToForm($objFields->show());
 
-            return $objForm->show() . $openidlink;
+            return $objForm->show();
         } catch (Exception $e) {
             customException::cleanUp();
         }

@@ -76,6 +76,9 @@
  */
 class LiveUser_Admin_Storage
 {
+    /** Shared PEAR error stack. */
+    public $stack;
+
     /**
      * Table configuration
      *

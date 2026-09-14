@@ -18,6 +18,10 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class useraccountlifecycleservice extends dbTable
 {
+
+    // Services populated during initialisation and rendering.
+    public $objUserService;
+
     /**
      * Explicit first-generation dependency policy.
      *

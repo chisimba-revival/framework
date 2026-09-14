@@ -45,6 +45,10 @@
 class registerfileusage extends dbTable
 {
 
+    // Services and state populated during initialisation.
+    public $objUser;
+
+
     /**
     * Constructor
     */

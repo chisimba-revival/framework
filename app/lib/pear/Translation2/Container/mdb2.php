@@ -108,7 +108,7 @@ class Translation2_Container_mdb2 extends Translation2_Container
             $this->db = &$db;
         } elseif (is_string($db) || is_array($db)) {
             include_once 'MDB2.php';
-            $this->db =& MDB2::connect($db);
+            $this->db = MDB2::connect($db);
         } elseif (is_object($db) && MDB2::isError($db)) {
             return PEAR::raiseError($db->getMessage(), $db->code);
         } else {

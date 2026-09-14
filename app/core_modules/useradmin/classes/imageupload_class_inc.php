@@ -8,6 +8,11 @@
 */
 class imageupload extends ChisimbaObject
 {
+
+    // Explicit state used by this component.
+    public $imageUri;
+    public $objSysConfig;
+
     public $objConfig;
     private $objUser;
     /**

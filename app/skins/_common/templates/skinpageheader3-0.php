@@ -78,8 +78,8 @@ if (!isset($mime)) {
 
 // Set up the variable for the page language.
 if (!isset($pageLanguage)) {
-    $languageClass =& $this->getObject('language', 'language');
-    $languageCode =& $this->getObject('languagecode', 'language');
+    $languageClass = $this->getObject('language', 'language');
+    $languageCode = $this->getObject('languagecode', 'language');
     $pageLanguage = $languageCode->getISO($languageClass->currentLanguage());
 }
 

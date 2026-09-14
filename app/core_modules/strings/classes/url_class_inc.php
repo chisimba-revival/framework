@@ -166,7 +166,7 @@ class url extends ChisimbaObject {
           . '([\w\-\.;,@?^=%&:\/~\+#]*[\w\-\@?^=%&\/~\+#])?' //match any number of subdirectories
           . '(gif|jpg|png)'; // match the file extension
         return preg_replace($test,
-              "<img src=\"${0}\"/>", $str);
+              "<img src=\"{${0}}\"/>", $str);
 
     }
     

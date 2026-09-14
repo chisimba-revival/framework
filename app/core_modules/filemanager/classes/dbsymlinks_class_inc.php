@@ -50,6 +50,11 @@
  */
 class dbsymlinks extends dbTable
 {
+
+    // State used by authenticated editing and file selection.
+    public $objFiles;
+    public $objUser;
+
     
     /**
     * Constructor

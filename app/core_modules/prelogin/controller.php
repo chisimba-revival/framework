@@ -19,6 +19,18 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  */
 class prelogin extends controller
 {
+
+    // State populated during initialisation and service calls.
+    public $objModule;
+    public $objBlocks;
+    public $objPLBlocks;
+    public $objLanguage;
+    public $objSysconfig;
+    public $cbExists;
+    public $objBlocksContent;
+    public $TRUE;
+    public $FALSE;
+
     /**
      * Initialise the services used by the public page and editor.
      *

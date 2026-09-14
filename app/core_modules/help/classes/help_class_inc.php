@@ -35,6 +35,11 @@ $GLOBALS['kewl_entry_point_run']) {
 */
 class help extends ChisimbaObject  {
 
+    // Services populated during initialisation and rendering.
+    public $objHelpIcon;
+    public $objLanguage;
+
+
     /**
      * Variable containing the calling module - the module for which the help file is generated.
      * @var    string

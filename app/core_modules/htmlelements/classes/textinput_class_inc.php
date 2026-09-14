@@ -65,6 +65,10 @@ require_once("ifhtml_class_inc.php");
 class textinput extends abhtmlbase implements ifhtml
 {
 
+    // Explicit state used by this component.
+    public $value;
+
+
     /**
      * @var integer $size: The width of the text input
      */

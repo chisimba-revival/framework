@@ -24,6 +24,12 @@ require_once('Config.php');
 
 class dbuserparamsadmin extends ChisimbaObject {
 
+    // State used by authenticated editing and file selection.
+    public $objLanguage;
+    public $sysConfig;
+    public $uid;
+
+
     /**
      * Constructor method to define the table
      */
@@ -176,7 +182,7 @@ class dbuserparamsadmin extends ChisimbaObject {
      * @param string $iniPath. File path
      * @param string $iniName. File name
      */
-    public function createConfig($config_container=false, $settings, $iniPath=false, $iniName) {
+    public function createConfig($config_container, $settings, $iniPath, $iniName) {
         try {
             //define the main header setting
             if (isset($config_container)) {

@@ -50,6 +50,15 @@
 class thumbnails extends ChisimbaObject
 {
 
+    // Services and state populated during initialisation.
+    public $objMkdir;
+    public $objImageResize;
+    public $objFileParts;
+    public $objFiles;
+    public $objCleanUrl;
+    public $thumbLocations;
+
+
     /**
     * Constructor
     */

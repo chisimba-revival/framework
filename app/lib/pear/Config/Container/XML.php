@@ -67,6 +67,9 @@ class Config_Container_XML extends XML_Parser
     */
     var $containers = array();
 
+    /** Character data accumulated for the current leaf element. */
+    var $cdata = '';
+
     /**
     * Constructor
     *
@@ -100,7 +103,7 @@ class Config_Container_XML extends XML_Parser
     {
         $err = true;
         $this->folding = false;
-        $this->cdata = null;
+        $this->cdata = '';
         parent::__construct($this->options['encoding'], 'event');
         $this->containers[0] =& $obj->container;
         if (is_string($datasrc)) {
@@ -155,7 +158,7 @@ class Config_Container_XML extends XML_Parser
         }
         $currentSection->addItem($container);
         array_pop($this->containers);
-        $this->cdata = null;
+        $this->cdata = '';
         return null;
     } // end func endHandler
 

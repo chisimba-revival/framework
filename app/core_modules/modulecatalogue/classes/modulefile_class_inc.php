@@ -472,7 +472,7 @@ class modulefile extends ChisimbaObject {
                         case 'TABLE':                 //Names of SQL tables
                         case 'DEPENDS':             //modules this module needs
                         case 'CLASSES':
-                        case 'WARNING';             //Warning tag for modules with special requirements or functions
+                        case 'WARNING':             //Warning tag for modules with special requirements or functions
                         case 'MODULE_CATEGORY':
                         case 'BLOCK':                //module owned blocks
                         case 'WIDEBLOCK':            //wide blocks

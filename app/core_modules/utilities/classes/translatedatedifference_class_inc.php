@@ -22,6 +22,10 @@ Public License
 class translatedatedifference extends ChisimbaObject 
 {
 
+    // Explicit state used by this component.
+    public $objDateFunctions;
+
+
     /**
     * @var object $objLanguage Property for hte language object
     */

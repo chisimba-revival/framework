@@ -57,6 +57,10 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @see       core
  */
 class dbcontextmodules extends dbTable {
+
+    // Explicit state used by this component.
+    public $_objModule;
+
     /**
      * Constructor
      */

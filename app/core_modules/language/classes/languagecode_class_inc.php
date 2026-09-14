@@ -126,7 +126,7 @@ class languagecode extends ChisimbaObject
     {
         try {
              $this->objConfig = $this->getObject('altconfig','config');
-             $this->lan = $this->objConfig->getdefaultLanguage();
+             $this->lan = $this->objConfig->getdefaultLanguageAbbrev();
              $neg = new I18Nv2_Negotiator;
              $this->objcountry = new I18Nv2_Country("{$this->lan}", 'iso-8859-1');
              $this->objentity = new I18Nv2_DecoratedList_HtmlEntities($this->objcountry);

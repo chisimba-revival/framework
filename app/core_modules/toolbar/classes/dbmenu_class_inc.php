@@ -14,6 +14,11 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class dbmenu extends dbtable
 {
+
+    // Explicit state used by this component.
+    public $_db;
+    public $table;
+
     public function init(
         $tableName = null,
         $pearDb = null,

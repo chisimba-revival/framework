@@ -429,7 +429,7 @@ class HTML_BBCodeParser
             $prevTag = end($newTagArray);
             switch ($tag['type']) {
             case 0:
-                if ($prevTag['type'] === 0) {
+                if ($prevTag !== false && $prevTag['type'] === 0) {
                     $tag['text'] = $prevTag['text'].$tag['text'];
                     array_pop($newTagArray);
                 }
@@ -439,7 +439,7 @@ class HTML_BBCodeParser
             case 1:
                 if ($this->_isAllowed(end($openTags), $tag['tag']) == false) {
                     $tag['type'] = 0;
-                    if ($prevTag['type'] === 0) {
+                    if ($prevTag !== false && $prevTag['type'] === 0) {
                         $tag['text'] = $prevTag['text'].$tag['text'];
                         array_pop($newTagArray);
                     }
@@ -469,7 +469,7 @@ class HTML_BBCodeParser
                     }
                 } else {
                     $tag['type'] = 0;
-                    if ($prevTag['type'] === 0) {
+                    if ($prevTag !== false && $prevTag['type'] === 0) {
                         $tag['text'] = $prevTag['text'].$tag['text'];
                         array_pop($newTagArray);
                     }

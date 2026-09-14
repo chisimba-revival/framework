@@ -54,6 +54,24 @@ if (!
  */
 class filemanager extends controller {
 
+    // State used by authenticated editing and file selection.
+    public $contextCode;
+    public $fckVersion;
+    public $objCleanUrl;
+    public $objFileApi;
+    public $objFilePreview;
+    public $objFileTags;
+    public $objFiles;
+    public $objFolders;
+    public $objMenuTools;
+    public $objQuotas;
+    public $objSymlinks;
+    public $objUpload;
+    public $objUploadMessages;
+    public $sysConf;
+    public $userId;
+
+
     /**
      *
      * @var string $objConfig String object property for holding the
@@ -625,65 +643,16 @@ class filemanager extends controller {
         $id = $this->getParam('id');
         $filename = $this->getParam('filename');
         $file = $this->objFiles->getFileInfo($id);
-        $folderPath = $file['filefolder'];
-        $folderId = $this->objFolders->getFolderId($folderPath);
-        $folder = $this->objFolders->getFolder($folderId);
-
-
-
-        $objFolderAccess = $this->getObject('folderaccess', 'filemanager');
-        $folderIsSecure = $objFolderAccess->isFileAccessPrivate($folder);
-
-        //check the permissions of the parent folder. Is it public/private
-        if ($folderIsSecure) {
-            //then check...are we logged in..and if so, are we in the correct  context ?
-
-            if ($this->objUser->isLoggedIn()) {
-                if ($folder[0] == 'context' && $folder[1] != $this->contextCode) {
-
-                    return "access_denied_tpl.php";
-                } else {
-                    $filepath = $file["path"];
-                    $filename = $file["filename"];
-
-                    return $objFolderAccess->downloadFile($filepath, $filename);
-                }
-            } else {
-
-                return "access_denied_tpl.php";
-            }
-        }
-
-
-        $fileAccessPrivate = $objFolderAccess->isFileAccessPrivate($file);
-        $fileVisibilityPrivate = $objFolderAccess->isFileVisibilityPrivate($file);
-
-
-        if ($fileAccessPrivate) {
-
-            if ($this->objUser->isLoggedIn()) {
-
-                $filepath = $file["path"];
-                $filename = $file["filename"];
-                return $objFolderAccess->downloadFile($filepath, $filename);
-            } else {
-                return "access_denied_tpl.php";
-            }
-        }
-
-        if ($fileVisibilityPrivate) {
-            $userId = $this->objUser->userId;
-            if ($userId == $file['creatorid']) {
-                $filepath = $file["path"];
-                $filename = $file["filename"];
-                return $objFolderAccess->downloadFile($filepath, $filename);
-            } else {
-                return "access_denied_tpl.php";
-            }
-        }
-
-        if ($file == FALSE || $file['filename'] != $filename) {
+        if (!is_array($file) || $file['filename'] !== $filename
+            || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) {
             return "access_denied_tpl.php";
+        }
+        $folder = $this->objFolders->getFolder($this->objFolders->getFolderId($file['filefolder']));
+        $objFolderAccess = $this->getObject('folderaccess', 'filemanager');
+        if ($objFolderAccess->isFileAccessPrivate($folder)
+            || $objFolderAccess->isFileAccessPrivate($file)
+            || $objFolderAccess->isFileVisibilityPrivate($file)) {
+            return $objFolderAccess->downloadFile($file['path'], $file['filename']);
         }
 
         $filePath = $this->objConfig->getcontentPath() . $file['path'];
@@ -758,6 +727,9 @@ class filemanager extends controller {
      */
     private function __fileinfo() {
         $id = $this->getParam('id');
+        if (!$this->getObject('filereadpolicy', 'filemanager')->mayRead($this->objFiles->getFileInfo($id))) {
+            return 'access_denied_tpl.php';
+        }
         $filename = $this->getParam('filename');
         if (($this->fckVersion == '2.5.1.x') || ($this->fckVersion == '2.6.3.x')) {
             $file = $this->objFiles->getFileInfo($id);

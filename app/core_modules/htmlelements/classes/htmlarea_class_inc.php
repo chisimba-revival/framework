@@ -27,6 +27,15 @@ if (!
 //require_once("htmlbase_class_inc.php");
 class htmlarea extends ChisimbaObject {
 
+    // State used by authenticated editing and file selection.
+    public $css;
+    public $name;
+    public $sitePath;
+    public $siteRoot;
+    public $sysConf;
+    public $value;
+
+
     /**
      * CHISIMBA EDITOR COMPATIBILITY BOUNDARY
      *
