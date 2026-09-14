@@ -5,6 +5,7 @@ class filereadpolicy extends ChisimbaObject
     public function mayRead($file)
     {
         if (!is_array($file) || empty($file['id']) || empty($file['filefolder'])) return false;
+        if (str_starts_with((string)$file['filefolder'], 'assignment/')) return false;
         $user = $this->getObject('user', 'security');
         $uid = $user->isLoggedIn() ? (string)$user->userId() : '';
         $admin = $uid !== '' && $user->inAdminGroup($uid, 'Site Admin');
@@ -38,7 +39,8 @@ class filereadpolicy extends ChisimbaObject
         $owner = $uid !== '' && $uid === (string)($file['userid'] ?? $file['creatorid'] ?? '');
         $hidden = ($file['visibility'] ?? '') === 'hidden';
         $selected = in_array('private_selected',[$file['access'] ?? '',$folder['access'] ?? ''],true);
-        if ($hidden || $selected) return $owner || ($course !== null && $teacher);
+        if ($hidden || $selected) return ($owner && ($course === null || $member || $teacher))
+            || ($course !== null && $teacher);
         if ($course !== null) {
             if ($member || $teacher) return true;
             return strtolower((string)($course['access'] ?? '')) === 'public'

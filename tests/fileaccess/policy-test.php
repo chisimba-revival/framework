@@ -19,3 +19,6 @@ foreach(['anonymous','outsider','student','teacher','admin'] as $role){
  check($uid!=='',filereadpolicy::allows(['access'=>'private_all'],[],null,$uid,$admin,false,false),"$role personal authenticated sharing");
 }
 echo "$count policy assertions passed\n";
+
+check(false, filereadpolicy::allows(['userid'=>'former','visibility'=>'hidden'], [], ['access'=>'Private','status'=>'Published'], 'former', false, false, false), 'Former member cannot use ownership to bypass course privacy');
+echo "Revoked owner hidden-file check passed\n";
