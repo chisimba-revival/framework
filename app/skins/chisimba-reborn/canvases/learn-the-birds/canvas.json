@@ -1,0 +1,18 @@
+{
+  "name": "learn-the-birds",
+  "displayName": "Learn-the-Birds",
+  "description": "Learn-the-Birds identity on the shared Chisimba skin.",
+  "brand": {
+    "primary": "#007fa3",
+    "accent": "#315c35"
+  },
+  "author": {
+    "authorname": "Derek Keats"
+  },
+  "preview": {
+    "logo": "images/logo.png",
+    "thumb": "../../default.png",
+    "fullview": "../../default.png"
+  },
+  "downloadfrom": "_NULL"
+}

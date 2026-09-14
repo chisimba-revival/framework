@@ -7207,3 +7207,16 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 
 /* Reserve feedback space so Ajax status changes do not shift the editor. */
 [data-composition-status] { min-height: 1.5em; }
+
+/* Publication date badge: a shared card primitive for dated content. */
+.chisimba-publication-card__media { position: relative; }
+.chisimba-publication-card__calendar {
+    position: absolute; inset-block-start: 1rem; inset-inline-start: 1rem;
+    display: grid; justify-items: center; gap: .1rem; padding: .5rem .8rem;
+    border-radius: .3rem; background: var(--chisimba-surface, #fff);
+    color: var(--chisimba-text, #18333b); box-shadow: 0 .15rem .6rem rgb(0 0 0 / .15);
+    font-size: .75rem; line-height: 1.2; text-transform: uppercase;
+}
+.chisimba-publication-card__calendar strong { font-size: 1.35rem; }
+.chisimba-publication-card__byline { font-size: .9rem; }
+.chisimba-publication-card__byline .chisimba-icon { vertical-align: middle; }

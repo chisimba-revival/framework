@@ -15,11 +15,12 @@
         var dialog;
         var id;
 
-        if (openTrigger) {
+        if (openTrigger && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
             id = openTrigger.getAttribute('data-ui-open');
             dialog = document.getElementById(id);
 
             if (dialog && typeof dialog.showModal === 'function') {
+                event.preventDefault();
                 dialog.showModal();
             }
 
