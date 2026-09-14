@@ -45,7 +45,7 @@ foreach ($data as $row) {
   <label for="toolbar-module"><?php echo $escape($lang->languageText('mod_toolbar_selectmodule', 'toolbar', 'Select Module')); ?></label>
   <select id="toolbar-module" name="modulename" onchange="this.form.submit()">
 <?php foreach ($moduleList as $item): ?>
-    <option value="<?php echo $escape($item['module_id']); ?>"<?php echo $item['module_id'] === $moduleName ? ' selected="selected"' : ''; ?>><?php echo $escape($lang->code2Txt('mod_' . $item['module_id'] . '_name', $item['module_id'])); ?></option>
+    <option value="<?php echo $escape($item['module_id']); ?>"<?php echo $item['module_id'] === $moduleName ? ' selected="selected"' : ''; ?>><?php echo $escape($item['module_id']); ?></option>
 <?php endforeach; ?>
   </select>
   <button type="submit"><?php echo $escape($lang->languageText('word_go', 'security', 'Go')); ?></button>
