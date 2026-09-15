@@ -1729,3 +1729,9 @@ button:is(.course-card__action, .chisimba-publication-card__action) {
 .chisimba-video-player iframe { display: block; inline-size: 100%; block-size: 100%; min-block-size: 200px; border: 0; }
 [data-video-more][aria-disabled="true"] { opacity: .65; cursor: progress; }
 [data-video-more][hidden] { display: none; }
+
+/* Bounded multi-choice groups share form spacing without stretching the page. */
+.chisimba-choice-list { display: grid; gap: .45rem; max-block-size: 16rem; overflow: auto; padding: .5rem; }
+.chisimba-choice-list > label { display: flex; align-items: baseline; gap: .45rem; margin: 0; }
+.chisimba-choice-list input[type="checkbox"] { flex: 0 0 auto; }
+[data-webinar-preview][hidden], [data-webinar-image][hidden] { display: none; }

@@ -5985,6 +5985,8 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-form-field input[type="text"],
 .chisimba-form-field input[type="number"],
 .chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="datetime-local"],
+.chisimba-form-field input[type="url"],
 .chisimba-form-field select,
 .chisimba-form-field textarea { width:100%; padding:.58rem .65rem; }
 .chisimba-form-field textarea { min-height:8rem; resize:vertical; }
@@ -6379,6 +6381,8 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-form-field input[type="text"],
 .chisimba-form-field input[type="number"],
 .chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="datetime-local"],
+.chisimba-form-field input[type="url"],
 .chisimba-form-field input[type="email"],
 .chisimba-form-field input[type="password"],
 .chisimba-form-field select,
@@ -7120,7 +7124,8 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 /* Shared composition and publishing layout: the skin owns presentation. */
 .chisimba-publishing-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(16rem,22rem);gap:1.5rem;align-items:start; }
 .chisimba-publishing-layout > * { min-width:0; }
-.chisimba-publishing-sidebar { display:grid;gap:1rem; }
+.chisimba-publishing-sidebar { display:grid;grid-template-columns:minmax(0,1fr);gap:1rem; }
+.chisimba-publishing-layout fieldset { min-inline-size:0; }
 .chisimba-composition-editor { display:grid;gap:1.25rem; }
 .chisimba-composition-instance { padding:1.25rem; }
 .chisimba-composition-instance header { margin-bottom:1rem; }
