@@ -1713,3 +1713,19 @@ button:is(.course-card__action, .chisimba-publication-card__action) {
 /* Natural-ratio media variant for banners whose complete contents must remain visible. */
 .chisimba-publication-card__media--natural { aspect-ratio: auto; }
 .chisimba-publication-card__media--natural img { display: block; inline-size: 100%; block-size: auto; object-fit: contain; }
+
+/* Shared on-demand video cards: reserve media space and inherit skin tokens. */
+.chisimba-video-card__play { display: block; }
+.chisimba-video-card__overlay {
+    position: absolute; inset-block-start: 50%; inset-inline-start: 50%;
+    transform: translate(-50%, -50%); display: grid; place-items: center;
+    inline-size: 3.5rem; block-size: 3.5rem; border-radius: 50%;
+    background: var(--chisimba-primary, #0b78c5); color: var(--chisimba-on-primary, #fff);
+    box-shadow: var(--chisimba-shadow, 0 0.25rem 1rem rgb(15 23 42 / 15%));
+}
+.chisimba-video-card__overlay svg { inline-size: 1.7rem; block-size: 1.7rem; }
+.chisimba-video-card__play:focus-visible { outline-offset: -4px; }
+.chisimba-video-player { aspect-ratio: 16 / 9; min-block-size: 200px; }
+.chisimba-video-player iframe { display: block; inline-size: 100%; block-size: 100%; min-block-size: 200px; border: 0; }
+[data-video-more][aria-disabled="true"] { opacity: .65; cursor: progress; }
+[data-video-more][hidden] { display: none; }
