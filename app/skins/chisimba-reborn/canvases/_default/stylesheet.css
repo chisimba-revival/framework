@@ -1735,3 +1735,20 @@ button:is(.course-card__action, .chisimba-publication-card__action) {
 .chisimba-choice-list > label { display: flex; align-items: baseline; gap: .45rem; margin: 0; }
 .chisimba-choice-list input[type="checkbox"] { flex: 0 0 auto; }
 [data-webinar-preview][hidden], [data-webinar-image][hidden] { display: none; }
+
+/* Selectable cards keep native radio controls and inherit the active skin. */
+.chisimba-form .chisimba-choice-cards {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem;
+}
+.chisimba-form .chisimba-choice-cards > label {
+  display: flex; flex-direction: column; gap: .65rem; margin: 0; padding: 1.25rem;
+  min-width: 0; border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md, .5rem);
+  background: var(--chisimba-surface); font-weight: 400; cursor: pointer; overflow-wrap: anywhere;
+}
+.chisimba-form .chisimba-choice-cards > label:has(input:checked) {
+  border-color: var(--chisimba-primary); background: var(--chisimba-info-surface);
+}
+.chisimba-form .chisimba-choice-cards > label:focus-within { outline: 2px solid var(--chisimba-primary); outline-offset: 3px; }
+.chisimba-form .chisimba-choice-cards > label > span:first-child { display:flex; gap:.6rem; align-items:baseline; }
+.chisimba-form .chisimba-choice-cards input[type=radio] { flex:0 0 auto; width:auto; }
+.chisimba-form .chisimba-choice-cards .chisimba-choice-card-price { font-size:1.6rem; font-weight:700; }
