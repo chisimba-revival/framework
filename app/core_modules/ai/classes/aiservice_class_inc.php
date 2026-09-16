@@ -87,6 +87,17 @@ class aiservice extends dbTable
         return $result;
     }
 
+    /** Authorised modules pass a private file; audit records contain no speech or transcript. */
+    public function transcribe($consumer,$path)
+    {
+        if(!is_string($consumer)||!preg_match('/^[a-z][a-z0-9_]*$/D',$consumer))return array('ok'=>false,'error'=>'invalid_consumer');
+        $start=microtime(true);
+        try{$result=$this->getObject('transcriptionservice','ai')->transcribe($path);}
+        catch(Throwable $error){$result=array('ok'=>false,'error'=>'transcription_failed');}
+        $this->recordAudit(array('consumer'=>$consumer,'task'=>'transcribe_audio'),'openai',$result,(int)((microtime(true)-$start)*1000));
+        return $result;
+    }
+
     public function providerStatus()
     {
         $providerName = $this->providerName();

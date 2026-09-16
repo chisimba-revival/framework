@@ -7207,3 +7207,8 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 
 /* Reserve feedback space so Ajax status changes do not shift the editor. */
 [data-composition-status] { min-height: 1.5em; }
+
+/* Native audio controls must fit the same responsive cards as other form content. */
+.chisimba-form-card audio { display:block; max-width:100%; margin-block:1rem; }
+.chisimba-form-card .chisimba-form-actions + h2,
+.chisimba-form-card .chisimba-form-actions + h3 { margin-top:1.5rem; }

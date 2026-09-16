@@ -361,6 +361,15 @@ class dbTableManager extends ChisimbaObject {
      * @return bool   TRUE on success | FALSE on failure
      */
     public function createTableIndex($tableName, $keyname, $index, $trunc = FALSE) {
+        // MDB2 separates unique constraints from ordinary indexes. Passing
+        // 'unique' to mgCreateIndex silently discards the uniqueness guarantee.
+        if (!empty($index['unique']) && empty($index['primary'])) {
+            $result = $this->_db->mgCreateConstraint($tableName, $keyname, $index);
+            if (PEAR::isError($result) || $result === FALSE) {
+                throw new RuntimeException('Unique database constraint could not be created');
+            }
+            return TRUE;
+        }
         if ($trunc != FALSE) {
             $this->_db->mgCreateIndex($tableName, $keyname, $index);
             return TRUE;
