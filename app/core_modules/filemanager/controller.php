@@ -192,7 +192,7 @@ class filemanager extends controller {
      * @access public
      */
     public function requiresLogin($action) {
-        if ($action == 'file' || $action == 'dav') {
+        if ($action == 'file' || $action == 'coursefile' || $action == 'filederivative' || $action == 'dav') {
             return FALSE;
         } else {
             return TRUE;
@@ -633,12 +633,19 @@ class filemanager extends controller {
         exit;
     }
 
-    /**
-     * Method to view/download the actual file
-     * This approach is used to allow files to be move around without
-     * adjust links in content
-     * @access private
-     */
+    /** Serve a registered generated preview through its original file policy. */
+    private function __filederivative() {
+        $this->getObject('filedelivery', 'filemanager')->sendDerivative($this->getParam('path'));
+    }
+
+    /** Compatibility endpoint for registered legacy course paths. */
+    private function __coursefile() {
+        $path = $this->getParam('path');
+        $file = is_string($path) ? $this->objFiles->getFileDetailsFromPath($path) : false;
+        $this->getObject('filedelivery', 'filemanager')->sendCourseFile($file);
+    }
+
+    /** Stable ID-based file delivery, independent of physical storage. */
     private function __file() {
         $id = $this->getParam('id');
         $filename = $this->getParam('filename');
@@ -646,6 +653,9 @@ class filemanager extends controller {
         if (!is_array($file) || $file['filename'] !== $filename
             || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) {
             return "access_denied_tpl.php";
+        }
+        if (str_starts_with((string)$file['filefolder'], 'context/')) {
+            $this->getObject('filedelivery', 'filemanager')->sendCourseFile($file);
         }
         $folder = $this->objFolders->getFolder($this->objFolders->getFolderId($file['filefolder']));
         $objFolderAccess = $this->getObject('folderaccess', 'filemanager');

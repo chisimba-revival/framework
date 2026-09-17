@@ -22,6 +22,7 @@ class FixtureUser {
 $results=[];
 foreach(['anonymous'=>[null,false],'outsider'=>['outsider',false],'other_student'=>['peer',false],'submitter'=>['student',false],'instructor'=>['teacher',true],'administrator'=>['admin',true]] as $role=>$identity){
  $f=(new ReflectionClass('filemanager'))->newInstanceWithoutConstructor();$f->objUser=new FixtureUser(...$identity);$f->contextCode='course-a';$f->params=['id'=>'fixture','filename'=>'test.txt'];
+ $f->services['filedelivery']=new class {function sendCourseFile($file){}};
  $f->objFiles=new class {function getFileInfo($id){return ['id'=>'fixture','filefolder'=>'context/course-a','path'=>'context/course-a/test.txt','filename'=>'test.txt','access'=>'private_all'];}};
  $f->objFolders=new class {function getFolderId($path){return 'folder';}function getFolder($id){return ['folderpath'=>'context/course-a','access'=>'private_all'];}};
  $f->services['filereadpolicy']=new class($role) {function __construct(public $role){} function mayRead($f){return !in_array($this->role,['anonymous','outsider']);}};
