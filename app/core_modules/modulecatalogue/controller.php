@@ -627,7 +627,7 @@ class modulecatalogue extends controller {
                     $failureMessages = array();
                     $dependencyActions = array();
                     foreach ( $mods as $mod ) {
-                        $result = $this->objPatch->applyUpdates($mod['module_id']);
+                        $result = $this->applyPatchWithHooks($mod['module_id'], $mod['new_version']);
                         if ($result === false || !is_array($result) || !isset($result['current'])) {
                             $failedModules[] = $mod['module_id'];
                             $failureMessages[] = $this->patchFailureMessage($mod['module_id'], $result);
@@ -1001,10 +1001,22 @@ class modulecatalogue extends controller {
     }
 
     /**
-     * Method to install newly added depenedencies of a module
-     *
-     * @param string $moduleId the module whose dependencies must be updated
+     * Apply a module patch with its schema hooks before recording the version.
      */
+    private function applyPatchWithHooks($moduleId, $version) {
+        $installer = $this->getPatchObject($moduleId);
+        if ($installer !== null && method_exists($installer, 'preinstall')) {
+            $installer->preinstall($version);
+        }
+        $result = $this->objPatch->applyUpdates($moduleId);
+        if (is_array($result) && isset($result['current'])
+            && $installer !== null && method_exists($installer, 'postinstall')) {
+            $installer->postinstall($version);
+        }
+        return $result;
+    }
+
+    /** Install new dependencies, then resume the module update and its hooks. */
     private function updateDependenciesAndPatch($moduleId) {
         $bufferLevel = ob_get_level();
         ob_start();
@@ -1016,16 +1028,7 @@ class modulecatalogue extends controller {
                 $this->objModFile->findRegisterFile($moduleId)
             );
             $version = $registration['MODULE_VERSION'];
-            $installer = $this->getPatchObject($moduleId);
-            if ($installer !== null && method_exists($installer, 'preinstall')) {
-                $installer->preinstall($version);
-            }
-            $result = $this->objPatch->applyUpdates($moduleId);
-            if (is_array($result) && isset($result['current'])
-                && $installer !== null && method_exists($installer, 'postinstall')) {
-                $installer->postinstall($version);
-            }
-            return $result;
+            return $this->applyPatchWithHooks($moduleId, $version);
         } finally {
             $diagnostics = '';
             while (ob_get_level() > $bufferLevel) {

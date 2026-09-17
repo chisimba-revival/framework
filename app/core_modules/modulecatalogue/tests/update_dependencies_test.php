@@ -120,3 +120,25 @@ try {
     }
 }
 echo "PASS: dependency failure stops parent patch and restores output buffer\n";
+
+$events->exchangeArray(array());
+$objects['objPatch']->succeeds = true;
+$bulkPatch = $reflection->getMethod('applyPatchWithHooks');
+$bulkPatch->invoke($catalogue, 'gradebook', '1.473');
+if ($events->getArrayCopy() !== array('pre:1.473', 'patch:gradebook', 'post:1.473')) {
+    throw new Exception('Bulk updates must run schema hooks around the patch');
+}
+echo "PASS: bulk update runs schema hooks\n";
+$events->exchangeArray(array());
+$catalogue->installer = new class {
+    public function preinstall($version) { throw new RuntimeException('Schema repair failed'); }
+};
+try {
+    $bulkPatch->invoke($catalogue, 'gradebook', '1.473');
+    throw new Exception('Failed schema repair must stop version update');
+} catch (RuntimeException $expected) {
+    if ($events->getArrayCopy() !== array()) {
+        throw new Exception('Version update ran after schema repair failed');
+    }
+}
+echo "PASS: failed schema hook prevents version update\n";
