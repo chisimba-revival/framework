@@ -13,6 +13,14 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class register extends ChisimbaObject
 {
+    /** Canonical services used to register navigation and permissions. */
+    public $objFileReader;
+    public $objModules;
+    public $objModulesAdmin;
+    public $objDbMenu;
+    public $objPermissionService;
+    public $objGroupService;
+
     public function init()
     {
         $this->objFileReader = $this->getObject(

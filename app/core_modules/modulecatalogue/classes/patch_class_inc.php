@@ -28,6 +28,10 @@
  */
 
 class patch extends dbtable {
+    /** Catalogue services used while applying registered updates. */
+    public $objModule;
+    public $objModuleAdmin;
+
 
     /**
      * Configuration object
@@ -41,7 +45,7 @@ class patch extends dbtable {
      *
      * @var object $objModFile
      */
-    protected $objModfile;
+    protected $objModFile;
 
     /**
      * Object to get language elements
@@ -147,12 +151,12 @@ class patch extends dbtable {
             // Find the updates file
             $this->objModule = $this->getObject('modules','modulecatalogue');
             $this->objModuleAdmin = $this->getObject('modulesadmin','modulecatalogue');
-            $this->objModfile = $this->getObject('modulefile','modulecatalogue');
+            $this->objModFile = $this->getObject('modulefile','modulecatalogue');
             //check that there are no new unmet dependencies
-            $rData = $this->objModfile->readRegisterFile($this->objModfile->findregisterfile($modname));
+            $rData = $this->objModFile->readRegisterFile($this->objModFile->findregisterfile($modname));
             if (isset($rData['DEPENDS'])) {
                 $missing = FALSE;
-                $localModules = $this->objModfile->getLocalModulelist();
+                $localModules = $this->objModFile->getLocalModulelist();
                 $unMetDep = $notPresentDep = array();
                 foreach ($rData['DEPENDS'] as $dep) {
                     if (!$this->objModule->checkIfRegistered($dep)) {
@@ -379,7 +383,7 @@ class patch extends dbtable {
                 }
             }
             //update version info in db
-            $regData = $this->objModfile->readRegisterFile($this->objModfile->findregisterfile($modname));
+            $regData = $this->objModFile->readRegisterFile($this->objModFile->findregisterfile($modname));
             if (!$this->objModuleAdmin->installModule($regData,TRUE)) {
                 return $this->objModuleAdmin->getLastError();
             }

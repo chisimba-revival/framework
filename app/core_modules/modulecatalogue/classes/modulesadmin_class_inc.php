@@ -57,6 +57,12 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class modulesadmin extends dbTableManager
 {
+    /** Services used when installing or updating a module. */
+    public $objLanguage;
+    public $objModFile;
+    public $objModuleBlocks;
+    public $objSystext;
+
     /**
      * Current module ID
      *

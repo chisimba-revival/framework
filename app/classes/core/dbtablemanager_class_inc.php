@@ -64,6 +64,9 @@ require_once "lib/logging.php";
  * @see       core
  */
 class dbTableManager extends ChisimbaObject {
+    /** Database server name loaded during schema-manager initialisation. */
+    public $_serverName;
+
 
     /**
      * The current table name that we are working with
