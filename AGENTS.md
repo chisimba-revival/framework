@@ -122,9 +122,9 @@ unrelated help system or large space-consuming help panel to each module.
   policies. Assignment submissions remain limited to the submitting student,
   authorised instructors and administrators. Public course status does not make
   every uploaded assessment file public. Test actual file bytes and derivatives.
-- File access is coordinated application, filesystem and server work. Read
-  [guarded storage guidance](tools/file-storage/README.md); its deployment notes
-  are historical. Verify current routing, aliases and permissions before migration.
+- File access is coordinated application, filesystem and server work. When present
+  on your branch, read `tools/file-storage/README.md`; its deployment notes are
+  historical. Verify current routing, aliases and permissions before migration.
   Symlinks alone are not access control. Never republish private media to fix a URL.
 - Escape at output boundaries and use the shared rich-text sanitiser where needed.
   Use canonical database connections, safe quoting/binding and checked errors.
