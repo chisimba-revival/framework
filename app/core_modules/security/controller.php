@@ -340,10 +340,11 @@ class security extends controller
     private function nativeLogoutToken()
     {
         $stack = $this->nativeAuthStack();
+        $actor = $this->getParam('actor', '');
         $valid = $this->isPost()
             && ($_SERVER['HTTP_X_CHISIMBA_FORM'] ?? '') === 'security'
             && ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '') === 'same-origin'
-            && (string)$this->getParam('actor', '') === $stack['sessions']->getUserId();
+            && is_string($actor) && $actor === $stack['sessions']->getUserId();
         header('Content-Type: application/json; charset=UTF-8');
         header('Cache-Control: private, no-store');
         http_response_code($valid ? 200 : 403);
@@ -358,8 +359,8 @@ class security extends controller
         }
 
         $stack = $this->nativeAuthStack();
-        $actor = (string)$this->getParam('native_auth_actor', '');
-        if (($actor !== '' && $actor !== $stack['sessions']->getUserId()) || !$stack['csrf']->consume(
+        $actor = $this->getParam('native_auth_actor', '');
+        if (!is_string($actor) || ($actor !== '' && $actor !== $stack['sessions']->getUserId()) || !$stack['csrf']->consume(
             self::LOGOUT_CSRF_CONTEXT,
             $this->getParam('native_auth_logout', '')
         )) {

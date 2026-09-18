@@ -129,7 +129,7 @@ The shared helper is tab-local recovery, not durable autosave across tab closure
 
 ## Broader native-auth regression suite
 
-The complete `tests/nativeauth/*test.php` suite now passes **38 of 38**.
+The complete `tests/nativeauth/*test.php` suite now passes **39 of 39**.
 The first run exposed three outdated test contracts, corrected with current
 behaviour retained: ordinary user provisioning no longer assigns bootstrap
 membership; guarded login requires abuse-protection evaluation (including a
