@@ -72,11 +72,12 @@ class openaiprovider extends ChisimbaObject implements AiProviderInterface
         ));
         $raw = curl_exec($handle);
         $curlError = curl_error($handle);
+        $curlErrno = curl_errno($handle);
         $httpCode = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
         // PHP 8 releases CurlHandle objects automatically; curl_close is deprecated in 8.5.
         unset($handle);
 
-        if ($raw === false) { return $this->failure('openai_transport_error', $curlError, $httpCode); }
+        if ($raw === false) { return $this->failure($curlErrno === CURLE_OPERATION_TIMEDOUT ? 'openai_timeout' : 'openai_transport_error', $curlError, $httpCode); }
         $decoded = json_decode($raw, true);
         if (!is_array($decoded)) { return $this->failure('openai_invalid_json', null, $httpCode); }
         if ($httpCode < 200 || $httpCode >= 300) {
