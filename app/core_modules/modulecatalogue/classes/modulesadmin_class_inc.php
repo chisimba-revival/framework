@@ -62,6 +62,7 @@ class modulesadmin extends dbTableManager
     public $objModFile;
     public $objModuleBlocks;
     public $objSystext;
+    public $objSysConfig;
 
     /**
      * Current module ID
