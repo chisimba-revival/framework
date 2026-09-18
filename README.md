@@ -1,3 +1,6 @@
+> Current contributor and coding-assistant guidance: [AGENTS.md](AGENTS.md).
+> The tutorial below is historical; check current code and runtime requirements.
+
 Chisimba
 ========
 
