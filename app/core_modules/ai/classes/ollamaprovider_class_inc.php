@@ -50,7 +50,7 @@ class ollamaprovider extends ChisimbaObject implements AiProviderInterface
             ),
             'stream' => false,
             'format' => $request['schema'],
-            'options' => array('temperature' => 0)
+            'options' => isset($request['maxOutputTokens']) ? array('temperature'=>0,'num_predict'=>max(16,min(128000,(int)$request['maxOutputTokens']))) : array('temperature'=>0)
         ));
         if ($payload === false) { return $this->failure('json_encoding_failed'); }
 
