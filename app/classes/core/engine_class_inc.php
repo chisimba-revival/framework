@@ -640,6 +640,11 @@ class engine {
      * @return void
      */
     public function run($presetModuleName = NULL, $presetAction = NULL) {
+        // Resume remembered identity before any maintenance or module access decision.
+        // Form tokens remain session-bound; consumers must renew stale forms safely.
+        if (!$this->_objUser->isLoggedIn() && !empty($_COOKIE['chisimba_remember'])) {
+            $this->getObject('nativeauthwebcomposition', 'security')->resumeRememberedLogin();
+        }
         if (empty ( $presetModuleName )) {
             $requestedModule = strtolower ( $this->getParam ( 'module', '_default' ) );
         } else {

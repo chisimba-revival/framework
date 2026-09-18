@@ -29,14 +29,15 @@ class PersistentLoginCoordinator
             $now
         );
         if (!$restored) {
-            $this->clear();
+            // A parallel request may already have rotated this cookie. Do not
+            // overwrite its replacement with an expiring Set-Cookie response.
             return false;
         }
         if (!setcookie(
             self::COOKIE_NAME,
             $restored['cookie'],
             $this->policy->options(
-                $now + (PersistentLoginService::DEFAULT_LIFETIME_DAYS * 86400)
+                $restored['expires_at']
             )
         )) {
             return false;

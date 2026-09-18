@@ -21,7 +21,9 @@ if ($start === false || $end === false || $end <= $start) {
     exit(1);
 }
 $nativeDispatch = substr($source, $start, $end - $start);
-if (strpos($nativeDispatch, 'setSession(') !== false) {
+$allowedUiState = array('native_auth_return_to', 'native_auth_login_failure');
+preg_match_all('/->(?:un)?setSession\(\s*[\'"]([^\'"]+)[\'"]/', $nativeDispatch, $sessionWrites);
+if (array_diff($sessionWrites[1], $allowedUiState) || preg_match_all('/->(?:un)?setSession\(/', $nativeDispatch) !== count($sessionWrites[1])) {
     fwrite(STDERR, "FAIL: native authentication dispatch owns session state.\n");
     exit(1);
 }

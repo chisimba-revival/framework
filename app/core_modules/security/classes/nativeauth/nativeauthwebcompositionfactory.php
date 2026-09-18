@@ -31,6 +31,7 @@ foreach (array(
     'mfawebflowservice.php',
     'pendingauthenticationservice.php',
     'persistentlogincoordinator.php',
+    'rememberedloginresumptionservice.php',
     'persistentlogincookiepolicy.php',
     'persistentloginrepositoryinterface.php',
     'persistentloginservice.php',
@@ -136,6 +137,7 @@ final class NativeAuthWebCompositionFactory
             'factors' => $factors,
             'pending' => $pending,
             'persistent' => $persistent,
+            'resumption' => new RememberedLoginResumptionService($persistent, $sessions, $userService, $mfaPolicy, $policyContext),
             'sessions' => $sessions,
         );
     }

@@ -16,11 +16,13 @@ class ChisimbaObject
         }
         return $this->services[$key];
     }
+    public function appendArrayVar($name,$value) {}
+    public function getResourceUri($name,$module) { return '/resources/'.$name; }
     public function uri($params, $module)
     {
-        check($params === array('action' => 'logout') && $module === 'security',
+        check(in_array($params, array(array('action'=>'logout'),array('action'=>'formtoken')), true) && $module === 'security',
             'logout uses the security endpoint');
-        return '/index.php?module=security&amp;action=logout';
+        return '/index.php?module=security&amp;action='.$params['action'];
     }
 }
 function check($condition, $message)
@@ -91,6 +93,7 @@ $toolbar->services = array(
     'security/permissionservice' => $permissions,
     'context/dbcontext' => $context,
     'context/usercontext' => $learning,
+    'language/language' => new class { public function languageText($key,$module) { return 'Try again'; } },
 );
 $toolbar->init();
 check(!$toolbar->isAuthenticated() && $toolbar->userId() === null, 'anonymous identity');

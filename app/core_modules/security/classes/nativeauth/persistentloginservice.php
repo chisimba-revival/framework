@@ -28,13 +28,16 @@ class PersistentLoginService
     public function issue($userId, $now)
     {
         $token = $this->newToken($userId, $now);
-        $this->repository->store($token['record']);
+        if ($this->repository->store($token['record']) === false) {
+            throw new RuntimeException('Remembered-login credential could not be stored.');
+        }
         return $token['cookie'];
     }
 
     public function restoreAndRotate($cookie, $now)
     {
-        $parts = explode(':', (string) $cookie, 2);
+        if (!is_string($cookie) || !preg_match('/^[a-f0-9]{32}:[a-f0-9]{64}$/D', $cookie)) return false;
+        $parts = explode(':', $cookie, 2);
         if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
             return false;
         }
@@ -56,6 +59,7 @@ class PersistentLoginService
         return array(
             'user_id' => $record['user_id'],
             'cookie' => $replacement['cookie'],
+            'expires_at' => $replacement['record']['expires_at'],
         );
     }
 

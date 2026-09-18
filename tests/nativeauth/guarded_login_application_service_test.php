@@ -43,11 +43,19 @@ class V74Flow {
     }
 }
 
+class V74Abuse {
+    public $allowed=true;
+    public function evaluate($operation,$context,$evidence,$policy) {
+        return new class($this->allowed) {public function __construct(private $allowed){}public function isAllowed(){return $this->allowed;}public function getRetryAfter(){return 10;}};
+    }
+    public function record($operation,$context,$success) {}
+}
+$abuse=new V74Abuse();
 $credentials = new V74Credentials();
 $policy = new V74Policy();
 $flow = new V74Flow();
 $service = new GuardedLoginApplicationService(
-    $credentials, $policy, new V74Context(), $flow
+    $credentials, $policy, new V74Context(), $flow, $abuse
 );
 $credentials->valid = false;
 $bad = $service->begin('csrf', 'admin', 'wrong', false);
@@ -74,5 +82,9 @@ v74assert($grace['mfa_policy_status'] === 'grace'
     && $grace['mfa_grace_deadline'] === 1234
     && $flow->required === false,
     'grace status is preserved for the reminder without forcing challenge');
+
+$abuse->allowed=false;$calls=$flow->calls;
+$blocked=$service->begin('csrf','admin','a',true);
+v74assert($blocked['status']==='invalid_request' && $flow->calls===$calls,'abuse rejection cannot enter authentication finalisation');
 
 echo "PASS: guarded login application boundary.\n";

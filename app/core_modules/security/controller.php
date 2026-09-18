@@ -32,7 +32,7 @@ class security extends controller
 
     public function requiresLogin($action)
     {
-        return in_array($action, array('authenticated', 'logout'), true);
+        return in_array($action, array('authenticated', 'logout', 'formtoken'), true);
     }
 
     public function dispatch($action)
@@ -51,6 +51,8 @@ class security extends controller
                 return $this->nativeMfa($action);
             case 'authenticated':
                 return $this->nativeLanding();
+            case 'formtoken':
+                return $this->nativeLogoutToken();
             case 'logout':
                 return $this->nativeLogout();
             case 'needpassword':
@@ -334,6 +336,21 @@ class security extends controller
         return 'native_authenticated_tpl.php';
     }
 
+    /** Fresh logout protection for a still-open page after remembered restoration. */
+    private function nativeLogoutToken()
+    {
+        $stack = $this->nativeAuthStack();
+        $valid = $this->isPost()
+            && ($_SERVER['HTTP_X_CHISIMBA_FORM'] ?? '') === 'security'
+            && ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '') === 'same-origin'
+            && (string)$this->getParam('actor', '') === $stack['sessions']->getUserId();
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: private, no-store');
+        http_response_code($valid ? 200 : 403);
+        echo json_encode($valid ? array('token'=>$stack['csrf']->issueForSession(self::LOGOUT_CSRF_CONTEXT)) : array('error'=>'invalid_request'));
+        exit;
+    }
+
     private function nativeLogout()
     {
         if (!$this->isPost()) {
@@ -341,7 +358,8 @@ class security extends controller
         }
 
         $stack = $this->nativeAuthStack();
-        if (!$stack['csrf']->consume(
+        $actor = (string)$this->getParam('native_auth_actor', '');
+        if (($actor !== '' && $actor !== $stack['sessions']->getUserId()) || !$stack['csrf']->consume(
             self::LOGOUT_CSRF_CONTEXT,
             $this->getParam('native_auth_logout', '')
         )) {
