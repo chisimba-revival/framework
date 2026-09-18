@@ -45,13 +45,15 @@ class openaiprovider extends ChisimbaObject implements AiProviderInterface
             'schema' => $request['schema'],
             'strict' => true
         );
-        $payload = json_encode(array(
+        $payloadData = array(
             'model' => $model,
             'store' => false,
             'instructions' => $request['instructions'],
             'input' => $request['input'],
             'text' => array('format' => $format)
-        ));
+        );
+        if(isset($request['maxOutputTokens']))$payloadData['max_output_tokens']=max(16,min(128000,(int)$request['maxOutputTokens']));
+        $payload=json_encode($payloadData);
         if ($payload === false) { return $this->failure('json_encoding_failed'); }
 
         $timeout = (int) $this->objConfig->getValue('AI_REQUEST_TIMEOUT', 'ai');
