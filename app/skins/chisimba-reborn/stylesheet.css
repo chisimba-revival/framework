@@ -7222,3 +7222,21 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-sticky-summary > p { margin-block: 0 .35rem; }
 .chisimba-sticky-summary > .chisimba-form-actions { margin-top: .5rem; flex-wrap: wrap; }
 @media print { .chisimba-sticky-summary { position: static; } }
+
+/* Compact cards and aligned numeric controls with trailing actions. */
+.chisimba-form-card--compact { padding: var(--chisimba-space-5, 1.25rem); }
+.chisimba-control-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(5rem, 7rem)) minmax(0, 1fr);
+    gap: var(--chisimba-space-4, 1rem);
+    align-items: end;
+    margin-block-start: var(--chisimba-space-4, 1rem);
+}
+.chisimba-control-row .chisimba-form-field { margin: 0; min-width: 0; }
+.chisimba-control-row input[type="number"] { width: 100%; box-sizing: border-box; }
+.chisimba-control-row__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--chisimba-space-3, .75rem); }
+.chisimba-control-row [hidden] { display: none !important; }
+@media (max-width: 600px) {
+    .chisimba-control-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .chisimba-control-row__actions { grid-column: 1 / -1; justify-content: flex-start; }
+}
