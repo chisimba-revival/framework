@@ -7207,3 +7207,18 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 
 /* Reserve feedback space so Ajax status changes do not shift the editor. */
 [data-composition-status] { min-height: 1.5em; }
+
+/* Reusable in-form summary: keep totals and save actions visible in long editors. */
+.chisimba-sticky-summary {
+    position: sticky;
+    top: var(--chisimba-space-2, .5rem);
+    z-index: 5;
+    padding: var(--chisimba-space-3, .75rem);
+    margin-block: var(--chisimba-space-3, .75rem);
+    border: 1px solid var(--chisimba-border);
+    border-radius: var(--chisimba-space-2, .5rem);
+    background: var(--chisimba-surface);
+}
+.chisimba-sticky-summary > p { margin-block: 0 .35rem; }
+.chisimba-sticky-summary > .chisimba-form-actions { margin-top: .5rem; flex-wrap: wrap; }
+@media print { .chisimba-sticky-summary { position: static; } }
