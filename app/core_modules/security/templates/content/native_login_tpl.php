@@ -21,6 +21,9 @@ $esc = function ($value) {
 ?>
 <main class="security-native-auth chisimba-form-card" aria-labelledby="native-login-title">
   <h1 id="native-login-title"><?php echo $esc($labels['title']); ?></h1>
+  <?php if (!empty($nativeLoginNotice) && is_string($nativeLoginNotice)): ?>
+    <p><?php echo $esc($nativeLoginNotice); ?></p>
+  <?php endif; ?>
   <?php if (!empty($labels['failure'])): ?>
     <p role="alert"><?php echo $esc($labels['failure']); ?></p>
   <?php endif; ?>
@@ -45,7 +48,7 @@ $esc = function ($value) {
       ?></label>
       <div class="auth-field"><?php echo $this->getObject('iconservice','ui')->render('user',array('decorative'=>true)); ?>
       <input id="native-login-username" name="username" type="text"
-        autocomplete="username" required autofocus>
+        autocomplete="username" value="<?php echo $esc($nativeLoginUsername ?? ''); ?>" required autofocus>
       </div>
     </div>
     <div class="security-native-auth__field">

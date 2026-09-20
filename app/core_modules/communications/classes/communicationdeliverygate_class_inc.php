@@ -22,7 +22,10 @@ class communicationdeliverygate extends ChisimbaObject
         if(!is_string($module)||!preg_match('/^[a-z][a-z0-9_]{0,49}$/D',$module))return false;
         try {
             if(!$this->getObject('modules','modulecatalogue')->checkIfRegistered($module))return false;
-            return $this->getObject('communicationpolicy',$module)->allows($meta)===true;
+            // A module-owned class avoids collisions between policies in one worker process.
+            $class=$meta['policy_class']??'communicationpolicy';
+            if($class!=='communicationpolicy'&&$class!==$module.'communicationpolicy')return false;
+            return $this->getObject($class,$module)->allows($meta)===true;
         } catch(Throwable $error) { return false; }
     }
 }

@@ -86,6 +86,8 @@ class systext_facet extends dbTable
             && isset($cachedSystext['sections'])
             && isset($cachedSystext['category']) && isset($cachedSystext['categories'])
             && isset($cachedSystext['blog']) && isset($cachedSystext['blogs'])
+            && isset($cachedSystext['webinar']) && isset($cachedSystext['webinars'])
+            && isset($cachedSystext['speaker']) && isset($cachedSystext['speakers'])
             && isset($cachedSystext['post']) && isset($cachedSystext['posts'])
             && $this -> getSession('systext_type') === $activeType){
             // The abstract list is available so fetch it from the session variable.
@@ -106,7 +108,9 @@ class systext_facet extends dbTable
         $terms = array('init_25' => 'section', 'init_26' => 'sections',
             'init_category' => 'category', 'init_categories' => 'categories',
             'init_blog' => 'blog', 'init_blogs' => 'blogs',
-            'init_post' => 'post', 'init_posts' => 'posts');
+            'init_post' => 'post', 'init_posts' => 'posts',
+            'init_webinar' => 'webinar', 'init_webinars' => 'webinars',
+            'init_speaker' => 'speaker', 'init_speakers' => 'speakers');
         foreach ($terms as $textId => $text) {
             $existing = $this->query("SELECT id FROM tbl_systext_text WHERE textinfo='$text' LIMIT 1");
             if (!is_array($existing) || count($existing) === 0) {

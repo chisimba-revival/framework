@@ -3120,6 +3120,9 @@ h5.featureboxheader,
 
 /* BEGIN CHISIMBA-REBORN NOTIFICATION COMPONENT */
 
+/* Component display must respect the native hidden state. */
+.chisimba-notification[hidden] { display: none; }
+
 .chisimba-notification {
     --chisimba-notification-accent: var(--chisimba-info);
     --chisimba-notification-background: var(--chisimba-primary-soft);
@@ -7248,3 +7251,12 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
   .chisimba-site-navigation__account { border-top: 1px solid var(--border-color, #d5dce2); padding-top: .4rem; }
   .chisimba-site-navigation__group > ul { position: static; min-width: 0; box-shadow: none; margin-left: .7rem; }
 }
+
+/* Reusable card actions and plain-text document previews. */
+.chisimba-publication-card__actions { display:flex; justify-content:flex-end; margin-top:auto; padding-top:.75rem; }
+.chisimba-publication-card__actions .button { font-size:.85rem; }
+.chisimba-text-preview { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; }
+
+/* Shared publication footer: summary on the left, optional actions on the right. */
+.chisimba-publication-card__actions--summary { justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.75rem; }
+.chisimba-publication-card__actions--summary > .button { margin-inline-start:auto; }
