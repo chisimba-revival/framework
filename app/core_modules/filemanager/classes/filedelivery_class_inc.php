@@ -72,6 +72,21 @@ class filedelivery extends ChisimbaObject
         exit;
     }
 
+    /** Only the legacy public-image redirect may be cached in the browser.
+     * Protected bytes and derivatives retain their per-request access checks.
+     */
+    public static function mayCachePublicImageRedirect($file, $folder, $method)
+    {
+        return in_array($method, ['GET', 'HEAD'], true)
+            && is_array($file) && is_array($folder)
+            && str_starts_with((string)($file['filefolder'] ?? ''), 'users/')
+            && ($file['category'] ?? '') === 'images'
+            && ($file['access'] ?? '') === 'public'
+            // Legacy NULL folder access/visibility mean public/visible in filereadpolicy.
+            && ($folder['access'] ?? 'public') === 'public'
+            && ($file['visibility'] ?? 'visible') === 'visible';
+    }
+
     public static function resolve($root, $relative)
     {
         if (!is_string($root) || $root === '' || !is_string($relative) || $relative === ''
