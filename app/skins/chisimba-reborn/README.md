@@ -29,3 +29,10 @@ styles and rendering behaviour. A canvas supplies contextual presentation.
 
 The initial `_default` canvas preserves all three historical content regions
 and arranges them responsively with CSS Grid.
+
+## Consistent action heights
+
+Use `chisimba-form-actions--equal` alongside `chisimba-form-actions` when a row
+combines text buttons, compact Help or nested submit forms. It stretches adjacent
+controls together with a 2.875rem minimum height. Verify their rendered heights
+and alignment at desktop and mobile widths, including wrapped labels.

@@ -7240,3 +7240,9 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
     .chisimba-control-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .chisimba-control-row__actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
+
+/* Equal-height actions, including compact Help and nested submit forms. */
+.chisimba-form-actions--equal { align-items: stretch; flex-wrap: wrap; }
+.chisimba-form-actions--equal > form { display: flex; align-items: stretch; margin-block: 0; }
+.chisimba-form-actions--equal > .button,
+.chisimba-form-actions--equal > form > .button { min-height: 2.875rem; height: auto; margin-block: 0; }
