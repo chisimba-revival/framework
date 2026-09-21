@@ -36,3 +36,14 @@ Use `chisimba-form-actions--equal` alongside `chisimba-form-actions` when a row
 combines text buttons, compact Help or nested submit forms. It stretches adjacent
 controls together with a 2.875rem minimum height. Verify their rendered heights
 and alignment at desktop and mobile widths, including wrapped labels.
+
+## Banner and focused workspaces
+
+The banner begins at the top of the viewport. The skin removes the canvas and
+legacy container's top spacing while retaining their side and bottom gutters.
+
+A module can apply `chisimba-focus-surface--active` to its working surface and
+`chisimba-focus-open` to the body to fill the viewport. The module must preserve
+its forms, make surrounding controls inert, provide a visible exit and Escape
+handling, and restore focus, scroll and prior inert state when leaving. The skin
+owns dimensions, background and stacking; branding canvases need no overrides.
