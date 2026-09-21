@@ -970,6 +970,12 @@ ul#menuList li li ul {
 .registration-health__pending { display: grid; gap: 0.65rem; }
 .registration-health__pending article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem; border: 1px solid var(--chisimba-border); border-radius: 0.55rem; }
 .registration-health__pending form { margin: 0; }
+.registration-health__pending article > div, .registration-health__recent li > span { min-width: 0; overflow-wrap: anywhere; }
+.registration-health__pending .chisimba-form-actions { flex-shrink: 0; flex-wrap: nowrap; max-width: 100%; gap: 0.5rem; }
+.registration-health__pending .chisimba-form-actions form { min-width: 0; }
+.registration-health__pending .chisimba-form-actions .chisimba-icon-button { flex-shrink: 0; }
+.registration-health__recent time { flex: 0 0 7rem; }
+.chisimba-wrap-anywhere { overflow-wrap: anywhere; }
 .registration-health__reminded { color: var(--chisimba-success, #2f855a) !important; font-weight: 700; }
 
 /* Discussion dashboard blocks can appear outside the Discussion module layout. */
@@ -7264,4 +7270,12 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
     padding: var(--chisimba-space-4);
     overflow: auto;
     background: var(--chisimba-surface);
+}
+
+@media (max-width: 600px) {
+    .registration-health__columns > section { padding: 0.6rem; }
+    .registration-health__pending article { padding: 0.5rem; gap: 0.5rem; }
+    .registration-health__pending .chisimba-form-actions { width: 100%; }
+    .registration-health__pending .chisimba-form-actions form { flex: 1; }
+    .registration-health__pending .chisimba-form-actions form .button { width: 100%; }
 }

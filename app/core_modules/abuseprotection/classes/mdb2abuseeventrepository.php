@@ -28,6 +28,38 @@ final class Mdb2AbuseEventRepository implements AbuseEventRepositoryInterface
                 $this->date($event['expires_at']))
         ) === 1;
     }
+    /** MariaDB advisory lock covers admission across all PHP workers on this database.
+     * Partial records after an I/O failure are conservative: they consume budget.
+     * No nested transaction is opened in the caller's business transaction.
+     */
+    public function reserveBudgets($lock, array $budgets)
+    {
+        // Include the database name to avoid contention between installations.
+        $result = $this->prepared('SELECT GET_LOCK(CONCAT(LEFT(DATABASE(),12), ?), 2) AS acquired',
+            array($lock), MDB2_PREPARE_RESULT);
+        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $result->free();
+        if ((int) ($row['acquired'] ?? 0) !== 1) { return false; }
+        try {
+            foreach ($budgets as $budget) {
+                $result = $this->prepared('SELECT COUNT(*) AS total FROM tbl_abuse_events '
+                    . 'WHERE action_key=? AND subject_hash=? AND occurred_at>?',
+                    array($budget['action_key'], $budget['subject_hash'], $this->date($budget['since'])),
+                    MDB2_PREPARE_RESULT);
+                $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+                $result->free();
+                if ((int) ($row['total'] ?? 0) >= $budget['limit']) { return false; }
+            }
+            foreach ($budgets as $budget) {
+                if (!$this->record($budget)) { throw new RuntimeException('Budget reservation failed.'); }
+            }
+            return true;
+        } finally {
+            $result = $this->prepared('SELECT RELEASE_LOCK(CONCAT(LEFT(DATABASE(),12), ?))',
+                array($lock), MDB2_PREPARE_RESULT);
+            $result->free();
+        }
+    }
     public function purgeExpired($now)
     {
         return $this->execute(

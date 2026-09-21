@@ -71,6 +71,36 @@ final class AbuseProtectionService
             'expires_at' => $now + max(60, (int) $ttl),
         ));
     }
+    /** Reserve independent sliding-window budgets, including successful submissions.
+     * The repository serialises check-and-record, so parallel requests cannot bypass limits.
+     * Identifiers are keyed hashes; raw addresses and email addresses are never stored.
+     */
+    public function admit($action, array $context, array $limits)
+    {
+        $action = $this->action($action);
+        $now = $this->now();
+        $budgets = array();
+        foreach ($limits as $limit) {
+            $dimension = $limit['dimension'];
+            if (!in_array($dimension, array('ip', 'account', 'site'), true)) {
+                throw new InvalidArgumentException('Invalid budget dimension.');
+            }
+            $value = $dimension === 'site' ? 'site' : strtolower(trim((string) ($context[$dimension] ?? '')));
+            $window = max(60, min(86400, (int) $limit['seconds']));
+            $key = $this->action($action . '.' . $dimension . '.' . $window);
+            $budgets[] = array('id' => call_user_func($this->idFactory), 'action_key' => $key,
+                'subject_hash' => hash_hmac('sha256', $key . '|' . $value, $this->key),
+                'outcome' => 'success', 'occurred_at' => $now, 'expires_at' => $now + $window,
+                'since' => $now - $window, 'limit' => max(1, (int) $limit['count']));
+        }
+        if (!$budgets || !method_exists($this->events, 'reserveBudgets')) {
+            throw new RuntimeException('Submission budgets are unavailable.');
+        }
+        $lock = 'abuse:' . substr(hash_hmac('sha256', $action, $this->key), 0, 44);
+        return $this->events->reserveBudgets($lock, $budgets)
+            ? new AbuseProtectionDecision(AbuseProtectionDecision::ALLOW)
+            : new AbuseProtectionDecision(AbuseProtectionDecision::DELAY, 3600, 'rate_limit');
+    }
     public function purgeExpired() { return $this->events->purgeExpired($this->now()); }
     private function validEvidence($action, array $e, $now, $min, $max)
     {
