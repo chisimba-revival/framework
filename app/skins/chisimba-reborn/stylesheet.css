@@ -7275,7 +7275,7 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 @media (max-width: 600px) {
     .registration-health__columns > section { padding: 0.6rem; }
     .registration-health__pending article { padding: 0.5rem; gap: 0.5rem; }
-    .registration-health__pending .chisimba-form-actions { width: 100%; }
+    .registration-health__pending .chisimba-form-actions { width: 100%; flex-direction: row; align-items: center; }
     .registration-health__pending .chisimba-form-actions form { flex: 1; }
     .registration-health__pending .chisimba-form-actions form .button { width: 100%; }
 }
