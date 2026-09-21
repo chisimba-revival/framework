@@ -47,3 +47,11 @@ A module can apply `chisimba-focus-surface--active` to its working surface and
 its forms, make surrounding controls inert, provide a visible exit and Escape
 handling, and restore focus, scroll and prior inert state when leaving. The skin
 owns dimensions, background and stacking; branding canvases need no overrides.
+
+## Adjacent action buttons
+
+Text buttons and icon-only buttons in an action row must have matching rendered
+heights and aligned edges, including when text wraps on smaller screens. Check
+actual browser dimensions at desktop and mobile widths; sharing a button class
+alone does not establish consistent sizing. Preserve visible focus and accessible
+names for icon-only actions.
