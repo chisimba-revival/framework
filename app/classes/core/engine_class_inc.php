@@ -968,13 +968,14 @@ class engine {
 
             $cookiesecret = $this->objSysConfig->getValue ( 'auth_cookiesecret', 'security', 'test' );
             $cookiesavedir = $this->objSysConfig->getValue ( 'auth_cookiesavedir', 'security', '.' );
-            $cookiesecure = $this->objSysConfig->getValue ( 'auth_cookiesecure', 'security', false );
-            if( $cookiesecure == 'true' || $cookiesecure == 'TRUE' || $cookiesecure == 'True') {
-                $cookiesecure = true;
-            }
-            else {
-                $cookiesecure = false;
-            }
+            /*
+             * LiveUser calls session_set_cookie_params() with its own legacy
+             * configuration. It must not weaken the PHP image's HTTPS-only
+             * session policy. Supported deployments terminate TLS before this
+             * process and redirect HTTP at the proxy, so application and
+             * persistent-login cookies are always Secure and HttpOnly.
+             */
+            $cookiesecure = true;
 
             // Auth container(s)
             $authcontype = $this->objSysConfig->getValue ( 'auth_containertype', 'security', 'MDB2' );
@@ -1012,6 +1013,7 @@ class engine {
                     'secret' => $cookiesecret,
                     'savedir' => $cookiesavedir,
                     'secure' => $cookiesecure,
+                    'httponly' => true,
                 ),
                 'authContainers' => array (
                     'database_local' => array (
