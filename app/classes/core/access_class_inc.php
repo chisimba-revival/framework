@@ -120,7 +120,11 @@ class access extends ChisimbaObject {
          * administrator-only page merely because that controller also defines
          * privileged actions.
          */
-        if ($this->requiresLogin($action) && !$this->isValid($action)) {
+        if (
+            $module->requiresLogin($action)
+            && method_exists($module, 'isValid')
+            && !$module->isValid($action)
+        ) {
             return $this->nextAction(
                 'noaction',
                 array(

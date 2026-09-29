@@ -11,7 +11,7 @@ $register = file_get_contents(dirname(__DIR__) . '/register.conf');
 
 $policyCheck = strpos(
     $access,
-    'if ($this->requiresLogin($action) && !$this->isValid($action))'
+    "\$module->requiresLogin(\$action)\n            && method_exists(\$module, 'isValid')\n            && !\$module->isValid(\$action)"
 );
 $dispatch = strpos($access, 'return $module->dispatch($action);');
 $mutation = strpos($controller, 'private function mutationValidationError()');
