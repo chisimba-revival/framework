@@ -66,6 +66,7 @@ class groupops extends ChisimbaObject {
      * @var    userDb
      */
     public $objUser;
+    // Legacy compatibility flag; Memcache initialisation has been retired.
     public $objMemcache = FALSE;
     public $objAPC = FALSE;
     protected $cacheTTL = 3600;
@@ -91,16 +92,6 @@ class groupops extends ChisimbaObject {
         $this->loading = ""; //$objIcon->show();
 
         $this->objDBConfig = $this->getObject('altconfig', 'config');
-        // check for memcache
-        if (extension_loaded('memcache')) {
-            require_once $this->objDBConfig->getSiteRootPath() . 'classes/core/chisimbacache_class_inc.php';
-            if ($this->objDBConfig->getenable_memcache() == 'TRUE') {
-                $this->objMemcache = TRUE;
-            } else {
-                $this->objMemcache = FALSE;
-            }
-            $this->cacheTTL = $this->objDBConfig->getcache_ttl();
-        }
         // check for APC
         if (extension_loaded('apc')) {
             if ($this->objDBConfig->getenable_apc() == 'TRUE') {

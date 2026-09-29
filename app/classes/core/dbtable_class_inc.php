@@ -151,6 +151,8 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public $adm = FALSE;
+    // Kept only to make the retired cache branches inert until their APC-only
+    // simplification is completed. No code can set this to TRUE.
     public $objMemcache = FALSE;
     public $objAPC = FALSE;
     protected $cacheTTL = 3600;
@@ -200,16 +202,6 @@ class dbTable extends ChisimbaObject {
         }
 
         $this->objDBConfig = $this->getObject('altconfig', 'config');
-        // check for memcache
-        if (extension_loaded('memcache')) {
-            require_once 'chisimbacache_class_inc.php';
-            if ($this->objDBConfig->getenable_memcache() == 'TRUE') {
-                $this->objMemcache = TRUE;
-            } else {
-                $this->objMemcache = FALSE;
-            }
-            $this->cacheTTL = $this->objDBConfig->getcache_ttl();
-        }
         // check for APC
         if (extension_loaded('apc')) {
             if ($this->objDBConfig->getenable_apc() == 'TRUE') {

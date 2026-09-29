@@ -371,11 +371,8 @@ class engine {
      */
     public $coremods;
 
-    /**
-     * MemcacheD object
-     *
-     * @var boolean
-     */
+    // Legacy compatibility flag. The Memcache client and configuration path
+    // have been removed, so this remains false.
     public $objMemcache = FALSE;
 
     /**
@@ -531,17 +528,6 @@ class engine {
             } elseif ($base != $this->_objDbConfig->getsiteRoot().'index.php') {
                 header('Location: '.$this->_objDbConfig->getsiteRoot().'index.php?'.$query, TRUE, 301);
             }
-        }
-
-        // check for memcache
-        if (extension_loaded ( 'memcache' )) {
-            require_once 'classes/core/chisimbacache_class_inc.php';
-            if ($this->_objDbConfig->getenable_memcache () == 'TRUE') {
-                $this->objMemcache = TRUE;
-            } else {
-                $this->objMemcache = FALSE;
-            }
-            $this->cacheTTL = $this->_objDbConfig->getcache_ttl ();
         }
 
         // check for APC
@@ -1106,26 +1092,14 @@ class engine {
     }
 
     /**
-     * Method to parse the DSN from a string style DSN to an array for portability reasons. This simply manages memcache handling of the return value of the 'real' function, which is a  static method called parseDSN_().
+     * Method to parse the DSN from a string style DSN to an array for portability reasons.
      *
      * @access public
      * @param  string $dsn DSN as a string
      * @return array Parsed DSN as an array
      */
     public function parseDSN($dsn) {
-        $parsed = self::parseDSN_($dsn);
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem ()->get ( 'dsn' )) {
-                $parsed = chisimbacache::getMem ()->get ( 'dsn' );
-                $parsed = unserialize ( $parsed );
-                return $parsed;
-            } else {
-                chisimbacache::getMem ()->set ( 'dsn', serialize ( $parsed ), FALSE, $this->cacheTTL );
-                return $parsed;
-            }
-        } else {
-            return $parsed;
-        }
+        return self::parseDSN_($dsn);
     }
 
     /**
@@ -1483,17 +1457,7 @@ class engine {
             if (! ($this->_objConfig instanceof altconfig)) {
                 require_once ($filename);
                 $this->_objConfig = new altconfig ( );
-                if ($this->objMemcache == TRUE) {
-                    if (chisimbacache::getMem ()->get ( 'altconfig' )) {
-                        $this->_objConfig = chisimbacache::getMem ()->get ( 'altconfig' );
-                        return $this->_objConfig;
-                    } else {
-                        require_once ($filename);
-                        $this->_objConfig = new altconfig ( );
-                        chisimbacache::getMem ()->set ( 'altconfig', $this->_objConfig, MEMCACHE_COMPRESSED, $this->cacheTTL );
-                        return $this->_objConfig;
-                    }
-                } elseif ($this->objAPC == TRUE) {
+                if ($this->objAPC == TRUE) {
                     $this->_objConfig = apc_fetch ( 'altconfig' );
                     if ($this->_objConfig == FALSE) {
                         $this->_objConfig = new altconfig ( );
@@ -1552,23 +1516,7 @@ class engine {
      */
     public function newObject($name, $moduleName) {
         $this->loadClass ( $name, $moduleName );
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem ()->get ( md5 ( $name ) )) {
-                //log_debug("retrieve $name from cache...new object");
-                $objNew = chisimbacache::getMem ()->get ( md5 ( $name ) );
-
-                return $objNew;
-            } else {
-                if (is_subclass_of ( $name, 'ChisimbaObject' )) {
-                    $objNew = new $name ( $this, $moduleName );
-                    return $objNew;
-                } else {
-                    $objNew = new $name ( );
-                    //log_debug("setting newObject $name from cache...");
-                    chisimbacache::getMem ()->set ( md5 ( $name ), $objNew, MEMCACHE_COMPRESSED, $this->cacheTTL );
-                }
-            }
-        } elseif ($this->objAPC == TRUE) {
+        if ($this->objAPC == TRUE) {
             $objNew = apc_fetch ( $name );
             if ($objNew == FALSE) {
                 if (is_subclass_of ( $name, 'ChisimbaObject' )) {

@@ -86,7 +86,6 @@ class languageConfig extends ChisimbaObject {
      * @var    string
      */
     public $_errorCallback;
-    public $objMemcache;
     public $cacheTTL = 3600;
     public $dblangAvail = null;
 
@@ -97,10 +96,6 @@ class languageConfig extends ChisimbaObject {
     public function init() {
         $this->dblangAvail = $this->getObject('dblanguage_available');
         try {
-            if (extension_loaded('memcache')) {
-                require_once 'classes/core/chisimbacache_class_inc.php';
-                $this->objMemcache = TRUE;
-            }
             require_once ('Translation2.php'); //$this->getPearResource('Translation2.php');
             require_once ('Translation2/Admin.php');
         } catch (customException $e) {
