@@ -159,12 +159,11 @@ class contextpermissions extends controller {
     */    
     function isValid( $action, $default = TRUE )
     {
-        // Super user has access to all actions
+        // This module edits permission rules and is administrator-only. Do not
+        // fall back to the legacy decision-table implementation: its base
+        // access check is permissive when that optional layer is unavailable.
         $objUser = $this->getObject('user', 'security');
-        if( $objUser->isAdmin() )
-            return TRUE;
-            
-        return parent::isValid( $action, $default );
+        return $objUser->isAdmin();
     }
     
     /**

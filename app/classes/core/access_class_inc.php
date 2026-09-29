@@ -109,29 +109,28 @@ class access extends ChisimbaObject {
      */
     public function dispatchControl($module, $action) {
         /*
-          // Extract isRegistered
-          extract( $this->getModuleInformation( 'decisiontable' ) );
-          // Safety net if the decision table module has not been registered.
-          if( !$isRegistered ) {
-          return $module->dispatch( $action );
-          }
-          // Get an instance of the decisiontable object.
-          $this->objDT = $this->getObject( 'decisiontable','decisiontable' );
-          // Create the decision table for the current module
-          $this->objDT->create( $this->moduleName );
-          // Collect information from the database.
-          $this->objDT->retrieve( $this->moduleName );
-          // Test the current action being requested, to determine if it requires access control.
-          if( $this->objDT->hasAction( $action ) ) {
-          // Is the action allowed?
-          if ( !$this->isValid( $action ) ) {
-          // redirect and indicate the user does not have sufficient access.
-          return $this->nextAction( 'noaction', array('modname' => $this->moduleName, 'actionname' => $action), 'redirect' );
-          }
-          }
-          // Action allowed continue.
-         * 
+         * Every controller action passes through this method. The historical
+         * decision-table implementation was disabled, which left controller
+         * isValid() overrides inert. Do not revive that data-driven layer here:
+         * its configuration is incomplete on modern installations. Instead,
+         * honour the controller's own, testable policy for protected actions
+         * and fail closed when it declines one. Public actions remain governed
+         * by their controller's requiresLogin() policy; this avoids converting
+         * an intentionally public course or marketing view into an
+         * administrator-only page merely because that controller also defines
+         * privileged actions.
          */
+        if ($this->requiresLogin($action) && !$this->isValid($action)) {
+            return $this->nextAction(
+                'noaction',
+                array(
+                    'modname' => $this->moduleName,
+                    'actionname' => $action,
+                ),
+                'redirect'
+            );
+        }
+
         //if we hit prelogin module, logout, if logoutdestroy is false, else update
         //last activity
         if (!$this->logoutdestroy) {

@@ -873,6 +873,16 @@ class contextgroups extends controller
 
     private function mutationValidationError()
     {
+        /*
+         * Keep this check next to the state-changing operations as defence in
+         * depth. The framework dispatcher also evaluates isValid(), but a
+         * future dispatch change must not turn a valid course form token into
+         * authority to manage other members.
+         */
+        if (!$this->canManageMembers()) {
+            return $this->text('mod_contextgroups_err_notauthorised');
+        }
+
         $method = isset($_SERVER['REQUEST_METHOD'])
             ? strtoupper((string) $_SERVER['REQUEST_METHOD'])
             : '';
