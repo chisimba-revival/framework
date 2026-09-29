@@ -1,6 +1,6 @@
 # PEAR dependency register
 
-Status: static source inventory, 29 September 2026. A direct load proves that
+Status: static source inventory and native-auth retirement update, 29 September 2026. A direct load proves that
 the framework can use a component; it does not prove that the corresponding
 module is installed, enabled or reached in KengaLearn production. Do not
 remove a package from `app/lib/pear` until runtime registration and supported
@@ -10,7 +10,7 @@ deployment checks have been recorded.
 
 | Component | Direct framework caller | Present role | Replacement direction | Removal gate |
 | --- | --- | --- | --- | --- |
-| LiveUser / LiveUser_Admin | `app/classes/core/engine_class_inc.php` loads both at every engine bootstrap and initialises the singleton | Legacy identity, permission application setup and compatibility callbacks; native-auth services coexist | First decouple engine bootstrap from LiveUser, keeping an adapter only for proven callers | Native-auth login, remembered login, logout, identity lookup, groups and permission setup pass with LiveUser excluded |
+| LiveUser / LiveUser_Admin | None: bootstrap and package files removed | Retired; native-auth is the supported identity boundary | Complete in source | Focused native-auth/session/logout contracts pass; production journey verification is pending release |
 | MDB2 / MDB2_Schema | `engine_class_inc.php`, `dbtable`, `dbtablemanager` | Configurable database abstraction and schema compatibility | Establish PDO as the canonical path; migrate API-by-API rather than replacing calls mechanically | No supported setting selects `MDB2`; schema install/upgrade tools and regression suite use PDO |
 | PEAR / PEAR_Error | Engine error callback, MDB2 error checks and historical base classes | Error representation coupled to MDB2 and LiveUser | Use native exceptions/results at adapter boundaries | MDB2/LiveUser removed and no active code extends or type-checks PEAR classes |
 | Config | `core_modules/config/classes/ini_class_inc.php` | Configuration-format compatibility | Map XML/INI readers and installer behaviour before selecting a maintained configuration loader | All installer and deployed config reads have compatible tests and migration/rollback steps |

@@ -17,10 +17,10 @@ none of the actions below have been applied to production.
 
 | Lead | Evidence | Next evidence required |
 | --- | --- | --- |
-| Core cache deserialisation | `dbTable` and the engine call `unserialize()` on values returned from configured Memcache/APC paths. | Confirm whether an untrusted actor can write cache entries, whether production uses those paths, and whether allowed-class restrictions or a JSON cache format are feasible. |
+| Core cache deserialisation | KengaLearn has neither legacy Memcache PHP extension installed. The first-party Memcache adapter, activation setting and initialisers were removed in `63a5ed4ba`; generic cache fallback is APC/local only. | Remove the now-inert compatibility conditionals in a later isolated refactor; do not reintroduce PHP-object serialization for a shared cache. |
 | Dynamic template inclusion | `controller::callTemplate()` includes a path from `_findTemplate()`. Request module names have slash removal but no strict registry allow-list; template names are normally controller-selected. | Trace all template-name inputs and replace permissive module resolution with a registered-module allow-list before relying on it as a traversal defence. |
 | Legacy XML-RPC, BBCode and OpenID paths | Bundled and framework callers remain for XML/RPC, BBCodeParser and OpenID/MDB2 storage. | Establish route/module registration and production reachability; disable or retire unused public entry points before dependency removal. |
-| Legacy PEAR/MDB2/LiveUser surface | Core startup still adds `lib/pear` to the include path and can initialise LiveUser/MDB2. | Produce the dependency/reachability map in the companion review plan before changing bootstrapping or deleting packages. |
+| Legacy PEAR/MDB2 surface | Core startup still adds `lib/pear` to the include path and can initialise MDB2. LiveUser and obsolete LDAP adapters have been removed. | Produce the dependency/reachability map in the companion review plan before changing MDB2 bootstrapping or deleting further packages. |
 | Broad runtime privileges | `allow_url_fopen` is enabled, `disable_functions` and `open_basedir` are unset. | Inventory actual stream-wrapper and process-launch use, then minimise the configuration without breaking supported functions. |
 
 ## Evidence notes
