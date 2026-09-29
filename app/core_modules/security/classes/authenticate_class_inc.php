@@ -49,24 +49,13 @@ class authenticate extends ChisimbaObject
     protected $authChainOfCommand=array('database');
 
     /**
-    *
-    * Standard init method. It reads the configuration data for a list
-    * of allowed authentication methods, and the order in which they occur.
-    * It then builds the $authChainOfCommand array so that the authenticateUser
-    * method can then process the user for login.
-    *
-    *
+    * Native database authentication is the only supported provider.  The
+    * old configurable LDAP/LiveUser chain was retired with its implementation
+    * and must not be revived by a stale configuration value.
     */
     public function init()
     {
-        //Instantiate the configuration object
-        $objConfig = $this->getObject('dbsysconfig', 'sysconfig');
-        $authMeth = $objConfig->getValue('MOD_SECURITY_AUTHMETHODS', 'security');
-        if (strstr($authMeth, ',')) {
-            $this->authChainOfCommand = explode(",", $authMeth);
-        } else {
-            $this->authChainOfCommand[] = trim($authMeth);
-        }
+        $this->authChainOfCommand = array('database');
     }
 
     /**

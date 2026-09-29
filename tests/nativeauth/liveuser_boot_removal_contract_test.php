@@ -19,6 +19,12 @@ $catalogue = file_get_contents(
 $permissions = file_get_contents(
     $root . '/app/core_modules/permissions/classes/perms_class_inc.php'
 );
+$authenticate = file_get_contents(
+    $root . '/app/core_modules/security/classes/authenticate_class_inc.php'
+);
+$user = file_get_contents(
+    $root . '/app/core_modules/security/classes/user_class_inc.php'
+);
 
 ensureLiveUserBootRemoval(
     strpos($engine, "getPearResource ( 'LiveUser.php' )") === false
@@ -56,5 +62,32 @@ ensureLiveUserBootRemoval(
     && strpos($permissions, 'outputRightsConstants') === false,
     'Permission compatibility facade must use native services'
 );
+ensureLiveUserBootRemoval(
+    strpos($authenticate, "array('database')") !== false
+    && strpos($authenticate, 'MOD_SECURITY_AUTHMETHODS') === false,
+    'Stale settings must not reactivate retired LDAP authentication'
+);
+ensureLiveUserBootRemoval(
+    strpos($user, "newObject('ldaplogin'") === false,
+    'User authentication must not instantiate the retired LDAP adapter'
+);
+ensureLiveUserBootRemoval(
+    !file_exists($root . '/app/lib/pear/LiveUser.php')
+    && !is_dir($root . '/app/lib/pear/LiveUser'),
+    'The retired LiveUser PEAR package must not be bundled'
+);
+foreach (array(
+    'auth_ldap_class_inc.php',
+    'auth_uwcldap_class_inc.php',
+    'auth_witsldap_class_inc.php',
+    'ldaplogin_class_inc.php',
+) as $retiredLdapAdapter) {
+    ensureLiveUserBootRemoval(
+        !file_exists(
+            $root . '/app/core_modules/security/classes/' . $retiredLdapAdapter
+        ),
+        'Retired LDAP adapter remains bundled: ' . $retiredLdapAdapter
+    );
+}
 
 echo "LiveUser boot removal contract passed\n";
