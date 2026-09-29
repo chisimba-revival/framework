@@ -11,13 +11,14 @@ none of the actions below have been applied to production.
 | F-002 | High | The production web container runs PHP 8.5.4. PHP published later 8.5 security releases. The public response includes `X-Powered-By: PHP/8.5.4`. | Rebuild the application image on the current supported PHP 8.5 patch release, run the framework/module test matrix, then deploy through the normal immutable-release workflow. Disable `expose_php`. |
 | F-003 | Medium | Production config enables `display_errors` and `display_startup_errors`. The loaded Chisimba error shim intentionally suppresses legacy warnings but leaves fatal errors visible in HTTP responses. | In production, log errors without rendering details to clients; retain a generic error page with a correlation ID. Verify PHP, Apache and framework exception paths do not disclose file paths, SQL, stack traces or configuration values. |
 | F-004 | Medium | The public home response did not emit CSP, HSTS, `X-Content-Type-Options`, frame-ancestor/X-Frame-Options, Referrer-Policy or Permissions-Policy headers. | Add headers at the reverse-proxy layer, starting with HSTS after confirming HTTPS-only operation, `nosniff`, a restrictive referrer policy and frame protection. Introduce CSP in report-only mode first because legacy inline scripts may need migration. |
+| F-005 | Critical | The framework's only generic controller authorisation hook, `access::dispatchControl()`, has its decision-table check commented out and calls `$module->dispatch()` directly. `access::isValid()` also unconditionally returns `TRUE`; `getPermissions()` has no callers. This bypasses controller `isValid()` methods as well. `contextgroups` is a verified affected controller: it expects `isValid()` to limit membership changes to administrators or course lecturers, but its mutation methods require only POST, current-context and session-token checks—not the actor's role. A signed-in learner in a course can obtain that token from the module's normal page and invoke membership-changing actions. | Treat as an emergency authorisation repair. Reinstate a central, allow-list-based dispatch guard with regression coverage, and add explicit role checks inside every privileged mutation so the controller remains safe if the dispatcher changes. Validate `contextgroups` first against learner, lecturer and administrator accounts; then enumerate every controller that overrides `isValid()` or relies on decision-table permissions. Do not simply re-enable the historical decision-table code without validating its data model and fail-closed behaviour. |
 
 ## Review leads, not yet findings
 
 | Lead | Evidence | Next evidence required |
 | --- | --- | --- |
 | Core cache deserialisation | `dbTable` and the engine call `unserialize()` on values returned from configured Memcache/APC paths. | Confirm whether an untrusted actor can write cache entries, whether production uses those paths, and whether allowed-class restrictions or a JSON cache format are feasible. |
-| Dynamic template inclusion | `controller::callTemplate()` includes a path from `_findTemplate()`. | Trace the module/template names from request routing and confirm strict registry validation prevents traversal or arbitrary local-file inclusion. |
+| Dynamic template inclusion | `controller::callTemplate()` includes a path from `_findTemplate()`. Request module names have slash removal but no strict registry allow-list; template names are normally controller-selected. | Trace all template-name inputs and replace permissive module resolution with a registered-module allow-list before relying on it as a traversal defence. |
 | Legacy XML-RPC, BBCode and OpenID paths | Bundled and framework callers remain for XML/RPC, BBCodeParser and OpenID/MDB2 storage. | Establish route/module registration and production reachability; disable or retire unused public entry points before dependency removal. |
 | Legacy PEAR/MDB2/LiveUser surface | Core startup still adds `lib/pear` to the include path and can initialise LiveUser/MDB2. | Produce the dependency/reachability map in the companion review plan before changing bootstrapping or deleting packages. |
 | Broad runtime privileges | `allow_url_fopen` is enabled, `disable_functions` and `open_basedir` are unset. | Inventory actual stream-wrapper and process-launch use, then minimise the configuration without breaking supported functions. |
@@ -34,8 +35,9 @@ none of the actions below have been applied to production.
 
 ## Next review tranche
 
-1. Map all public entry points and module actions to authentication,
-   authorisation and CSRF enforcement.
+1. Contain and repair F-005 before further feature deployment; then map all
+   public entry points and module actions to authentication, authorisation and
+   CSRF enforcement.
 2. Trace native-auth, persistent-login and legacy LiveUser callers.
 3. Produce a machine-readable PEAR inventory: package, version/source,
    direct callers, production reachability and replacement/removal status.
