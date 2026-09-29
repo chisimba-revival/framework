@@ -247,6 +247,63 @@ class permissionservice extends dbTable
     }
 
     /**
+     * Remove one module-owned canonical area, its rights, grants and role
+     * templates.  A missing area is already clean and therefore succeeds.
+     */
+    public function deleteArea($applicationId, $areaDefineName)
+    {
+        $applicationId = $this->normaliseApplicationId($applicationId);
+        $areaDefineName = $this->normaliseAreaName($areaDefineName);
+        if ($applicationId === null || $areaDefineName === null) {
+            return false;
+        }
+
+        $areaId = $this->areaIdForName($applicationId, $areaDefineName);
+        if ($areaId === null) {
+            return true;
+        }
+
+        $this->beginTransaction();
+        try {
+            $rightRows = $this->getArray(
+                'SELECT right_id FROM tbl_perms_rights WHERE area_id = ' . $areaId
+            );
+            if (!is_array($rightRows)) {
+                throw new Exception('area_right_lookup_failed');
+            }
+            foreach ($rightRows as $row) {
+                $rightId = isset($row['right_id'])
+                    ? $this->positiveInteger($row['right_id'])
+                    : null;
+                if ($rightId === null) {
+                    throw new Exception('area_right_invalid');
+                }
+                $this->_execute(
+                    'DELETE FROM tbl_perms_contextrolegrants WHERE right_id = '
+                    . $rightId
+                );
+                $this->_execute(
+                    'DELETE FROM tbl_perms_grouprights WHERE right_id = ' . $rightId
+                );
+                $this->_execute(
+                    'DELETE FROM tbl_perms_userrights WHERE right_id = ' . $rightId
+                );
+            }
+            $this->_execute('DELETE FROM tbl_perms_rights WHERE area_id = ' . $areaId);
+            $this->_execute('DELETE FROM tbl_perms_areas WHERE area_id = ' . $areaId);
+
+            if ($this->areaIdForName($applicationId, $areaDefineName) !== null) {
+                throw new Exception('area_delete_verify_failed');
+            }
+            $this->commitTransaction();
+            return true;
+        } catch (Exception $exception) {
+            $this->rollbackTransaction();
+            return false;
+        }
+    }
+
+    /**
      * Idempotently record and materialize a grant for a contextual role.
      *
      * The template is canonical permission policy. Concrete grants are made

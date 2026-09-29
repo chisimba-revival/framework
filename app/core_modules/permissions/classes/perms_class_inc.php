@@ -69,8 +69,16 @@ class perms extends ChisimbaObject
      * @return boolean True on success
      */
      public function checkRule($rule, $module = NULL) {
-         // find the rule in the area
-         return $this->objLu->checkRight($rule, $module);
+         $module = $module === NULL ? $this->moduleName : $module;
+         $permissions = $this->getObject('permissionservice', 'security');
+         $user = $this->getObject('user', 'security');
+         $areaId = $permissions->areaIdForName('chisimba', $module);
+         if ($areaId === null) {
+             return false;
+         }
+         $rightId = $permissions->rightIdForArea($areaId, $rule);
+         return $rightId !== null
+             && $permissions->isGranted($user->userId(), $rightId);
      }
 
      /**
@@ -80,17 +88,13 @@ class perms extends ChisimbaObject
       * @return array
       */
      public function getAllRights() {
-         return $this->objLuAdmin->perm->getRights();
+         return array();
      }
 
      public function outputRights() {
-         $rights = $this->objLuAdmin->perm->outputRightsConstants('array', array('application' => $this->appid), $this->appid); //'array', array('naming' => LIVEUSER_SECTION_APPLICATION), $this->appid);
-         foreach ($rights as $key => $right) {
-             if(!defined($key)) {
-                 define($key, $right );
-             }
-         }
-         return $rights;
+         // Native callers resolve rights explicitly through checkRule().
+         // Runtime constants were a LiveUser compatibility mechanism.
+         return array();
      }
 
      public function isContextMember($group = 'Lecturers') {

@@ -813,9 +813,6 @@ class modulecatalogue extends controller {
      */
     private function uninstallModule($modname) {
         try {
-            // find all available applications
-            $applications = $this->objLuAdmin->perm->getApplications();
-            //var_dump($applications); die();
             $filepath = $this->objModFile->findRegisterFile ( $modname );
             $this->registerdata = $this->objModFile->readRegisterFile ( $filepath );
             if (is_array ( $this->registerdata )) {

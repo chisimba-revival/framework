@@ -738,30 +738,21 @@ class modulesadmin extends dbTableManager
                 $this->objModules->removeTags($moduleId);
 
                 //$this->objModules->commitTransaction();//End the transaction;
-                // clean up the permissions system
-                // remove the module as an area from the Chisimba application
-                $params = array('filters' => array('area_define_name' => $moduleId));
-                $areas = $this->objLuAdmin->perm->getAreas($params);
-                // var_dump($areas); die();
-                if(is_array($areas) && !empty($areas)) {
-                    $filters = array('area_id' => $areas[0]['area_id']);
-                    $rmArea = $this->objLuAdmin->perm->removeArea($filters);
-                    // get the group ID that we want to remove
-                    $groupId = $objGroups->getId($moduleId);
-                    // remove the group as well
-                    $filters = array('group_id' => $groupId);
-                    $rmGrp = $this->objLuAdmin->perm->removeGroup($filters);
-                }
-                else {
-                    $rmArea = false;
-                    $rmGrp = false;
-                }
+                // Canonical services own the module area and registration
+                // group.  LiveUser administration is no longer loaded.
+                $objPermissionService = $this->getObject(
+                    'permissionservice',
+                    'security'
+                );
+                $rmArea = $objPermissionService->deleteArea('chisimba', $moduleId);
+                $groupId = $objGroups->getId($moduleId);
+                $rmGrp = !is_numeric($groupId) || (int) $groupId < 1
+                    ? true
+                    : !empty($objGroups->deleteGroup((int) $groupId));
 
-                if ($rmArea === false || $rmGrp == false) {
-                    log_debug("Couldn't uninstall $moduleId");
-                    $this->objLuAdmin->getErrors();
-                }
-                else {
+                if ($rmArea === false || $rmGrp === false) {
+                    log_debug("Couldn't completely uninstall $moduleId");
+                } else {
                     log_debug("Uninstalling $moduleId");
                 }
                 return TRUE;

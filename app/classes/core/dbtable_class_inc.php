@@ -185,8 +185,8 @@ class dbTable extends ChisimbaObject {
      */
     public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
         $modname = $this->objEngine->_moduleName;
-        $this->objLuAdmin = $this->objEngine->luAdmin;
-        $this->objLu = $this->objEngine->lu;
+        $this->objLuAdmin = null;
+        $this->objLu = null;
         $this->enableLogging = $this->objEngine->enableLogging;
         $this->eventDispatcher = $this->objEngine->eventDispatcher;
         // global $_globalObjDb;

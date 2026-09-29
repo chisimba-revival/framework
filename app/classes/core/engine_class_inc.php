@@ -558,12 +558,12 @@ class engine {
         //and we need a general system config too
         $this->_objConfig = clone $this->_objDbConfig;
         ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $this->_objConfig->getsiteRootPath () . 'lib/pear/' );
-        // Grab the LiveUser code now
-        require_once ($this->getPearResource ( 'LiveUser.php' ));
-        // Grab the LiveUser Admin code
-        require_once ($this->getPearResource ( 'LiveUser/Admin.php' ));
-        // init LiveUser
-        $this->getLU ();
+        // The event dispatcher is a small, independent PEAR component.  The
+        // historical engine loaded it through LiveUser, which also started a
+        // second, legacy authentication/permission stack on every request.
+        // Native authentication and the canonical permission services own
+        // those responsibilities now, so load the dispatcher directly.
+        require_once ($this->getPearResource ( 'Event/Dispatcher.php' ));
         //initialise the event messages framework
         $this->eventDispatcher =& Event_Dispatcher::getInstance();
         //initialise the db factory method of MDB2
@@ -571,19 +571,11 @@ class engine {
         //initialise the db factory method of MDB2_Schema
         $this->getDbManagementObj ();
 
-        /* -- Remove this once all users are upgraded to 3.x series framework --*/ 
-        // check that the application is registered 
-        $this->_servername = $this->_objDbConfig->serverName(); 
-        // find all available applications 
-        $applications = $this->luAdmin->perm->getApplications(); 
-        if(empty($applications) || $applications[0]['application_define_name'] != $this->_servername ) { 
-            $data = array('application_define_name' => $this->_servername); 
-            $appid = $this->luAdmin->perm->addApplication($data); 
-            $this->appid = $data['application_define_name']; 
-        } 
-        else { 
-            $this->appid = $applications[0]['application_define_name']; 
-        } 
+        // Canonical permissions use this stable application namespace.  It is
+        // deliberately not a LiveUser application record and startup performs
+        // no permission-table writes.
+        $this->_servername = $this->_objDbConfig->serverName();
+        $this->appid = 'chisimba';
         /*
          * Baseline permission groups are owned by GroupService and are
          * established transactionally during first-time registration.
@@ -593,8 +585,6 @@ class engine {
          * Initial administrator identity and membership are provisioned once
          * after first-time registration by initialadminprovisioningservice.
          */
-        /* -- End remove for 2.x -> 3.x series -- */ 
-
         // Set the user agent
         self::$user_agent = ( ! empty($_SERVER['HTTP_USER_AGENT']) ? trim($_SERVER['HTTP_USER_AGENT']) : '');
         $this->sessprotect = array_combine($this->sessprotect, $this->sessprotect);
@@ -858,31 +848,15 @@ class engine {
     }
 
     /**
-     * Method to return the LiveUser management object. Evaluates lazily,
-     * so class file is not included nor object instantiated
-     * until needed.
+     * Compatibility endpoint retained for older extensions.
      *
-     * @param  void
-     * @access public
-     * @return void
+     * LiveUser is retired and cannot be initialised by a request. Extensions
+     * must use nativeauth, groupservice or permissionservice.
+     *
+     * @return null
      */
     public function getLU() {
-        if ($this->lu == NULL || $this->luAdmin == NULL) {
-            $this->configLu();
-            $_lu = LiveUser::singleton ( $this->luConfig );
-            $_lu->dispatcher->addObserver ( array (&$this, 'authNotification' ) );
-            $this->lu = $_lu;
-            if (! $_lu->init ()) {
-                var_dump ( $_lu->getErrors () );
-                die ();
-            }
-            // and then the admin part
-            $_luAdmin = LiveUser_Admin::factory ( $this->luConfig );
-            $_luAdmin->init ();
-            $this->luAdmin = $_luAdmin;
-
-        }
-        return;
+        return null;
     }
 
     /**
@@ -906,22 +880,12 @@ class engine {
     }
 
     /**
-     * Method to return the LiveUser Admin management object. Evaluates lazily,
-     * so class file is not included nor object instantiated
-     * until needed.
+     * Compatibility endpoint for the retired LiveUser administration API.
      *
-     * @param  void
-     * @access public
-     * @return object
+     * @return null
      */
     public function getLuAdmin() {
-        if ($this->luAdmin === null) {
-            // and then the admin part
-            $_luAdmin = LiveUser_Admin::factory ( $this->luConfig );
-            $_luAdmin->init ();
-            $this->luAdmin = $_luAdmin;
-        }
-        return $this->luAdmin;
+        return null;
     }
 
     /**
