@@ -21,7 +21,7 @@ deployment checks have been recorded.
 | --- | --- | --- | --- |
 | Mail / Mail_mime | `core_modules/mail/classes/mailer_class_inc.php` | Whether legacy `mail` remains registered and sends production messages | Keep isolated; route new sending through Communications. Retire only after delivery, attachment and bounce/rollback tests |
 | Translation2 / Translation2_Admin | `core_modules/language/classes/languageconfig_class_inc.php` | Active locale administration and fallback paths | Separate high-regression localisation migration |
-| XML/RPC | `core_modules/packages/classes/rpcserver_class_inc.php`; `core_modules/api/classes/xmlrpcapi_class_inc.php`; filter helpers | Registered routes, public endpoint exposure and inbound authentication | Disable unneeded endpoints first; replace needed APIs with maintained HTTP/JSON endpoints |
+| XML/RPC | `core_modules/packages/classes/rpcserver_class_inc.php`; `core_modules/api/classes/xmlrpcapi_class_inc.php`; filter helpers | **F-006 update, 30 September:** KengaLearn's `api` and `packages` routes return HTTP 410 without loading services. ADM is retired. Backing classes and shared libraries remain; other sites require separate verification. | Do not restore legacy endpoints. Inventory internal/filter consumers before deleting XML/RPC libraries. Future integrations should use explicitly authenticated and authorised HTTP/JSON services. |
 | HTML_BBCodeParser | `core_modules/utilities/classes/bbcodeparser_class_inc.php` | Which rich-text inputs select this parser and the output sanitisation chain | Retire after content migration and sanitised rendering tests |
 | Archive_Tar | `core_modules/modulecatalogue/controller.php` | Module package upload/install feature reachability | Replace with a maintained archive implementation only after archive traversal and package signature policy are defined |
 
@@ -43,8 +43,8 @@ quarantining any one of them, record:
 
 1. Finish native-auth versus LiveUser reachability mapping without changing
    current production bootstrapping.
-2. Inventory the production module catalogue for legacy Mail, XML/RPC,
-   packages and API routes.
+2. Complete the production module catalogue inventory for legacy Mail and
+   the now-contained XML/RPC/package routes across the remaining sites.
 3. Make PDO compatibility testable in a dedicated branch; do not flip the
    production database abstraction as part of a security hotfix.
 4. After that evidence, isolate the smallest inactive database-driver or

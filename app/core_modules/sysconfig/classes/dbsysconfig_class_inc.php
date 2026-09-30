@@ -620,11 +620,7 @@ class dbsysconfig extends dbTable
     }
 
     /**
-    * *---------------- MIRRORING PROPERTIES -----------*
-    */
-
-    /**
-    * Return's server name (used for dynamic mirroring)
+    * Return the stable site name used for cache and temporary-file names.
     */
     function serverName()
     {
@@ -634,19 +630,8 @@ class dbsysconfig extends dbTable
     }
 
     /**
-    * Returns mirror webservice WSDL URL (in production will usually be a service
-    * on a non-standard port on the localhost)
-    *
-    * @return string WSDL URL
-    */
-    function mirrorWsdlUrl()
-    {
-        return $this->getValue("mirror_wsdl_url");
-    }
-
-    /**
     * Method used to get the proxy server
-    * @return string the proxy string in standard format (used for dynamic mirroring)
+    * @return string the proxy string in standard format
     */
     function proxyName()
     {

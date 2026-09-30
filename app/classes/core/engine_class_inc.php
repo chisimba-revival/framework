@@ -2129,8 +2129,31 @@ class engine {
      * @return set    property to true
      */
     public function sessionStart() {
-        //session_start();
-        $this->_sessionStarted = TRUE;
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $this->_sessionStarted = TRUE;
+            return true;
+        }
+
+        if (headers_sent()) {
+            return false;
+        }
+
+        /*
+         * This is the only session name accepted by the engine constructor.
+         * PHP's default PHPSESSID name would leave a newly created session
+         * unreadable on the next request.
+        */
+        session_name('PHPSESSION');
+        session_set_cookie_params(array(
+            'lifetime' => 0,
+            'path' => '/',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ));
+        $this->_sessionStarted = session_start();
+
+        return $this->_sessionStarted;
     }
 
     /**

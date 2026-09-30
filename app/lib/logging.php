@@ -5,7 +5,6 @@
  * The public compatibility boundary consists of three global functions:
  *
  * - log_debug() writes general framework diagnostics;
- * - sql_log() writes selected SQL statements;
  * - logger_log() retains the historical logger-file hook.
  *
  * The logger module's database-backed activity counting is separate from this
@@ -43,14 +42,6 @@ if ($enable_debug_logging === true) {
         0644
     );
 
-    $GLOBALS['SQL_LOG_OBJ'] = new ChisimbaFileLogger(
-        'error_log/sqllog.log',
-        'sql',
-        0644,
-        '[SQLDATA]',
-        '[/SQLDATA]'
-    );
-
     $GLOBALS['LOGGER_LOG'] = new ChisimbaFileLogger(
         'error_log/logger.log',
         'logger',
@@ -75,33 +66,6 @@ if ($enable_debug_logging === true) {
         }
     }
 
-    if (!function_exists('sql_log')) {
-        /**
-         * Write a SQL diagnostic value.
-         *
-         * Historical callers sometimes supply their own SQLDATA markers. Remove
-         * one outer marker pair so the native logger emits exactly one pair.
-         *
-         * @param mixed $value SQL value to record.
-         *
-         * @return bool TRUE when the entry is written.
-         */
-        function sql_log($value)
-        {
-            $message = stripcslashes(stripslashes(
-                chisimba_log_value_to_string($value)
-            ));
-
-            $message = preg_replace(
-                '/^\s*\[SQLDATA\](.*)\[\/SQLDATA\]\s*$/s',
-                '$1',
-                $message
-            );
-
-            return $GLOBALS['SQL_LOG_OBJ']->log($message);
-        }
-    }
-
     if (!function_exists('logger_log')) {
         /**
          * Write a value to the historical logger.log destination.
@@ -120,13 +84,6 @@ if ($enable_debug_logging === true) {
 } else {
     if (!function_exists('log_debug')) {
         function log_debug($value)
-        {
-            return true;
-        }
-    }
-
-    if (!function_exists('sql_log')) {
-        function sql_log($value)
         {
             return true;
         }

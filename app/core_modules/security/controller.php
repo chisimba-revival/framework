@@ -82,6 +82,15 @@ class security extends controller
             return $this->nativeLanding();
         }
 
+        $failure=$this->getSession('native_auth_login_failure',array());
+        $this->unsetSession('native_auth_login_failure');
+        if(!is_array($failure))$failure=array();
+        if($messageKey===null && in_array($failure['message_key']??'',array('mod_security_pendingverification','mod_security_authenticationfailed'),true))$messageKey=$failure['message_key'];
+        $username=$failure['username']??'';
+        $this->setVar('nativeLoginUsername',is_string($username)?substr($username,0,255):'');
+        $this->setVar('nativeLoginNotice', $this->getObject('dbsysconfig', 'sysconfig')->getValue('LOGIN_PAGE_NOTICE', 'security'));
+        $this->setVar('nativeReturnTo', $this->validatedReturnTo($this->getParam('return_to', $failure['return_to'] ?? '')) ?? '');
+
         $this->setVar(
             'nativeAuthBeginToken',
             $stack['csrf']->issue(self::LOGIN_CSRF_CONTEXT)
@@ -280,7 +289,8 @@ class security extends controller
         }
         $candidate = trim((string) $candidate);
         if ($candidate === '' || strlen($candidate) > 2048
-            || preg_match('/[\x00-\x1F\x7F\\]/', $candidate)
+            || preg_match('/[\x00-\x1F\x7F]/', $candidate)
+            || strpos($candidate, chr(92)) !== false
             || strncmp($candidate, '//', 2) === 0) {
             return null;
         }
@@ -478,24 +488,10 @@ class security extends controller
         return $front . 'index.php?module=security';
     }
 
-    /**
-     * Return ordinary failures to the branded front page. During maintenance
-     * that page is intentionally unavailable, so retain the public Security
-     * boundary and its usable login form instead.
-     */
+    /** The public home need not contain a login form or failure-message renderer. */
     private function failedLoginPath()
     {
-        $modules = $this->getObject('modules', 'modulecatalogue');
-        if ($modules->checkIfRegistered('systemmanagement')) {
-            $maintenance = $this->getObject(
-                'systemmanagementservice',
-                'systemmanagement'
-            )->maintenance();
-            if (!empty($maintenance['active'])) {
-                return $this->securityLoginPath();
-            }
-        }
-        return $this->frontPagePath();
+        return $this->securityLoginPath().'&action=showlogin';
     }
 
     private function nativeFailure($key)

@@ -145,12 +145,6 @@ class dbTable extends ChisimbaObject {
      */
     private $debug = FALSE;
 
-    /**
-     * Description for public
-     * @var    boolean
-     * @access public
-     */
-    public $adm = FALSE;
     // Kept only to make the retired cache branches inert until their APC-only
     // simplification is completed. No code can set this to TRUE.
     public $objMemcache = FALSE;
@@ -159,17 +153,6 @@ class dbTable extends ChisimbaObject {
     public $objYaml;
     public $dbLayer;
     public $cachePrefix;
-    public $nonmirrored = array(
-        'tbl_logger',
-        'tbl_sysconfig_properties',
-        'tbl_menu_category',
-        'tbl_module_blocks',
-        'tbl_module_patches',
-        'tbl_modules',
-        'tbl_modules_dependencies',
-        'tbl_modules_owned_tables',
-        'tbl_prelogin_blocks',
-    );
     public $objLu;
     public $objLuAdmin;
     public $enableLogging;
@@ -218,9 +201,6 @@ class dbTable extends ChisimbaObject {
         //check if debugging is enabled
         if ($this->objDBConfig->geterror_reporting() == "developer") {
             $this->debug = TRUE;
-        }
-        if ($this->objDBConfig->getenable_adm() == "TRUE") {
-            $this->adm = TRUE;
         }
         $this->dbLayer = $this->objDBConfig->getenable_dbabs();
         if ($this->dbLayer === 'MDB2') {
@@ -709,11 +689,6 @@ class dbTable extends ChisimbaObject {
                 exit;
             }
         }
-        if ($this->adm == TRUE) {
-            if (!in_array($tablename, $this->nonmirrored)) {
-                sql_log("[SQLDATA]" . $sql . "[/SQLDATA]");
-            }
-        }
         if ($this->objMemcache == TRUE) {
             chisimbacache::getMem()->flush();
         }
@@ -769,11 +744,6 @@ class dbTable extends ChisimbaObject {
                 exit;
             }
         }
-        if ($this->adm == TRUE) {
-            if (!in_array($tablename, $this->nonmirrored)) {
-                sql_log("[SQLDATA]" . $sql . "[/SQLDATA]");
-            }
-        }
         if ($this->objMemcache == TRUE) {
             chisimbacache::getMem()->flush();
         }
@@ -816,11 +786,6 @@ class dbTable extends ChisimbaObject {
             }
         } else {
             $ret = $this->_db->query($sql);
-        }
-        if ($this->adm == TRUE) {
-            if (!in_array($tablename, $this->nonmirrored)) {
-                sql_log("[SQLDATA]" . $sql . "[/SQLDATA]");
-            }
         }
         if ($this->objMemcache == TRUE) {
             chisimbacache::getMem()->flush();

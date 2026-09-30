@@ -109,13 +109,6 @@ class xmlrpcapi extends ChisimbaObject
     public $objWebPresentApi;
 
     /**
-     * Chisimba ADM API for high priority requests
-     * @var    object
-     * @access public
-     */
-    public $objAdmApi;
-
-    /**
      * Chisimba FFMPEG API
      * @var    object
      * @access public
@@ -259,8 +252,6 @@ class xmlrpcapi extends ChisimbaObject
             $this->objChisWikiApi = $this->getObject('chiswikiapi');
             // Web Present API
             $this->objWebPresentApi = $this->getObject('webpresentapi');
-            // ADM API
-            $this->objAdmApi = $this->getObject('admapi');
             // ffmpeg API
             $this->objFfmpeg = $this->getObject('ffmpegapi');
             // Screenshot API
@@ -695,43 +686,6 @@ class xmlrpcapi extends ChisimbaObject
                                                                           array('string', 'string'),
                                                                           ),
                                                       'docstring' => 'gets formatted slides'),
-
-                           // ADM API Start
-                           'adm.getVersion' => array('function' => array($this->objAdmApi, 'checkVersionApi'),
-                                                      'signature' => array(
-                                                                          array('string'),
-                                                                          ),
-                                                      'docstring' => 'gets the current version of remote'),
-
-                           'adm.getFullLog' => array('function' => array($this->objAdmApi, 'getFullLogApi'),
-                                                      'signature' => array(
-                                                                          array('string'),
-                                                                          ),
-                                                      'docstring' => 'gets data for SQL Mirror'),
-
-                           'adm.sendLog' => array('function' => array($this->objAdmApi, 'sendLogFileApi'),
-                                                      'signature' => array(
-                                                                          array('string'),
-                                                                          ),
-                                                      'docstring' => 'Sends the log file to remote'),
-
-                           'adm.getLastMirrorTime' => array('function' => array($this->objAdmApi, 'getLastMirrorTimeApi'),
-                                                      'signature' => array(
-                                                                          array('string', 'string'),
-                                                                          ),
-                                                      'docstring' => 'returns last successful mirror time to remote'),
-
-                           'adm.registerServer' => array('function' => array($this->objAdmApi, 'registerServerApi'),
-                                                      'signature' => array(
-                                                                          array('string', 'string', 'string', 'string'),
-                                                                          ),
-                                                      'docstring' => 'register a server for mirroring'),
-
-                           'adm.getServerList' => array('function' => array($this->objAdmApi, 'grabList'),
-                                                      'signature' => array(
-                                                                          array('string'),
-                                                                          ),
-                                                      'docstring' => 'Grab the updated server list for mirroring'),
 
                           // media API Start
                            'media.3gp2flv' => array('function' => array($this->objFfmpeg, 'convert3GPtoFLV'),

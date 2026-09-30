@@ -1398,31 +1398,6 @@ class altconfig extends ChisimbaObject {
     }
 
     /**
-     * Gets enable adm Setting
-     *
-     * @access public
-     * @return getenable adm setting
-     */
-    public function getenable_adm() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-            //Lets get the parent node section first
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "ENABLE_ADM" );
-        //var_dump($SettingsDirective);
-        if ($SettingsDirective == FALSE) {
-            $newsettings = array ("ENABLE_ADM" => "FALSE" );
-            $this->appendToConfig ( $newsettings );
-            return FALSE;
-        }
-        //finally unearth whats inside
-        $getenable_adm = $SettingsDirective->getContent ();
-
-        return $getenable_adm;
-    }
-
-    /**
      * Gets flag to disable XML
      *
      * @access public
@@ -1742,10 +1717,8 @@ class altconfig extends ChisimbaObject {
         return $bool;
     }
 
-    /**---------------- MIRRORING PROPERTIES -----------**/
-
     /**
-     * Return's server name (used for dynamic mirroring)
+     * Return the stable site name used for cache and temporary-file names.
      */
     public function serverName() {
         if (! is_object ( $this->_root ))
@@ -1761,29 +1734,6 @@ class altconfig extends ChisimbaObject {
         } else {
             return 'default';
         }
-    }
-
-    /**
-     * Returns mirror webservice WSDL URL (in production will usually be a service
-     * on a non-standard port on the localhost)
-     *
-     * @return string WSDL URL
-     */
-    public function mirrorWsdlUrl() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-            //Lets get the parent node section first
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_MIRROR_WSDL_URL" );
-        //finally unearth whats inside
-        $mirrorWsdlUrl = $SettingsDirective->getContent ();
-        if ($mirrorWsdlUrl != null) {
-            return $mirrorWsdlUrl;
-        } else {
-            return NULL;
-        }
-
     }
 
     /**
