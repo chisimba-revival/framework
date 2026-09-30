@@ -180,6 +180,7 @@ img {
     height: 5.55rem;
     content: "";
     background: var(--chisimba-brand-logo) center / contain no-repeat;
+    filter: var(--chisimba-brand-logo-filter, none);
 }
 
 #Canvas_Content_Head_Header,
@@ -2882,15 +2883,17 @@ h5.featureboxheader,
 }
 
 .chisimba-site-banner__identity {
-    background: var(--chisimba-brand-logo) center / contain no-repeat;
+    background: var(--chisimba-brand-logo-surface, transparent) var(--chisimba-brand-logo) center / contain no-repeat;
+    filter: var(--chisimba-brand-logo-filter, none);
     display: block;
     flex: 0 0 auto;
-    height: clamp(4.25rem, 8vw, 5.5rem);
-    width: clamp(4.9rem, 9vw, 6.4rem);
+    height: var(--chisimba-brand-logo-height, clamp(4.25rem, 8vw, 5.5rem));
+    width: var(--chisimba-brand-logo-width, clamp(4.9rem, 9vw, 6.4rem));
 }
 
 .chisimba-site-banner__name,
 #sitename.chisimba-site-banner__name {
+    display: var(--chisimba-brand-name-display, block);
     color: inherit;
     font-family: var(--chisimba-font-family-heading);
     font-size: var(--chisimba-font-size-2xl);
@@ -3024,8 +3027,8 @@ h5.featureboxheader,
     }
 
     .chisimba-site-banner__identity {
-        height: 4.25rem;
-        width: 4.9rem;
+        height: var(--chisimba-brand-logo-height-mobile, 4.25rem);
+        width: var(--chisimba-brand-logo-width-mobile, 4.9rem);
     }
 
     .chisimba-site-banner__name,
@@ -5996,6 +5999,8 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-form-field input[type="text"],
 .chisimba-form-field input[type="number"],
 .chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="datetime-local"],
+.chisimba-form-field input[type="url"],
 .chisimba-form-field select,
 .chisimba-form-field textarea { width:100%; padding:.58rem .65rem; }
 .chisimba-form-field textarea { min-height:8rem; resize:vertical; }
@@ -6390,6 +6395,8 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-form-field input[type="text"],
 .chisimba-form-field input[type="number"],
 .chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="datetime-local"],
+.chisimba-form-field input[type="url"],
 .chisimba-form-field input[type="email"],
 .chisimba-form-field input[type="password"],
 .chisimba-form-field select,
@@ -7131,11 +7138,33 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 /* Shared composition and publishing layout: the skin owns presentation. */
 .chisimba-publishing-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(16rem,22rem);gap:1.5rem;align-items:start; }
 .chisimba-publishing-layout > * { min-width:0; }
-.chisimba-publishing-sidebar { display:grid;gap:1rem; }
+.chisimba-publishing-sidebar { display:grid;grid-template-columns:minmax(0,1fr);gap:1rem; }
+.chisimba-publishing-layout fieldset { min-inline-size:0; }
 .chisimba-composition-editor { display:grid;gap:1.25rem; }
 .chisimba-composition-instance { padding:1.25rem; }
 .chisimba-composition-instance header { margin-bottom:1rem; }
 .chisimba-content-block { margin-block:1.5rem;overflow-wrap:anywhere; }
+/* Optional quiet cards for a page made from independent content sections. */
+.chisimba-composition-page > h1,
+.chisimba-composition-page > .chisimba-page-heading {
+    margin:0 0 1.25rem;
+    padding:1rem clamp(1rem, 3vw, 2rem);
+    border:1px solid var(--chisimba-border);
+    border-radius:.75rem;
+    background:var(--chisimba-surface);
+    overflow-wrap:anywhere;
+}
+.chisimba-content-cards { display:grid;gap:1.25rem; }
+.chisimba-content-cards > .chisimba-content-block {
+    min-width:0;
+    margin:0;
+    padding:clamp(1rem, 3vw, 2rem);
+    border:1px solid var(--chisimba-border);
+    border-radius:.75rem;
+    background:var(--chisimba-surface);
+}
+.chisimba-content-cards > .chisimba-content-block > div > :first-child { margin-top:0; }
+.chisimba-content-cards > .chisimba-content-block > div > :last-child { margin-bottom:0; }
 .chisimba-content-block figure { margin:0;min-width:0; }
 .chisimba-content-block img { display:block;width:100%;height:auto;object-fit:contain; }
 .chisimba-content-block video,.chisimba-content-block iframe { display:block;width:100%;max-width:100%;aspect-ratio:16/9;border:0; }
@@ -7280,3 +7309,104 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
     .registration-health__pending .chisimba-form-actions form { flex: 1; }
     .registration-health__pending .chisimba-form-actions form .button { width: 100%; }
 }
+
+/* Publication date badge: a shared card primitive for dated content. */
+.chisimba-publication-card__media { position: relative; }
+.chisimba-publication-card__calendar {
+    position: absolute; inset-block-start: 1rem; inset-inline-start: 1rem;
+    display: grid; justify-items: center; gap: .1rem; padding: .5rem .8rem;
+    border-radius: .3rem; background: var(--chisimba-surface, #fff);
+    color: var(--chisimba-text, #18333b); box-shadow: 0 .15rem .6rem rgb(0 0 0 / .15);
+    font-size: .75rem; line-height: 1.2; text-transform: uppercase;
+}
+.chisimba-publication-card__calendar strong { font-size: 1.35rem; }
+.chisimba-publication-card__byline { font-size: .9rem; }
+.chisimba-publication-card__byline .chisimba-icon { vertical-align: middle; }
+
+/* Site navigation shares the skin's surfaces, focus treatment and spacing. */
+.chisimba-site-navigation { background: var(--surface, #fff); border-radius: 0 0 .65rem .65rem; padding: .45rem 1rem; position: relative; z-index: 30; }
+.chisimba-site-navigation__body, .chisimba-site-navigation__links, .chisimba-site-navigation__account { display: flex; align-items: center; gap: .4rem; }
+.chisimba-site-navigation__body { justify-content: space-between; }
+.chisimba-site-navigation ul { list-style: none; margin: 0; padding: 0; }
+.chisimba-site-navigation__links { flex-wrap: wrap; }
+.chisimba-site-navigation a, .chisimba-site-navigation summary { display: flex; align-items: center; gap: .45rem; padding: .65rem .8rem; border-radius: .4rem; color: inherit; cursor: pointer; text-decoration: none; }
+.chisimba-site-navigation a:hover, .chisimba-site-navigation summary:hover, .chisimba-site-navigation a[aria-current] { background: var(--color-primary-light, #e4f2f8); }
+.chisimba-site-navigation a[aria-current] { font-weight: 700; }
+.chisimba-site-navigation__shell > summary { display: none; }
+.chisimba-site-navigation__group { position: relative; }
+.chisimba-site-navigation__group > summary::after { content: '⌄'; margin-left: .35rem; }
+.chisimba-site-navigation__group > ul { position: absolute; top: 100%; min-width: 14rem; max-width: 90vw; background: var(--surface, #fff); border: 1px solid var(--border-color, #d5dce2); border-radius: .5rem; padding: .35rem; box-shadow: 0 .4rem 1rem #0002; }
+.chisimba-site-navigation__account .chisimba-site-navigation__group > ul { right: 0; }
+.chisimba-site-navigation form { margin: .25rem .5rem; }
+.chisimba-site-navigation svg { width: 1.1em; height: 1.1em; flex-shrink: 0; }
+@media (max-width: 760px) {
+  .chisimba-site-navigation__shell > summary { display: flex; }
+  .chisimba-site-navigation__body, .chisimba-site-navigation__links, .chisimba-site-navigation__account { flex-direction: column; align-items: stretch; }
+  .chisimba-site-navigation__account { border-top: 1px solid var(--border-color, #d5dce2); padding-top: .4rem; }
+  .chisimba-site-navigation__group > ul { position: static; min-width: 0; box-shadow: none; margin-left: .7rem; }
+}
+
+/* Shared portrait-video primitive; consumer modules only supply semantic content. */
+.chisimba-content-block--portrait-video iframe { aspect-ratio: 9 / 16; width: min(100%, 24rem); height: auto; justify-self: center; }
+
+/* Social links remain ordinary editable links; trusted icons are added at render. */
+.chisimba-social-links { display:flex;flex-wrap:wrap;gap:.65rem;list-style:none;padding:0;margin:1.25rem 0 0; }
+.chisimba-social-links > li { margin:0;padding:0; }
+.chisimba-social-links .chisimba-icon-button { width:2.75rem;height:2.75rem;color:var(--chisimba-primary); }
+.chisimba-social-links .chisimba-icon { width:1.2rem;height:1.2rem; }
+
+/* Responsive portrait collections use the content width, including in sidebars. */
+.chisimba-content-block--video-gallery { container-type:inline-size; }
+.chisimba-video-collection__toolbar { display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem; }
+.chisimba-video-collection__toolbar[hidden] { display:none; }
+.chisimba-video-collection__toolbar [aria-pressed="true"] { background:var(--chisimba-primary);border-color:var(--chisimba-primary);color:var(--chisimba-on-primary,#fff); }
+.chisimba-video-collection__grid { display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem;align-items:start; }
+.chisimba-video-collection__grid > article { min-width:0; }
+.chisimba-video-collection__media { display:block;position:relative;aspect-ratio:9/16;overflow:hidden;background:var(--chisimba-primary); }
+.chisimba-video-collection__media img { width:100%;height:100%;object-fit:cover; }
+.chisimba-video-collection__play { position:absolute;inset:0;display:grid;place-content:center;color:#111; }
+.chisimba-video-collection__play .chisimba-icon { width:3.5rem;height:3.5rem;padding:1rem;border-radius:50%;background:rgba(255,255,255,.94);box-sizing:border-box; }
+.chisimba-video-collection__topic { position:absolute;top:.65rem;left:.65rem;max-width:calc(100% - 1.3rem);padding:.3rem .65rem;background:var(--chisimba-surface);color:var(--chisimba-text);border-radius:1rem;font-size:.75rem; }
+.chisimba-video-collection__grid h3 { font-size:1rem;line-height:1.4;margin:0 0 .65rem; }
+[data-video-collection] .chisimba-ui-window { width:min(430px,calc((100dvh - 9rem) * .5625),calc(100vw - 2rem));max-width:calc(100vw - 2rem);max-height:calc(100dvh - 2rem);padding:0;border:0;border-radius:.75rem;background:#000;color:#fff; }
+[data-video-collection] .chisimba-ui-window::backdrop { background:rgba(0,0,0,.9); }
+[data-video-collection] .chisimba-ui-window__header { padding:.6rem .75rem;background:#111;color:#fff; }
+[data-video-collection] .chisimba-ui-window__title { color:#fff;font-size:.9rem;line-height:1.3; }
+[data-video-collection] .chisimba-ui-window__content { padding:0; }
+.chisimba-video-collection__player { aspect-ratio:9/16; }
+.chisimba-content-block .chisimba-video-collection__player iframe { display:block;width:100%;height:100%;aspect-ratio:auto;border:0; }
+@container (min-width:480px) { .chisimba-video-collection__grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@container (min-width:640px) { .chisimba-video-collection__grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@container (min-width:880px) { .chisimba-video-collection__grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+
+/* Reusable native disclosure card: answers and other expandable rich content. */
+.chisimba-disclosure > summary { cursor: pointer; font-weight: 600; padding-block: .35rem; }
+.chisimba-disclosure[open] > summary { margin-bottom: var(--space-md, 1rem); }
+.chisimba-disclosure img { max-width: 100%; height: auto; }
+.chisimba-disclosure { overflow-wrap: anywhere; }
+
+/* Shared labelled filter row, with equal-height controls and natural wrapping. */
+.chisimba-filter-form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: .75rem; margin-block: 1.25rem; }
+.chisimba-filter-form .chisimba-form-field { margin: 0; min-width: 0; }
+.chisimba-filter-form input[type="search"],
+.chisimba-filter-form select,
+.chisimba-filter-form > .button { box-sizing: border-box; height: 2.75rem; min-height: 2.75rem; margin: 0; }
+.chisimba-filter-form input[type="search"] { max-width: 100%; padding: .58rem .65rem; }
+@media (max-width: 40rem) {
+    .chisimba-filter-form .chisimba-form-field { flex: 1 1 12rem; }
+    .chisimba-filter-form input[type="search"], .chisimba-filter-form select { width: 100%; }
+}
+
+/* Shared credited photo collections. */
+.chisimba-photo-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1.25rem;margin:1.25rem 0; }
+.chisimba-photo-card { margin:0;padding:0;min-width:0;overflow:hidden; }
+.chisimba-photo-card img { display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover; }
+.chisimba-photo-card figcaption { padding:.75rem 1rem;overflow-wrap:anywhere; }
+.chisimba-photo-card figcaption p { margin:.65rem 0; }
+
+.chisimba-site-footer__links { display:flex;flex-wrap:wrap;gap:.8rem 1.25rem;margin-bottom:1rem; }
+.chisimba-site-footer__links a { display:inline-flex;align-items:center;gap:.4rem; }
+
+
+/* Audio controls fit narrow content cards. */
+.chisimba-content-block audio { display:block; width:100%; max-width:100%; }

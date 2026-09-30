@@ -28,3 +28,8 @@ accepts only bounded, lowercase kebab-case names and resolves them exclusively
 inside the bundled catalogue; no URL, path traversal, JavaScript, or CDN lookup
 is permitted. Availability and design choice are deliberately separate:
 modules should still choose one stable semantic icon for each action.
+
+Selected brand icons use `brand-facebook`, `brand-youtube`, `brand-tiktok`,
+`brand-flickr` and `brand-pexels` through the same icon service. These locally
+bundled Simple Icons assets have their own pinned provenance and licence under
+`resources/icons/brands` and `LICENSES`; they do not alter the Lucide catalogue.
