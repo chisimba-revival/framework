@@ -106,6 +106,7 @@ class modulesadmin extends dbTableManager
      * @access public
      */
     public $output;
+    public $errorText = '';
 
     /**
      * object to manipulate the modules table
@@ -1129,6 +1130,15 @@ class modulesadmin extends dbTableManager
             $filepath = $this->objModFile->findRegisterFile($modname);
             $rdata = $this->objModFile->readRegisterFile($filepath,FALSE);
             $text = $this->listTexts($rdata,'TEXT');
+            $text = is_array($text) ? $text : array();
+            // Module labels are translations too; repair partial registrations
+            // without reinstalling modules or resetting navigation/configuration.
+            foreach (array('MODULE_NAME' => 'name', 'MODULE_DESCRIPTION' => 'desc') as $field => $suffix) {
+                if (!empty($rdata[$field])) {
+                    $code = 'mod_' . $modname . '_' . $suffix;
+                    if (!isset($text[$code])) $text[$code] = array('content' => $rdata[$field], 'desc' => $rdata[$field]);
+                }
+            }
             $uses = $this->listTexts($rdata,'USES');
             if ($uses) {
                 //$text = array_merge($texts,$uses);
@@ -1136,7 +1146,7 @@ class modulesadmin extends dbTableManager
                     $isreg=$this->checkText($code); // this gets an array with 3 elements - flag, content, and desc
                     $text_desc=$data['desc'];
                     $text_val=$data['content'];
-                    if (($action=='fix')&&($isreg['flag']==0)) {
+                    if (($action=='fix')&&in_array((int)$isreg['flag'], array(0, 10), true)) {
                         $this->addText($code,$text_desc,$text_val,'system');
                     }
                     if ($action=='replace') {
@@ -1154,7 +1164,7 @@ class modulesadmin extends dbTableManager
                     $isreg=$this->checkText($code); // this gets an array with 3 elements - flag, content, and desc
                     $text_desc=$data['desc'];
                     $text_val=$data['content'];
-                    if (($action=='fix')&&($isreg['flag']==0)) {
+                    if (($action=='fix')&&in_array((int)$isreg['flag'], array(0, 10), true)) {
                         $this->addText($code,$text_desc,$text_val,$modname);
                     }
                     if ($action=='replace') {

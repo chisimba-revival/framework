@@ -272,7 +272,7 @@ class security extends controller
         $this->unsetSession('native_auth_return_to');
         $returnTo = $this->validatedReturnTo($returnTo);
         if ($returnTo === null) {
-            return $this->nativeLanding();
+            $returnTo = $this->frontPagePath();
         }
 
         header('Location: ' . $returnTo, true, 303);
