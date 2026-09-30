@@ -68,6 +68,42 @@ Checks actually run so far:
 
 ## Remaining release gates
 
+### Additional reconciliation and rehearsal evidence
+
+The merged source also retains the deployed guest Yoco contribution flow alongside
+the new signed-in contribution catalogue (Payment Service 1.034), Heritage audio
+composition support (Content Blocks 1.029), native login destinations and catalogue
+language repairs. Provider settings and contribution products are not changed.
+
+Kanban 0.128 fixes an AJAX payload regression: capture FormData before disabling
+controls, otherwise the board ID, CSRF token and enabled checkbox are omitted.
+The executable JavaScript regression failed before the fix and passes afterwards.
+Browser creation and revocation now succeed inline, retaining the expanded board.
+
+The legacy catalogue patch reader ignores raw XML SQL elements. Explicit,
+repeatable module hooks therefore execute only the reviewed SimpleBlog 0.075 and
+Payment Service 1.034 forward migrations. SimpleBlog's existing permission
+definitions remain in postinstall; upgrades do not grant publishing rights.
+The literal hyphenated payment module hook name is covered by an engine-compatible
+class alias and a regression test.
+
+A separate local rehearsal uses the existing PHP 8.5.4 image and MariaDB 10.11.18,
+with a clone of development data. The application and database have no outbound
+network; only its proxy is exposed on loopback. Two complete catalogue-upgrade
+passes succeeded for the thirteen selected modules, including the real hooks.
+Question-bank synthetic integration checks passed: scope, duplicates, stale
+revisions, private metadata, rollback, course deletion/reused codes, managers and
+revocation. Native administrator login and Kanban AJAX create/revoke passed in
+the browser. These are not yet full five-site production-runtime rehearsals.
+
+The temporary runtime and fixture accounts are still retained for further browser
+checks. Its HTTP endpoint is loopback-only; this does not change production TLS.
+The normal local runtime/database were not modified. Remaining browser roles,
+site clone rehearsals and production verification must not be reported as passed.
+
+Deployment manifests now explicitly exclude the web installer: absent production
+installer entry points must not be reintroduced by source overlays.
+
 Complete the per-site source/dependency comparison, including live-only fixes
 outside the initial changed-file manifest. Preserve site branding and navigation.
 Review automatic merges: an older deployed file is not proof that newer source
