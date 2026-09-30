@@ -1,6 +1,6 @@
 # Five-site release consolidation — 30 September 2026
 
-Status: **four sites deployed; Learn-the-Birds awaiting maintenance prerequisite approval**.
+Status: **all five authorised sites deployed and online; verification limits recorded below**.
 
 Derek authorised all recent feature work after validation, followed by deployment
 to kengasolutions.com, kengalearn.com, learnthebirds.com,
@@ -106,15 +106,11 @@ verification must not be reported as passed without evidence below.
 Deployment manifests now explicitly exclude the web installer: absent production
 installer entry points must not be reintroduced by source overlays.
 
-The original release gates required completing the per-site source/dependency comparison, including live-only fixes
-outside the initial changed-file manifest. Preserve site branding and navigation.
-Review automatic merges: an older deployed file is not proof that newer source
-code should be deleted. Publish clean, scoped source commits and build new manifests.
-Rehearse catalogue upgrades against disposable site database clones, run the full
-merged-source behavioural/browser checks, and prepare verified backup/rollback
-records before any maintenance or release switch. Follow the System Management
-deployment runbook. Mark deployment complete only after all five active releases,
-installed versions, protected-data checks and public/authenticated journeys pass.
+The original release gates required per-site source/dependency comparisons,
+including live-only fixes outside the initial manifest, reviewed merges,
+published application source, isolated catalogue rehearsals and verified backups.
+The following records distinguish completed deployment checks from browser-journey
+coverage; not every authenticated role was exercised on every live site.
 
 ## Final release validation and production evidence
 
@@ -159,22 +155,22 @@ Catalogue upgrades, protected-data comparisons, source hashes and reopening home
 login checks passed. Browser homepage content, navigation and embedded video
 surface rendered; no video was played and no enquiry was submitted.
 
-Learn-the-Birds stopped **before live changes** because System Management is not
+Learn-the-Birds initially stopped **before live changes** because System Management was not
 registered and its maintenance configuration is absent. The existing site remains
-online. Permission to install the maintenance prerequisite has been requested;
-do not silently install it, fake its configuration, or bypass the maintenance gate.
-The unsuccessful attempt created only an unused candidate/backup directory.
+online. That first unsuccessful attempt created only an unused candidate/backup
+directory. This blocker was subsequently resolved with explicit approval as
+recorded in the continuation below; the maintenance gate was not bypassed.
 
 KengaPub: active `/srv/kengapub.com/releases/release-consolidation-20260930-133656/ch`;
 verified backup `/srv/kengapub.com/backups/consolidation-20260930-133656`.
 Catalogue upgrades, protected-data comparisons, source hashes and home/login
 checks passed; browser homepage and branding rendered correctly. Reopened at
 `13:39:38 UTC` on 30 September 2026. New container PHP error match count: zero.
-This is not yet a completed five-site rollout.
+The later Learn-the-Birds continuation completed the fifth deployment.
 The disposable local rehearsal containers/networks were stopped and removed;
 their tmpfs fixture database was discarded. Verified production backups and
-previous releases remain. Protected on-host rehearsal artifacts remain pending
-completion of the Learn-the-Birds gate and final cleanup.
+previous releases remain. Temporary on-host copies were removed after completion
+as recorded below.
 No real payment, email or paid-AI transaction is part of this verification.
 
 Recorded reopening times (UTC): KengaLearn `13:20:07`, KengaSolutions `13:31:16`,
@@ -186,3 +182,69 @@ uncaught-error entries on the completed sites at verification time. Production
 authenticated browser checks were performed on KengaLearn, not all site/role
 combinations; public page checks and isolated clone tests do not substitute for
 those remaining site-specific authenticated journeys.
+
+## Learn-the-Birds continuation
+
+Derek approved installing the missing maintenance prerequisite and completing LTB.
+Existing dependencies were already registered. A bounded v6 LTB candidate adds
+the current System Management 0.6 source to the reviewed v5 manifest (277 paths).
+Archive SHA-256: `e3a36cd2eb82065a95f74f257707440bf780006ee4f7dca03153b938fbe9df7d`;
+manifest SHA-256: `ef6d576be743899968c60cdfd9f20b2a85266357654a757fda5fc0b536d85a70`.
+
+An isolated LTB database clone first installed the exact old live maintenance
+module (0.5), then ran the candidate catalogue upgrades twice, ending on 0.6.
+All passes and protected-record comparisons succeeded. Maintenance contract,
+Help and fake-email tests also passed with outbound network disabled.
+
+Live prerequisite installation used the canonical module installer, existing
+dependencies, paused web/mail/registration writers and a verified database backup:
+`/srv/learnthebirds.com/backups/maintenance-bootstrap-20260930-134646`.
+Protected records were unchanged, the notices table empty and maintenance initially
+off. No notifications were sent and no provider configuration was changed.
+
+The first main rollout attempt stopped before database upgrades because LTB's
+Compose file requires an explicit environment file. Its old code pointer was
+restored, the existing web container restarted and application maintenance kept
+enabled. Verified in the browser: anonymous maintenance page and login HTTP 200.
+Its backup/evidence remains at
+`/srv/learnthebirds.com/backups/consolidation-20260930-134747`.
+The operator now obtains the original environment-file path from the existing
+container label, validates the exact known path without printing its contents,
+and uses it for recreation/rollback. A guarded retry validates the failed receipt
+and accepts only the maintenance state established by this same rollout.
+The corrected operational helper is retained locally; it does not change app code.
+
+### Completion and cleanup
+
+Learn-the-Birds reopened at **13:52:50 UTC (15:52:50 SAST), 30 September 2026**.
+Active release: `/srv/learnthebirds.com/releases/release-consolidation-20260930-135022/ch`.
+Rollback code: `/srv/learnthebirds.com/releases/initial-20260914/ch`.
+Verified backup: `/srv/learnthebirds.com/backups/consolidation-20260930-135022`.
+Database archive SHA-256:
+`a4049e36fff4c28a610bcb108358212d88b27fe0f9de8dd9fa4488bf045da0d3`.
+Persistent-files archive SHA-256:
+`72d3e488ad6c1a0028a07ef783a847760f05cb46f58cffc56fc39fb1c495e72b`.
+The exact existing image `learnthebirds/php:20260920-webp` was preserved.
+Installed affected-module versions and all manifest hashes passed; protected
+records matched before/after. Public homepage redirects normally to upcoming
+webinars; home/login checks passed. Browser checks verified the webinar cards,
+branding, public blog listing and an existing article. New-container PHP fatal,
+warning, deprecated and uncaught-error match count was zero at verification.
+No production LTB account or content was created or edited for testing.
+
+All five sites are now deployed and reopened. The other four sites were rechecked
+and returned HTTP 200. No PHP upgrades, payment attempts, real test email or paid
+AI calls were made. The role-specific and real-provider limitations above remain.
+
+Cleanup used an explicit allowlist, verified online release receipts and retained
+backup presence, and refused paths referenced by Docker mounts. It removed 9
+temporary artifacts on KengaLearn and 32 on the shared host: disposable rehearsal
+configurations (including copied installation keys), database dumps and staged
+code copies. These disposable copies were discarded; the real data, verified
+production backups, previous/current releases, manifests and test logs remain.
+No rehearsal containers/networks or scheduled follow-up tasks remain running.
+
+Application source release commits remain framework `5083f3a79` and modules
+`feeb3ceba`. Infrastructure documentation is retained locally: its GitHub push was
+blocked pending explicit permission to disclose infrastructure details. Do not
+infer that approval from permission to deploy or install maintenance.
