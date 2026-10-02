@@ -48,10 +48,22 @@
 }
 
 .chisimba-ui-window__close {
-    border: 0;
-    background: transparent;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--chisimba-border-color, #c7ccd1);
+    border-radius: 50%;
+    background: var(--chisimba-surface-color, #ffffff);
+    color: var(--chisimba-text-color, #1f2933);
     font-size: 1.5rem;
     line-height: 1;
+}
+
+.chisimba-ui-window__close:hover {
+    background: var(--chisimba-surface-subtle, #f3f4f6);
 }
 
 .chisimba-ui-button {

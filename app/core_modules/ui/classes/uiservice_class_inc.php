@@ -58,7 +58,7 @@ class uiservice extends ChisimbaObject
 
         $css = '<link rel="stylesheet" href="'
             . $this->getResourceUri('css/ui.css', 'ui')
-            . '" type="text/css" />';
+            . '?v=2" type="text/css" />';
 
         $js = '<script src="'
             . $this->getResourceUri('js/ui.js', 'ui')
