@@ -33,6 +33,58 @@ class permissionservice extends dbTable
     }
 
     /**
+     * Run a statement with bound values and return every row.
+     *
+     * Values are never interpolated into SQL. The previous quoteValue() helper
+     * escaped with addslashes(), which is only safe while the connection
+     * charset cannot produce a backslash byte inside a multi-byte character.
+     * Under utf8mb3 that holds; it would not under GBK, BIG5 or SJIS.
+     *
+     * Bind types are declared because an undeclared placeholder resolves to
+     * null and raises a PHP 8.1 deprecation on every execution.
+     *
+     * Failures are reported through error_log() rather than the inherited
+     * errorCallback(). This class's init() default names a callback that does
+     * not exist in the framework, so calling it would raise a TypeError and
+     * turn a database problem into an unhandled fatal. This matches
+     * dbTable::_queryRow() on the same failure.
+     *
+     * @param string $sql Statement using ? placeholders
+     * @param array $bindings Values in placeholder order
+     * @return array Rows, or an empty array when the statement cannot be run
+     */
+    private function selectRows($sql, array $bindings = array())
+    {
+        $types = array();
+        foreach ($bindings as $value) {
+            $types[] = is_int($value) ? 'integer' : 'text';
+        }
+
+        try {
+            $db = $this->objEngine->getDbObj();
+            $statement = $db->prepare($sql, $types);
+            if (MDB2::isError($statement)) {
+                error_log('Permission query could not be prepared: ' . $statement->getMessage());
+                return array();
+            }
+            $result = $statement->execute($bindings);
+            if (MDB2::isError($result)) {
+                error_log('Permission query failed: ' . $result->getMessage());
+                $statement->free();
+                return array();
+            }
+            $rows = $result->fetchAll();
+            $result->free();
+            $statement->free();
+        } catch (Throwable $e) {
+            error_log('Permission query failed: ' . $e->getMessage());
+            return array();
+        }
+
+        return is_array($rows) ? $rows : array();
+    }
+
+    /**
      * Resolve one right name within one explicit canonical area.
      *
      * Missing, duplicate or malformed definitions fail closed.
@@ -85,11 +137,12 @@ class permissionservice extends dbTable
             return null;
         }
 
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT area_id FROM tbl_perms_areas'
-            . ' WHERE application_id = ' . $this->quoteValue($applicationId)
-            . ' AND area_define_name = ' . $this->quoteValue($areaDefineName)
-            . ' LIMIT 2'
+            . ' WHERE application_id = ?'
+            . ' AND area_define_name = ?'
+            . ' LIMIT 2',
+            array($applicationId, $areaDefineName)
         );
         if (!is_array($rows) || count($rows) !== 1
             || !isset($rows[0]['area_id'])) {
@@ -262,11 +315,12 @@ class permissionservice extends dbTable
             return false;
         }
 
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT id FROM tbl_perms_contextrolegrants'
-            . ' WHERE right_id = ' . $rightId
-            . ' AND role_name = ' . $this->quoteValue($roleName)
-            . ' LIMIT 2'
+            . ' WHERE right_id = ?'
+            . ' AND role_name = ?'
+            . ' LIMIT 2',
+            array($rightId, $roleName)
         );
         if (!is_array($rows) || count($rows) > 1) {
             return false;
@@ -524,11 +578,11 @@ class permissionservice extends dbTable
         $rightId,
         $roleName
     ) {
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT group_id, group_define_name FROM tbl_perms_groups'
-            . ' WHERE group_define_name LIKE '
-            . $this->quoteValue('%^' . $roleName)
-            . ' ORDER BY group_id'
+            . ' WHERE group_define_name LIKE ?'
+            . ' ORDER BY group_id',
+            array('%^' . $roleName)
         );
         if (!is_array($rows)) {
             return false;
@@ -551,10 +605,11 @@ class permissionservice extends dbTable
 
     private function groupIdsForExactName($groupName)
     {
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT group_id, group_define_name FROM tbl_perms_groups'
-            . ' WHERE group_define_name = ' . $this->quoteValue($groupName)
-            . ' LIMIT 2'
+            . ' WHERE group_define_name = ?'
+            . ' LIMIT 2',
+            array($groupName)
         );
         if (!is_array($rows)) {
             return array();
@@ -692,11 +747,6 @@ class permissionservice extends dbTable
             0,
             32
         );
-    }
-
-    private function quoteValue($value)
-    {
-        return "'" . addslashes((string) $value) . "'";
     }
 }
 ?>

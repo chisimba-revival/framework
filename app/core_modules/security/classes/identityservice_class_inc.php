@@ -21,6 +21,58 @@ class identityservice extends dbTable
     }
 
     /**
+     * Run a statement with bound values and return every row.
+     *
+     * Values are never interpolated into SQL. The previous quoteValue() helper
+     * escaped with addslashes(), which is only safe while the connection
+     * charset cannot produce a backslash byte inside a multi-byte character.
+     * Under utf8mb3 that holds; it would not under GBK, BIG5 or SJIS.
+     *
+     * Bind types are declared because an undeclared placeholder resolves to
+     * null and raises a PHP 8.1 deprecation on every execution.
+     *
+     * Failures are reported through error_log() rather than the inherited
+     * errorCallback(). This class's init() default names a callback that does
+     * not exist in the framework, so calling it would raise a TypeError and
+     * turn a database problem into an unhandled fatal. This matches
+     * dbTable::_queryRow() on the same failure.
+     *
+     * @param string $sql Statement using ? placeholders
+     * @param array $bindings Values in placeholder order
+     * @return array Rows, or an empty array when the statement cannot be run
+     */
+    private function selectRows($sql, array $bindings = array())
+    {
+        $types = array();
+        foreach ($bindings as $value) {
+            $types[] = is_int($value) ? 'integer' : 'text';
+        }
+
+        try {
+            $db = $this->objEngine->getDbObj();
+            $statement = $db->prepare($sql, $types);
+            if (MDB2::isError($statement)) {
+                error_log('Identity query could not be prepared: ' . $statement->getMessage());
+                return array();
+            }
+            $result = $statement->execute($bindings);
+            if (MDB2::isError($result)) {
+                error_log('Identity query failed: ' . $result->getMessage());
+                $statement->free();
+                return array();
+            }
+            $rows = $result->fetchAll();
+            $result->free();
+            $statement->free();
+        } catch (Throwable $e) {
+            error_log('Identity query failed: ' . $e->getMessage());
+            return array();
+        }
+
+        return is_array($rows) ? $rows : array();
+    }
+
+    /**
      * Resolve a logical user ID to its permission identity.
      *
      * @return int|null
@@ -38,11 +90,11 @@ class identityservice extends dbTable
              . ' FROM tbl_perms_perm_users AS pu'
              . ' INNER JOIN tbl_users AS u'
              . ' ON CAST(pu.auth_user_id AS CHAR(25)) = u.userid'
-             . ' WHERE u.userid = ' . $this->quoteValue($userId)
-             . ' AND pu.auth_container_name = ' . $this->quoteValue($containerName)
+             . ' WHERE u.userid = ?'
+             . ' AND pu.auth_container_name = ?'
              . ' LIMIT 2';
 
-        $rows = $this->getArray($sql);
+        $rows = $this->selectRows($sql, array($userId, $containerName));
         if (!is_array($rows) || count($rows) !== 1) {
             return null;
         }
@@ -66,10 +118,10 @@ class identityservice extends dbTable
              . ' FROM tbl_perms_perm_users AS pu'
              . ' INNER JOIN tbl_users AS u'
              . ' ON CAST(pu.auth_user_id AS CHAR(25)) = u.userid'
-             . ' WHERE pu.perm_user_id = ' . $permissionUserId
+             . ' WHERE pu.perm_user_id = ?'
              . ' LIMIT 2';
 
-        $rows = $this->getArray($sql);
+        $rows = $this->selectRows($sql, array($permissionUserId));
         if (!is_array($rows) || count($rows) !== 1) {
             return null;
         }
@@ -106,16 +158,15 @@ class identityservice extends dbTable
             return $existing;
         }
 
-        $userRows = $this->getArray(
-            'SELECT userid FROM tbl_users WHERE userid = '
-            . $this->quoteValue($userId)
-            . ' LIMIT 2'
+        $userRows = $this->selectRows(
+            'SELECT userid FROM tbl_users WHERE userid = ? LIMIT 2',
+            array($userId)
         );
         if (!is_array($userRows) || count($userRows) !== 1) {
             return null;
         }
 
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT MAX(perm_user_id) AS max_perm_user_id FROM tbl_perms_perm_users'
         );
         $nextPermissionUserId = 1;
@@ -163,12 +214,13 @@ class identityservice extends dbTable
             return false;
         }
 
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT perm_user_id FROM tbl_perms_perm_users'
-            . ' WHERE perm_user_id = ' . $permissionUserId
-            . ' AND auth_user_id = ' . $this->quoteValue($userId)
-            . ' AND auth_container_name = ' . $this->quoteValue($containerName)
-            . ' LIMIT 2'
+            . ' WHERE perm_user_id = ?'
+            . ' AND auth_user_id = ?'
+            . ' AND auth_container_name = ?'
+            . ' LIMIT 2',
+            array($permissionUserId, $userId, $containerName)
         );
         if (!is_array($rows) || count($rows) !== 1) {
             return false;
@@ -213,11 +265,6 @@ class identityservice extends dbTable
         }
 
         return (int) $value;
-    }
-
-    private function quoteValue($value)
-    {
-        return "'" . addslashes((string) $value) . "'";
     }
 }
 ?>
