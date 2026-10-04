@@ -356,7 +356,18 @@ It carries no credential and cannot, because Chisimba has none to give. It is
 authoritative only for identity, never for field data.
 
 The mobile client holds two independent conversations. Neither service is a
-proxy for the other, and a failure in one does not block the other. A field
+proxy for the other, and a failure in one does not block the other.
+
+Chisimba additionally reads field data from the microservice for its mentor
+views. That is a third conversation and it is read-only, for the reasons given
+under *Chisimba as a reader of field data*.
+
+Base map tiles for the mentor's map view are served from object storage or a
+tile server, not from either service. Tiles are a large, cacheable, public
+artefact and putting them on the request path of a service that also holds
+observation records would let a rendering concern compete with a write. The
+mobile client caches tiles the same way and degrades to its vector layer when
+they are absent. A field
 user with no connectivity can still complete a drive, and a signed-in user with
 no field data can still read their profile.
 
@@ -579,6 +590,51 @@ The species and competency catalogues are small, slow-changing, and needed
 offline. They are served from the microservice rather than from Chisimba,
 because they belong with the field data and must be bundled into the offline
 cache without a second round trip.
+
+### Implementation status of the gateway surface
+
+The gateway currently exposes `GET` and `POST /api/v1/auth/login` and
+`GET /api/v1/auth/me`. The names specified above are `POST /api/v1/auth/token`,
+`POST /api/v1/auth/refresh` and `GET /api/v1/user/profile`. The gateway is to
+be brought into line with this contract rather than the contract relaxed to
+match the implementation, because the contract names are the ones a third
+party reading the document will build against.
+
+`POST /api/v1/auth/refresh` is not implemented at all, and until it is the
+mobile client holds a refresh token that nothing can use: a stored session
+silently stops working at access-token expiry rather than refreshing. The
+whole-family revocation on replay, and the device identifier the refresh
+accepts, are part of that endpoint and are not optional simplifications.
+
+A mobile client written against the current gateway works today. It must not
+be read as evidence that the gateway is correct.
+
+## Chisimba as a reader of field data
+
+Chisimba presents field data to mentors: the maps, the trail logs and the
+sightings accumulated by trainees across an exercise, and the reviews those
+reviews then produce. It does so as a **reader**.
+
+Chisimba does not store drives, trail logs, sightings, waypoints or sign-offs,
+and the microservice is the only writer of any of them. Where Chisimba needs
+field data it calls the microservice's API and renders the response. Where a
+mentor submits a review, that review is a command sent to the microservice,
+which owns the sign-off and applies the revision and retention rules to it.
+
+This is the boundary that makes the rest of the design hold. If the
+microservice wrote field data into MDB2 tables then two processes would write
+one body of records, there would be no sole authority to resolve a revision
+conflict against, and rule 4's one-way replication would be abandoned. A
+read-only Chisimba costs a network hop per page and preserves every other
+guarantee.
+
+A projection into a Chisimba reporting schema was considered and rejected for
+the same reason: it is a second copy, and a second copy drifts. Reading the
+API is boring and keeps one authority.
+
+The consequence to accept deliberately: a Chisimba mentor view is unavailable
+when the microservice is unavailable. That is a display outage, not a loss of
+records, and the mobile clients are unaffected by it in either direction.
 
 ## Microservice-side endpoints
 
