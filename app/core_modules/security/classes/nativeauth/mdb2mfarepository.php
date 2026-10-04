@@ -182,9 +182,47 @@ class Mdb2MfaRepository implements MfaRepositoryInterface
         }
     }
 
+    /**
+     * Declare the bind types for a prepared statement.
+     *
+     * MDB2 looks up a type per placeholder when binding. A placeholder with
+     * no recorded type resolves to null, which reaches
+     * MDB2\Driver\Datatype::mapPrepareDatatype(null) and indexes
+     * $options['datatype_map'][null], raising a PHP 8.1 deprecation on every
+     * statement. Quoting already infers the type from the value, so declaring
+     * it here changes nothing except supplying the bind type character MDB2
+     * was otherwise leaving out.
+     *
+     * Only the names MDB2 recognises may be declared: declaring an unknown
+     * one makes execute() fail with "not supported". Those are 'boolean',
+     * 'integer', 'float' and 'blob'; every other value is bound as text,
+     * which is what MDB2 would have used anyway once quoting inferred it.
+     *
+     * @param array $args The bound values, in placeholder order
+     * @return array MDB2 type names, positionally matching $args
+     */
+    private function parameterTypes(array $args)
+    {
+        $types = array();
+
+        foreach ($args as $value) {
+            if (is_int($value)) {
+                $types[] = 'integer';
+            } elseif (is_bool($value)) {
+                $types[] = 'boolean';
+            } elseif (is_float($value)) {
+                $types[] = 'float';
+            } else {
+                $types[] = 'text';
+            }
+        }
+
+        return $types;
+    }
+
     private function prepared($sql, array $args, $mode)
     {
-        $statement = $this->db->prepare($sql, null, $mode);
+        $statement = $this->db->prepare($sql, $this->parameterTypes($args), $mode);
         $result = $statement->execute($args);
         $statement->free();
         if (PEAR::isError($result)) throw new RuntimeException($result->getMessage());
