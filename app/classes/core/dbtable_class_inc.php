@@ -766,6 +766,18 @@ class dbTable extends ChisimbaObject {
         if (empty($tablename)) {
             $tablename = $this->_tableName;
         }
+        // A column name cannot be bound, so it is constrained to an identifier
+        // instead. Every caller in the framework passes a plain literal such as
+        // 'id', 'contextcode' or 'perm_user_id'.
+        if (!is_string($pkfield) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $pkfield)) {
+            error_log('update refused a non-identifier primary key field name');
+            return FALSE;
+        }
+        $quotedValue = $this->_db->quote($pkvalue);
+        if (MDB2::isError($quotedValue)) {
+            error_log('update could not quote its primary key value: ' . $quotedValue->getMessage());
+            return FALSE;
+        }
         $sql = "UPDATE {$tablename} SET ";
         $comma = "";
         $params = array();
@@ -778,7 +790,10 @@ class dbTable extends ChisimbaObject {
             }
             $comma = ',';
         }
-        $sql .= " WHERE {$pkfield}='{$pkvalue}'";
+        // The value is escaped by the driver. It used to be interpolated raw
+        // inside single quotes, which let a request-derived identifier close
+        // the literal and append its own condition.
+        $sql .= " WHERE {$pkfield}={$quotedValue}";
         if ($this->debug == TRUE) {
             log_debug($sql);
         }

@@ -155,8 +155,11 @@ class dbcontentnodes extends dbtable {
      * @access public
      */
     public function saveEdit() {
+        // update() escapes its own primary key value, so the identifier is
+        // passed through as-is. The title is likewise left unescaped, because
+        // escaping it here as well stored a literal backslash in the text.
         $nodeId = TRIM ( $_POST ['nodeid'] );
-        $title = addslashes ( TRIM ( $_POST ['title'] ) );
+        $title = TRIM ( $_POST ['title'] );
         $this->changeTable ( 'tbl_context_nodes' );
         $this->update ( 'id', $nodeId, array ('title' => $title ) );
 
