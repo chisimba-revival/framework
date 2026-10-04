@@ -23,6 +23,9 @@ ExpiresByType application/x-Shockwave-Flash A604800
 # Turn Rewrite Engine On 
 RewriteEngine on
 
+# REST API v1 - Route all /api/v1/* to restapi module
+RewriteRule ^api/v1/(.*)$ index.php?module=api/v1&action=$1 [T=application/x-httpd-php,QSA,L]
+
 # Go to the Blog module
 RewriteRule ^blog$ index.php?module=blog [T=application/x-httpd-php]
 # Go to the Blog module - This like the above but caters for trailing slash

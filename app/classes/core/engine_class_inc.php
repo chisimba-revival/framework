@@ -512,12 +512,14 @@ class engine {
         );
         
         // Configure garbage collection
-        ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
-        ini_set('session.gc_divisor', 100);
-        ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
+        if (!headers_sent()) {
+            ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
+            ini_set('session.gc_divisor', 100);
+            ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
+        }
         
         // Ensure the site is being accessed at the correct location.
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'GET') {
             $base = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
             //$base .= '://'.$_SERVER['HTTP_HOST'].strtok($_SERVER['REQUEST_URI'], '?');
             //$query = strtok('?');
@@ -2268,6 +2270,12 @@ class engine {
     private function _dispatch($action, $requestedModule) {
         $this->_action = $action;
         strtolower ( $this->getParam ( 'action', '' ) );
+
+        // REST API routing - intercept /api/v1/* routes before normal module dispatch
+        if (str_starts_with($requestedModule, 'api/v')) {
+            return $this->_dispatchRestApi($requestedModule, $action);
+        }
+
         if (! $this->_loadModule ( $requestedModule )) {
             $this->_loadModule ( '_default' );
             if (! $this->_objActiveController) {
@@ -2305,6 +2313,64 @@ class engine {
             $this->_moduleName = 'security';
             return array ($this->_dispatchToModule ( $this->_objActiveController, 'showlogin' ), $this->_moduleName );
         }
+    }
+
+    /**
+     * Dispatch REST API requests
+     *
+     * Handles /api/v1/* routes by loading the restapi module and passing
+     * the route path as the action parameter.
+     *
+     * @access private
+     * @param string $requestedModule The module parameter (e.g., 'api/v1')
+     * @param string $action The action parameter (route path)
+     * @return array Template name and module name (null for API since it exits)
+     */
+    private function _dispatchRestApi($requestedModule, $action) {
+        // Extract version from module (api/v1, api/v2, etc.)
+        $version = substr($requestedModule, 4); // 'v1', 'v2', etc.
+
+        // Only support v1 for now
+        if ($version !== 'v1') {
+            http_response_code(404);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode([
+                'error' => [
+                    'code' => 'VERSION_NOT_SUPPORTED',
+                    'message' => "API version '$version' not supported"
+                ],
+                'meta' => ['timestamp' => gmdate('c')]
+            ]);
+            exit;
+        }
+
+        // Ensure database connection is initialized
+        $this->getDbObj();
+
+        // Load restapi module
+        if (! $this->_loadModule('restapi')) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode([
+                'error' => [
+                    'code' => 'MODULE_NOT_FOUND',
+                    'message' => 'REST API module not available'
+                ],
+                'meta' => ['timestamp' => gmdate('c')]
+            ]);
+            exit;
+        }
+
+        // The action contains the route path (e.g., 'users/123/posts')
+        // Pass it directly to the restapi controller's dispatch method
+        $this->_moduleName = 'restapi';
+
+        // REST API controllers handle their own output via ApiResponse::success/error/exit
+        // So we just call dispatch and don't render a template
+        $this->_dispatchToModule($this->_objActiveController, $action);
+
+        // Should not reach here - API controllers exit
+        return [null, 'restapi'];
     }
 
     /**
