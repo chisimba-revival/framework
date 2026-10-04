@@ -80,7 +80,11 @@ class userfoldercheck extends ChisimbaObject
     */
     public function checkUserFolder($userId)
     {
-        if (trim($userId) == '') {
+        // A caller may legitimately pass null (for example before a session
+        // user has been resolved), so the value is normalised before use. No
+        // folder can exist for an empty identifier, and trim() itself raises a
+        // deprecation when handed null on PHP 8.1+.
+        if (!is_scalar($userId) || trim((string) $userId) === '') {
             return FALSE;
         } else {
             // Set Up Path

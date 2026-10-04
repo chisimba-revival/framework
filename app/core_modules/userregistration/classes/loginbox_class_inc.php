@@ -99,7 +99,11 @@ class loginbox extends ChisimbaObject
     
     public function isEnable(){
        
-        if(strtolower($this->isEnabled) == 'true'){
+        // isEnabled comes from configuration, which may be unset. Comparing a
+        // string function against null raises a deprecation on PHP 8.1+, so
+        // normalise first: anything that is not a scalar reads as "disabled",
+        // which is what the previous comparison already implied.
+        if(is_scalar($this->isEnabled) && strtolower((string) $this->isEnabled) == 'true'){
             return true;
         }else{
             return false;

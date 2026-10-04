@@ -255,7 +255,11 @@ class loginInterface extends ChisimbaObject {
         // displays a set of oAuth providers
         $this->objDbSysconfig = $this->getObject('dbsysconfig', 'sysconfig');
         $show = $this->objDbSysconfig->getValue('show_twitter_auth', 'security');
-        if (strtolower($show) == 'true') {
+        // An unset configuration value is NULL, and strtolower() raises a
+        // deprecation when handed one. Treat an absent or non-string value as
+        // "not enabled", which is the behaviour the comparison below already
+        // implied for every value other than a literal 'true'.
+        if (is_scalar($show) && strtolower((string) $show) === 'true') {
             $objIcon = $this->getObject('geticon', 'htmlelements');
             $objIcon->alt = "Sign in with Twitter";
             $this->consumer_key = $this->objDbSysconfig->getValue('twitter_consumer_key', 'security');
