@@ -15,6 +15,19 @@ source of identity. Authentication is Chisimba's, and the microservice is a
 resource server that validates what Chisimba issued. This is what keeps
 "login is not authorisation" true on both sides of the boundary.
 
+### Amendments
+
+**Conditional optionality on a sighting's identification, 2026-10-04.** Rule 21
+was added, and `species_code` and `count` became optional until verification.
+The original logbook table stated no requiredness for any field while the
+example model marked both as required, so a client generated from it could not
+represent a sighting recorded without an identification. The mobile field log
+design raised this against the contract rather than assuming it, and the
+correction belongs here: the ambiguity was in the contract. The example model
+was also corrected to declare `abstract class`, without which it does not
+compile under freezed 3 or 4, and was made a faithful projection of its own
+table.
+
 ## Purpose
 
 This is a teaching application. A trainee is learning to be a field guide, and
@@ -311,6 +324,13 @@ a name next to a sign-off.
     leaderboards, completion times, or per-hour comparisons between trainees.
     Outstanding requirements are listed rather than rendered as a progress bar
     or a percentage.
+21. A sighting may be recorded without an identification and without a count.
+    `species_code` and `count` are required only when `status` is `verified`;
+    both may be absent in `pending`, `needs_review` and `rejected`. A sighting
+    with no species can still be verified **as observed**: a mentor may confirm
+    that something was there without confirming what it was. Supplying a
+    species code or a count on a sighting that was verified without one is a
+    correction, and is subject to rule 15 exactly like any other.
 
 ## Dependency direction
 
@@ -631,6 +651,18 @@ silent overwrite cannot be represented as a completed review.
 
 A verification carries its own `operation_id` and is refused outright against a
 stale revision, because it is an authority decision rather than an edit.
+
+Creation accepts a sighting with no `species_code` and no `count`, because rule
+21 makes both optional until verification. Nothing about recording a sighting
+requires having identified it, and requiring it at capture would push the
+trainee to guess rather than to record. The response echoes the sighting with
+whatever the server retained, so a client can show what was actually saved
+rather than what was typed.
+
+Verification of a sighting with no species records the sighting as observed
+without an identification. That outcome is refused as though it were a
+half-finished record: it is a complete claim, that something was there, and it
+carries `verified_at` and a verification note as any other decision does.
 
 ### Sign-offs
 
@@ -1093,8 +1125,8 @@ combined total would overstate both.
 | `id` | uuid | |
 | `context_code` | string | |
 | `drive_id` | uuid | the drive it was recorded on |
-| `species_code` | string | four uppercase letters |
-| `count` | integer | how many, not merely that it was seen |
+| `species_code` | string | four uppercase letters, optional until verified |
+| `count` | integer | how many, not merely that it was seen, optional until verified |
 | `location` | Point | where |
 | `location_accuracy_m` | number | how precisely |
 | `distance_m` | integer | observer to animal |
@@ -1126,6 +1158,32 @@ animal was seen.
 `needs_review` is kept as distinct from `pending`: pending means nobody has
 looked, needs review means somebody competent looked and was not willing to
 decide. Collapsing them loses the record of a mentor's uncertainty.
+
+`species_code` and `count` are optional until the sighting is verified, and
+this is the one place in the schema where optionality is conditional on
+another field rather than fixed. A trainee in a vehicle sees something they
+cannot name; the only honest record of that is a sighting with no species and
+nothing invented to fill the field. Forcing a guess at capture trains a guess,
+and a logbook full of confident wrong species is worth less to a mentor than
+one full of honest blanks.
+
+A mentor may still verify such a sighting **as observed**: the claim being
+confirmed is that something was there, not what it was. This is a real
+decision with a real audit trail, not a placeholder, and it is recorded with
+`verified_at` and a verification note like any other. It is why `verified` does
+not imply a species is known.
+
+An absent `count` is likewise not a zero. A zero asserts that the animal was
+looked for and there were none, which is a different statement from not having
+counted. This is the same distinction rule 18 draws between `not_observed` and a
+zero, and it is applied for the same reason: an absent observation is not a
+negative one. A client that renders an absent count as `0` is asserting
+something the trainee did not.
+
+Supplying a species code or a count on a sighting that was verified without one
+is a correction, so rule 15 applies unchanged: it requires a reason, and
+`recorded_species_code` and `recorded_count` retain whatever was there before,
+including nothing.
 
 ### Sign-off
 
@@ -1183,26 +1241,56 @@ runtime mismatch.
 
 ```dart
 @freezed
-class WildlifeSighting with _$WildlifeSighting {
+abstract class WildlifeSighting with _$WildlifeSighting {
   const factory WildlifeSighting({
     required String id,
     required String contextCode,
     required String driveId,
-    required String speciesCode,
-    required int count,
-    required GeoJsonPoint location,
     required SightingStatus status,
+    required GeoJsonPoint location,
     required DateTime capturedAt,
     required DateTime recordedAt,
     required int revision,
     required String createdBy,
+    String? speciesCode,
+    int? count,
+    double? locationAccuracyM,
+    int? distanceM,
+    int? bearingDeg,
+    SightingBehaviour? behaviour,
+    AgeSexClass? ageSexClass,
+    String? notes,
+    String? verifiedBy,
     DateTime? verifiedAt,
+    String? verificationNotes,
+    String? recordedSpeciesCode,
+    int? recordedCount,
+    @Default(false) bool lateArrival,
   }) = _WildlifeSighting;
 
   factory WildlifeSighting.fromJson(Map<String, dynamic> json) =>
       _$WildlifeSightingFromJson(json);
 }
 ```
+
+The class must be declared `abstract`. freezed 3 and 4 generate a mixin whose
+members are abstract, so a plain `class` declaration fails to compile with
+`non_abstract_class_inherits_abstract_member`. This is a freezed requirement
+rather than a style choice, and it applies to every generated model in the
+client.
+
+`speciesCode` and `count` are nullable here because rule 21 makes them
+optional until verification. That optionality is not expressible in a freezed
+model, so a client that generated `required String speciesCode` from this table
+would fail to compile the moment a trainee recorded something they could not
+identify, which is the single most common thing that happens in a vehicle. The
+conditional requirement belongs to the server, and a client that needs to
+check it before submission does so against `status` explicitly.
+
+The model carries the table's fields plus four that are protocol rather than
+field data and so do not appear in it: `capturedAt` and `recordedAt` are
+required by rule 13 and are never interchangeable, `revision` is the sole input
+to conflict resolution under rule 6, and `createdBy` names the author.
 
 `verifiedAt` is a timestamp, not a status. `status` and `verifiedAt` are
 distinct: a sighting can be `rejected`, which still carries a `verifiedAt`
