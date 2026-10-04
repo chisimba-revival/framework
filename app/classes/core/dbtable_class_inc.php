@@ -353,11 +353,32 @@ class dbTable extends ChisimbaObject {
      * @param  mixed  $pkvalue the value of the primary key field for the record
      */
     public function getRow($pk_field, $pk_value, $table = NULL) {
-        $pk_value = addslashes($pk_value ?? '');
+        // A column name cannot be bound as a parameter, so it is checked for a
+        // plain identifier shape instead. Anything else is a caller bug or an
+        // attempt to select on an expression, and is refused rather than
+        // interpolated.
+        if (!is_string($pk_field)
+            || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $pk_field)) {
+            error_log('getRow refused a non-identifier field name');
+            return FALSE;
+        }
+
+        // MDB2's queryRow() accepts no bind parameter, so the value is escaped
+        // by the driver instead. escape() reaches mysqli_real_escape_string,
+        // which is aware of the connection charset; addslashes() was not, and
+        // under a charset such as GBK an attacker can choose bytes where the
+        // backslash addslashes inserts is consumed as part of a multi-byte
+        // character, closing the literal early.
+        $pk_value = $pk_value ?? '';
+        $quotedValue = $this->_db->quote($pk_value);
+        if (MDB2::isError($quotedValue)) {
+            error_log('getRow could not quote its value: ' . $quotedValue->getMessage());
+            return FALSE;
+        }
         if ($table != NULL) {
             $this->_tableName = $table;
         }
-        $stmt = "SELECT * FROM {$this->_tableName} WHERE {$pk_field}='{$pk_value}'";
+        $stmt = "SELECT * FROM {$this->_tableName} WHERE {$pk_field}={$quotedValue}";
         if ($this->objMemcache == TRUE) {
             if (chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt))) {
                 $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt));
