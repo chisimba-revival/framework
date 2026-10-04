@@ -156,6 +156,13 @@ class DbCreateAction extends StepAction
 	$this->_installDb32('core_modules/security/sql/tbl_users.sql');
     $this->_installDb32('core_modules/security/sql/tbl_userloginhistory.sql');
     $this->_installDb32('core_modules/security/sql/tbl_loggedinusers.sql');
+    // Native authentication tables. The canonical login flow reads these
+    // unconditionally, so a missing table surfaces as a fatal during
+    // MfaPolicyContextResolver rather than as a readable install error.
+    $this->_installDb32('core_modules/security/sql/tbl_auth_mfa_enrolments.sql');
+    $this->_installDb32('core_modules/security/sql/tbl_auth_mfa_recovery_codes.sql');
+    $this->_installDb32('core_modules/security/sql/tbl_auth_persistent_logins.sql');
+    $this->_installDb32('core_modules/security/sql/tbl_useractivity.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_applications.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_area_admin_areas.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_areas.sql');

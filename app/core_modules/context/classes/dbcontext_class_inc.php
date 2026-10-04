@@ -77,10 +77,6 @@ class dbcontext extends dbTable {
         parent::init('tbl_context');
         $this->table = 'tbl_context';
         $this->objUser = $this->getObject('user', 'security');
-        $existing = $this->query("SHOW COLUMNS FROM tbl_context LIKE 'use_sections'");
-        if (!is_array($existing) || count($existing) === 0) {
-            $this->query('ALTER TABLE tbl_context ADD COLUMN use_sections TINYINT(1) NOT NULL DEFAULT 0');
-        }
     }
 
     /**
