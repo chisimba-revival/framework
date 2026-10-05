@@ -110,8 +110,17 @@ class SigningKeyService
     {
         $directory = dirname($path);
         if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
+            // This is the default-path failure and it is worth naming the way
+            // out of it. The default lives under the framework's var directory,
+            // which a web server user cannot always create — the document root
+            // is commonly read-only to the user Apache runs as. The answer is
+            // CHISIMBA_JWKS_KEY_PATH pointing somewhere writable, ideally a
+            // mounted secret, and saying so beats reporting a mkdir failure
+            // that looks like a permissions misconfiguration somewhere else.
             throw new RuntimeException(
-                'The REST API signing key directory ' . $directory . ' could not be created.'
+                'The REST API signing key directory ' . $directory . ' could not be '
+                . 'created. Point CHISIMBA_JWKS_KEY_PATH at a writable location, '
+                . 'preferably a mounted secret, and the key will be created there.'
             );
         }
 
@@ -156,6 +165,33 @@ class SigningKeyService
         // A fingerprint of the public half. Only the public modulus, so the
         // identifier cannot be used to learn anything about the private key.
         return substr(hash('sha256', $details['rsa']['n']), 0, 16);
+    }
+
+    /**
+     * The public half as PEM, for verifying a token this installation signed.
+     *
+     * Offered because reassembling an RSA key from a bare modulus needs DER
+     * encoding, and doing that by hand to verify a signature is exactly the
+     * kind of cleverness that produces a subtly wrong key. OpenSSL already has
+     * the assembled key; this hands it over.
+     *
+     * @return string
+     */
+    public function publicKeyPem(): string
+    {
+        $key = openssl_pkey_get_private($this->privateKey());
+        if ($key === false) {
+            throw new RuntimeException(
+                'The REST API signing key could not be loaded: ' . openssl_error_string()
+            );
+        }
+
+        $details = openssl_pkey_get_details($key);
+        if ($details === false || !isset($details['key'])) {
+            throw new RuntimeException('The REST API signing key is not an RSA key.');
+        }
+
+        return (string)$details['key'];
     }
 
     /**

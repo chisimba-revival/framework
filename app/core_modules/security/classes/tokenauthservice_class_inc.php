@@ -17,6 +17,7 @@ class TokenAuthService
 
     private $db;
     private $secret;
+    private $signingKeys;
     private $issuer = 'chisimba';
     private $audience = 'chisimba-api';
 
@@ -24,9 +25,16 @@ class TokenAuthService
     {
         global $_globalObjDb;
         $this->db = $_globalObjDb;
-        
+
         // Use a config-based secret or generate from site key
         $this->secret = $this->getSecret();
+
+        // Tokens are signed with RSA rather than with the shared secret above.
+        // The secret is still needed for API keys, which are verified here
+        // against a stored hash rather than by a remote service, so it has not
+        // gone away — it simply stopped being something every verifier needs.
+        require_once dirname(__DIR__) . '/classes/signinkeyservice_class_inc.php';
+        $this->signingKeys = new SigningKeyService();
     }
 
     /**
@@ -161,24 +169,36 @@ class TokenAuthService
     private function generateJWT(string $userId, int $ttl, string $type = 'access'): string
     {
         $now = time();
-        $header = ['typ' => 'JWT', 'alg' => 'HS256'];
-        $payload = [
+        $tokenId = bin2hex(random_bytes(16));
+
+        return $this->signingKeys->sign([
             'iss' => $this->issuer,
             'aud' => $this->audience,
             'iat' => $now,
             'exp' => $now + $ttl,
             'sub' => (string)$userId,
             'type' => $type,
-            'jti' => bin2hex(random_bytes(16))
-        ];
+            'jti' => $tokenId,
+            // The field service expects a token's own identity under 'ver', and
+            // jti is that value under the name RFC 7519 gives it. Emitting both
+            // costs one claim and saves every verifier from guessing which of
+            // the two names it should be reading.
+            'ver' => $tokenId,
+        ]);
+    }
 
-        $encodedHeader = $this->base64UrlEncode(json_encode($header));
-        $encodedPayload = $this->base64UrlEncode(json_encode($payload));
-        $signature = $this->base64UrlEncode(
-            hash_hmac('sha256', "$encodedHeader.$encodedPayload", $this->secret, true)
-        );
-
-        return "$encodedHeader.$encodedPayload.$signature";
+    /**
+     * The public JWKS document, for services that verify tokens locally.
+     *
+     * Public material only, by construction: the document is derived from the
+     * keypair's public half, so there is no code path by which the private
+     * exponent could reach a response.
+     *
+     * @return array
+     */
+    public function jwks(): array
+    {
+        return $this->signingKeys->jwks();
     }
 
     /**
@@ -192,15 +212,31 @@ class TokenAuthService
         if (count($parts) !== 3) return null;
 
         [$encodedHeader, $encodedPayload, $signature] = $parts;
-        
-        // Verify signature
-        $expectedSignature = $this->base64UrlEncode(
-            hash_hmac('sha256', "$encodedHeader.$encodedPayload", $this->secret, true)
+
+        $header = json_decode($this->base64UrlDecode($encodedHeader), true);
+        if (!is_array($header)) return null;
+
+        // The algorithm is checked before the signature, and against one
+        // expected value rather than a configured list. A verifier that reads
+        // the algorithm out of the token it is verifying will accept a token
+        // that asks to be verified as HS256, using the public key as a shared
+        // HMAC secret — which is the classic JWT confusion attack and is
+        // exactly what signing with RSA makes possible. 'none' is refused for
+        // the same reason: an unsigned payload must never count as verified.
+        if (($header['alg'] ?? '') !== 'RS256') return null;
+
+        $key = openssl_pkey_get_public($this->signingKeys->publicKeyPem());
+        if ($key === false) return null;
+
+        $verified = openssl_verify(
+            "$encodedHeader.$encodedPayload",
+            $this->base64UrlDecode($signature),
+            $key,
+            OPENSSL_ALGO_SHA256
         );
-        
-        if (!hash_equals($expectedSignature, $signature)) {
-            return null;
-        }
+        // 1 is a valid signature, 0 is invalid and -1 is an error. Only 1 passes:
+        // an error must not be read as a pass.
+        if ($verified !== 1) return null;
 
         // Decode payload
         $payload = json_decode($this->base64UrlDecode($encodedPayload), true);

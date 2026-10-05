@@ -354,6 +354,31 @@ class restapi extends RestController
     }
 
     /**
+     * GET /api/v1/auth/jwks
+     * The public signing key, for services that verify tokens locally.
+     *
+     * Deliberately unauthenticated, and that is not an oversight. A verifier
+     * that had to present a token in order to fetch the key could never
+     * validate its first token, so requiring one here would make local
+     * validation impossible rather than safer. The document contains public
+     * values only — modulus and exponent — so there is nothing here to protect.
+     *
+     * The contract names /.well-known/jwks.json as the discovery path. This
+     * router is rooted at /api/v1 and cannot serve a path at the site root, so
+     * the document is served here first and the well-known path is an alias
+     * in front of it. The alias has to exist before any third party is told to
+     * depend on this URL, because a published path that later moves breaks
+     * every verifier that cached it.
+     *
+     * @return void
+     */
+    public function GET_auth_jwks(): void
+    {
+        header('Cache-Control: public, max-age=300');
+        $this->respond($this->auth->jwks());
+    }
+
+    /**
      * GET /api/v1/auth/me
      * Get current authenticated user info
      */
