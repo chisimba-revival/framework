@@ -56,7 +56,7 @@ compromise them if added to the framework's transactional MySQL schema. The
 microservice owns field data and speaks HTTP; Chisimba owns identity and
 speaks the gateway contract.
 
-The division is deliberately narrow. Chisimba does not store drives, sightings
+The division is deliberately narrow. Chisimba does not store outings, sightings
 or sign-offs, and the microservice does not store credentials, groups or
 permissions. Each side is authoritative only for what it owns.
 
@@ -138,14 +138,14 @@ of what a field guide needs.
 
 Ratings run `not_observed`, `developing`, `competent`, `proficient`, `expert`
 and evidence is mandatory even at `not_observed`, recording why the competency
-could not be judged. An unobserved competency is information about the drive,
+could not be judged. An unobserved competency is information about the outing,
 not a zero, and the system says so rather than letting a blank read as a
 failure.
 
 Competency progresses through levels rather than being cleared once. A trainee
 at `competent` in navigation is not thereby `proficient`, and the record shows
 which, so that the next drive can be aimed at the gap. This is why assessment
-is retained per drive and per competency rather than collapsed into a single
+is retained per outing and per competency rather than collapsed into a single
 standing grade per trainee.
 
 ### The trainee sees their own development
@@ -184,7 +184,7 @@ much their judgement has moved.
 
 ### The mentor's whole-exercise view is a teaching requirement
 
-A mentor or administrator reads every drive, route and sighting in a context,
+A mentor or administrator reads every outing, route and sighting in a context,
 not only the records a particular trainee authored. Grading competence means
 seeing the whole of a trainee's work, and assessing one identification means
 seeing the surrounding sightings that trainee could not see, because those
@@ -233,7 +233,7 @@ Chisimba owns:
 - the audit trail for every identity and permission change;
 - token issuance for every machine client.
 
-Chisimba does not own drive state, sightings, trail logs, media binaries,
+Chisimba does not own outing state, sightings, trail logs, media binaries,
 competency assessments or sign-off decisions.
 
 One consumer of this service is a Chisimba module, `trailsprogramme`, which
@@ -253,7 +253,7 @@ was assessed against, and are described in that same record.
 
 The microservice owns:
 
-- game drives, their lifecycle and their participants;
+- drives, hikes and camps, their lifecycle and their participants;
 - trail logs, waypoints and observations;
 - wildlife sightings and their verification state;
 - competency assessments and mentor sign-offs;
@@ -285,8 +285,8 @@ a name next to a sign-off.
    to keep.
 7. Every mutation is idempotent under client retry, keyed by operation
    identifier rather than entity identifier. A retried request must never
-   create a second drive, sighting or sign-off, and retrying a start must not
-   be mistaken for retrying the drive's creation.
+   create a second outing, sighting or sign-off, and retrying a start must not
+   be mistaken for retrying the outing's creation.
 8. No endpoint returns a Chisimba credential hash, group definition or
    permission row, including in error responses.
 9. Deletion of field data is a soft delete with a retained audit trail. Hard
@@ -303,8 +303,8 @@ a name next to a sign-off.
     a display cache and is never an authorisation input.
 13. `captured_at` and `recorded_at` are both retained and are never
     interchangeable. Neither is used to arbitrate a conflict.
-14. Ending a drive does not close it to late observations, sightings or media.
-    A sealed drive does, and unsealing is an explicit, audited action.
+14. Ending an outing does not close it to late observations, sightings or
+    media. A sealed outing does, and unsealing is an explicit, audited action.
 15. A correction that changes a species code or a count requires a reason, and
     the original recorded values are retained permanently. A silent overwrite
     cannot be represented as a completed review.
@@ -313,9 +313,10 @@ a name next to a sign-off.
     `rejected` so that a mentor's uncertainty is not reported as a failure.
 17. A sign-off may be revised and resubmitted after `changes_requested`.
     Approve-and-reject-only assessment is not offered.
-18. A competency assessment is retained per drive and per competency and is
+18. A competency assessment is retained per outing and per competency and is
     never collapsed into a single standing grade, and `not_observed` is
-    recorded as an observation about the drive rather than as a zero.
+    recorded as an observation about the outing rather than as a zero. An
+    outing of any kind can carry one: a walk teaches what a drive does not.
 19. Readiness against a threshold is computed and reported to a mentor. It
     never blocks a submission, withholds a record, or concludes a competency on
     the system's own authority. Criteria inform a person's decision; they do
@@ -339,7 +340,7 @@ mobile client
       |
       +-- token exchange, profile, context ------> Chisimba gateway
       |
-      +-- drives, trails, sightings, sign-offs ---> field service
+      +-- outings, trails, sightings, sign-offs ---> field service
       |
       +-- media bytes ---------------------------> object storage
                                                   (pre-signed)
@@ -368,7 +369,7 @@ artefact and putting them on the request path of a service that also holds
 observation records would let a rendering concern compete with a write. The
 mobile client caches tiles the same way and degrades to its vector layer when
 they are absent. A field
-user with no connectivity can still complete a drive, and a signed-in user with
+user with no connectivity can still complete an outing, and a signed-in user with
 no field data can still read their profile.
 
 ## Identity bridge
@@ -450,28 +451,28 @@ different context has to switch to it first, which Chisimba already governs.
 Accepting the field from the request would let a caller file a record wherever
 it suited them, and would defeat the ownership the record depends on.
 
-Trainee visibility follows the drive, not the sighting. A trainee reads the
-sightings of drives they are recorded on, in the drive's context. That is
+Trainee visibility follows the outing, not the sighting. A trainee reads the
+sightings of outings they are recorded on, in the outing's context. That is
 narrower and simpler than granting per-sighting access, and it matches how a
 logbook is actually read.
 
-A route is not a separate entity. It is an attribute of the drive, so the
-question "who may see this route" resolves to "who may see this drive", and the
-drive's context, guide and trainee list already answer that. A route with no
-drive has no owner and no meaning, and nothing here authorises one.
+A route is not a separate entity. It is an attribute of the outing, so the
+question "who may see this route" resolves to "who may see this outing", and the
+outing's context, guide and trainee list already answer that. A route with no
+outing has no owner and no meaning, and nothing here authorises one.
 
-Co-participants on the same drive may read the shared drive record, including
+Co-participants on the same outing may read the shared outing record, including
 the route. A trainee who walked it has a stronger claim to the line than anyone
-else on that drive, so withholding it from them would be both surprising and
+else on that outing, so withholding it from them would be both surprising and
 pointless. Mentor-only notes and verification state are not part of that shared
 record.
 
-A trainee reads only the drives they are recorded on. This is the one genuine
+A trainee reads only the outings they are recorded on. This is the one genuine
 asymmetry in the model, and it exists because a trainee has no basis on which to
 judge someone else's identification or hours, whereas the teaching staff do.
 
 Mentors and administrators are the teaching staff, and both read the whole
-exercise. A mentor or an administrator in a context reads every drive in that
+exercise. A mentor or an administrator in a context reads every outing in that
 context, every route drawn on them, every sighting recorded against them, and
 the verification and sign-off state attached to each. Grading a trainee's
 competence requires seeing the exercise as a whole rather than only the records
@@ -615,7 +616,7 @@ Chisimba presents field data to mentors: the maps, the trail logs and the
 sightings accumulated by trainees across an exercise, and the reviews those
 reviews then produce. It does so as a **reader**.
 
-Chisimba does not store drives, trail logs, sightings, waypoints or sign-offs,
+Chisimba does not store outings, trail logs, sightings, waypoints or sign-offs,
 and the microservice is the only writer of any of them. Where Chisimba needs
 field data it calls the microservice's API and renders the response. Where a
 mentor submits a review, that review is a command sent to the microservice,
@@ -642,35 +643,72 @@ The service is specified as OpenAPI 3.1. The shapes below are the contract;
 the full document is the normative source and is generated alongside this
 architecture.
 
-### Drives
+### Outings
+
+An outing is one guided activity in a reserve. There are three kinds, and they
+are different records with different required fields rather than one record with
+some fields that happen to be absent:
+
+| `kind`  | what it is | required beyond the shared fields |
+|---------|------------|-----------------------------------|
+| `drive` | a game drive in a vehicle | `duration_hours`, `guest_count` |
+| `hike`  | a walking trail on foot | `rifle_role`, `walk_length_km` |
+| `camp`  | a camp, stationary | none, and it must carry no route |
+
+A hike additionally records `hours_walked`, a description of the walk and the
+lessons learned. A camp records a site name and any facilities. `rifle_role` is
+one of `first`, `second` or `neither`, and `neither` is a real answer for a
+participant who was on neither rifle — distinct from leaving the field blank.
+
+The requirement that these be separate records is load-bearing. A single table
+with a `kind` column and nullable per-kind columns would make a hike with no
+rifle role a valid row that is simply missing a field the programme requires, and
+the omission would be discovered at assessment rather than at entry. Every other
+required field in this contract works the same way.
+
+So the shape is one `outing` table holding what all three share — identity,
+context, participants, times, route, notes, lifecycle — and a per-kind detail
+table holding what is genuinely required for that kind. An outing of kind `hike`
+has a `hike_detail` row; an outing of kind `drive` has a `drive_detail` row.
+A sighting, trail log or media record names exactly one outing, so it has one
+parent and there is no polymorphic reference to resolve.
+
+A camp has no route because a camp does not move, and `route` is left null for
+it rather than carrying an empty line. Sightings may be recorded against a camp:
+animals at a camp are what a guide sees, and there is no technical reason for
+that encounter to be the one kind that cannot be kept.
 
 ```text
-GET    /api/v1/drives                 list, filter by status, guide, trainee, date
-POST   /api/v1/drives                 create, guide only
-GET    /api/v1/drives/{id}            read
-PATCH  /api/v1/drives/{id}            update, planned drives only
-POST   /api/v1/drives/{id}/start      move planned -> active
-POST   /api/v1/drives/{id}/end        move active -> completed
-POST   /api/v1/drives/{id}/cancel     move planned or active -> cancelled
+GET    /api/v1/outings                list, filter by kind, status, guide, trainee, date
+POST   /api/v1/outings                create, guide only
+GET    /api/v1/outings/{id}           read
+PATCH  /api/v1/outings/{id}           update, planned outings only
+POST   /api/v1/outings/{id}/start     move planned -> active
+POST   /api/v1/outings/{id}/end       move active -> completed
+POST   /api/v1/outings/{id}/cancel    move planned or active -> cancelled
 ```
 
-Cancellation is a first-class operation rather than a delete. A drive that ran
+Cancellation is a first-class operation rather than a delete. An outing that ran
 for two hours and was abandoned is part of the record: its sightings, trail
-logs and media stay, and the drive is marked cancelled with a reason and the
+logs and media stay, and the outing is marked cancelled with a reason and the
 time. Deleting it would destroy real observations, and leaving it `active`
-would leave the guide unable to start another drive.
+would leave the guide unable to start another outing.
 
-Drive state transitions are enforced server-side. A drive cannot be started
-twice, and a completed drive cannot be re-opened except through the seal
+Outing state transitions are enforced server-side. An outing cannot be started
+twice, and a completed outing cannot be re-opened except through the seal
 described below. Illegal transitions are a 409 with the current state in the
 body, so a client that queued an offline action can reconcile rather than
 guess.
 
+The `GET /api/v1/drives` paths are withdrawn rather than aliased. An alias would
+have to guess a kind for a path that no longer carries one, and a client built
+against an alias would be reading a drive out of something that might be a camp.
+
 ### Trails
 
 ```text
-GET    /api/v1/drives/{id}/trails     list
-POST   /api/v1/drives/{id}/trails     append a trail log
+GET    /api/v1/outings/{id}/trails    list
+POST   /api/v1/outings/{id}/trails    append a trail log
 ```
 
 A trail log carries ordered waypoints and any observations made along the
@@ -682,8 +720,8 @@ by appending rather than by refusing.
 ### Sightings
 
 ```text
-GET    /api/v1/drives/{id}/sightings  list, filter by status and species
-POST   /api/v1/drives/{id}/sightings  record a sighting
+GET    /api/v1/outings/{id}/sightings  list, filter by status and species
+POST   /api/v1/outings/{id}/sightings  record a sighting
 PATCH  /api/v1/sightings/{id}         verify, reject, or correct, mentor or guide only
 ```
 
@@ -738,7 +776,9 @@ thresholds are the criteria, and readiness against them is reported to the
 mentor, but the approval is the mentor's act and not the system's.
 
 A sign-off records a mentor's assessment of named competencies against a
-specific drive, with evidence for each.
+specific outing, with evidence for each. Which kind of outing is up to the
+assessment: a walk is a legitimate thing to be signed off on, and refusing
+that would quietly make the drive the only activity that can teach.
 
 The workflow is `draft`, `submitted`, `changes_requested`, `approved`,
 `rejected` or `expired`. Submission is a separate operation rather than a
@@ -753,9 +793,9 @@ scheme allowing only approve or reject would teach a trainee to withhold
 anything they were unsure of, which is precisely the wrong instinct in someone
 who will one day make calls about dangerous animals.
 
-A rating is never a standing grade. Assessments are retained per drive and per
+A rating is never a standing grade. Assessments are retained per outing and per
 competency, so a trainee `competent` in navigation is visibly not yet
-`proficient` in it, and the record shows which gap the next drive should
+`proficient` in it, and the record shows which gap the next outing should
 address. Collapsing this into one grade per trainee would discard the only
 information that makes the history useful.
 
@@ -767,7 +807,7 @@ offered back to the mentor rather than closed against the trainee, since the
 trainee did not fail to be assessed; they failed to be assessed in time, and
 the two must not read the same way on the record.
 
-Approving a sign-off seals the drive it refers to.
+Approving a sign-off seals the outing it refers to.
 
 ### Media
 
@@ -796,6 +836,19 @@ GET    /api/v1/competencies       list by category and level
 ```
 
 These are bundled into the offline cache and refreshed opportunistically.
+
+The species catalogue is reference data rather than field data. It carries no
+`context_code` and no row-level security, because a lion is a lion in every
+reserve and there is nothing about it to isolate. A per-context catalogue would
+also mean a device caching one copy per context, which is the opposite of what
+the offline bundle is for.
+
+`species_code` is four uppercase letters and is **not** a foreign key to that
+catalogue. A sighting naming a code this installation has not been told about is
+accepted and stored, because refusing it would mean losing a real observation to
+keep the catalogue tidy. The consequence is stated rather than left to be
+discovered: a mistyped code lands, and lands unsearchable. `LEOP` and `LEOP ` are
+different codes and only one of them is a leopard.
 
 ### Synchronisation
 
@@ -879,8 +932,8 @@ Each client change carries:
   batch;
 - the payload.
 
-The operation is an intent rather than a replacement because a drive's end
-carries an end time and a summary, not the entire drive as the client last saw
+The operation is an intent rather than a replacement because an outing's end
+carries an end time and a summary, not the entire outing as the client last saw
 it. Replacing the entity would overwrite fields the client never intended to
 touch, which is a conflict dressed up as a successful write.
 
@@ -905,9 +958,9 @@ tell what it has and has not applied and resume without guessing.
 ### Idempotency
 
 Retry identity is an **operation identifier**, not an entity identifier. This
-distinction is load-bearing: creating a drive, starting that same drive and
+distinction is load-bearing: creating an outing, starting that same outing and
 ending it are three different operations against one entity, and a client that
-retried "the drive" after a timeout would collapse them into one. Each
+retried "the outing" after a timeout would collapse them into one. Each
 operation therefore carries a client-generated `operation_id`, unique within
 the calling client, and the server records the outcome against that id.
 
@@ -986,26 +1039,26 @@ that no longer exists.
 A deletion submitted against a stale revision is refused and surfaced for
 confirmation, rather than being applied to a record that has since changed.
 
-### Late arrival on a completed drive
+### Late arrival on a completed outing
 
-Ending a drive does not close it to new observations. A drive that finished on
+Ending an outing does not close it to new observations. An outing that finished on
 Saturday is routinely still receiving trail logs, sightings and media on
 Monday, because the device that recorded them had no connectivity at the time.
 Refusing those would destroy exactly the field data the system exists to
 capture.
 
-What ends on completion is the drive's **own** fields and its **lifecycle**.
-Planned times, route, notes and participants are editable only while the drive
+What ends on completion is the outing's **own** fields and its **lifecycle**.
+Planned times, route, notes and participants are editable only while the outing
 is `planned`; `start_time` and `end_time` are each written once and never
 rewritten. Child records are append-only and remain acceptable for the whole
 of a configured grace window after completion.
 
 Once the grace window closes, further child records are still accepted rather
 than refused, but are flagged as late arrivals with their true `recorded_at`,
-so that a completed drive can be understood. This is a deliberate preference
+so that a completed outing can be understood. This is a deliberate preference
 for keeping data over preserving an imagined invariant.
 
-A signed-off drive is different. Once a sign-off is approved the drive is
+A signed-off outing is different. Once a sign-off is approved the outing is
 sealed: no edits, no new children, no verification changes. Unsealing is an
 explicit mentor or administrator action, recorded in the audit log, because it
 invalidates the competency judgement that the seal exists to protect.
@@ -1110,27 +1163,85 @@ The recorded-value shadow fields on sightings are kept, because correcting a
 species or count without preserving the original would make a disputed
 sighting unarguable, which is the opposite of what a mentoring record is for.
 
-### Drive
+### Outing
+
+The shared table. What each kind requires beyond it is in its own detail table,
+and a detail row is what makes the outing that kind rather than a claim to be.
 
 | Field | Type | Logbook requirement |
 |---|---|---|
 | `id` | uuid | |
-| `context_code` | string | which reserve the drive belongs to |
+| `context_code` | string | which reserve the outing belongs to |
+| `kind` | enum | `drive`, `hike`, `camp` |
 | `guide_id` | uuid | who led it |
 | `trainee_ids` | uuid[] | who was being assessed |
 | `status` | enum | `planned`, `active`, `completed`, `cancelled` |
-| `planned_start_time` | timestamp | when the drive was booked for |
+| `planned_start_time` | timestamp | when the outing was booked for |
 | `start_time` | timestamp | when it actually began, written once |
 | `end_time` | timestamp | when it actually ended, written once |
-| `route` | LineString | where the vehicle went |
+| `route` | LineString | the route taken; null for a camp, which does not move |
 | `weather` | string | conditions, short free text plus temperature |
 | `notes` | string | the guide's own account, max 2000 |
 | `cancelled_reason` | string | present only when cancelled |
 | `sealed_at` | timestamp | present once a sign-off has been approved |
 
-`planned_start_time` is the only planned value kept. A drive is booked for a
+`planned_start_time` is the only planned value kept. An outing is booked for a
 start, and the actual start is what the record is judged on; a planned finish
 adds nothing once the real one is recorded.
+
+`kind` is fixed at creation and is not editable afterwards. It is not a label:
+changing a drive to a hike would mean acquiring the rifle role and walk length
+that a drive never had, and there is no version of that change which is a
+correction rather than a fabrication.
+
+### Outing detail
+
+One row per outing, in the table for its kind, keyed by `outing_id`. Exactly one
+detail table applies, and the presence of its row is what the outing's kind
+means in practice.
+
+`drive_detail`
+
+| Field | Type | Requirement |
+|---|---|---|
+| `outing_id` | uuid | |
+| `duration_hours` | number | how long the drive ran |
+| `guest_count` | integer | how many guests, not merely that there were some |
+
+Both are nullable in storage, and that is deliberate rather than an oversight.
+Outings recorded before this contract distinguished the kinds recorded neither
+value, and the alternative to a nullable column would have been to invent a
+duration — and an invented `0.0` is indistinguishable from a drive that really
+did last no time. A *new* drive is refused without them. Read the absence as
+"not recorded", never as zero.
+
+`hike_detail`
+
+| Field | Type | Requirement |
+|---|---|---|
+| `outing_id` | uuid | |
+| `rifle_role` | enum | `first`, `second` or `neither` |
+| `walk_length_km` | number | how far the walk went |
+| `hours_walked` | number | this session, feeding the running tally |
+| `description` | string | the walk in the recorder's own words |
+| `lessons_learned` | string | what the trainee takes from it |
+
+`rifle_role` is not null and the blank is not a value. "Neither" is an answer
+somebody gives deliberately about themselves, and collapsing it into an absent
+field would lose the difference between a participant who was not on either
+rifle and a record nobody filled in.
+
+`camp_detail`
+
+| Field | Type | Requirement |
+|---|---|---|
+| `outing_id` | uuid | |
+| `site_name` | string | the camp's name or description of the site |
+| `facilities` | string | what is there, short free text |
+
+A camp carries no route. Sending one is refused rather than ignored, so that a
+client which has drawn a line for a stationary activity finds out at the point of
+entry instead of storing a route that describes nothing.
 
 ### Trail log
 
@@ -1138,12 +1249,12 @@ adds nothing once the real one is recorded.
 |---|---|---|
 | `id` | uuid | |
 | `context_code` | string | |
-| `drive_id` | uuid | |
-| `waypoints` | array | the route as it was actually driven, ordered |
+| `outing_id` | uuid | the outing it was recorded on |
+| `waypoints` | array | the route as it was actually walked or driven, ordered |
 | `observations` | array | what was noted along the way, in order |
 | `lessons_learned` | string | what the trainee takes from the session, their own words |
 | `hours_walked` | number | this session, feeding the running tally |
-| `rifle_role` | enum | `first`, `second` or `none` |
+| `rifle_role` | enum | `first`, `second` or `neither` |
 | `created_by` | uuid | who was recording |
 
 A waypoint carries `sequence`, a Point, `captured_at`, and optionally altitude,
@@ -1180,7 +1291,7 @@ combined total would overstate both.
 |---|---|---|
 | `id` | uuid | |
 | `context_code` | string | |
-| `drive_id` | uuid | the drive it was recorded on |
+| `outing_id` | uuid | the outing it was recorded on |
 | `species_code` | string | four uppercase letters, optional until verified |
 | `count` | integer | how many, not merely that it was seen, optional until verified |
 | `location` | Point | where |
@@ -1249,7 +1360,7 @@ including nothing.
 | `context_code` | string | |
 | `trainee_id` | uuid | who is being assessed |
 | `mentor_id` | uuid | who is assessing |
-| `drive_id` | uuid | the evidence this rests on |
+| `outing_id` | uuid | the evidence this rests on |
 | `competencies` | array | one to twenty assessments |
 | `overall_comment` | string | the mentor's summary, max 2000 |
 | `status` | enum | `draft`, `submitted`, `changes_requested`, `approved`, `rejected`, `expired` |
@@ -1272,7 +1383,7 @@ record is that someone else can read the reasoning.
 |---|---|---|
 | `id` | uuid | |
 | `context_code` | string | |
-| `drive_id` | uuid | |
+| `outing_id` | uuid | the outing it belongs to |
 | `type` | enum | `photo`, `video`, `audio` |
 | `sighting_id`, `trail_log_id` | uuid | nullable, exactly one applies |
 | `filename`, `mime_type` | string | what was captured |
@@ -1301,7 +1412,8 @@ abstract class WildlifeSighting with _$WildlifeSighting {
   const factory WildlifeSighting({
     required String id,
     required String contextCode,
-    required String driveId,
+    required String outingId,
+    required String outingKind,
     required SightingStatus status,
     required GeoJsonPoint location,
     required DateTime capturedAt,
@@ -1358,7 +1470,7 @@ the audit trail, which is the one thing a disputed sighting most needs.
 The contract is shaped by what the client can actually do offline, so these
 consequences are part of the contract rather than an afterthought.
 
-- The client stores drives, trail logs and sightings locally with their client
+- The client stores outings, trail logs and sightings locally with their client
   ids, and treats the server as a replica to reconcile with.
 - Queued changes are persisted before they are attempted, so an app kill does
   not lose a field observation. Each is stored with its `operation_id` and, for
@@ -1424,7 +1536,7 @@ release of the other.
 4. Provision the identity projection, and confirm that its staleness affects
    display only. Confirm separately that it is not consulted for access, so
    that the two mechanisms cannot be confused for one another later.
-5. Implement drives with the cancellation operation and the server-side state
+5. Implement outings with the cancellation operation and the server-side state
    transitions, including the illegal transition responses and the seal that a
    sign-off later applies.
 6. Implement trail logs and sightings, with client-generated identifiers from
@@ -1438,7 +1550,7 @@ release of the other.
    mid-batch.
 9. Implement revision-based conflict resolution, including the rule that
    verification never resolves by revision alone, and that late children on a
-   completed drive are accepted rather than refused.
+   completed outing are accepted rather than refused.
 10. Implement sign-offs and the competency catalogue, including the submission
     operation, the changes-requested state and the seal on approval.
 11. Add the offline client against these contracts, then harden the sync
