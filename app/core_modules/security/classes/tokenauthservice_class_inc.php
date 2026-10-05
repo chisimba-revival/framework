@@ -230,6 +230,10 @@ class TokenAuthService
         $groups = $this->groupsFor($userId);
 
         return array(
+            // Whether the account is switched on. It is in the claims because a
+            // token must not outlive the account it was issued to, and because
+            // nothing else in Chisimba changes when an account is deactivated.
+            'active' => $this->accountState($userId) === 'active',
             // ctx and ctxs are separate on purpose. Using the active context as
             // the read boundary would hide a guide's northern-reserve drives
             // while they happen to be working in the southern one.
@@ -242,6 +246,70 @@ class TokenAuthService
             'roles' => $groups,
             'epoch' => $this->epochFor($userId),
             'scope' => $groups,
+        );
+    }
+
+    /**
+     * Whether a user's account is currently switched on, as a state that can also
+     * be 'unknown'.
+     *
+     * Three values rather than a bool, and that is the correction. This was a bool
+     * returning true whenever the row could not be read, which is the right
+     * default when the question is whether to *refuse a token* and the wrong one
+     * when the question is whether the user's grants have *changed*: treating an
+     * unreadable row as active made a deactivation invisible, because the
+     * fingerprint came back identical and the epoch never moved.
+     *
+     * It stayed invisible rather than failing loudly because the column was wrong.
+     * This reads isactive; there is no status column on tbl_users, so the query
+     * errored, the error was swallowed by the fail-open, and the fingerprint said
+     * 'active' for a deactivated user. A read that fails must be a state of its
+     * own, so that it changes the fingerprint and the epoch moves.
+     *
+     * @param string $userId Chisimba logical user identifier
+     * @return string One of 'active', 'inactive' or 'unknown'
+     */
+    private function accountState(string $userId): string
+    {
+        $statement = $this->db->prepare(
+            'SELECT isactive FROM tbl_users WHERE userid = ?'
+        );
+        if (MDB2::isError($statement)) {
+            return 'unknown';
+        }
+        $result = $statement->execute(array($userId));
+        if (MDB2::isError($result)) {
+            $statement->free();
+            return 'unknown';
+        }
+        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $statement->free();
+
+        if (!is_array($row) || !array_key_exists('isactive', $row)) {
+            return 'unknown';
+        }
+        return (int) $row['isactive'] === 1 ? 'active' : 'inactive';
+    }
+
+    /**
+     * Record a user's epoch and the grants it was recorded against.
+     *
+     * @param string $userId The Chisimba logical user identifier
+     * @param int $epoch The epoch in force
+     * @param string $fingerprint The grants this epoch was recorded against
+     * @return void
+     */
+    private function storeEpoch(string $userId, int $epoch, string $fingerprint): void
+    {
+        $this->executeStatement(
+            'INSERT INTO tbl_rest_identity_epoch'
+            . ' (user_id, epoch, grants_fingerprint, updated_at)'
+            . ' VALUES (?, ?, ?, NOW())'
+            . ' ON DUPLICATE KEY UPDATE'
+            . ' epoch = GREATEST(epoch, VALUES(epoch)),'
+            . ' grants_fingerprint = VALUES(grants_fingerprint),'
+            . ' updated_at = NOW()',
+            array($userId, $epoch, $fingerprint)
         );
     }
 
@@ -396,6 +464,115 @@ class TokenAuthService
         );
 
         return $this->epochFor($userId);
+    }
+
+    /**
+     * Raise a user's epoch if their grants no longer match what was recorded.
+     *
+     * This is what makes a role reduction visible without anything having to
+     * remember to report one. The alternative — raising the epoch from the group
+     * admin screens, from user deactivation, and from whatever else can change
+     * a person's permissions — puts the REST API's revocation model inside every
+     * module that can affect it, and any of those paths that somebody forgets is
+     * a reduction that stays valid until the token expires on its own.
+     *
+     * Comparing a fingerprint catches all of them at once, because it does not
+     * care how the change arrived.
+     *
+     * The first sighting of a user records their fingerprint without raising the
+     * epoch. Recording is not a change: a token minted before this table existed
+     * carries epoch 0 and must keep working, so a user seen for the first time
+     * here is not treated as having had their permissions reduced.
+     *
+     * @param string $userId The Chisimba logical user identifier
+     * @return int The epoch now in force for this user
+     */
+    public function syncEpochFor(string $userId): int
+    {
+        $fingerprint = $this->grantsFingerprintOf($userId);
+
+        $statement = $this->db->prepare('SELECT epoch, grants_fingerprint
+            FROM tbl_rest_identity_epoch WHERE user_id = ?');
+        if (MDB2::isError($statement)) {
+            return 0;
+        }
+        // execute() is checked before it is used. Chaining fetchRow() onto it
+        // means calling a method on whatever came back, which for a failed
+        // statement is an MDB2_Error and the result is "Call to undefined
+        // method MDB2_Error::fetchRow()" instead of the query that actually
+        // failed.
+        $result = $statement->execute(array($userId));
+        if (MDB2::isError($result)) {
+            $statement->free();
+            return 0;
+        }
+        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $statement->free();
+
+        if (empty($row)) {
+            $this->storeEpoch($userId, 0, $fingerprint);
+            return 0;
+        }
+
+        $epoch = (int) $row['epoch'];
+        if ($row['grants_fingerprint'] === $fingerprint) {
+            return $epoch;
+        }
+
+        // Greatest, so a concurrent issue cannot lower the value another one
+        // just raised. An epoch that fell would make tokens already issued at
+        // the higher value readable again.
+        //
+        // Bindings go through execute(), which is the form this class uses
+        // everywhere else and the only one that works: MDB2's bindValue() wants
+        // a named placeholder, and passing a position instead produces
+        // "Unable to bind to missing placeholder: 0" at execution time — a
+        // failure php -l cannot see and one this file's own working statements
+        // never hit because they do not bind by position.
+        $this->executeStatement(
+            'UPDATE tbl_rest_identity_epoch'
+            . ' SET epoch = GREATEST(epoch + 1, ?), grants_fingerprint = ?, updated_at = NOW()'
+            . ' WHERE user_id = ?',
+            array($epoch + 1, $fingerprint, $userId)
+        );
+
+        return $epoch + 1;
+    }
+
+    /**
+     * The grants fingerprint for a user: their groups and whether they are active.
+     *
+     * Status is in it because deactivation has to move the epoch too, and
+     * nothing else in Chisimba changes when an account is switched off. A
+     * deactivation is the clearest case of a token that must stop being readable
+     * even though its timestamps are all perfectly valid.
+     *
+     * @param string $userId The Chisimba logical user identifier
+     * @return string A hex digest, or a placeholder if it cannot be computed
+     */
+    private function grantsFingerprintOf(string $userId): string
+    {
+        $claims = $this->identityClaims($userId);
+        $shape = array(
+            'groups' => $claims['ctxs'],
+            // The three-valued state rather than the boolean claim. A fingerprint
+            // that cannot tell 'unknown' from 'active' reports no change when the
+            // account could not be read at all, and a deactivated user whose row
+            // briefly failed to read would keep their grants until the token
+            // expired on its own.
+            'active' => $this->accountState($userId),
+        );
+
+        // Sorted, because the order rows come back in is not a fact about the
+        // user: adding somebody to a group should not change their fingerprint.
+        sort($shape['groups']);
+        $json = json_encode($shape);
+        if ($json === false) {
+            // A fingerprint that cannot be computed must not read as "nothing
+            // changed", or a broken user would keep their old epoch for ever.
+            return 'uncomputable:' . sha1($userId);
+        }
+        return hash('sha256', $json);
     }
 
     /**
@@ -581,6 +758,13 @@ class TokenAuthService
      */
     public function issueTokens(string $userId, array $options = []): array
     {
+        // Before minting anything, notice whether this user's grants have moved
+        // since the last token. If they have, the epoch rises, and every token
+        // already issued to them becomes unreadable — which is the point of an
+        // epoch, and the reason revocation needs a second check beside the
+        // timestamp.
+        $this->syncEpochFor($userId);
+
         $accessToken = $this->generateJWT($userId, self::ACCESS_TOKEN_TTL, 'access');
         $refreshToken = $this->generateJWT($userId, self::REFRESH_TOKEN_TTL, 'refresh');
         

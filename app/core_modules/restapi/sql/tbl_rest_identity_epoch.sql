@@ -53,6 +53,20 @@ $fields = array(
         'notnull' => TRUE,
         'default' => 0
     ),
+    // The grants as they stood when this epoch was recorded, hashed. This is
+    // what makes the epoch move by itself: the API compares a user's current
+    // grants against this fingerprint whenever it mints a token, and raises the
+    // epoch when they differ.
+    //
+    // Doing it this way rather than raising the epoch from wherever permissions
+    // change catches every source of change — the group admin screens, a
+    // direct database edit, an LDAP synchronisation, a module not yet written —
+    // rather than only the two or three places somebody remembered to call.
+    'grants_fingerprint' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'notnull' => FALSE
+    ),
     'updated_at' => array(
         'type' => 'datetime',
         'notnull' => TRUE
