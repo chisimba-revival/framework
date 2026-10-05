@@ -29,6 +29,7 @@ class TokenAuthService
     private $db;
     private $secret;
     private $signingKeys;
+    private $denylist;
     private $issuer = 'chisimba';
     private $audience = 'chisimba-api';
 
@@ -46,6 +47,12 @@ class TokenAuthService
         // gone away — it simply stopped being something every verifier needs.
         require_once dirname(__DIR__) . '/classes/signinkeyservice_class_inc.php';
         $this->signingKeys = new SigningKeyService();
+
+        // Raises the epoch in MySQL and publishes it to the denylist the field
+        // services read. Both or neither: an epoch recorded in a database
+        // nothing reads is a revocation that has not happened.
+        require_once dirname(__DIR__) . '/classes/denylistpublisher_class_inc.php';
+        $this->denylist = new DenylistPublisher();
     }
 
     /**
@@ -535,6 +542,16 @@ class TokenAuthService
             . ' WHERE user_id = ?',
             array($epoch + 1, $fingerprint, $userId)
         );
+
+        // Published once the database has accepted the new epoch, so a
+        // published epoch is never one the database has not recorded.
+        //
+        // A failure here is deliberately not caught. Raising an epoch and failing
+        // to publish it leaves tokens issued under the old grants readable, and
+        // returning quietly would report a revocation that has not happened.
+        // Refusing the sign-in is the only outcome that matches what the caller
+        // was just told.
+        $this->denylist->publish($userId, $epoch + 1);
 
         return $epoch + 1;
     }
