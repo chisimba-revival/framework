@@ -17,7 +17,7 @@ resource server that validates what Chisimba issued. This is what keeps
 
 ### Amendments
 
-**Conditional optionality on a sighting's identification, 2026-10-04.** Rule 21
+**Conditional optionality on an entry's identification, 2026-10-04.** Rule 21
 was added, and `species_code` and `count` became optional until verification.
 The original logbook table stated no requiredness for any field while the
 example model marked both as required, so a client generated from it could not
@@ -56,7 +56,7 @@ compromise them if added to the framework's transactional MySQL schema. The
 microservice owns field data and speaks HTTP; Chisimba owns identity and
 speaks the gateway contract.
 
-The division is deliberately narrow. Chisimba does not store outings, sightings
+The division is deliberately narrow. Chisimba does not store outings, entries
 or sign-offs, and the microservice does not store credentials, groups or
 permissions. Each side is authoritative only for what it owns.
 
@@ -79,7 +79,7 @@ The most valuable record in this system is not an observation. It is a
 correction, because a correction is the only moment in the whole cycle where a
 trainee's understanding can actually change.
 
-A sighting is recorded as a claim. A verification is the answer to that claim,
+A log book entry is recorded as a claim. A verification is the answer to that claim,
 and an answer without a reason teaches nothing. So the correction of a species
 code is not an administrative overwrite; it is the lesson, and it carries an
 explanation with it. A mentor who silently changes `LEOP` to `LION` has marked
@@ -91,7 +91,7 @@ the substance of the teaching, and the client presents them beside the
 original claim rather than in place of it. Both are kept, always, so the
 trainee can see what they thought, what it actually was, and why.
 
-Rejection is the same idea in harsher form. A rejected sighting is a teaching
+Rejection is the same idea in harsher form. A rejected entry is a teaching
 moment that failed to be taken, and the system records it as a claim that was
 made and examined, not as an absence. Nothing is deleted because a trainee was
 wrong; that is the single most destructive thing this system could do.
@@ -233,7 +233,7 @@ Chisimba owns:
 - the audit trail for every identity and permission change;
 - token issuance for every machine client.
 
-Chisimba does not own outing state, sightings, trail logs, media binaries,
+Chisimba does not own outing state, log book entries, waypoints, media binaries,
 competency assessments or sign-off decisions.
 
 One consumer of this service is a Chisimba module, `trailsprogramme`, which
@@ -350,18 +350,33 @@ mobile client
 Chisimba
       |
       +-- provisioning webhook (signed) --------> field service
+      |
+      +-- verification (scoped JWT) ----------> field service
 ```
 
-The webhook is the only inbound call the field service accepts from Chisimba.
-It carries no credential and cannot, because Chisimba has none to give. It is
-authoritative only for identity, never for field data.
+Chisimba makes **two** inbound calls, and they are deliberately unlike each
+other, because they are trusted with different things.
+
+The provisioning webhook carries no credential material and cannot, because
+Chisimba has none to give. It is authoritative only for identity, never for field
+data. It is authenticated by an HMAC over the raw body with a constant-time
+comparison, which is enough to prove the call came from Chisimba and nothing
+more — it cannot say which Chisimba user is asking, because it is not asking
+about a user.
+
+The verification call carries a scoped JWT, because it is authoritative for
+field data. Chisimba's mentor module is the caller, it acts for a named mentor,
+and a rule that cannot name its actor cannot be reviewed later. The webhook's
+weakness is exactly what this credential fixes.
 
 The mobile client holds two independent conversations. Neither service is a
 proxy for the other, and a failure in one does not block the other.
 
 Chisimba additionally reads field data from the microservice for its mentor
-views. That is a third conversation and it is read-only, for the reasons given
-under *Chisimba as a reader of field data*.
+views, and writes one thing to it: a mentor's verification. That is a third
+conversation, and it is a reader with exactly one exception. See *Chisimba as a
+reader of field data*, which states the exception and why it does not move the
+authority.
 
 Base map tiles for the mentor's map view are served from object storage or a
 tile server, not from either service. Tiles are a large, cacheable, public
@@ -601,33 +616,56 @@ be brought into line with this contract rather than the contract relaxed to
 match the implementation, because the contract names are the ones a third
 party reading the document will build against.
 
-`POST /api/v1/auth/refresh` is not implemented at all, and until it is the
-mobile client holds a refresh token that nothing can use: a stored session
-silently stops working at access-token expiry rather than refreshing. The
-whole-family revocation on replay, and the device identifier the refresh
-accepts, are part of that endpoint and are not optional simplifications.
+`POST /api/v1/auth/refresh` is implemented and is **not yet proven**. It exists,
+it mints a new pair, and it re-checks the account so a token belonging to a
+deleted or deactivated user cannot keep rotating. What has not been demonstrated
+is the whole-family revocation on replay, or the device identifier the refresh
+accepts — both are part of that endpoint and neither is an optional
+simplification. A refresh that does not revoke the family on replay means a
+stolen refresh token mints tokens indefinitely, which is a different failure from
+the one the endpoint appears to solve.
+
+The other half of this gap is that the endpoint cannot currently be reached by a
+client that has not first obtained a CSRF token and signed abuse evidence. That
+is correct for a browser form and wrong for a Bearer-token API, where there is
+no cookie for a cross-site request to ride. It is recorded here as an open
+question rather than a decision, because the abuse evidence has a legitimate
+purpose and the remedy has not been chosen.
 
 A mobile client written against the current gateway works today. It must not
 be read as evidence that the gateway is correct.
 
 ## Chisimba as a reader of field data
 
-Chisimba presents field data to mentors: the maps, the trail logs and the
-sightings accumulated by trainees across an exercise, and the reviews those
-reviews then produce. It does so as a **reader**.
+Chisimba presents field data to mentors: the maps, the outings, the log book
+entries accumulated by trainees across an exercise, and the reviews those reviews
+then produce. It does so as a **reader, with one exception**.
 
-Chisimba does not store outings, trail logs, sightings, waypoints or sign-offs,
-and the microservice is the only writer of any of them. Where Chisimba needs
-field data it calls the microservice's API and renders the response. Where a
-mentor submits a review, that review is a command sent to the microservice,
-which owns the sign-off and applies the revision and retention rules to it.
+The exception is verification, and it is the reason this section once read as a
+contradiction. It used to say Chisimba "does so as a reader" and then, two
+sentences later, that a mentor's review "is a command sent to the microservice".
+Both statements cannot have been the intent, and the ambiguity was in the
+document rather than in the design. It is now resolved in one direction:
+
+- Chisimba **reads** outings, log book entries, waypoints and sign-offs.
+- Chisimba **writes** exactly one kind of thing: a mentor's verification outcome.
+- The microservice remains the **only** writer of field data. Nothing is written
+  into MDB2 by Chisimba, and no field record is ever created there. Chisimba
+  sends a decision; the microservice decides what that decision means.
 
 This is the boundary that makes the rest of the design hold. If the
 microservice wrote field data into MDB2 tables then two processes would write
 one body of records, there would be no sole authority to resolve a revision
-conflict against, and rule 4's one-way replication would be abandoned. A
-read-only Chisimba costs a network hop per page and preserves every other
-guarantee.
+conflict against, and rule 4's one-way replication would be abandoned. Chisimba
+writing a verification does not break that boundary, because a verification is
+not a field record: it is an authority decision about one, and the microservice
+computes the revision, the retention and rules 17 and 19 from its own state.
+Chisimba cannot verify an entry it also wrote, and it cannot verify anything
+outside the context the request names — both are enforced by the microservice,
+which is the point of it owning the state.
+
+A read-only Chisimba costs a network hop per page and preserves every other
+guarantee; the verification exception costs one more, and keeps all of them.
 
 A projection into a Chisimba reporting schema was considered and rejected for
 the same reason: it is a second copy, and a second copy drifts. Reading the
@@ -717,21 +755,39 @@ sequence of observations is itself the record. This is the one entity where
 ordering is the content, so a revision conflict on a waypoint list is resolved
 by appending rather than by refusing.
 
-### Sightings
+### Log book entries
+
+Throughout this document "sighting" survives in the prose where it means the
+animal observation specifically — the subset of entries that make a claim about
+something seen. It is not a synonym for an entry, and an entry is not required to
+be one. Where a sentence means the record it says log book entry.
+
+A log book entry is anything a trainee writes down during an outing. That is the
+name for the whole thing, not only for the subset of entries that happen to
+record an animal. A log also holds a note, a question that came back empty and a
+reflection, and the contract is explicit that a reflection cannot be verified
+because it is not a claim about the world. Calling the whole record a sighting
+made that distinction invisible from the wire: a client could not tell from the
+name that some entries were never candidates for verification.
 
 ```text
-GET    /api/v1/outings/{id}/sightings  list, filter by status and species
-POST   /api/v1/outings/{id}/sightings  record a sighting
-PATCH  /api/v1/sightings/{id}         verify, reject, or correct, mentor or guide only
+GET    /api/v1/outings/{id}/log-book  list, filter by status and species
+POST   /api/v1/outings/{id}/log-book  record a log book entry
+PATCH  /api/v1/log-book/{id}          verify, reject, or correct, mentor or guide only
 ```
 
 Verification is a distinct permission from creation, and it is the moment the
-system teaches rather than records. A trainee records a sighting as a claim; a
-mentor or guide answers it. So a verification that corrects a species code or a
-count **requires** an explanation, and the original recorded values are
-retained beside the corrected ones permanently. A client that shows only the
-corrected value has erased the trainee's reasoning along with their mistake,
-and there is nothing left to learn from.
+system teaches rather than records. A trainee records an entry as a claim; a
+mentor or guide answers it. Verification applies to an entry that makes a claim
+about the world; an entry that does not — a reflection, a question with no
+answer — is recorded and read but is never put to a mentor, because there is
+nothing in it to be right or wrong about.
+
+So a verification that corrects a species code or a count **requires** an
+explanation, and the original recorded values are retained beside the corrected
+ones permanently. A client that shows only the corrected value has erased the
+trainee's reasoning along with their mistake, and there is nothing left to learn
+from.
 
 `needs_review` exists so a mentor can say honestly that a claim was examined
 without committing to a verdict. `rejected` means examined and found wanting,
@@ -746,15 +802,15 @@ silent overwrite cannot be represented as a completed review.
 A verification carries its own `operation_id` and is refused outright against a
 stale revision, because it is an authority decision rather than an edit.
 
-Creation accepts a sighting with no `species_code` and no `count`, because rule
-21 makes both optional until verification. Nothing about recording a sighting
+Creation accepts an entry with no `species_code` and no `count`, because rule 21
+makes both optional until verification. Nothing about recording an entry
 requires having identified it, and requiring it at capture would push the
-trainee to guess rather than to record. The response echoes the sighting with
+trainee to guess rather than to record. The response echoes the entry with
 whatever the server retained, so a client can show what was actually saved
 rather than what was typed.
 
-Verification of a sighting with no species records the sighting as observed
-without an identification. That outcome is refused as though it were a
+Verification of an entry with no species records it as observed without an
+identification. That outcome is refused as though it were a
 half-finished record: it is a complete claim, that something was there, and it
 carries `verified_at` and a verification note as any other decision does.
 
@@ -892,6 +948,69 @@ tokens, which is not the same as stopping the ones already issued.
 The epoch is bumped by Chisimba before the webhook is sent, never after, so
 that a token issued concurrently with a deactivation cannot be minted from the
 pre-revocation epoch and slip through the gap between the two.
+
+## Verification from Chisimba
+
+Chisimba's mentor module verifies log book entries on a trainee's behalf. The
+microservice owns the outcome; Chisimba supplies the decision and its reasoning.
+
+### The credential
+
+A scoped JWT, minted by Chisimba and verified locally against the published
+JWKS exactly as a user token is. It is **not** a user token and must not be
+usable as one: it carries `type: service` and a verification scope, and it names
+no user, because the mentor it acts for arrives in the request body and is
+checked against Chisimba's own records at that point.
+
+The distinction from the provisioning webhook is the point, not an
+implementation detail. That webhook proves only that Chisimba made the call.
+This token proves which service made it and that it was minted for this purpose,
+so a token captured from a log or a debugging trace cannot be replayed against
+the verification endpoint.
+
+### Two doors, and neither opens the other
+
+The microservice holds two distinct request guards and they are disjoint:
+
+- **Person routes** require a token carrying the configured scope **and** a
+  non-empty grant set. They refuse a service token outright.
+- **Service routes** require `type: service` **and** the verification scope.
+  They do not require grants and do not open a transaction.
+
+A token satisfies neither set alone. This is checked at runtime in both
+directions rather than by a type in the handler signature, because a signature
+is a promise to a reader while a runtime refusal is a fact about the request.
+
+The service guard deliberately does not open a transaction, and the reason
+matters more than the mechanism. Every rule in this document about which context
+a write belongs to is written around a token that carries one: the write context
+is the token's active context, never a value from the body. A service token
+carries none, so it cannot be given the treatment that assumes one — pretending
+otherwise would mean a second, weaker set of context rules living beside the
+first, and the second one would be the one nobody tested.
+
+### The context comes from the request
+
+Because a service token carries no context, the verification request names the
+context and the entry. The microservice checks the entry belongs to that context
+and that the named mentor exists, and it computes the outcome from its own state:
+the revision, the retention rule, and rules 17 and 19. Chisimba cannot verify an
+entry in a context it does not hold a mentor for, and cannot supply a revision
+that disagrees with the one the microservice holds.
+
+A verification that corrects a species code or a count **requires** the
+explanation, and carries its own `operation_id` so that a retry after a crash is
+recognisably the same attempt. It is refused outright against a stale revision,
+because it is an authority decision and not an edit — the same rule as a
+mentor's correction, and for the same reason.
+
+### What is not built yet
+
+The endpoints are specified here; the service side of them is not implemented,
+and the gateway does not yet mint a service token. Stating the shape here rather
+than leaving it to a later revision is deliberate: the alternative is a client
+built against a document that says verification is Chisimba's to do, and no
+mention of how it authenticates.
 
 ## Media handling
 
@@ -1285,7 +1404,7 @@ interchangeable between roles: time spent walking in first rifle is evidence of
 something different from time spent walking as a participant, and a single
 combined total would overstate both.
 
-### Wildlife sighting
+### Log book entry
 
 | Field | Type | Logbook requirement |
 |---|---|---|
@@ -1385,7 +1504,7 @@ record is that someone else can read the reasoning.
 | `context_code` | string | |
 | `outing_id` | uuid | the outing it belongs to |
 | `type` | enum | `photo`, `video`, `audio` |
-| `sighting_id`, `trail_log_id` | uuid | nullable, exactly one applies |
+| `log_book_entry_id` | uuid | the entry this media belongs to, and it must belong to the same outing the media names |
 | `filename`, `mime_type` | string | what was captured |
 | `size_bytes` | integer | bounded at initialise |
 | `captured_at` | timestamp | from the file, falling back to the device clock |
@@ -1408,8 +1527,8 @@ runtime mismatch.
 
 ```dart
 @freezed
-abstract class WildlifeSighting with _$WildlifeSighting {
-  const factory WildlifeSighting({
+abstract class LogBookEntry with _$LogBookEntry {
+  const factory LogBookEntry({
     required String id,
     required String contextCode,
     required String outingId,
@@ -1434,10 +1553,10 @@ abstract class WildlifeSighting with _$WildlifeSighting {
     String? recordedSpeciesCode,
     int? recordedCount,
     @Default(false) bool lateArrival,
-  }) = _WildlifeSighting;
+  }) = _LogBookEntry;
 
-  factory WildlifeSighting.fromJson(Map<String, dynamic> json) =>
-      _$WildlifeSightingFromJson(json);
+  factory LogBookEntry.fromJson(Map<String, dynamic> json) =>
+      _$LogBookEntryFromJson(json);
 }
 ```
 
