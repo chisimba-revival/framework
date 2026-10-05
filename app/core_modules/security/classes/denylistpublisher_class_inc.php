@@ -78,10 +78,27 @@ class DenylistPublisher
     {
         $configured = getenv('CHISIMBA_DENYLIST_REDIS');
         if ($configured === false || trim($configured) === '') {
+            // A configuration constant is accepted as well as the environment
+            // variable, for the same reason the database DSN is one: an
+            // installation's Redis address belongs with its other
+            // installation-wide settings, and requiring a container to be
+            // recreated to add it is how a setting ends up missing from the
+            // instance that matters. Neither source is a fallback for the
+            // other — an address that is wrong in one and right in the other
+            // would publish revocations somewhere nobody reads.
+            $config = dirname(dirname(dirname(__DIR__))) . '/config/restapi_inc.php';
+            if (is_readable($config)) {
+                require_once $config;
+            }
+            if (defined('KEWL_DENYLIST_REDIS') && trim((string) KEWL_DENYLIST_REDIS) !== '') {
+                return trim((string) KEWL_DENYLIST_REDIS);
+            }
             throw new RuntimeException(
-                'CHISIMBA_DENYLIST_REDIS is not set, so an epoch cannot be '
+                'No denylist Redis is configured, so an epoch cannot be '
                 . 'published and a sign-in would be refused on a change nobody '
-                . 'could see. Point it at the Redis the field services read.'
+                . 'could see. Set CHISIMBA_DENYLIST_REDIS, or define '
+                . 'KEWL_DENYLIST_REDIS as host:port, pointing at the Redis the '
+                . 'field services read.'
             );
         }
         return trim($configured);
