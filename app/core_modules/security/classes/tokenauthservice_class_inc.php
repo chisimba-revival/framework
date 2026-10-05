@@ -15,6 +15,17 @@ class TokenAuthService
     const API_KEY_PREFIX = 'chk_';          // Chisimba Key prefix
     const API_KEY_LENGTH = 32;              // 32 bytes = 64 hex chars
 
+    /**
+     * The most grants one token may carry.
+     *
+     * A cap rather than a convenience: the grant set is the read boundary, so an
+     * unbounded one makes the cost of every request unbounded too. The number is
+     * generous for a reserve, and the response to exceeding it is a refusal at
+     * token issue rather than a shorter list — a silently truncated grant set has
+     * quietly stopped describing the user.
+     */
+    const MAX_GRANTS = 32;
+
     private $db;
     private $secret;
     private $signingKeys;
@@ -171,7 +182,7 @@ class TokenAuthService
         $now = time();
         $tokenId = bin2hex(random_bytes(16));
 
-        return $this->signingKeys->sign([
+        return $this->signingKeys->sign(array_merge([
             'iss' => $this->issuer,
             'aud' => $this->audience,
             'iat' => $now,
@@ -184,7 +195,207 @@ class TokenAuthService
             // costs one claim and saves every verifier from guessing which of
             // the two names it should be reading.
             'ver' => $tokenId,
-        ]);
+        ], $this->identityClaims($userId)));
+    }
+
+    /**
+     * The claims describing what a user may reach, and in which context.
+     *
+     * Group membership is the grant set. Chisimba already holds membership, it is
+     * already populated, and inventing a second table to say the same thing would
+     * be a second answer free to disagree with the first: a user who is in a
+     * group and a user with a row in a new grants table would not be the same
+     * person, and which one the field service honoured would depend on which
+     * query ran.
+     *
+     * The consequence is that a group name IS a context code, so it becomes part
+     * of the security boundary. That is a real cost of reusing existing data and
+     * is recorded rather than hidden: 'Big 5 Reserve' and 'big5' are two
+     * contexts, and an operator who renames a group silently removes an access
+     * nobody notices until somebody cannot do their job.
+     *
+     * ctx is the active context — the one a new record is written into — and it
+     * is deliberately left EMPTY when a user holds more than one grant. Reads
+     * follow the grant set and are unaffected; writes are refused by the field
+     * service, which is the correct outcome. Picking one of several silently
+     * would put a trainee's sighting into whichever context happened to sort
+     * first, which is exactly the quiet wrongness this system exists to prevent.
+     * An operator who wants a user writing somewhere gives them one group.
+     *
+     * @param string $userId Chisimba logical user identifier
+     * @return array
+     */
+    public function identityClaims(string $userId): array
+    {
+        $groups = $this->groupsFor($userId);
+
+        return array(
+            // ctx and ctxs are separate on purpose. Using the active context as
+            // the read boundary would hide a guide's northern-reserve drives
+            // while they happen to be working in the southern one.
+            'ctx' => count($groups) === 1 ? $groups[0] : '',
+            'ctxs' => $groups,
+            // Roles are group names. Nothing downstream interprets them yet, and
+            // emitting names rather than inventing a guide/trainee/mentor mapping
+            // means that mapping can be added when something needs it instead of
+            // being guessed at now.
+            'roles' => $groups,
+            'epoch' => $this->epochFor($userId),
+            'scope' => $groups,
+        );
+    }
+
+    /**
+     * The groups a user belongs to, as context codes.
+     *
+     * @param string $userId Chisimba logical user identifier
+     * @return array
+     */
+    private function groupsFor(string $userId): array
+    {
+        $sql = 'SELECT DISTINCT g.group_define_name AS name'
+             . ' FROM tbl_perms_groupusers gu'
+             . ' JOIN tbl_perms_groups g ON g.puid = gu.group_id'
+             . ' WHERE gu.perm_user_id = ?'
+             . ' AND g.group_define_name IS NOT NULL'
+             . ' AND g.group_define_name <> ""'
+             . ' ORDER BY g.group_define_name ASC';
+
+        $statement = $this->db->prepare($sql, array('text'));
+        if (MDB2::isError($statement)) {
+            throw new RuntimeException(
+                'Grant lookup could not be prepared: ' . $statement->getMessage()
+            );
+        }
+
+        // The join column holds the numeric primary key; the logical identifier
+        // is what it should be matched on. Mixing the two is how a grant set ends
+        // up describing the wrong person.
+        $result = $statement->execute(array($this->numericIdOf($userId)));
+        if (MDB2::isError($result)) {
+            $message = $result->getMessage();
+            $statement->free();
+            throw new RuntimeException('Grant lookup failed: ' . $message);
+        }
+
+        $names = array();
+        while ($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+            $names[] = (string)$row['name'];
+        }
+        $result->free();
+        $statement->free();
+
+        if (count($names) > self::MAX_GRANTS) {
+            throw new RuntimeException(
+                'This user holds ' . count($names) . ' grants, more than the '
+                . self::MAX_GRANTS . ' a token may carry. Reduce the number of '
+                . 'groups, because a grant set that is silently truncated has '
+                . 'quietly stopped describing the user.'
+            );
+        }
+
+        return $names;
+    }
+
+    /**
+     * Resolve a logical user identifier to the numeric key the join holds.
+     *
+     * A numeric identifier is used as it stands, which is the case in every
+     * installation so far. Anything else is looked up rather than coerced:
+     * casting 'abc' to int yields 0, and user 0 would inherit whoever's grants
+     * hang off it.
+     *
+     * @param string $userId
+     * @return int
+     */
+    private function numericIdOf(string $userId): int
+    {
+        if (ctype_digit($userId)) {
+            return (int)$userId;
+        }
+
+        $statement = $this->db->prepare(
+            'SELECT puid FROM tbl_users WHERE userid = ?',
+            array('text')
+        );
+        if (MDB2::isError($statement)) {
+            throw new RuntimeException(
+                'User lookup could not be prepared: ' . $statement->getMessage()
+            );
+        }
+        $result = $statement->execute(array($userId));
+        if (MDB2::isError($result)) {
+            $message = $result->getMessage();
+            $statement->free();
+            throw new RuntimeException('User lookup failed: ' . $message);
+        }
+        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $result->free();
+        $statement->free();
+
+        if (!$row || !isset($row['puid'])) {
+            throw new RuntimeException(
+                'No user matches the identifier this token was issued for.'
+            );
+        }
+        return (int)$row['puid'];
+    }
+
+    /**
+     * The epoch in force for a user, which is zero if none was ever recorded.
+     *
+     * Zero rather than absent is deliberate: a token minted before this table
+     * existed still has to be readable, and it legitimately carries epoch 0.
+     *
+     * @param string $userId
+     * @return int
+     */
+    public function epochFor(string $userId): int
+    {
+        $statement = $this->db->prepare(
+            'SELECT epoch FROM tbl_rest_identity_epoch WHERE user_id = ?',
+            array('text')
+        );
+        if (MDB2::isError($statement)) {
+            throw new RuntimeException(
+                'Epoch lookup could not be prepared: ' . $statement->getMessage()
+            );
+        }
+        $result = $statement->execute(array($userId));
+        if (MDB2::isError($result)) {
+            $message = $result->getMessage();
+            $statement->free();
+            throw new RuntimeException('Epoch lookup failed: ' . $message);
+        }
+        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $result->free();
+        $statement->free();
+
+        return $row && isset($row['epoch']) ? (int)$row['epoch'] : 0;
+    }
+
+    /**
+     * Raise a user's identity epoch.
+     *
+     * Called when a user's access changes: deactivated, reactivated, or moved
+     * between groups with different reach. The epoch can only rise. An epoch that
+     * fell would let every token already issued at the higher value become valid
+     * again, which is the precise opposite of what an increment is for.
+     *
+     * @param string $userId
+     * @return int The new epoch
+     */
+    public function raiseEpoch(string $userId): int
+    {
+        $this->executeStatement(
+            'INSERT INTO tbl_rest_identity_epoch (user_id, epoch, updated_at)'
+            . ' VALUES (?, 1, NOW())'
+            . ' ON DUPLICATE KEY UPDATE epoch = GREATEST(epoch + 1, VALUES(epoch)),'
+            . ' updated_at = NOW()',
+            array($userId)
+        );
+
+        return $this->epochFor($userId);
     }
 
     /**
