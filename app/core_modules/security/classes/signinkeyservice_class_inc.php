@@ -43,12 +43,60 @@ class SigningKeyService
             return $this->path;
         }
 
+        // The environment first, then the installation's configuration file.
+        //
+        // The configuration file is here for the same reason the denylist
+        // address reads KEWL_DENYLIST_REDIS: an environment variable can only be
+        // changed by recreating the container, so an installation that needs a
+        // different path has to rebuild itself to get one. A setting that is
+        // awkward to change is a setting that gets left wrong, and leaving this
+        // one wrong means the service cannot start at all, because it has
+        // nowhere to write the key.
+        //
+        // Neither source is a fallback for the other. A path that is right in
+        // one and wrong in the other silently publishes a *different* key on
+        // every start, which invalidates every token in circulation while
+        // looking like an ordinary redeploy.
         $fromEnvironment = getenv('CHISIMBA_JWKS_KEY_PATH');
         if (is_string($fromEnvironment) && trim($fromEnvironment) !== '') {
             return $this->path = $fromEnvironment;
         }
 
+        $configured = self::configuredKeyPath();
+        if ($configured !== null) {
+            return $this->path = $configured;
+        }
+
         return $this->path = dirname(dirname(dirname(__DIR__))) . '/var/restapi/jwks_private.pem';
+    }
+
+    /**
+     * Read KEWL_JWKS_KEY_PATH from the installation's restapi configuration.
+     *
+     * Returns null when the constant is absent or blank, so that absence falls
+     * through to the next source rather than producing an empty path.
+     *
+     * @return string|null
+     */
+    private static function configuredKeyPath(): ?string
+    {
+        // Three levels up, not two: this file is in core_modules/<module>/classes,
+        // so reaching the docroot means climbing out of classes, out of the
+        // module, and out of core_modules. The first version of this climbed two
+        // and looked in core_modules/security/config/, which does not exist — so
+        // the constant was silently never read and the service fell through to
+        // the default path with nothing to say why.
+        $file = dirname(dirname(dirname(__DIR__))) . '/config/restapi_inc.php';
+        if (!is_readable($file)) {
+            return null;
+        }
+        require_once $file;
+        if (!defined('KEWL_JWKS_KEY_PATH')) {
+            return null;
+        }
+        $value = KEWL_JWKS_KEY_PATH;
+
+        return is_string($value) && trim($value) !== '' ? trim($value) : null;
     }
 
     /**

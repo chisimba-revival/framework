@@ -374,8 +374,31 @@ class restapi extends RestController
      */
     public function GET_auth_jwks(): void
     {
+        // Not $this->respond(), and deliberately.
+        //
+        // A JWKS is a standard document, not an application payload: RFC 7517
+        // defines it as an object whose "keys" member is at the top level, and
+        // every verifier written to that specification looks for it there.
+        // Wrapping it in this API's {data, meta} envelope produced a 200 with
+        // valid JSON that no conforming verifier could read — the field service
+        // rejected it with "publishes no usable RS256 key", and it did so
+        // without saying why, because from its side the document was simply
+        // empty.
+        //
+        // That is the shape of failure this whole feature exists to prevent: a
+        // status that says the thing worked, a body that is well-formed, and a
+        // consumer that cannot proceed. An envelope is right for a resource and
+        // wrong for a document whose meaning is defined by its own schema, so
+        // the document is published as the document.
+        //
+        // The envelope stays everywhere else. Changing this one response is not a
+        // precedent for changing the others; it is the one response that is not
+        // describing an application resource.
+        header('Content-Type: application/json; charset=UTF-8');
         header('Cache-Control: public, max-age=300');
-        $this->respond($this->auth->jwks());
+        header('X-Content-Type-Options: nosniff');
+        echo json_encode($this->auth->jwks(), JSON_UNESCAPED_SLASHES);
+        exit;
     }
 
     /**

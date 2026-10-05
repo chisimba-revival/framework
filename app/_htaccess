@@ -26,6 +26,21 @@ RewriteEngine on
 # REST API v1 - Route all /api/v1/* to restapi module
 RewriteRule ^api/v1/(.*)$ index.php?module=api/v1&action=$1 [T=application/x-httpd-php,QSA,L]
 
+# The REST API's signing key at the path verifiers expect to find it.
+#
+# JWKS is a convention, not an application route: a verifier is configured with
+# a URL by whoever integrates it, and /.well-known/jwks.json is where the
+# convention says it lives. Serving it only from /api/v1/auth/jwks would mean
+# every integration had to be told about this installation's internal routing,
+# which is the kind of detail that has to be right forever.
+#
+# This is an alias, not a second implementation. Both paths reach the same
+# handler, so there is one place the document is produced and one place it can be
+# wrong. A copy of the document at a second path would be a second thing to keep
+# correct, and a key published from two places that had drifted apart is worse
+# than one path.
+RewriteRule ^\.well-known/jwks\.json$ index.php?module=api/v1&action=auth/jwks [T=application/x-httpd-php,QSA,L]
+
 # Go to the Blog module
 RewriteRule ^blog$ index.php?module=blog [T=application/x-httpd-php]
 # Go to the Blog module - This like the above but caters for trailing slash

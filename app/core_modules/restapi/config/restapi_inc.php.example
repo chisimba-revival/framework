@@ -1,0 +1,55 @@
+<?php
+/**
+ * Example configuration for the REST API's security collaborators.
+ *
+ * Copy to config/restapi_inc.php and edit. Nothing here is read from this file
+ * unless it exists there — the path the application looks at is
+ * config/restapi_inc.php in the docroot, which is created per installation and
+ * is deliberately not kept in the repository.
+ *
+ * WHY A FILE AND NOT ONLY THE ENVIRONMENT. Both constants below can be set as
+ * environment variables (CHISIMBA_JWKS_KEY_PATH, CHISIMBA_DENYLIST_REDIS), but
+ * an environment variable cannot be changed without recreating the container. A
+ * setting that can only be changed by rebuilding is a setting that gets left
+ * wrong, and leaving the key path wrong means the service cannot start at all.
+ * The environment is read first and this file second; neither is a fallback for
+ * the other, because a value that is right in one and wrong in the other does
+ * something worse than either alone — see the notes on each.
+ *
+ * @package core_modules
+ * @subpackage restapi
+ */
+
+/**
+ * Where the private key that signs tokens is kept.
+ *
+ * Generated on first use and never replaced, so changing this path publishes a
+ * different key and invalidates every token already issued. That is a deliberate
+ * event, not something to do to fix a path.
+ *
+ * Point it at a mounted secret. The default path is inside the framework
+ * directory, which a web server usually cannot write.
+ *
+ * Neither source is a fallback for the other: a path that is right in the
+ * environment and wrong here silently publishes a *different* key on every
+ * start, which looks like an ordinary redeploy while invalidating every token in
+ * circulation.
+ */
+if (!defined('KEWL_JWKS_KEY_PATH')) {
+    define('KEWL_JWKS_KEY_PATH', '/var/data/restapi/jwks_private.pem');
+}
+
+/**
+ * The Redis the field services read their revocation denylist from.
+ *
+ * No default, deliberately. Defaulting to localhost would look like a working
+ * revocation on installations where nothing was being published, which is
+ * precisely the failure the denylist exists to prevent. With this unset and
+ * CHISIMBA_DENYLIST_REDIS unset, a sign-in is refused rather than issued a token
+ * nobody can revoke.
+ *
+ * format: host:port
+ */
+if (!defined('KEWL_DENYLIST_REDIS')) {
+    define('KEWL_DENYLIST_REDIS', 'localhost:6379');
+}
