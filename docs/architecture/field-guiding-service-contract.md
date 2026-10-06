@@ -625,12 +625,31 @@ simplification. A refresh that does not revoke the family on replay means a
 stolen refresh token mints tokens indefinitely, which is a different failure from
 the one the endpoint appears to solve.
 
-The other half of this gap is that the endpoint cannot currently be reached by a
-client that has not first obtained a CSRF token and signed abuse evidence. That
-is correct for a browser form and wrong for a Bearer-token API, where there is
-no cookie for a cross-site request to ride. It is recorded here as an open
-question rather than a decision, because the abuse evidence has a legitimate
-purpose and the remedy has not been chosen.
+The other half of this gap is that the endpoint cannot be reached without first
+obtaining a CSRF token and signed abuse evidence from
+`GET /api/v1/auth/login`.
+
+An earlier revision of this document described that as wrong for a
+Bearer-token API, "where there is no cookie for a cross-site request to ride".
+**That was wrong, and it was falsified by a check rather than argued against.**
+The endpoint sets a `PHPSESSION` cookie on both the evidence response and the
+login response, so there is an ambient credential for a cross-site request to
+ride and the CSRF token is load-bearing.
+
+The requirement is not merely present but *load-bearing twice*, and the second
+enforcement point is the reason it is not a small change to relax. The REST
+controller requires the field, and `AuthenticationApplicationService::begin()`
+independently refuses on `$this->csrf->consume(...)`. The requirement is also
+protecting real session state: a successful login establishes a pending
+authentication held in the PHP session, and an MFA challenge continues in it. So
+the cookie is not incidental to the API login — the flow is built on it.
+
+The practical consequence is that a mobile client must hold a cookie for the
+login exchange and the MFA continuation, and needs a cookie jar to do it. Every
+other call uses a Bearer token and needs none. Whether that is acceptable, and
+whether the session-backed flow should be replaced for API clients, is an open
+question rather than a decision. It touches a canonical security service and is
+not a change to make incidentally.
 
 A mobile client written against the current gateway works today. It must not
 be read as evidence that the gateway is correct.
