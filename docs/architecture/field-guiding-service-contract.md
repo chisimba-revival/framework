@@ -912,6 +912,41 @@ GET    /api/v1/competencies       list by category and level
 
 These are bundled into the offline cache and refreshed opportunistically.
 
+A retired competency is returned by default. A competency that leaves the
+curriculum stays readable and stays resolvable, because an assessment recorded
+against it is still a real assessment — and a trainee shown a gap where they
+were in fact assessed has been told something false. Clients that want only what
+may be newly assessed filter on retirement rather than inferring it from an
+absence.
+
+### Who may submit a sign-off, and who may review it
+
+Both are person routes and neither is the service door. The verification
+credential described under *Verification from Chisimba* carries a single scope
+and exists for a different purpose, so a sign-off review does not reuse it.
+
+- **Submitting** is a trainee's act and needs the ordinary scope. Submission is
+  the moment a trainee commits to having been assessed, so it is deliberately
+  not something a system or a service does on their behalf.
+- **Reviewing and approving** needs a distinct review permission, held by
+  mentors and by the administrators who operate the programme. It is a separate
+  permission rather than a stronger scope because the ability to say "this
+  evidence is good enough" is not the same ability as "this person may record
+  data", and a scheme that expressed it as one would make it impossible to let
+  someone record observations without also letting them approve their own.
+
+The two doors are refused in both directions: a token holding only the ordinary
+scope cannot review, and a token holding only the review permission cannot
+submit.
+
+### Expiry
+
+`expires_at` is derived from `submitted_at` by a configurable window, defaulting
+to thirty days. The window is configuration rather than a column default so an
+installation can change it without a schema migration, and it is recorded on the
+sign-off rather than recomputed on read, so a record cannot change its own
+deadline because the configuration did.
+
 The species catalogue is reference data rather than field data. It carries no
 `context_code` and no row-level security, because a lion is a lion in every
 reserve and there is nothing about it to isolate. A per-context catalogue would
