@@ -165,3 +165,8 @@ limitations, coordinated repository/schema changes and the branch/commit. Keep
 commits scoped. A local update is not authorisation to deploy to production;
 use the user's authorised target and scope. Do not merge unrelated development
 work just to publish a small fix or documentation change.
+
+Sites share one versioned codebase; site differences belong in configuration,
+branding and content. Audit deployed source drift before release, reconcile
+newer shared fixes into source, and verify a common manifest. Do not preserve
+site-only framework/module variants or overwrite newer deployed fixes blindly.

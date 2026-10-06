@@ -33,7 +33,9 @@ $checks = array(
         && str_contains($template, 'module-patch-card__action'),
     'block uses valid semantic controls' => str_contains($block, '<article class="module-updates__item"')
         && str_contains($block, '<button type="button"')
-        && str_contains($block, '<img class="module-updates__icon"')
+        && str_contains($block, "getObject('moduleiconresolver', 'modulecatalogue')")
+        && str_contains($block, "'module-updates__icon'")
+        && !str_contains($block, 'setModuleIcon(')
         && !str_contains($block, "createElement('image')"),
     'legacy selectors are gone' => !str_contains($script . $block, 'patchLink')
         && !str_contains($script . $block, 'linkUpdateAll')

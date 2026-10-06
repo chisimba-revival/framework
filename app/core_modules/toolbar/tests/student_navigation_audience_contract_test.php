@@ -132,8 +132,8 @@ $assert(
 );
 $assert(
     strpos($menu, "'label' => ucwords(\$this->objLanguage->code2Txt(") !== false
-        && strpos($register, 'mod_toolbar_coursehome|Current context home journey action|[-context-] home') !== false
-        && strpos($register, 'mod_toolbar_coursecontent|Current context content journey action|[-context-] content') !== false,
+        && stripos($register, 'mod_toolbar_coursehome|Current context home journey action|[-context-] home') !== false
+        && stripos($register, 'mod_toolbar_coursecontent|Current context content journey action|[-context-] content') !== false,
     'Shared journey labels must preserve configured context terminology.'
 );
 

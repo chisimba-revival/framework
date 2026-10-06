@@ -55,3 +55,18 @@ heights and aligned edges, including when text wraps on smaller screens. Check
 actual browser dimensions at desktop and mobile widths; sharing a button class
 alone does not establish consistent sizing. Preserve visible focus and accessible
 names for icon-only actions.
+
+## Task-oriented forms
+
+Use `chisimba-publishing-layout` for an editable main column and a narrow action /
+guidance panel. Group related fields into compact form cards. Optional groups can
+use semantic `details` with `chisimba-form-card` or `chisimba-form-disclosure`.
+Use `chisimba-form-field--brief` on short-answer fields so their textarea respects
+its declared `rows` instead of the long-answer minimum. Keep long descriptions
+full-width; pair genuinely short related fields with `chisimba-form-grid`.
+
+For an inline editor among action buttons, place a semantic `details` element
+with `chisimba-action-disclosure` first in a `chisimba-cluster`. When open it
+occupies the full row, so subsequent actions wrap beneath it in DOM order.
+Compose its form with `chisimba-form chisimba-flow` and explicit field labels;
+flow spacing also separates dynamically appended draft notices from Save.

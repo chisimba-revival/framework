@@ -324,10 +324,12 @@ $formatDescriptions = array(
     ),
     'microlearning' => $this->objLanguage->languageText(
         'mod_contextadmin_format_microlearning_help',
+        'contextadmin',
         'Short, focused learning items designed for brief study sessions.'
     ),
     'masterclass' => $this->objLanguage->languageText(
         'mod_contextadmin_format_masterclass_help',
+        'contextadmin',
         'A short, focused class on a specific topic, typically one to three hours in duration.'
     ),
 );

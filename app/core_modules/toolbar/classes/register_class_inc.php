@@ -195,6 +195,16 @@ class register extends ChisimbaObject
             }
         }
 
+        if (!empty($regData['SITE_NAV'])) {
+            foreach ($regData['SITE_NAV'] as $declaration) {
+                list($category, $access, $linkContext) = $this->splitMenuDeclaration($declaration, $isContext);
+                $rightId = $access === array() ? $defaultRight
+                    : $this->canonicalRightForAccessList($moduleId, 'site:' . $category, $access);
+                $this->sql('site_' . strtolower($category), $moduleId,
+                    $access === array() ? $isAdmin : 0, $rightId, $linkContext);
+            }
+        }
+
         if (!empty($regData['PAGE'])) {
             foreach ($regData['PAGE'] as $declaration) {
                 list($page, $linkContext) = $this->splitScopedDeclaration(
