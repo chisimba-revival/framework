@@ -206,6 +206,89 @@ class TokenAuthService
     }
 
     /**
+     * The scope a service token carries, and the only one this class issues.
+     *
+     * It is a constant rather than a parameter because the scope decides which
+     * door the token opens at the far end, and a caller that could pass an
+     * arbitrary scope would be a caller that could mint a token for a door this
+     * class has no reason to open. Adding a second scope is a change to this
+     * constant and to the service that needs it, not an argument.
+     */
+    const SERVICE_SCOPE = 'field:verify';
+
+    /**
+     * How long a service token lives.
+     *
+     * Short, and deliberately not configurable from outside. A service token is
+     * minted and used within a single verification and is not stored by anyone,
+     * so there is nothing for a long lifetime to buy. The cost of a long-lived
+     * one would be paid at the far end: it would have to be revocable, and the
+     * field service's revocation is keyed on a subject and an epoch, neither of
+     * which a service has.
+     */
+    const SERVICE_TOKEN_TTL = 300;
+
+    /**
+     * Mint a token for a service rather than for a person.
+     *
+     * This is NOT generateJWT with a different type. generateJWT merges
+     * identityClaims(), which is the user's grant set, active context, roles and
+     * identity epoch — and a service has none of those. Minting through that path
+     * would produce a token naming the service while carrying somebody's
+     * contexts and scopes, which is a token that looks like two things at once
+     * and would be honoured as whichever the receiving door happened to check.
+     *
+     * So the claim set is written out here, and the absence of ctxs, ctx, roles
+     * and epoch is the point rather than an omission. The field service's service
+     * door requires no grants and opens no transaction precisely because a
+     * service token carries none, and a token that quietly carried some would
+     * break that agreement in a way that only shows up as a write landing in a
+     * context the service never named.
+     *
+     * The subject names the service, never a person. A verification names the
+     * mentor it acts for in the request body, where the field service checks it
+     * against Chisimba's records; naming one here would be the service asserting
+     * an identity it has no business asserting.
+     *
+     * @param string $serviceName Stable identifier of the calling service
+     * @param int|null $ttl Override for the service token lifetime
+     * @return string
+     */
+    public function issueServiceToken(string $serviceName, ?int $ttl = null): string
+    {
+        $serviceName = trim($serviceName);
+        if ($serviceName === '') {
+            // Refused rather than defaulted to a name. A token whose subject is
+            // an empty string is a token whose subject is anybody, and the log
+            // would record a service that cannot be named.
+            throw new InvalidArgumentException(
+                'A service token requires a service name.'
+            );
+        }
+
+        $now = time();
+        $tokenId = bin2hex(random_bytes(16));
+        $lifetime = ($ttl === null || $ttl <= 0)
+            ? self::SERVICE_TOKEN_TTL : $ttl;
+
+        return $this->signingKeys->sign([
+            'iss' => $this->issuer,
+            'aud' => $this->audience,
+            'iat' => $now,
+            'exp' => $now + $lifetime,
+            'sub' => $serviceName,
+            'type' => 'service',
+            // The scope is an ARRAY, which is what the field service requires.
+            // A space-separated string is the OAuth spelling of the same thing
+            // and would be read as one scope called "field:verify x", which is a
+            // scope nothing holds.
+            'scope' => [self::SERVICE_SCOPE],
+            'jti' => $tokenId,
+            'ver' => $tokenId,
+        ]);
+    }
+
+    /**
      * The claims describing what a user may reach, and in which context.
      *
      * Group membership is the grant set. Chisimba already holds membership, it is
