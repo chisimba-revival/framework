@@ -7478,3 +7478,8 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-form .chisimba-choice-cards > label > span:first-child { display:flex; gap:.6rem; align-items:baseline; }
 .chisimba-form .chisimba-choice-cards input[type=radio] { flex:0 0 auto; width:auto; }
 .chisimba-form .chisimba-choice-cards .chisimba-choice-card-price { font-size:1.6rem; font-weight:700; }
+
+/* Imported heading fragments share the following content card. */
+.chisimba-content-cards > .chisimba-content-card { min-width: 0; padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--chisimba-border); border-radius: .75rem; background: var(--chisimba-surface); }
+.chisimba-content-card > .chisimba-content-block:first-child { margin-top: 0; }
+.chisimba-content-card > .chisimba-content-block:last-child { margin-bottom: 0; }
