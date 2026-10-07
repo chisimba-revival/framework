@@ -7483,3 +7483,8 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-content-cards > .chisimba-content-card { min-width: 0; padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--chisimba-border); border-radius: .75rem; background: var(--chisimba-surface); }
 .chisimba-content-card > .chisimba-content-block:first-child { margin-top: 0; }
 .chisimba-content-card > .chisimba-content-block:last-child { margin-bottom: 0; }
+
+/* Compact, text-labelled status for management cards. */
+.chisimba-status-badge { display: inline-flex; align-items: center; padding: .25rem .65rem; border: 1px solid var(--chisimba-border); border-radius: 999px; background: var(--chisimba-surface); color: var(--chisimba-text); font-weight: 600; }
+.chisimba-content-block--hero:not(:has(figure)),
+.chisimba-content-block--reverse-hero:not(:has(figure)) { grid-template-columns: minmax(0, 1fr); }
