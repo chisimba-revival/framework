@@ -7503,3 +7503,14 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-offer-popover :is(p, h2, h3, ul, dl) { margin-block: 0; }
 .chisimba-offer-popover .chisimba-details { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--chisimba-space-2); }
 .chisimba-offer-popover .chisimba-details dd { margin: 0; }
+
+/* Reusable compact record card with a preview beside its details. */
+.chisimba-media-summary { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.5rem;align-items:center; }
+.chisimba-media-summary > div { min-width:0; }
+.chisimba-media-summary__preview { width:7rem;text-align:center;color:var(--chisimba-text-muted,#52616b); }
+.chisimba-media-summary__preview img { display:block;width:100%;height:9rem;object-fit:contain; }
+@media(max-width:600px) {
+    .chisimba-media-summary { gap:1rem; }
+    .chisimba-media-summary__preview { width:4.5rem; }
+    .chisimba-media-summary__preview img { height:6rem; }
+}
