@@ -7514,3 +7514,10 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
     .chisimba-media-summary__preview { width:4.5rem; }
     .chisimba-media-summary__preview img { height:6rem; }
 }
+
+/* Image labels stay attached to the media, mirrored towards the outer card edge. */
+.chisimba-media-badged { position: relative; }
+.chisimba-media-badged__labels { position: absolute; inset-block-start: .75rem; inset-inline-start: .75rem; display: flex; flex-wrap: wrap; gap: .5rem; max-width: calc(100% - 1.5rem); }
+.chisimba-media-badged__labels .chisimba-status-badge { background: var(--chisimba-text); color: var(--chisimba-surface); border-color: var(--chisimba-surface); }
+.chisimba-content-block--image-right .chisimba-media-badged__labels,
+.chisimba-content-block--reverse-hero .chisimba-media-badged__labels { inset-inline-start: auto; inset-inline-end: .75rem; }
