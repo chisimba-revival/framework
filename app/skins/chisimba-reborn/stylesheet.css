@@ -7488,3 +7488,18 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-status-badge { display: inline-flex; align-items: center; padding: .25rem .65rem; border: 1px solid var(--chisimba-border); border-radius: 999px; background: var(--chisimba-surface); color: var(--chisimba-text); font-weight: 600; }
 .chisimba-content-block--hero:not(:has(figure)),
 .chisimba-content-block--reverse-hero:not(:has(figure)) { grid-template-columns: minmax(0, 1fr); }
+
+/* Bounded optional offers use native, light-dismiss popovers. */
+.chisimba-offer-popover {
+    box-sizing: border-box;
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+}
+.chisimba-offer-popover img { max-height: 9rem; width: auto; object-fit: contain; }
+.chisimba-offer-popover:not(:popover-open) { display: none; }
+
+.chisimba-offer-popover { gap: var(--chisimba-space-2); }
+.chisimba-offer-popover :is(p, h2, h3, ul, dl) { margin-block: 0; }
+.chisimba-offer-popover .chisimba-details { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--chisimba-space-2); }
+.chisimba-offer-popover .chisimba-details dd { margin: 0; }
