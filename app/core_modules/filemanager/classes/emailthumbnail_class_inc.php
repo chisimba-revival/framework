@@ -15,7 +15,7 @@ class emailthumbnail extends ChisimbaObject
   if(!in_array($mime,['image/jpeg','image/png','image/gif','image/webp'],true))return null;
   $size=getimagesize($source);
   if(!$size||$size[0]*$size[1]>20000000)return null;
-  $scale=min(1,600/$size[0],600/$size[1]);$width=max(1,(int)round($size[0]*$scale));$height=max(1,(int)round($size[1]*$scale));
+  $scale=min(0.5,600/$size[0],600/$size[1]);$width=max(1,(int)round($size[0]*$scale));$height=max(1,(int)round($size[1]*$scale));
   // The standard_ namespace is already supported by the file-derivative guard.
   $relative='filemanager_thumbnails/large/standard_'.$id.'.jpg';$target=rtrim($base,'/').'/'.$relative;
   $existing=is_file($target)?getimagesize($target):false;
