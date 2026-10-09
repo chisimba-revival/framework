@@ -464,7 +464,7 @@ class filemanager extends controller {
     private function __filepicker()
     {
         $policy = (string) $this->getParam('policy', '');
-        if (!in_array($policy, array('image', 'audio', 'video', 'pdf', 'zip', 'assignment'), true)) {
+        if (!in_array($policy, array('image', 'audio', 'video', 'pdf', 'zip', 'assignment', 'download'), true)) {
             throw new InvalidArgumentException($this->objLanguage->languageText('mod_filemanager_picker_unknown_policy', 'filemanager'));
         }
 

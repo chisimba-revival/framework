@@ -46,6 +46,12 @@ class sitenavigation extends ChisimbaObject
             if ($this->getObject('modules', 'modulecatalogue')->checkIfRegistered('userdetails')) {
                 $html .= '<li>' . $this->link($this->text('profilelink'), 'user', $this->uri(null, 'userdetails')) . '</li>';
             }
+            if ($this->getObject('modules', 'modulecatalogue')->checkIfRegistered('shop')) {
+                $html .= '<li>' . $this->link(
+                    $this->getObject('language', 'language')->code2Txt('mod_shop_my_purchases', 'shop'),
+                    'download', $this->uri(array('action' => 'purchases'), 'shop')
+                ) . '</li>';
+            }
             if ($this->getObject('modules', 'modulecatalogue')->checkIfRegistered('shop')
                 && $this->getObject('shopservice', 'shop')->canManage()) {
                 $html .= '<li>' . $this->link(

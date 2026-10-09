@@ -34,12 +34,29 @@ class filedelivery extends ChisimbaObject
             http_response_code(403);
             exit;
         }
+        $this->sendFile($file,$relative);
+    }
+
+    /** Owning modules authorise their own paid/private resources; identifiers come from registered files. */
+    public function sendOwnedFile($fileId, $module, $policyClass, $resourceId)
+    {
+        $file=$this->getObject('dbfile','filemanager')->getFile($fileId);
+        if (!is_array($file) || !$this->getObject($policyClass,$module)->mayDownloadFile($file,$resourceId)) {
+            header('Cache-Control: private, no-store'); http_response_code(403); exit;
+        }
+        $this->sendFile($file,$file['path'],true);
+    }
+
+    private function sendFile(array $file, $relative, $secureOnly=false)
+    {
+        header('Cache-Control: private, no-store, max-age=0');
+        header('X-Content-Type-Options: nosniff');
         $config = $this->getObject('altconfig', 'config');
         $secure = $this->getObject('dbsysconfig', 'sysconfig')->getValue('SECUREFODLER', 'filemanager');
         $path = self::resolve($secure, $relative);
         // Transitional fallback for verified records not yet migrated. Web-server
         // routing must guard the legacy URL before public copies are removed.
-        if ($path === false) $path = self::resolve($config->getcontentBasePath(), $relative);
+        if ($path === false && !$secureOnly) $path = self::resolve($config->getcontentBasePath(), $relative);
         if ($path === false) { http_response_code(404); exit; }
         $handle = fopen($path, 'rb');
         if ($handle === false) { http_response_code(404); exit; }
@@ -54,7 +71,7 @@ class filedelivery extends ChisimbaObject
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($path) ?: 'application/octet-stream';
         header('Content-Type: ' . $mime);
         // Active uploaded documents must not execute in the application's origin.
-        $inline = preg_match('~^(image/(png|jpeg|gif|webp|avif)|audio/|video/|application/pdf$)~', $mime);
+        $inline = !$secureOnly && preg_match('~^(image/(png|jpeg|gif|webp|avif)|audio/|video/|application/pdf$)~', $mime);
         header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment')
             . "; filename*=UTF-8''" . rawurlencode($file['filename']));
         if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
