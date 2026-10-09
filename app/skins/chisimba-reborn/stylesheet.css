@@ -3130,6 +3130,9 @@ h5.featureboxheader,
 
 /* BEGIN CHISIMBA-REBORN NOTIFICATION COMPONENT */
 
+/* Component display must respect the native hidden state. */
+.chisimba-notification[hidden] { display: none; }
+
 .chisimba-notification {
     --chisimba-notification-accent: var(--chisimba-info);
     --chisimba-notification-background: var(--chisimba-primary-soft);

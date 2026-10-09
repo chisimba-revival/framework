@@ -724,7 +724,15 @@ class filemanager extends controller {
 
         // To do: Build in Security on whether user can view file
         if (file_exists($this->objConfig->getSiteRootPath() . '/' . $filePath)) {
-            //echo $filePath;
+            $this->loadClass('filedelivery', 'filemanager');
+            if (filedelivery::mayCachePublicImageRedirect($file, $folder, $_SERVER['REQUEST_METHOD'] ?? 'GET')) {
+                // Cache this public redirect briefly, not protected file responses.
+                // Remove the page/session headers emitted earlier by the engine.
+                header_remove('Pragma');
+                header_remove('Expires');
+                header_remove('Last-Modified');
+                header('Cache-Control: private, max-age=300');
+            }
             header("Location:{$filePath}");
         } else {
             return "access_denied_tpl.php";

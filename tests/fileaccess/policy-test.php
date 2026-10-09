@@ -1,7 +1,7 @@
 <?php
 /** Behavioural regression tests for the shared read policy. */
 class ChisimbaObject {}
-require dirname(__DIR__,3).'/framework/app/core_modules/filemanager/classes/filereadpolicy_class_inc.php';
+require dirname(__DIR__,2).'/app/core_modules/filemanager/classes/filereadpolicy_class_inc.php';
 set_error_handler(function($n,$s){throw new RuntimeException($s);});
 $count=0;
 function check($expected,$actual,$name){global $count;$count++;if($expected!==$actual)throw new RuntimeException($name);}

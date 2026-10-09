@@ -92,6 +92,8 @@ class systext_installscripts extends dbtable
      */
     public function postinstall($version)
     {
+        // Modern updates add missing core terms in the facet; preserve all custom mappings.
+        if (version_compare((string)$version, '1.915', '>=')) return;
         // remove data added with earlier patch method
         $types = $this->facet->listSystemTypes();
         foreach ($types as $type)

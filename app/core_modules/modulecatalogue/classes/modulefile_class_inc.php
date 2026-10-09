@@ -456,6 +456,7 @@ class modulefile extends ChisimbaObject {
                         case 'NEWSIDEMENU':         //Add a new sidemenu
                         case 'NEWTOOLBARCATEGORY':     //Add a new toolbar category
                         case 'MENU_CATEGORY':         //when the menu should display a link to this
+                        case 'SITE_NAV':            //public site toolbar links
                         case 'SIDEMENU':             //the side menus in the content page
                         case 'PAGE':                 //lecturer or admin page links
                         case 'SYSTEM_TYPE':         //system type for text abstraction _Kevin Cyster
