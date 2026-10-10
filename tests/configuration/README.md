@@ -237,7 +237,8 @@ Successful preference mutations and database reconciliation were verified with
 disposable fixtures/doubles, not against personal settings or live module records.
 A complete fresh database installation remains a release check.
 
-No production deployment or commit was made. Framework/modules branch:
+At the end of local validation, no production deployment or commit had been made.
+The subsequent release is recorded below. Framework/modules branch:
 `release/consolidation-20260930`. Existing unrelated work remains intact. Passing
 these gates does not claim compatibility with uninspected external extensions,
 all deployment filesystems or every historical PEAR Config format.
@@ -251,3 +252,48 @@ Existing configuration mode/owner/group preservation is unchanged. Run
 `php tests/configuration/configuration_acl_test.php` on a filesystem with POSIX
 ACL support and `setfacl` installed. This checks private new files/locks under
 inherited ACLs and preservation of an existing file's mode.
+
+## KengaLearn release completed — 10 October 2026
+
+Committed and published on `release/consolidation-20260930`: framework
+`4673a7723` (native events, tag clouds and configuration), framework `6e101d2ee`
+(the inherited-ACL correction), and modules `9cdde04de` (RTT preference caller).
+Unrelated local authentication and application changes were excluded.
+
+KengaLearn runs `/srv/kengalearn/releases/release-pear-20261010-113711/ch` and
+was reopened at 11:39:44 UTC (13:39:44 SAST). Release preparation started at
+11:37:11 UTC; the maintenance window was within that interval. The previous
+release is `/srv/kengalearn/releases/release-knowledgemap-public-20261009-062913/ch`.
+Verified database and persistent-file backups, the manifest and operational
+records are in `/srv/kengalearn/backups/pear-20261010-113711` on the server.
+
+The 42-path source audit found no newer deployed fixes to overwrite. Three
+production files were older than the shared source (modulefile, toolbar
+registration and shared stylesheet); the release uses the canonical committed
+versions. All payload hashes match their source commits.
+
+Production-image checks passed: 13 fixture suites, changed-PHP syntax checks,
+and normal module updates twice on an isolated database/configuration copy.
+All 107 protected rehearsal tables were unchanged. A disposable fixture with
+production-matching ACLs and ownership passed after the ACL fix. On production,
+all 121 protected tables were unchanged across the normal module updates;
+config.xml and catalogue.xml retained their pre-release bytes. Native engine,
+configuration aliases, catalogue, language and event checks passed without
+loading PEAR Config. Normal registration installed User Configuration 0.812 as
+a declared canvas dependency. RTT was not installed or activated.
+
+Authenticated Chrome checks passed for preferences list/add, quick/full Help,
+Escape/focus return, site-name editor, catalogue and refresh controls, Knowledge
+Maps, groups and canvas administration. The preference form passed the 390px
+width check; desktop sizing was restored. No browser warning/error logs or new
+PHP diagnostics were observed. Anonymous preferences, Sysconfig and catalogue
+requests returned login forms. Public home/login readiness passed after reopening.
+No personal preferences or site settings were saved for production testing.
+
+The database abstraction remains MDB2. No schema change was introduced by this
+release; normal module/language registration metadata was updated. Translation
+migration, full fresh-database installation and final vendor removal remain
+separate gates. If rollback is needed after native preference saves, restore the
+matching INI files with the old reader; do not blindly restore a database snapshot
+over subsequent user work. The release scripts deliberately leave maintenance on
+for diagnosis if a post-switch check fails.

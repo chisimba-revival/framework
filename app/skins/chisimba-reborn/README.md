@@ -70,3 +70,12 @@ with `chisimba-action-disclosure` first in a `chisimba-cluster`. When open it
 occupies the full row, so subsequent actions wrap beneath it in DOM order.
 Compose its form with `chisimba-form chisimba-flow` and explicit field labels;
 flow spacing also separates dynamically appended draft notices from Save.
+
+## Tag clouds
+
+The utilities `tagcloud` service renders `.chisimba-tag-cloud` as a semantic,
+wrapping list. Five `chisimba-tag-cloud__weight-*` classes express relative
+frequency; this root skin owns their sizes, spacing and link colour. Keep tag
+links underlined and keyboard focus visible. Do not add per-cloud inline CSS or
+age-based fading in a canvas. Tag selection, counts and access remain the owning
+module's responsibility.

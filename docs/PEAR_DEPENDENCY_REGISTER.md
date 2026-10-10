@@ -1,6 +1,9 @@
 # PEAR dependency register
 
-Status: source audit refreshed 10 October 2026; local runtime mounts inspected.
+Status: native events, tag clouds and configuration released to KengaLearn on
+10 October 2026; framework `6e101d2ee`, modules `9cdde04de`. Release evidence and
+rollback details are in `tests/configuration/README.md`. Translation/database
+replacement and final vendor removal remain outstanding.
 See the dated assessment below for corrected scope and replacement sequencing. A direct load proves that
 the framework can use a component; it does not prove that the corresponding
 module is installed, enabled or reached in KengaLearn production. Do not
@@ -297,5 +300,8 @@ is resolved. Registered list/editor/Help, draft-recovery and canvas-handoff brow
 checks pass, including 390px layout and keyboard focus return. Native runtime and
 preference-controller regressions pass again; anonymous access requires login;
 recent PHP diagnostics are clear. Site/catalogue hashes remain unchanged.
-There was no production deployment, full database installation or live catalogue
-reconciliation. Database reconciliation in the migration fixtures is doubled.
+At that local-validation stage there had been no production deployment, full
+database installation or live catalogue reconciliation. The later KengaLearn
+release is recorded at the top of this document and in the test README. Catalogue
+refresh reconciliation in the migration fixtures remains doubled; normal module
+upgrades were separately rehearsed against an isolated database and applied live.
