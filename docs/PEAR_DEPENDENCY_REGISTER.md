@@ -3,7 +3,9 @@
 Status: native events, tag clouds and configuration released to KengaLearn on
 10 October 2026; framework `6e101d2ee`, modules `9cdde04de`. Release evidence and
 rollback details are in `tests/configuration/README.md`. Translation/database
-replacement and final vendor removal remain outstanding.
+replacement and final vendor removal remain outstanding for production. Native
+translation/locale source and local validation are recorded below and in
+`tests/translation/README.md`.
 See the dated assessment below for corrected scope and replacement sequencing. A direct load proves that
 the framework can use a component; it does not prove that the corresponding
 module is installed, enabled or reached in KengaLearn production. Do not
@@ -43,7 +45,7 @@ has been changed. Keep the deployment and database migration as separate commits
 | Component | Direct caller(s) | Exposure to establish | Direction |
 | --- | --- | --- | --- |
 | Mail / Mail_mime | `core_modules/mail/classes/mailer_class_inc.php` | Whether legacy `mail` remains registered and sends production messages | Keep isolated; route new sending through Communications. Retire only after delivery, attachment and bounce/rollback tests |
-| Translation2 / Translation2_Admin | `core_modules/language/classes/languageconfig_class_inc.php` | Active locale administration and fallback paths | Separate high-regression localisation migration |
+| Translation2 / Translation2_Admin / I18Nv2 | No identified active first-party loader after Language 1.613 | Native source locally validated; production release and external-extension audit outstanding | Retain vendors until release/cleanup gates pass; see translation test README |
 | XML/RPC | `core_modules/packages/classes/rpcserver_class_inc.php`; `core_modules/api/classes/xmlrpcapi_class_inc.php`; filter helpers | **F-006 update, 30 September:** KengaLearn's `api` and `packages` routes return HTTP 410 without loading services. ADM is retired. Backing classes and shared libraries remain; other sites require separate verification. | Do not restore legacy endpoints. Inventory internal/filter consumers before deleting XML/RPC libraries. Future integrations should use explicitly authenticated and authorised HTTP/JSON services. |
 | HTML_BBCodeParser | `core_modules/utilities/classes/bbcodeparser_class_inc.php` | Which rich-text inputs select this parser and the output sanitisation chain | Retire after content migration and sanitised rendering tests |
 | Archive_Tar | `core_modules/modulecatalogue/controller.php` | Module package upload/install feature reachability | Replace with a maintained archive implementation only after archive traversal and package signature policy are defined |
@@ -305,3 +307,21 @@ database installation or live catalogue reconciliation. The later KengaLearn
 release is recorded at the top of this document and in the test README. Catalogue
 refresh reconciliation in the migration fixtures remains doubled; normal module
 upgrades were separately rehearsed against an isolated database and applied live.
+
+### Fifth implementation — native translation and locale lists, 10 October 2026
+
+Language 1.613 replaces Translation2 composition and I18Nv2 runtime use with
+native lookup, canonical-connection storage and historical UTF-8 locale data.
+It preserves terminology and HTML-entity boundaries while repairing Unicode,
+zero-value and English-fallback defects. Checked multilingual writes preserve
+other languages, roll back failures and serialise concurrent insertion; explicit
+language administration retains tables unless destructive removal is requested.
+
+7,328 installed English items match legacy output. Native lookup/facade/locale,
+real isolated MariaDB failure/concurrency tests, authentication/catalogue suites,
+installed engine and local browser checks pass. Full contracts and limitations
+are in `tests/translation/README.md`. No production release or installed language
+record rewrite occurred. The old language-admin UI is not revived by this work.
+Keep Translation2/I18Nv2 vendor code for release/extension audits and historical
+oracle tests; the locale JSON attribution/licence must survive later cleanup.
+MDB2-to-PDO remains separate, including native language write-lock semantics.
