@@ -1,11 +1,12 @@
 <?php
 /**
- * Single-use, expiring CSRF tokens stored through Chisimba's session API.
+ * Session-bound CSRF for authenticated forms; expiring tokens before login.
  *
- * Only a hash is retained in the session. Validation consumes the token,
- * whether it succeeds or fails, so a submitted credential cannot be replayed.
+ * Authenticated tokens survive editing, retries and concurrent tabs. They prove
+ * request origin, not transaction uniqueness: mutations must use their domain
+ * revision/idempotency checks. Anonymous tokens retain single-use validation.
  *
- * @author Derek Keats
+ * @author Derek Keats <derek@dkeats.com>
  */
 class CsrfTokenService
 {
@@ -15,8 +16,10 @@ class CsrfTokenService
     private $backend;
     private $clock;
     private $lifetime;
+    private $identity;
+    const AUTHENTICATED_KEY = 'nativeAuthenticatedFormCsrf';
 
-    public function __construct($backend, $lifetime = 900, $clock = null)
+    public function __construct($backend, $lifetime = 900, $clock = null, $identity = null)
     {
         foreach (array('getSession', 'setSession', 'unsetSession') as $method) {
             if (!is_object($backend) || !method_exists($backend, $method)) {
@@ -28,6 +31,10 @@ class CsrfTokenService
         if ($clock !== null && !is_callable($clock)) {
             throw new InvalidArgumentException('CSRF clock must be callable.');
         }
+        if ($identity !== null && !is_callable($identity)) {
+            throw new InvalidArgumentException('CSRF identity resolver must be callable.');
+        }
+        $this->identity = $identity;
         $this->backend = $backend;
         $this->lifetime = max(60, min(3600, (int) $lifetime));
         $this->clock = $clock;
@@ -35,18 +42,22 @@ class CsrfTokenService
 
     public function issue($context)
     {
+        $identity = $this->authenticatedIdentity();
+        if ($identity !== null) return $this->authenticatedToken($context, $identity, true);
         return $this->issueWithExpiry($context, $this->now() + $this->lifetime);
     }
 
     /**
-     * Issue a single-use token whose lifetime is bounded by the PHP session.
+     * Issue a token whose lifetime is bounded by the PHP session.
      *
-     * This is intended for logout controls on pages that may remain open for
-     * longer than the normal form-token lifetime. The token is still stored
-     * only as a hash and disappears when the session is destroyed.
+     * Authenticated callers use the same login-bound form contract as issue().
+     * Without an authenticated identity resolver, retain the legacy single-use
+     * session token used by standalone/prelogin consumers.
      */
     public function issueForSession($context)
     {
+        $identity = $this->authenticatedIdentity();
+        if ($identity !== null) return $this->authenticatedToken($context, $identity, true);
         return $this->issueWithExpiry($context, PHP_INT_MAX);
     }
 
@@ -71,6 +82,11 @@ class CsrfTokenService
     public function consume($context, $token)
     {
         $context = $this->normaliseContext($context);
+        $identity = $this->authenticatedIdentity();
+        if ($identity !== null && is_string($token)) {
+            $expected = $this->authenticatedToken($context, $identity, false);
+            if ($expected !== null && hash_equals($expected, $token)) return true;
+        }
         $tokens = $this->purgeExpired($this->load());
         $records = $this->recordsForContext($tokens, $context);
         $submittedHash = is_string($token)
@@ -97,6 +113,27 @@ class CsrfTokenService
             $this->backend->unsetSession(self::SESSION_KEY);
         }
         return $matched;
+    }
+
+    private function authenticatedIdentity()
+    {
+        $identity = $this->identity === null ? null : call_user_func($this->identity);
+        return is_string($identity) && $identity !== '' ? $identity : null;
+    }
+
+    /** One secret per login, with context-separated tokens and constant storage. */
+    private function authenticatedToken($context, $identity, $create)
+    {
+        $context = $this->normaliseContext($context);
+        $record = $this->backend->getSession(self::AUTHENTICATED_KEY, null);
+        if (!is_array($record) || ($record['identity'] ?? null) !== $identity
+            || !is_string($record['secret'] ?? null)
+            || !preg_match('/^[a-f0-9]{64}$/D', $record['secret'])) {
+            if (!$create) return null;
+            $record = array('identity' => $identity, 'secret' => bin2hex(random_bytes(32)));
+            $this->backend->setSession(self::AUTHENTICATED_KEY, $record);
+        }
+        return hash_hmac('sha256', 'form:' . $context, hex2bin($record['secret']));
     }
 
     private function load()

@@ -64,7 +64,16 @@ final class NativeAuthWebCompositionFactory
     ) {
         self::requireSessionBackend($sessionBackend);
 
-        $csrf = new CsrfTokenService($sessionBackend);
+        $csrf = new CsrfTokenService($sessionBackend, 900, null, function () use ($sessions) {
+            if (!$sessions->isAuthenticated()) return null;
+            // Existing logged-in sessions acquire an epoch without a forced logout.
+            $epoch = $sessions->get('nativeAuthFormEpoch', '');
+            if (!is_string($epoch) || $epoch === '') {
+                $epoch = bin2hex(random_bytes(32));
+                $sessions->set('nativeAuthFormEpoch', $epoch);
+            }
+            return $sessions->getUserId() . ':' . $epoch;
+        });
         $pending = new PendingAuthenticationService($sessionBackend);
         $factors = new Mdb2MfaRepository($connection);
         $totp = new TotpService();
