@@ -215,7 +215,7 @@ Installed config.xml and catalogue.xml hashes still match the baseline.
 ## Cutover and completed local registration
 
 Deploy the coordinated framework changes and RTT caller together. Apply normal
-module updates for config 2.006, sysconfig 1.623, modulecatalogue 3.140,
+module updates for config 2.007, sysconfig 1.623, modulecatalogue 3.140,
 userparamsadmin 0.812, canvas 0.047, toolbar 1.812 and rtt 1.1010. No schema change
 is introduced by this migration. Back up configuration/preferences before release.
 **Rollback must restore the matching INI backups as well as old code**: the old
@@ -241,3 +241,13 @@ No production deployment or commit was made. Framework/modules branch:
 `release/consolidation-20260930`. Existing unrelated work remains intact. Passing
 these gates does not claim compatibility with uninspected external extensions,
 all deployment filesystems or every historical PEAR Config format.
+
+## KengaLearn release filesystem gate (10 October 2026)
+
+The production-matching default ACL fixture exposed that `umask(0077)` alone
+can create mode-0660 files on an ACL-enabled directory. The writer now explicitly
+sets mode 0600 on the empty temporary file before writing bytes, and on its lock.
+Existing configuration mode/owner/group preservation is unchanged. Run
+`php tests/configuration/configuration_acl_test.php` on a filesystem with POSIX
+ACL support and `setfacl` installed. This checks private new files/locks under
+inherited ACLs and preservation of an existing file's mode.

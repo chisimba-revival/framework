@@ -64,6 +64,11 @@ class ChisimbaConfigurationFile
             if (!$stream) {
                 throw new RuntimeException('Configuration temporary file is unavailable.');
             }
+            // Default directory ACLs can override umask. Restrict the empty file
+            // before writing any configuration bytes; restore old mode below.
+            if (!$this->checked(function () use ($temporary) { return chmod($temporary, 0600); })) {
+                throw new RuntimeException('Configuration temporary permissions are unavailable.');
+            }
             $offset = 0;
             while ($offset < strlen($bytes)) {
                 $written = $this->writeChunk($stream, substr($bytes, $offset));
@@ -127,7 +132,14 @@ class ChisimbaConfigurationFile
             } finally {
                 umask($mask);
             }
-            if (!$lock || !is_file($lockPath) || fstat($lock)['nlink'] !== 1 || !$this->checked(function () use ($lock) { return flock($lock, LOCK_EX); })) {
+            if (!$lock || !is_file($lockPath) || fstat($lock)['nlink'] !== 1) {
+                throw new RuntimeException('Configuration lock is unavailable.');
+            }
+            // Locks also inherit default ACLs: umask alone cannot make them private.
+            if ((fstat($lock)['mode'] & 0777) !== 0600 && !$this->checked(function () use ($lockPath) { return chmod($lockPath, 0600); })) {
+                throw new RuntimeException('Configuration lock permissions are unavailable.');
+            }
+            if (!$this->checked(function () use ($lock) { return flock($lock, LOCK_EX); })) {
                 throw new RuntimeException('Configuration lock is unavailable.');
             }
             return $lock;
