@@ -105,6 +105,10 @@ class security extends controller
             'password' => $this->text('word_password', 'system'),
             'remember' => $this->text('mod_security_rememberme'),
             'submit' => $this->text('word_login', 'system'),
+            'forgot_password' => $this->text(
+                'mod_registration_service_forgot_password',
+                'registration-service'
+            ),
             'failure' => $messageKey === null
                 ? ''
                 : $this->text($messageKey),

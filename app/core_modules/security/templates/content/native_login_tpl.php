@@ -66,6 +66,12 @@ $esc = function ($value) {
           echo $esc($labels['remember']);
       ?></label>
     </p>
-    <button type="submit"><?php echo $esc($labels['submit']); ?></button>
+    <div class="chisimba-cluster">
+      <button type="submit"><?php echo $esc($labels['submit']); ?></button>
+      <a href="<?php echo $esc($this->uri(
+          array('action' => 'forgotpassword'),
+          'registration-service'
+      )); ?>"><?php echo $esc($labels['forgot_password']); ?></a>
+    </div>
   </form>
 </main>
