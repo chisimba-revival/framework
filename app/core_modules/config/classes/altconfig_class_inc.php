@@ -45,18 +45,58 @@
  * @link      http://avoir.uwc.ac.za
  * @see       core
  */
+require_once __DIR__ . '/configurationdocument.php';
+
 class altconfig extends ChisimbaObject {
+
+    private $siteDocument;
+    private $siteDestination;
+    private $propertiesDocument;
+    private $propertiesDestination;
+    private $lastWriteError;
+
+    /** Safe diagnostic code/message; never contains configuration contents. */
+    public function getLastWriteError() { return $this->lastWriteError; }
+
+    public function getRevision() { return $this->siteDocument()->revision(); }
+
+    private function siteDocument($allowMissing = false)
+    {
+        $this->_path = $this->_path ?? 'config/';
+        $path = ($this->_path === '' ? '.' : rtrim($this->_path, '/')) . '/config.xml';
+        if ($path[0] !== '/') { $path = getcwd() . '/' . $path; }
+        if ($this->siteDocument === null || $this->siteDestination !== $path) {
+            $this->siteDocument = null;
+            $this->_root = null;
+            $document = new ChisimbaConfigurationDocument($path, 'Settings', $allowMissing);
+            $this->siteDocument = $document;
+            $this->siteDestination = $path;
+            $this->_root = $document->root;
+        }
+        return $this->siteDocument;
+    }
+
+    private function propertiesDocument($path = null, $allowMissing = false)
+    {
+        $path = $path === null && $this->propertiesDestination !== null
+            ? $this->propertiesDestination
+            : rtrim($path ?? $this->_path ?? 'config', '/') . '/sysconfig_properties.xml';
+        if ($path[0] !== '/') { $path = getcwd() . '/' . $path; }
+        if ($this->propertiesDocument === null || $this->propertiesDestination !== $path) {
+            $this->propertiesDocument = null;
+            $this->_property = null;
+            $this->propertiesDestination = $path;
+            $document = new ChisimbaConfigurationDocument($path, 'sysConfigSettings', $allowMissing);
+            $this->propertiesDocument = $document;
+            $this->propertiesDestination = $path;
+            $this->_property = $document->root;
+        }
+        return $this->propertiesDocument;
+    }
 
     // State populated during initialisation and service calls.
     public $SettingsDirective;
 
-    /**
-     * The pear config object
-     *
-     * @access public
-     * @var    string
-     */
-    protected $_objPearConfig;
 
     /**
      * The path of the files to be read or written
@@ -123,20 +163,8 @@ class altconfig extends ChisimbaObject {
      * @throws customException Exception description (if any) ...
      */
     public function __construct($objEngine = null, $moduleName = null) {
-        // instantiate object
-        $mepath = $_SERVER["SCRIPT_FILENAME"];
-        $mepath = str_replace('index.php', '', $mepath);
-        ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $mepath.'lib/pear/');
-        
-        try {
-            if (! class_exists ( 'Config.php', true )) {
-                require_once 'Config.php';
-            }
-            $this->_objPearConfig = new Config ( );
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
-        }
+        // Documents own parsing and persistence; no PEAR bootstrap is needed.
+
     }
 
     /**
@@ -153,127 +181,25 @@ class altconfig extends ChisimbaObject {
      *
      */
     public function readConfig($config, $property) {
-        try {
-            // read configuration data and get reference to root
-            if (! isset ( $this->_path ))
-                $this->_path = "config/";
-            if (isset ( $this->_root )) {
-                return $this->_root;
-            }
-            $this->_root = & $this->_objPearConfig->parseConfig ( "{$this->_path}config.xml", $property );
-            if (PEAR::isError ( $this->_root )) {
-                //throw new Exception('word_read_fail');
-                log_debug ( $this->_root->getMessage () );
-                echo $this->_root->getMessage () . "<br />";
-                die ( "Error in config.xml!" );
-            }
-            return $this->_root;
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
+        // Historically the first argument is ignored: this service owns config.xml.
+        if (!in_array(strtoupper($property), array('XML', 'PHPARRAY'), true)) {
+            throw new RuntimeException('Unsupported configuration format.');
         }
-
-    }
-
-    /**
-     * Method to wirte config options.
-     * For use when writing configuration options
-     *
-     * @access public
-     * @param  string  values   to be saved
-     * @param  string  property used to set property value of incoming config string
-     *                          $property can either be:
-     *                          1. PHPArray
-     *                          2. XML
-     * @return boolean TRUE for success / FALSE fail.
-     */
-
-    /**
-     * PHP 8 compatibility: normalize legacy PEAR XML output.
-     *
-     * The legacy PEAR Config writer emits adjacent top-level elements.
-     * Modern XML parsers require one document root.
-     */
-    private function _writeConfigAndNormalize()
-    {
-        $arguments = func_get_args();
-
-        $result = call_user_func_array(
-            array($this->_objPearConfig, 'writeConfig'),
-            $arguments
-        );
-
-        $configFile = $this->_path . 'config.xml';
-
-        if (
-            isset($arguments[0])
-            && is_string($arguments[0])
-            && basename($arguments[0]) !== 'config.xml'
-        ) {
-            return $result;
-        }
-
-        $this->_normalizeConfigXml($configFile);
-
-        return $result;
-    }
-
-    /**
-     * Ensure a PEAR-generated configuration file has one XML root element.
-     */
-    private function _normalizeConfigXml($configFile)
-    {
-        if (!is_file($configFile)) {
-            return false;
-        }
-
-        $configXml = @file_get_contents($configFile);
-
-        if ($configXml === false || trim($configXml) === '') {
-            return false;
-        }
-
-        libxml_use_internal_errors(true);
-        $validXml = simplexml_load_string($configXml);
-        libxml_clear_errors();
-
-        if ($validXml !== false) {
-            return true;
-        }
-
-        $configBody = preg_replace(
-            '/^\s*<\?xml[^>]*\?>\s*/i',
-            '',
-            $configXml
-        );
-
-        $configXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-            . "<Settings>\n"
-            . trim($configBody)
-            . "\n</Settings>\n";
-
-        return @file_put_contents($configFile, $configXml) !== false;
+        return $this->siteDocument()->root;
     }
 
     public function writeConfig($values, $property) {
-        // set xml root element
+        $this->lastWriteError = null;
         try {
-            $this->_objPearConfig = new Config ( );
-            $this->_options = array ('name' => 'Settings' );
-            $this->_objPearConfig->parseConfig ( $values, "PHPArray" );
-            if (! isset ( $this->_path ))
-                $this->_path = "config/";
-            if (file_exists ( $this->_path . 'config.xml' )) {
-                unlink ( $this->_path . 'config.xml' );
-            }
-            $this->_writeConfigAndNormalize( "{$this->_path}config.xml", $property, $this->_options );
-            $this->readConfig ( '', 'XML' );
+            if (strtoupper($property) !== 'XML') { throw new RuntimeException('Unsupported configuration format.'); }
+            $document = $this->siteDocument(true);
+            $document->save($document->fromArray($values));
+            $this->_root = $document->root;
             return true;
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
+        } catch (RuntimeException $e) {
+            $this->lastWriteError = $e->getMessage();
+            return false;
         }
-
     }
 
     /**
@@ -283,20 +209,14 @@ class altconfig extends ChisimbaObject {
      * @return boolean
      */
     public function appendToConfig($newsettings) {
+        $this->lastWriteError = null;
         try {
-            $this->_objPearConfig = new Config ( );
-            $configfile = $this->readConfig ( FALSE, 'PHPArray' );
-            $arr = $configfile->toArray ();
-            $a2 = $arr ['root'] ['Settings'];
-            $final = array_merge ( $a2, $newsettings );
-            //write back the file...
-            $this->writeConfig ( $final, 'XML', FALSE );
-
-            return TRUE;
-
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
+            $values = $this->readConfig('', 'XML')->toArray()['root']['Settings'];
+            if (!is_array($newsettings)) { throw new RuntimeException('Configuration values must be an array.'); }
+            return $this->writeConfig(array_merge($values, $newsettings), 'XML');
+        } catch (RuntimeException $e) {
+            $this->lastWriteError = $e->getMessage();
+            return false;
         }
     }
 
@@ -309,9 +229,7 @@ class altconfig extends ChisimbaObject {
      */
     public function getItem($pname) {
         try {
-            if ($this->_root == NULL) {
-                $this->readConfig ( FALSE, 'XML' );
-            }
+            $this->readConfig ( FALSE, 'XML' );
             if (!is_object($this->_root)) {
                 return FALSE;
             }
@@ -346,23 +264,20 @@ class altconfig extends ChisimbaObject {
      * @return string $value The value of the config parameter
      */
     public function setItem($pname, $pvalue) {
+        $this->lastWriteError = null;
         try {
-            //Read conf
-            if ($this->_root == NULL) {
-                $this->readConfig ( FALSE, 'XML' );
-            }
-            //Lets get the parent node section first
-            $Settings = & $this->_root->getItem ( "section", "Settings" );
-            //Now onto the directive node
-            //check to see if one of them isset to search by
-            $this->SettingsDirective = & $Settings->getItem ( "directive", "{$pname}" );
-            $this->SettingsDirective->setContent ( $pvalue );
-            $result = $this->objConf->writeConfig ();
-            return $result;
-
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
+            $document = $this->siteDocument();
+            $candidate = $document->copy();
+            $settings = $candidate->getItem('section', 'Settings');
+            $directive = $settings->getItem('directive', $pname);
+            if (!$directive) { throw new RuntimeException('Configuration directive is missing.'); }
+            $directive->setContent($pvalue);
+            $document->save($candidate);
+            $this->_root = $document->root;
+            return true;
+        } catch (RuntimeException $e) {
+            $this->lastWriteError = $e->getMessage();
+            return false;
         }
     }
 
@@ -379,21 +294,10 @@ class altconfig extends ChisimbaObject {
      * @return boolean TRUE for success / FALSE fail .
      *
      */
-    public function readProperties($path, $property) {
-        // read configuration data and get reference to root
-        try {
-            if (! isset ( $path ))
-                $path = "config";
-            $this->_property = & $this->_objPearConfig->parseConfig ( "{$path}/sysconfig_properties.xml", $property );
-            if ($this->_property != TRUE) {
-                return FALSE;
-            } else {
-                return $this->_property;
-            }
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
-        }
+    public function readProperties($path = null, $property = 'XML') {
+        if (strtoupper($property) !== 'XML') { return false; }
+        try { return $this->propertiesDocument($path)->root; }
+        catch (RuntimeException $e) { return false; }
     }
 
     /**
@@ -415,20 +319,16 @@ class altconfig extends ChisimbaObject {
      *
      */
     public function writeProperties($propertyValues, $property) {
+        $this->lastWriteError = null;
         try {
-            // set xml root element
-            $this->_options = array ('name' => 'sysConfigSettings' );
-            $this->_property = & $this->_objPearConfig->parseConfig ( $propertyValues, "PHPArray" );
-            $this->_writeConfigAndNormalize( "config/sysconfig_properties.xml", $property, $this->_options );
-            if ($this->_objPearConfig != TRUE) {
-                throw new Exception ( 'word_read_fail' );
-            } else {
-                return true;
-            }
-
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
+            if (strtoupper($property) !== 'XML') { throw new RuntimeException('Unsupported configuration format.'); }
+            $document = $this->propertiesDocument(null, true);
+            $document->save($document->fromArray($propertyValues));
+            $this->_property = $document->root;
+            return true;
+        } catch (RuntimeException $e) {
+            $this->lastWriteError = $e->getMessage();
+            return false;
         }
     }
 
@@ -440,31 +340,17 @@ class altconfig extends ChisimbaObject {
      * @var string  $pvalue The value of the config parameter
      * @var boolean $isAdminConfigurable TRUE | FALSE Whether the parameter is admin configurable or not
      */
-    public function updateParam($pname, $pmodule, $pvalue, $isAdminConfigurable = False) {
+    public function updateParam($pname, $pmodule, $pvalue, $isAdminConfigurable = false, $expectedRevision = null) {
         try {
-            //Lets get the parent node section first
-            $Settings = & $this->_root->getItem ( "section", "Settings" );
-            //Now onto the directive node
-            //check to see if one of them isset to search by
-            if (isset ( $pname )) {
-                $SettingsDirective = & $Settings->getItem ( "directive", "{$pname}" );
+            if ($expectedRevision !== null && (!is_string($expectedRevision)
+                || !hash_equals($this->getRevision(), $expectedRevision))) {
+                $this->lastWriteError = 'Configuration changed; reload before saving.';
+                return false;
             }
-            //finally unearth whats inside
-            if (! $SettingsDirective) {
-                return FALSE;
-            } else {
-                $SettingsDirective->setContent ( $pvalue );
-                $path = "config/";
-                if (($path !== false) && (file_exists ( $path . 'config.xml' ))) {
-                    unlink ( $path . 'config.xml' );
-                    $value = $this->_writeConfigAndNormalize();
-                    return $value;
-                }
-            }
-
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
+            return $this->setItem($pname, $pvalue);
+        } catch (RuntimeException $e) {
+            $this->lastWriteError = $e->getMessage();
+            return false;
         }
     }
 
@@ -476,34 +362,10 @@ class altconfig extends ChisimbaObject {
      * @return string $value The value of the config parameter
      */
     public function getParam($pname, $pmodule = null) {
-        try {
-            //Read conf
-            if (! isset ( $this->_property )) {
-                $read = $this->readProperties ( 'XML' );
-            }
-            if ($read == FALSE) {
-                return $read;
-            }
-            //Lets get the parent node section first
-            $Settings = & $this->_property->getItem ( "section", "sysConfigSettings" );
-            //Now onto the directive node
-            //check to see if one of them isset to search by
-            if (isset ( $pname ))
-                $SettingsDirective = & $Settings->getItem ( "directive", "{$pname}" );
-            if (isset ( $pmodule ))
-                $SettingsDirective = & $Settings->getItem ( "directive", "{$pmodule}" );
-                //finally unearth whats inside
-            if (! $SettingsDirective) {
-                return FALSE;
-            } else {
-                $value = $SettingsDirective->getContent ();
-                return $value;
-            }
-
-        } catch ( Exception $e ) {
-            throw new customException ( $e->getMessage () );
-            exit ();
-        }
+        if ($this->_property === null && $this->readProperties() === false) { return false; }
+        $settings = $this->_property->getItem('section', 'sysConfigSettings');
+        $directive = $settings->getItem('directive', $pmodule ?? $pname);
+        return $directive ? $directive->getContent() : false;
     }
 
     /**
@@ -537,8 +399,7 @@ class altconfig extends ChisimbaObject {
      * @return the    name of the site as string
      */
     public function getSiteName() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -557,17 +418,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setSiteName($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-            //return $this->getValue("sitename");
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITENAME" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
+        return $this->setItem('KEWL_SITENAME', $value);
     }
 
     /**
@@ -577,8 +428,7 @@ class altconfig extends ChisimbaObject {
      * @return the    name of the systemtype as string
      */
     public function getSystemType() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -596,16 +446,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setSystemType($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-            //return $this->getValue("sitename");
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SYSTEM_TYPE" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
+        return $this->setItem('KEWL_SYSTEM_TYPE', $value);
     }
 
     /**
@@ -615,8 +456,7 @@ class altconfig extends ChisimbaObject {
      * @return the    short name of the site as string
      */
     public function getinstitutionShortName() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -635,16 +475,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setinstitutionShortName($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITENAME" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
+        return $this->setItem('KEWL_INSTITUTION_SHORTNAME', $value);
     }
 
     /**
@@ -654,8 +485,7 @@ class altconfig extends ChisimbaObject {
      * @return the    short name of the institution as string
      */
     public function getinstitutionName() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -674,16 +504,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setinstitutionName($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_INSTITUTION_NAME" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_INSTITUTION_NAME;
+        return $this->setItem('KEWL_INSTITUTION_NAME', $value);
     }
 
     /**
@@ -693,8 +514,7 @@ class altconfig extends ChisimbaObject {
      * @return the    email address for the site as string
      */
     public function getsiteEmail() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -713,16 +533,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setsiteEmail($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITEEMAIL" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_SITEEMAIL;
+        return $this->setItem('KEWL_SITEEMAIL', $value);
     }
 
     /**
@@ -732,8 +543,7 @@ class altconfig extends ChisimbaObject {
      * @return the    script timout in seconds
      */
     public function getsystemTimeout() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -752,16 +562,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setsystemTimeout($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SYSTEMTIMEOUT" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_SYSTEMTIMEOUT;
+        return $this->setItem('KEWL_SYSTEMTIMEOUT', $value);
     }
 
     /**
@@ -771,8 +572,7 @@ class altconfig extends ChisimbaObject {
      * @return the    system prelogin module settings
      */
     public function getPrelogin() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -789,17 +589,8 @@ class altconfig extends ChisimbaObject {
      * @access public
      * @return the    system prelogin module settings
      */
-    public function setPrelogin() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_PRELOGIN_MODULE" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
+    public function setPrelogin($value) {
+        return $this->setItem('KEWL_PRELOGIN_MODULE', $value);
     }
 
     /**
@@ -809,8 +600,7 @@ class altconfig extends ChisimbaObject {
      * @return the    the site path, normally / as string
      */
     public function getSitePath() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -829,8 +619,7 @@ class altconfig extends ChisimbaObject {
      * @return the    the site root, normally / as string
      */
     public function getsiteRoot() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -850,16 +639,7 @@ class altconfig extends ChisimbaObject {
      * @return bool true / false
      */
     public function setsiteRoot($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITE_ROOT" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_SITE_ROOT;
+        return $this->setItem('KEWL_SITE_ROOT', $value);
     }
 
     /**
@@ -870,8 +650,7 @@ class altconfig extends ChisimbaObject {
      *                leading and trailing forward slash (/)  as string
      */
     public function getdefaultSkin() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -890,17 +669,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setdefaultSkin($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DEFAULT_SKIN" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-        // KEWL_SKINROOT;
+        return $this->setItem('KEWL_DEFAULT_SKIN', $value);
     }
 
     /**
@@ -911,8 +680,7 @@ class altconfig extends ChisimbaObject {
      *                leading and trailing forward slash (/)  as string
      */
     public function getskinRoot() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -932,18 +700,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE/FALSE
      */
     public function setskinRoot($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-            //Lets get the parent node section first
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SKIN_ROOT" );
-        //finally unearth whats inside
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-        // KEWL_DEFAULT_SKIN;
+        return $this->setItem('KEWL_SKIN_ROOT', $value);
     }
 
     /**
@@ -953,8 +710,7 @@ class altconfig extends ChisimbaObject {
      * @return the    name of the default language as string
      */
     public function getdefaultLanguage() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -973,17 +729,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setdefaultLanguage($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DEFAULT_LANGUAGE" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-        // KEWL_DEFAULT_LANGUAGE;
+        return $this->setItem('KEWL_DEFAULT_LANGUAGE', $value);
     }
 
     /**
@@ -993,8 +739,7 @@ class altconfig extends ChisimbaObject {
      * @return the    abbreviation of the default language as string
      */
     public function getdefaultLanguageAbbrev() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1014,16 +759,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setdefaultLanguageAbbrev($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DEFAULT_LANGUAGE_ABBREV" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_DEFAULT_LANGUAGE_ABBREV;
+        return $this->setItem('KEWL_DEFAULT_LANGUAGE_ABBREV', $value);
     }
 
     /**
@@ -1033,8 +769,7 @@ class altconfig extends ChisimbaObject {
      * @return default extension for banners (jpg, gif, png) as string
      */
     public function getbannerExtension() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1054,17 +789,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setbannerExtension($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_BANNER_EXT" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-        // KEWL_BANNER_EXT;
+        return $this->setItem('KEWL_BANNER_EXT', $value);
     }
 
     /**
@@ -1074,8 +799,7 @@ class altconfig extends ChisimbaObject {
      * @return default site root path as string
      */
     public function getsiteRootPath() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1094,17 +818,7 @@ class altconfig extends ChisimbaObject {
      * @return bool   true / false
      */
     public function setsiteRootPath($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_SITEROOT_PATH" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-        // KEWL_SITEROOT_PATH;
+        return $this->setItem('KEWL_SITEROOT_PATH', $value);
     }
 
     /**
@@ -1115,17 +829,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE   or FALSE
      */
     public function setallowSelfRegister($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_ALLOW_SELFREGISTER" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-        // KEWL_ALLOW_SELFREGISTER;
+        return $this->setItem('KEWL_ALLOW_SELFREGISTER', $value);
     }
 
     /**
@@ -1134,8 +838,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE or FALSE
      */
     public function getallowSelfRegister() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1158,8 +861,7 @@ class altconfig extends ChisimbaObject {
         if ($moduleType !== "POSTLOGIN" && $moduleType !== "PRELOGIN") {
             $moduleType="POSTLOGIN";
         }
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1180,16 +882,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE   or FALSE
      */
     public function setdefaultModuleName($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_POSTLOGIN_MODULE" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
+        return $this->setItem('KEWL_POSTLOGIN_MODULE', $value);
     }
 
     /**
@@ -1199,8 +892,7 @@ class altconfig extends ChisimbaObject {
      * @Returns whether LDAP functionality should be used
      */
     public function getuseLDAP() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
         if (function_exists ( "ldap_connect" )) {
             //Lets get the parent node section first
             $Settings = & $this->_root->getItem ( "section", "Settings" );
@@ -1225,17 +917,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE   or FALSE
      */
     public function setuseLDAP($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "LDAP_USED" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
-
+        return $this->setItem('LDAP_USED', $value);
     }
 
     /**
@@ -1259,8 +941,7 @@ class altconfig extends ChisimbaObject {
      * @returns string $code
      */
     public function getCountry() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1286,8 +967,7 @@ class altconfig extends ChisimbaObject {
      * @return base   path for user files
      */
     public function getcontentBasePath() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1305,8 +985,7 @@ class altconfig extends ChisimbaObject {
      * @access public
      */
     public function getcontentPath() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1325,16 +1004,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE   or FALSE
      */
     public function setcontentPath($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_CONTENT_PATH" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_CONTENT_PATH;
+        return $this->setItem('KEWL_CONTENT_PATH', $value);
     }
 
     /**
@@ -1344,8 +1014,7 @@ class altconfig extends ChisimbaObject {
      * @return content root path
      */
     public function getcontentRoot() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1365,16 +1034,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE   or FALSE
      */
     public function setcontentRoot($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_CONTENT_PATH" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-        // KEWL_CONTENT_PATH;
+        return $this->setItem('KEWL_CONTENT_PATH', $value);
     }
 
     /**
@@ -1384,8 +1044,7 @@ class altconfig extends ChisimbaObject {
      * @return geterror_reporting setting
      */
     public function geterror_reporting() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1404,8 +1063,7 @@ class altconfig extends ChisimbaObject {
      * @returns string
      */
     public function getNoXML() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1435,8 +1093,7 @@ class altconfig extends ChisimbaObject {
      * @return getenable adm setting
      */
     public function getenable_dbabs() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
 
         //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
@@ -1462,8 +1119,7 @@ class altconfig extends ChisimbaObject {
      * @return getenable APC setting
      */
     public function getenable_apc() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1487,8 +1143,7 @@ class altconfig extends ChisimbaObject {
      * @return getenable adm setting
      */
     public function getcache_ttl() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1512,8 +1167,7 @@ class altconfig extends ChisimbaObject {
      * @return getenable langcache setting
      */
     public function getlangcache() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1537,8 +1191,7 @@ class altconfig extends ChisimbaObject {
      * @return getenable adm setting
      */
     public function getProxy() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1562,8 +1215,7 @@ class altconfig extends ChisimbaObject {
      * @return string
      */
     public function getModulePath() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
 
         try {
             //Lets get the parent node section first
@@ -1590,8 +1242,7 @@ class altconfig extends ChisimbaObject {
      * @return string
      */
     public function getModuleURI() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
 
         try {
             //Lets get the parent node section first
@@ -1618,15 +1269,7 @@ class altconfig extends ChisimbaObject {
      * @return TRUE   or FALSE
      */
     public function seterror_reporting($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_ERROR_REPORTING" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
+        return $this->setItem('KEWL_ERROR_REPORTING', $value);
     }
 
     /**
@@ -1636,25 +1279,7 @@ class altconfig extends ChisimbaObject {
      * @return $bool  - TRUE /FALSE
      */
     public function setDsn($value) {
-        //parse the dsn to an array for Oracle values
-        $dsnparsed = $this->parseDSN ( $value );
-
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DB_DSN" );
-        $SettingsDirective = & $Settings->getItem ( "directive", "CHISIMBA_DB_SERVER" );
-        $SettingsDirective = & $Settings->getItem ( "directive", "CHISIMBA_DB_PROTOCOL" );
-        $SettingsDirective = & $Settings->getItem ( "directive", "CHISIMBA_DB_USER" );
-        $SettingsDirective = & $Settings->getItem ( "directive", "CHISIMBA_DB_PASS" );
-        $SettingsDirective = & $Settings->getItem ( "directive", "CHISIMBA_DB_PORT" );
-
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-        return $bool;
-
+        return $this->setItem('KEWL_DB_DSN', $value);
     }
 
     /**
@@ -1664,8 +1289,7 @@ class altconfig extends ChisimbaObject {
      * @return $Dsn
      */
     public function getDsn() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1684,8 +1308,7 @@ class altconfig extends ChisimbaObject {
      * @return $Dsn2
      */
     public function getDsn2() {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node
@@ -1705,24 +1328,14 @@ class altconfig extends ChisimbaObject {
      * @return $bool  - TRUE /FALSE
      */
     public function setDsn2($value) {
-        if (! is_object ( $this->_root ))
-            $this->_root = &$this->readConfig ( '', 'XML' );
-        $Settings = & $this->_root->getItem ( "section", "Settings" );
-        //Now onto the directive node
-        $SettingsDirective = & $Settings->getItem ( "directive", "KEWL_DB2_DSN" );
-        //finally save value
-        $SettingsDirective->setContent ( $value );
-        $bool = $this->_writeConfigAndNormalize();
-
-        return $bool;
+        return $this->setItem('KEWL_DB2_DSN', $value);
     }
 
     /**
      * Return the stable site name used for cache and temporary-file names.
      */
     public function serverName() {
-        if (! is_object ( $this->_root ))
-            $this->_root = $this->readConfig ( '', 'XML' );
+        $this->_root = $this->readConfig ( '', 'XML' );
             //Lets get the parent node section first
         $Settings = & $this->_root->getItem ( "section", "Settings" );
         //Now onto the directive node

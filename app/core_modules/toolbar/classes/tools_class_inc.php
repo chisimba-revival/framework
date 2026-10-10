@@ -370,7 +370,7 @@ class tools extends ChisimbaObject
         $moduleInfo = $this->moduleCheck->getRow ( 'module_id', $module );
         if (empty ( $moduleInfo ) && ! ($module == '_default' || $module == 'postlogin' || $module == '')) {
             $noModule = $this->objLanguage->code2Txt ( 'mod_toolbar_modnotfound', 'toolbar', array ('module' => "<b>$module</b>" ) );
-            return $noModule;
+            return $this->renderBreadcrumbNavigation('<span>' . $noModule . '</span>');
         }
         // If the module is the default module
         if ($module == '_default' || $module == 'postlogin' || $module == '') {

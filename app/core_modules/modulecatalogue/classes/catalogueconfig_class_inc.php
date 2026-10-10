@@ -1,7 +1,7 @@
 <?php
 /**
  * Class for building and reading the xml catalogue used by modulecatalogue.
- * It is based as adaptor around the PEAR Config Object
+ * It uses the shared native configuration document boundary
  *
  * This class will provide the catalogue configuration for module registration
  *
@@ -42,7 +42,7 @@ $GLOBALS['kewl_entry_point_run']){
 }
 
 /**
- * Adaptor Pattern around the PEAR::Config Object
+ * Native configuration adapter for module discovery
  *
  *
  * @category  Chisimba
@@ -56,18 +56,10 @@ $GLOBALS['kewl_entry_point_run']){
 
 //grab the pear::Config properties
 // include class
-require_once 'Config.php';
+require_once dirname(__DIR__, 2) . '/config/classes/configurationdocument.php';
 
 class catalogueconfig extends ChisimbaObject {
 
-    /**
-     * The pear config object
-     *
-     * @access public
-     * @var    string
-    */
-
-    protected $_objPearConfig;
 
     /**
      * The path of the files to be read or written
@@ -121,7 +113,6 @@ class catalogueconfig extends ChisimbaObject {
     {
         // instantiate object
         try{
-            $this->_objPearConfig = new Config();
             $this->objConfig = $this->getObject('altconfig','config');
             $this->objLanguage = $this->getObject('language','language');
         }catch (Exception $e){
@@ -145,30 +136,22 @@ class catalogueconfig extends ChisimbaObject {
      */
     protected function readCatalogue($property)
     {
+        if (strtoupper($property) !== 'XML') { throw new RuntimeException('Unsupported catalogue format.'); }
+        $document = new ChisimbaConfigurationDocument($this->cataloguePath(), 'settings');
+        return $this->_root = $document->root;
+    }
 
-        try {
-            // read catalogue data and get reference to root
-            $this->_path = $this->objConfig->getsiteRootPath();
-            if (preg_match('/\/$/',$this->_path)) {
-                $this->_path .= "config/";
-            } else {
-                $this->_path .= "/config/";
-            }
-            if (file_exists($this->_path.'catalogue.xml')) {
-                $this->_root =& $this->_objPearConfig->parseConfig("{$this->_path}catalogue.xml",$property);
-            } else {
-                throw new customException("Could not find catalogue.xml: looked in {$this->_path}catalogue.xml");
-            }
-            if (PEAR::isError($this->_root)) {
-                throw new customException("Can not read Catalogue. Please make sure that your site_path is set correctly\nlooked in {$this->_path}catalogue.xml");
-            }
-            return $this->_root;
-        }catch (Exception $e)
-        {
-            $this->errorCallback('Caught exception: '.$e->getMessage());
-            exit();
-        }
+    private function cataloguePath()
+    {
+        return rtrim($this->objConfig->getsiteRootPath(), '/') . '/config/catalogue.xml';
+    }
 
+    /** Preserve SimpleXML return values for existing catalogue consumers. */
+    private function catalogueXml()
+    {
+        $root = $this->readCatalogue('XML');
+        $xml = new ChisimbaConfigurationXml();
+        return simplexml_load_string($xml->render($root, 'settings', 'UTF-8'), 'SimpleXMLElement', LIBXML_NONET);
     }
     /**
      * Method to wirte catalogue options.
@@ -182,161 +165,45 @@ class catalogueconfig extends ChisimbaObject {
      */
     public function writeCatalogue()
     {
-        // set xml root element
-        try {
-            $objModFile = $this->getObject('modulefile','modulecatalogue');
-            $xmlStr = "<?xml version='1.0' encoding='ISO-8859-1'?>\n<settings xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='catalogue.xsd'>\n";
-            $this->_path = "{$this->objConfig->getsiteRootPath()}/config/";
-
-            //$xmlStr .= "    <catalogue>\n";
-            //$categories = $objModFile->getCategories();
-            //if (is_array($categories)) {
-            //        foreach ($categories as $cat) {
-            //            $xmlStr .= "        <category>$cat</category>\n";
-            //        }
-            //}
-            //$xmlStr .= "    </catalogue>\n";
-            $modules = $objModFile->getLocalModuleList();
-            $id = 001;
-            $discoveredModuleIds = array();
-            $scanComplete = true;
-            foreach ($modules as $mod) {
-                if ($mod) {
-                    $xmlStr .= "    <module>
-        <id>$id</id>\n";
-                    $reg = $objModFile->readRegisterFile($objModFile->findregisterfile($mod));
-                    if (is_array($reg)) {
-                        $from = $this->objLanguage->languageText('phrase_frommodule');
-                        if (isset($reg['MODULE_ID'])){
-                            $module_id = htmlentities($reg['MODULE_ID']);
-                            $discoveredModuleIds[] = (string) $reg['MODULE_ID'];
-                        } else {
-                            $module_id = 'unknown';
-                            log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_ID");
-                        }
-                        $module_icon = isset($reg['MODULE_ICON'])
-                            ? htmlentities($reg['MODULE_ICON']) : 'puzzle';
-                        if (isset($reg['MODULE_NAME'])){
-                            $module_name = htmlentities($reg['MODULE_NAME']);
-                        } else {
-                            $module_name = $module_id;
-                        }
-                        if (isset($reg['MODULE_AUTHORS'])){
-                            $module_authors = htmlentities($reg['MODULE_AUTHORS']);
-                        } else {
-                            $module_authors = '';
-                            log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_AUTHORS $from $module_name");
-                        }
-                        if (isset($reg['MODULE_RELEASEDATE'])){
-                            $module_releasedate = htmlentities($reg['MODULE_RELEASEDATE']);
-                        } else {
-                            $module_releasedate = '';
-                            log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_RELEASEDATE $from $module_name");
-                        }
-                        if (isset($reg['MODULE_DESCRIPTION'])){
-                            $module_description = htmlentities($reg['MODULE_DESCRIPTION']);
-                        } else {
-                            $module_description = '';
-                            log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_DESCRIPTION $from $module_name");
-                        }
-                        if (isset($reg['MODULE_VERSION'])){
-                            $module_version = htmlentities($reg['MODULE_VERSION']);
-                        } else {
-                            $module_version = '';
-                            log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_VERSION $from $module_name");
-                        }
-                        if (isset($reg['TAGS'])){
-                            $module_tags = '';
-                            foreach($reg['TAGS'] as $tags)
-                            {
-                                $module_tags .= htmlentities($tags).", ";
-                            }
-                        } else {
-                            $module_tags = '';
-                            // log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_TAGS $from $module_name");
-                        }
-                        if (isset($reg['DEPENDS'])){
-                            $module_deps = '';
-                            foreach($reg['DEPENDS'] as $deps)
-                            {
-                                $module_deps .= htmlentities($deps).", ";
-                            }
-                        } else {
-                            $module_deps = '';
-                            // log_debug($this->objLanguage->languageText('mod_modulecatalogue_nodeps','modulecatalogue').": MODULE_DEPENDS $from $module_name");
-                        }
-                        if (isset($reg['MODULE_STATUS'])){
-                            $module_stats = $reg['MODULE_STATUS'];
-                        } else {
-                            $module_stats = 'pre-alpha';
-                            log_debug($this->objLanguage->languageText('mod_modulecatalogue_missingtag','modulecatalogue').": MODULE_STATUS $from $module_name");
-                        }
-                        $xmlStr .= "        <module_id>$module_id</module_id>
-        <module_name>$module_name</module_name>
-        <module_icon>$module_icon</module_icon>
-        <module_authors>$module_authors</module_authors>
-        <module_releasedate>$module_releasedate</module_releasedate>
-        <module_description>$module_description</module_description>
-        <module_version>$module_version</module_version>
-        <module_tags>$module_tags</module_tags>
-        <module_dependency>$module_deps</module_dependency>
-        <module_status>$module_stats</module_status>\n";
-                        if (isset($reg['MODULE_CATEGORY'])) {
-                            foreach ($reg['MODULE_CATEGORY'] as $cat) {
-                                $cat = htmlentities($cat);
-                                $xmlStr .= "        <module_category>$cat</module_category>\n";
-                            }
-                        }
-                    } else {
-                        $scanComplete = false;
-                        $mod = htmlentities($mod);
-                        $xmlStr .= "        <module_id>$mod</module_id>\n";
-                    }
-                    $xmlStr .= "    </module>\n";
-                    $id++;
+        $files = new ChisimbaConfigurationFile();
+        return $files->synchronise($this->cataloguePath() . '.refresh', function () {
+            // Capture the revision before discovery; never publish an incomplete scan.
+            $document = new ChisimbaConfigurationDocument($this->cataloguePath(), 'settings', true);
+            $source = $this->getObject('modulefile', 'modulecatalogue');
+            $modules = $source->getLocalModuleList();
+            if (!is_array($modules) || !$modules) { throw new RuntimeException('Catalogue discovery was incomplete.'); }
+            $rows = array(); $ids = array();
+            foreach ($modules as $module) {
+                $registerFile = $source->findregisterfile($module);
+                $reg = $registerFile ? $source->readRegisterFile($registerFile) : false;
+                if (!is_array($reg) || empty($reg['MODULE_ID']) || !is_string($reg['MODULE_ID'])
+                    || !preg_match('/^[A-Za-z0-9_-]+$/D', $reg['MODULE_ID']) || isset($ids[$reg['MODULE_ID']])) {
+                    throw new RuntimeException('Catalogue discovery was incomplete or ambiguous.');
                 }
+                $ids[$reg['MODULE_ID']] = true;
+                $row = array('id'=>(string)(count($rows)+1), 'module_id'=>$reg['MODULE_ID'],
+                    'module_name'=>$reg['MODULE_NAME'] ?? $reg['MODULE_ID'],
+                    'module_icon'=>$reg['MODULE_ICON'] ?? 'puzzle',
+                    'module_authors'=>$reg['MODULE_AUTHORS'] ?? '',
+                    'module_releasedate'=>$reg['MODULE_RELEASEDATE'] ?? '',
+                    'module_description'=>$reg['MODULE_DESCRIPTION'] ?? '',
+                    'module_version'=>$reg['MODULE_VERSION'] ?? '',
+                    'module_tags'=>isset($reg['TAGS']) ? implode(', ', (array)$reg['TAGS']) . ', ' : '',
+                    'module_dependency'=>isset($reg['DEPENDS']) ? implode(', ', (array)$reg['DEPENDS']) . ', ' : '',
+                    'module_status'=>$reg['MODULE_STATUS'] ?? 'pre-alpha');
+                if (!empty($reg['MODULE_CATEGORY'])) { $row['module_category']=array_values((array)$reg['MODULE_CATEGORY']); }
+                $rows[]=$row;
             }
-            $xmlStr .= '    <engine_version>'.$this->objEngine->version."</engine_version>\n";
-            $xmlStr .= '</settings>';
-            if(!file_exists($this->_path))
-            {
-                mkdir($this->_path);
-            }
-            if(file_exists($this->_path.'catalogue.xml'))
-            {
-                unlink($this->_path.'catalogue.xml');
-                touch($this->_path.'catalogue.xml');
-                chmod($this->_path . 'catalogue.xml',0666);
-            }
-            if(!file_exists($this->_path.'catalogue.xml'))
-            {
-                touch($this->_path.'catalogue.xml');
-                chmod($this->_path . 'catalogue.xml',0666);
-            }
-            $fh = fopen($this->_path.'catalogue.xml','w');
-            if (fwrite($fh, $xmlStr) === false) {
-                throw new RuntimeException('catalogue_write_failed');
-            }
-            if (!fclose($fh)) {
-                throw new RuntimeException('catalogue_close_failed');
-            }
-            $removed = array();
-            $reconciled = $scanComplete && count($discoveredModuleIds) === count($modules);
-            if ($reconciled) {
-                $objModules = $this->getObject('modules', 'modulecatalogue');
-                $removed = $objModules->reconcileAvailableModules($discoveredModuleIds);
-            }
-            return array(
-                'discovered' => count($discoveredModuleIds),
-                'removed' => $removed,
-                'reconciled' => $reconciled
-            );
-        } catch (Exception $e)
-        {
-            $this->errorCallback('Caught exception: '.$e->getMessage());
-            exit();
-        }
-
+            $candidate=$document->fromArray(array(
+                '@'=>array('xsi:noNamespaceSchemaLocation'=>'catalogue.xsd'),
+                'module'=>$rows, 'engine_version'=>$this->objEngine->version));
+            $document->save($candidate);
+            $this->_root=$document->root;
+            // The refresh lock includes reconciliation so an older scan cannot
+            // reconcile after a newer refresh. Database failures propagate.
+            $removed=$this->getObject('modules','modulecatalogue')->reconcileAvailableModules(array_keys($ids));
+            return array('discovered'=>count($ids),'removed'=>$removed,'reconciled'=>true);
+        });
     }
 
     /**
@@ -351,9 +218,9 @@ class catalogueconfig extends ChisimbaObject {
 
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
 
-            $xml = simplexml_load_file($this->_path);
+            $xml = $this->catalogueXml();
             if($pname !="all"){
-                $query = "//module[module_category='{$pname}']";
+                $query = "//module[module_category=" . $this->xpathLiteral($pname) . "]";
             }else{
                 $query = "//module";
 
@@ -392,7 +259,7 @@ class catalogueconfig extends ChisimbaObject {
 
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
 
-            $xml = simplexml_load_file($this->_path);
+            $xml = $this->catalogueXml();
             $entries = $xml->xpath("//module");
 
             foreach ($entries as $module) {
@@ -428,7 +295,7 @@ class catalogueconfig extends ChisimbaObject {
     {
         try {
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-            $xml = simplexml_load_file($this->_path);
+            $xml = $this->catalogueXml();
             $entries = $xml->xpath("//module");
             foreach ($entries as $moduletags) {
                 $moduleName = $this->objLanguage->abstractText((string)$moduletags->module_name);
@@ -462,10 +329,10 @@ class catalogueconfig extends ChisimbaObject {
     public function getModuleDeps($module)
     {
         $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-        $xml = simplexml_load_file($this->_path);
-        $entries = $xml->xpath("//module[module_id='{$module}']");
+        $xml = $this->catalogueXml();
+        $entries = $xml->xpath("//module[module_id=" . $this->xpathLiteral($module) . "]");
         //log_debug($entries[0]->module_dependency);
-        return @$entries[0]->module_dependency;
+        return $entries[0]->module_dependency ?? false;
     }
 
     /**
@@ -476,10 +343,10 @@ class catalogueconfig extends ChisimbaObject {
     public function getModuleStatus($module)
     {
         $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-        $xml = simplexml_load_file($this->_path);
-        $status = $xml->xpath("//module[module_id='{$module}']");
+        $xml = $this->catalogueXml();
+        $status = $xml->xpath("//module[module_id=" . $this->xpathLiteral($module) . "]");
         //var_dump($status[0]->module_status);
-        return $status[0]->module_status;
+        return $status[0]->module_status ?? false;
     }
 
     /**
@@ -495,19 +362,19 @@ class catalogueconfig extends ChisimbaObject {
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
             //echo "$str $type<br/>";
             $str = strtolower($str);
-            $xml = simplexml_load_file($this->_path);
+            $xml = $this->catalogueXml();
             switch ($type) {
                 case 'name':
-                    $query = "//module[contains(translate(module_id, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'$str') or contains(translate(module_name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'$str')]";
+                    $query = "//module[contains(translate(module_id, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')," . $this->xpathLiteral($str) . ") or contains(translate(module_name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')," . $this->xpathLiteral($str) . ")]";
                     break;
                 case 'description':
-                    $query = "//module[contains(translate(module_description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'$str')]";
+                    $query = "//module[contains(translate(module_description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')," . $this->xpathLiteral($str) . ")]";
                     break;
                 case 'tags':
-                    $query = "//module[contains(translate(module_tags, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '$str')]";
+                    $query = "//module[contains(translate(module_tags, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " . $this->xpathLiteral($str) . ")]";
                     break;
                 default:
-                    $query = "//module[contains(translate(module_id, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'$str') or contains(translate(module_description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'$str') or contains(translate(module_name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'),'$str')]";
+                    $query = "//module[contains(translate(module_id, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')," . $this->xpathLiteral($str) . ") or contains(translate(module_description, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')," . $this->xpathLiteral($str) . ") or contains(translate(module_name, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')," . $this->xpathLiteral($str) . ")]";
                     break;
             }
             $entries = $xml->xpath($query);
@@ -543,8 +410,8 @@ class catalogueconfig extends ChisimbaObject {
     public function getModuleDescription($modname) {
         try {
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-            $xml = simplexml_load_file($this->_path);
-            $query = "//module[module_id='$modname']/module_description";
+            $xml = $this->catalogueXml();
+            $query = "//module[module_id=" . $this->xpathLiteral($modname) . "]/module_description";
             $entries = $xml->xpath($query);
 
             if (!isset($entries)) {
@@ -568,8 +435,8 @@ class catalogueconfig extends ChisimbaObject {
     public function getModuleName($moduleId) {
         try {
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-            $xml = simplexml_load_file($this->_path);
-            $query = "//module[module_id='$moduleId']/module_name";
+            $xml = $this->catalogueXml();
+            $query = "//module[module_id=" . $this->xpathLiteral($moduleId) . "]/module_name";
             $entries = $xml->xpath($query);
 
             if (!isset($entries)) {
@@ -592,34 +459,16 @@ class catalogueconfig extends ChisimbaObject {
     */
     public function getNavParam($pmodule)
     {
-        try {
+        $settings=$this->readCatalogue('XML')->getItem('section','settings');
+        $navigation=$settings->getItem('section','catalogue');
+        return $navigation ? $navigation->toArray() : false;
+    }
 
-            //Read conf
-            //if (!isset($this->_root)) {
-            $this->readCatalogue('XML');
-            //}
-            //Lets get the parent node section first
-
-            $Settings =& $this->_root->getItem("section", "settings");
-            //Now onto the directive node
-            //check to see if one of them isset to search by
-            $Settings =& $Settings->getItem("section","catalogue");
-
-            if(isset($pmodule))$SettingsDirective =& $Settings->getItem("directive", "{$pmodule}");
-            $SettingsDirective =& $Settings->toArray();
-            //finally unearth whats inside
-            if (!$SettingsDirective) {
-                throw new Exception("Catalogue Navigation items are missing! {$pmodule}");
-            }else{
-                $value = $SettingsDirective;
-                return $value;
-            }
-
-
-        } catch (Exception $e){
-            $this->errorCallback('Caught exception: '.$e->getMessage());
-            exit();
-        }
+    private function xpathLiteral($value)
+    {
+        if (!str_contains($value, "'")) { return "'" . $value . "'"; }
+        if (!str_contains($value, '"')) { return '"' . $value . '"'; }
+        return "concat('" . implode("',\"'\",'", explode("'", $value)) . "')";
     }
 
     /**
@@ -661,7 +510,7 @@ class catalogueconfig extends ChisimbaObject {
     public function getCategoryList($category) {
         try {
             $path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-            $cat = simplexml_load_file($path);
+            $cat = $this->catalogueXml();
             $types = array();
             if ($category == 'all') {
                 $modules = $cat->xpath("//module");
@@ -676,17 +525,17 @@ class catalogueconfig extends ChisimbaObject {
                 }
                 $sysTypes = $this->objConfig->getsiteRootPath()."config/systemtypes.xml";
                 $doc = simplexml_load_file($sysTypes);
-                $modules = $doc->xpath("//category[categoryname='$category']");
+                $modules = $doc->xpath("//category[categoryname=" . $this->xpathLiteral($category) . "]");
                 if (isset($modules[0]->module)) {
                     if (count($modules[0]->module) > 0) {
                         foreach ($modules[0]->module as $mod) {
                             $moduleId = (string)$mod;
-                            $mn = $cat->xpath("//module[module_id='$moduleId']/module_name");
+                            $mn = $cat->xpath("//module[module_id=" . $this->xpathLiteral($moduleId) . "]/module_name");
                             if (!$mn && (file_exists($this->objConfig->getModulePath().$moduleId) || file_exists($this->objConfig->getsiteRootPath()."core_modules/$moduleId"))) {
                                 log_debug("Could not find $moduleId in the catalogue. Rewriting catalogue.");
                                 $this->writeCatalogue();
-                                $cat = simplexml_load_file($path);
-                                $mn = $cat->xpath("//module[module_id='$moduleId']/module_name");
+                                $cat = $this->catalogueXml();
+                                $mn = $cat->xpath("//module[module_id=" . $this->xpathLiteral($moduleId) . "]/module_name");
                             }
                             if (isset($mn[0])) {
                                 $types[$moduleId] = ucwords($this->objLanguage->abstractText((string)$mn[0]));
@@ -838,7 +687,7 @@ class catalogueconfig extends ChisimbaObject {
     public function getEngineVer() {
         try {
             $this->_path = $this->objConfig->getsiteRootPath()."config/catalogue.xml";
-            $xml = simplexml_load_file($this->_path);
+            $xml = $this->catalogueXml();
             $query = "//engine_version";
             $enginever = $xml->xpath($query);
 

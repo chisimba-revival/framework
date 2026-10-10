@@ -41,8 +41,9 @@ ensureLiveUserBootRemoval(
     'No engine endpoint may initialise the retired LiveUser runtime'
 );
 ensureLiveUserBootRemoval(
-    strpos($engine, "getPearResource ( 'Event/Dispatcher.php' )") !== false,
-    'Engine must load Event_Dispatcher without LiveUser'
+    strpos($engine, 'new ChisimbaEventDispatcher()') !== false
+    && strpos($engine, "getPearResource ( 'Event/Dispatcher.php' )") === false,
+    'Engine must use native events without PEAR or LiveUser bootstrapping'
 );
 ensureLiveUserBootRemoval(
     strpos($engine, '$this->appid = \'chisimba\';') !== false,

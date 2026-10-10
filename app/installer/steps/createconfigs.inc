@@ -5,7 +5,7 @@ require_once INSTALL_DIR . '/5ivestepaction.inc';
 
 require_once INSTALL_DIR . '/html_form/html_form.inc';
 
-require_once 'Config.php';
+require_once dirname(__DIR__, 2) . '/core_modules/config/classes/configurationdocument.php';
 
 /**
 
@@ -132,18 +132,6 @@ class CreateConfigsAction extends FiveStepAction
 
     {
 
-        // if ignoring errors (ie the script has run, just want to proceed because the errors found
-
-
-        // are ignoreable), the checkbox will have been clicked
-
-
-        if (isset ( $_POST ['ignore_errors'] )) {
-
-            return true;
-
-        }
-
         // make sure that SQ_SYSTEM_ROOT is defined before trying to execute the script.
 
 
@@ -212,7 +200,7 @@ class CreateConfigsAction extends FiveStepAction
             } else {
 
                 $root_url = KEWL_SITE_ROOT;
-                $root_url = $_SELF . '../index.php';
+
 
             }
 
@@ -266,19 +254,8 @@ class CreateConfigsAction extends FiveStepAction
         // Create the configs
 
 
-        $this->_createConfig ( $database_created );
-
-        // Check to see if the configs actually were created.
-
-
-        if (! $this->isRequired () == true) {
-
-            $this->errors [] = 'Config files were NOT successfully created. The following output was given ' .
-
-            'by the config writing script';
-
-            $this->errors [] = $this->init_output;
-
+        if (!$this->_createConfig($database_created)) {
+            return false;
         }
 
         // if it was in repair mode, can now change to being in update mode because all the system settings
@@ -316,7 +293,8 @@ class CreateConfigsAction extends FiveStepAction
 
     {
 
-        $ref = getenv ( 'HTTP_REFERER' );
+        $ref = (string) getenv ( 'HTTP_REFERER' );
+        $ksr = $_SESSION['end_url'] ?? '/';
         if (preg_match ( "/\/installer/i", $ref )) {
 
             $ksr = str_replace ( '/installer', "/", $ref );
@@ -331,7 +309,9 @@ class CreateConfigsAction extends FiveStepAction
 
         ini_set ( 'memory_limit', - 1 );
 
-        define ( 'KEWL_SYSTEM_ROOT', dirname ( dirname ( realpath ( __FILE__ ) ) ) . '/' );
+        if (!defined('KEWL_SYSTEM_ROOT')) {
+            define('KEWL_SYSTEM_ROOT', dirname(dirname(realpath(__FILE__))) . '/');
+        }
 
         $this->_addConfigVar ( 'KEWL_INSTITUTION_SHORTNAME', $_SESSION ['sys_owner'] );
 
@@ -453,56 +433,17 @@ class CreateConfigsAction extends FiveStepAction
 
         }
 
-        $this->_root = new Config ( );
-        //initial setup of config options
-        $options = array ('name' => 'Settings' );
-
-        //parse the array values into config
-        $this->_root->parseConfig ( $this->config_vars, "PHPArray" );
-        //lets write the config
-        $path = $_SESSION ['sys_root'] . '/config/';
-        if (! file_exists ( $path )) {
-            mkdir ( $path );
-        }
-
-        if (! is_file ( $path . 'config.xml' )) {
-            touch ( $path . 'config.xml' );
-            chmod ( $path . 'config.xml', 0666 );
-        }
-        $write = $this->_root->writeConfig("{$path}config.xml", 'XML', $options);
-
-        /*
-         * PHP 8 compatibility: ensure config.xml has one document root.
-         *
-         * The legacy PEAR Config XML writer can emit the individual
-         * configuration directives as adjacent top-level XML elements.
-         * XML documents require exactly one root element.
-         */
-        $configFile = "{$path}config.xml";
-        $configXml = @file_get_contents($configFile);
-
-        if ($configXml !== false) {
-            libxml_use_internal_errors(true);
-            $validConfigXml = simplexml_load_string($configXml);
-
-            if ($validConfigXml === false) {
-                $configBody = preg_replace(
-                    '/^\\s*<\\?xml[^>]*\\?>\\s*/i',
-                    '',
-                    $configXml
-                );
-
-                $configXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-                    . "<Settings>\n"
-                    . trim($configBody)
-                    . "\n</Settings>\n";
-
-                if (@file_put_contents($configFile, $configXml) === false) {
-                    $this->errors[] = 'Could not write a valid config.xml file.';
-                }
-            }
-
-            libxml_clear_errors();
+        $written = false;
+        try {
+            $path = rtrim($_SESSION['sys_root'], '/') . '/config';
+            (new ChisimbaConfigurationFile())->ensureDirectory($path);
+            $document = new ChisimbaConfigurationDocument($path . '/config.xml', 'Settings', true);
+            $document->save($document->fromArray($this->config_vars));
+            $this->_root = $document->root;
+            $written = true;
+        } catch (RuntimeException $e) {
+            $this->errors[] = 'Could not safely write config.xml. Check the configuration directory and reload before retrying.';
+            $this->success = false;
         }
 
 	$GLOBALS['SQ_INSTALL'] = false;
@@ -512,6 +453,7 @@ class CreateConfigsAction extends FiveStepAction
         ob_end_clean ();
 
         $this->init_output = $result;
+        return $written;
 
     } //end _createConfig()
 
@@ -592,44 +534,18 @@ class CreateConfigsAction extends FiveStepAction
 
         }
 
-        //add the two dsn's to a php file, not the config file
-        //create a file to store the info as a heredoc
-
-
-        $str = <<<EOD
-<?php
-	define('KEWL_DB_DSN','{$dsn}');
-?>
-EOD;
-
-        $path = $_SESSION ['sys_root'] . '/config/';
+        // Quote the DSN as data; publish credentials with the same checked writer.
+        $bytes = "<?php\ndefine('KEWL_DB_DSN', " . var_export($dsn, true) . ");\n";
         try {
-            if (! file_exists ( $path )) {
-                mkdir ( $path );
-            }
-
-            if (! is_file ( $path . 'dbdetails_inc.php' )) {
-                if (@touch ( $path . 'dbdetails_inc.php' )) {
-                    chmod ( $path . 'dbdetails_inc.php', 0666 );
-                } else {
-                    throw new Exception ( 'The database details file could not be created.' );
-                }
-            }
-            $handle = fopen ( $path . 'dbdetails_inc.php', 'wb' );
-            fwrite ( $handle, $str );
-            fclose ( $handle );
-            // Error check added by jsc
-            if (! file_exists ( $path . 'dbdetails_inc.php' )) {
-                throw new Exception ( 'dbdetails file could not be created.' );
-            }
-        } catch ( Exception $e ) {
-            $this->errors [] = "The installer has encountered a fatal error: <b>" . $e->getMessage () . "</b><br />\n";
-            $this->errors [] = "Check that the chisimba 'config' folder has the proper write permissions.<br />\n";
-            return FALSE;
+            $files = new ChisimbaConfigurationFile();
+            $path = rtrim($_SESSION['sys_root'], '/') . '/config';
+            $files->ensureDirectory($path);
+            $destination = $path . '/dbdetails_inc.php';
+            $files->replace($destination, $bytes, $files->read($destination));
+        } catch (RuntimeException $e) {
+            $this->errors[] = 'The database configuration could not be saved safely. Check the configuration directory before retrying.';
+            return false;
         }
-        //define('KEWL_DB_DSN', $dsn);
-        //$this->_addConfigVar('KEWL_DB2_DSN', $dsn2);
-
 
         return true;
 
@@ -681,17 +597,11 @@ EOD;
 
     {
 
-        $main_file = isset ( $_SESSION ['sys_root'] ) ? $_SESSION ['sys_root'] . '/conf/sysconfig_properties.xml' : false;
-        // if the file exists, try and delete it
-
-
-        if ($main_file !== false && is_file ( $main_file )) {
-
+        if (!isset($_SESSION['sys_root'])) { return true; }
+        try {
+            new ChisimbaConfigurationDocument(rtrim($_SESSION['sys_root'], '/') . '/config/config.xml', 'Settings');
             return false;
-
-        }
-
-        return true;
+        } catch (RuntimeException $e) { return true; }
 
     } //end isRequired()
 
@@ -720,9 +630,7 @@ EOD;
 
         $message = 'Chisimba will now create the initial setup files. If ' .
 
-        'you are running an update, this will save a backup of your ' .
-
-        'old configuration file to the same directory. ';
+        'you are running an update, each configuration file is replaced only after its new contents have been checked. Keep your installation backup until the update is complete. ';
 
         $warning_text = 'Note that from this point on, if you do ' .
 

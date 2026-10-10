@@ -11,7 +11,12 @@ $left = "<div class='sysconfig_left'>"
   . $this->objLanguage->languageText("mod_sysconfig_edlabel",'sysconfig')
   . "</div><br />&nbsp;<br />";
 $cssLayout->setLeftColumnContent($left);
-$middle = $header->show() . $str;
+$help = '';
+if ($this->getParam('pmodule') === '_site_'
+    && $this->getObject('modules', 'modulecatalogue')->checkIfRegistered('help')) {
+    $help = $this->getObject('contextualhelp', 'help')->show('sysconfig', 'site-settings');
+}
+$middle = $header->show() . $help . $str;
 $middle = "<div class='sysconfig_main'>$middle</div>";
 $cssLayout->setMiddleColumnContent($middle);
 echo $cssLayout->show();

@@ -7524,3 +7524,39 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-media-badged__labels .chisimba-status-badge { background: var(--chisimba-text); color: var(--chisimba-surface); border-color: var(--chisimba-surface); }
 .chisimba-content-block--image-right .chisimba-media-badged__labels,
 .chisimba-content-block--reverse-hero .chisimba-media-badged__labels { inset-inline-start: auto; inset-inline-end: .75rem; }
+
+/* Shared native tag clouds: content owns weights, the skin owns presentation. */
+.chisimba-tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--chisimba-space-1) var(--chisimba-space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+}
+.chisimba-tag-cloud > li {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    min-width: 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.chisimba-tag-cloud > li > a,
+.chisimba-tag-cloud > li > span {
+    display: inline-block;
+    max-width: 100%;
+    padding-block: var(--chisimba-space-1);
+}
+.chisimba-tag-cloud > li > a {
+    color: var(--chisimba-link-on-surface);
+    text-decoration: underline;
+    text-underline-offset: .15em;
+}
+.chisimba-tag-cloud__weight-1 { font-size: .875rem; }
+.chisimba-tag-cloud__weight-2 { font-size: 1rem; }
+.chisimba-tag-cloud__weight-3 { font-size: 1.125rem; }
+.chisimba-tag-cloud__weight-4 { font-size: 1.25rem; }
+.chisimba-tag-cloud__weight-5 { font-size: 1.375rem; }

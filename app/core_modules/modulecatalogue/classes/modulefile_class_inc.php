@@ -89,32 +89,25 @@ class modulefile extends ChisimbaObject {
      * @return array a list of the modules
      */
     public function getLocalModuleList() {
-        try {
-            $lookdir=$this->config->getModulePath();
-            $optionalmodlist = (array)$this->checkdir($lookdir) ;
-            $coremodlist = (array)$this->checkdir($this->config->getSiteRootPath().'/core_modules/');
-            $modlist = array_merge((array)$coremodlist,(array)$optionalmodlist);
-            natsort($modlist);
-            $modulelist = array();
-            foreach ($modlist as $line) {
-                switch ($line) {
-                    case '.':
-                    case '..':
-                    case 'CVS':
-                    case 'CVSROOT':
-                        break; // don't bother with system-related dirs
-                    default:
-                        if (filesize($this->findregisterfile($line)) > 0) {
-                        //if (is_dir("$lookdir/$line")||is_dir($this->config->getSiteRootPath()."/core_modules/$line")) {
-                            $modulelist[] = $line;
-                        }
-                }
+        $paths = array($this->config->getModulePath(), rtrim($this->config->getSiteRootPath(), '/') . '/core_modules');
+        $names = array();
+        foreach ($paths as $path) {
+            if (!is_dir($path) || !is_readable($path)) { throw new RuntimeException('Module discovery directory is unavailable.'); }
+            $entries = scandir($path);
+            if ($entries === false) { throw new RuntimeException('Module discovery failed.'); }
+            foreach ($entries as $entry) {
+                if ($entry[0] !== '.' && is_dir($path . '/' . $entry)) { $names[$entry] = true; }
             }
-            return $modulelist;
-        } catch (Exception $e) {
-            $this->config->config->errorCallback('Caught Exception: '.$e->getMessage());
-            exit();
         }
+        $modules = array();
+        foreach (array_keys($names) as $name) {
+            $file = $this->findregisterfile($name);
+            if ($file === false) { continue; } // Non-module/paused directories are intentional.
+            if (!is_readable($file) || filesize($file) === 0) { throw new RuntimeException('Module registration file is unreadable or empty.'); }
+            $modules[] = $name;
+        }
+        natsort($modules);
+        return array_values($modules);
     }
 
     /**

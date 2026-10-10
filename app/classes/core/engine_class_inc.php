@@ -544,14 +544,10 @@ class engine {
         //and we need a general system config too
         $this->_objConfig = clone $this->_objDbConfig;
         ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $this->_objConfig->getsiteRootPath () . 'lib/pear/' );
-        // The event dispatcher is a small, independent PEAR component.  The
-        // historical engine loaded it through LiveUser, which also started a
-        // second, legacy authentication/permission stack on every request.
-        // Native authentication and the canonical permission services own
-        // those responsibilities now, so load the dispatcher directly.
-        require_once ($this->getPearResource ( 'Event/Dispatcher.php' ));
-        //initialise the event messages framework
-        $this->eventDispatcher =& Event_Dispatcher::getInstance();
+        // One native dispatcher belongs to this engine/request. All framework
+        // objects receive it through their existing eventDispatcher property.
+        require_once __DIR__ . '/nativeeventdispatcher.php';
+        $this->eventDispatcher = new ChisimbaEventDispatcher();
         //initialise the db factory method of MDB2
         $this->getDbObj ();
         //initialise the db factory method of MDB2_Schema
@@ -1515,6 +1511,9 @@ class engine {
      * @return mixed       The object asked for
      */
     public function newObject($name, $moduleName) {
+        // Historical service name, not the global PEAR Config class. Resolve at
+        // the factory so both names share the native configuration contract.
+        if ($moduleName === 'config' && strtolower($name) === 'config') { $name = 'altconfig'; }
         $this->loadClass ( $name, $moduleName );
         if ($this->objAPC == TRUE) {
             $objNew = apc_fetch ( $name );
@@ -1561,6 +1560,9 @@ class engine {
      * @return mixed       The object asked for
      */
     public function getObject($name, $moduleName) {
+        // Historical service name, not the global PEAR Config class. Resolve at
+        // the factory so both names share the native configuration contract.
+        if ($moduleName === 'config' && strtolower($name) === 'config') { $name = 'altconfig'; }
         $instance = NULL;
         if (isset ( $this->_cachedObjects [$moduleName] [$name] )) {
             $instance = $this->_cachedObjects [$moduleName] [$name];

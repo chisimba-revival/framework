@@ -170,11 +170,10 @@ class canvas extends controller
      */
     private function __save()
     {
-        $pname = $this->getParam('pname');
-        $ptag = $this->getParam('ptag');
-        $objDbUserparamsadmin = & $this->getObject("dbuserparamsadmin", "userparamsadmin");
-        $objDbUserparamsadmin->writeProperties($this->getParam('mode', 'edit'), $this->objUser->userId(), $pname, $ptag);
-        $this->nextAction(null,null,'canvas');
+        // Legacy submissions open the canonical editor for review; they cannot
+        // bypass its CSRF/revision checks or silently report a failed write.
+        return $this->nextAction('edit', array('key'=>'canvas',
+            'suggested_value'=>$this->getParam('ptag','')), 'userparamsadmin');
     }
 
     /**
@@ -191,8 +190,8 @@ class canvas extends controller
         $this->setPageTemplate('page_template.php');
         switch ($canvasType) {
             case 'personal':
-                $this->setvar('str', $this->objLanguage->languageText("mod_canvas_ask", "canvas"));
-                return "edit_tpl.php";
+                return $this->nextAction('edit', array('key'=>'canvas',
+                    'suggested_value'=>$this->getParam('value','')), 'userparamsadmin');
                 break;
             case 'skin':
                 $objConfig = $this->getObject('dbsysconfig', 'sysconfig');

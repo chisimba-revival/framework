@@ -95,20 +95,32 @@ class sysconfiginterface extends ChisimbaObject
 
         $objForm->addToForm("<p><strong>"
           . $this->objLanguage->languageText("mod_sysconfig_modtxt",'sysconfig')
-          . "</strong>: " . $pmodule."</p>");
+          . "</strong>: " . htmlspecialchars((string) $pmodule, ENT_QUOTES, 'UTF-8')."</p>");
 
         //Get the pk value
         $id = $this->getParam('id');
-        //Get the records for editing
-        $ar = $this->objDbSysconfig->getRow('id', $id, 'tbl_sysconfig_properties');
-        //Get the two values needed
-        if (isset($ar)) {
-            $pname = $ar['pname'];
-            $pvalue = $ar['pvalue'];
+        if ($pmodule === '_site_') {
+            $config = $this->getObject('altconfig', 'config');
+            $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
+            $csrf = new textinput('config_csrf');
+            $csrf->fldType = 'hidden';
+            $csrf->setValue($nativeAuth['csrf']->issue('sysconfig_site_save'));
+            $objForm->addToForm($csrf->show());
+            $pname = $id;
+            $pvalue = $this->getParam('action') === 'save'
+                ? $this->getParam('pvalue', '') : $config->getItem($id);
+            $revision = new textinput('config_revision');
+            $revision->fldType = 'hidden';
+            // Keep the submitted revision on failure: retry must not silently
+            // authorise overwriting a newer configuration without a reload.
+            $revision->setValue($this->getParam('action') === 'save'
+                ? $this->getParam('config_revision', '') : $config->getRevision());
+            $objForm->addToForm($revision->show());
         } else {
-            $pname = $this->getParam('id',NULL);
-            $pvalue =$this->getParam('value',NULL);
-        } #if
+            $ar = $this->objDbSysconfig->getRow('id', $id, 'tbl_sysconfig_properties');
+            $pname = $ar['pname'] ?? $id;
+            $pvalue = $ar['pvalue'] ?? $this->getParam('value', null);
+        }
         //Create an element for the input of id
         $objElement = new textinput ("id");
         $objElement->fldType="hidden";
@@ -122,7 +134,7 @@ class sysconfiginterface extends ChisimbaObject
         $objForm->addToForm($objElement->show());
 
         //Add the $name element to the form
-        $objForm->addToForm('<p><b>'. $this->objLanguage->languageText("mod_sysconfig_paramname",'sysconfig'). '</b>: ' . $pname.'</p>');
+        $objForm->addToForm('<p><b>'. $this->objLanguage->languageText("mod_sysconfig_paramname",'sysconfig'). '</b>: ' . htmlspecialchars((string) $pname, ENT_QUOTES, 'UTF-8').'</p>');
 
         // Check in Config folder if module is gives as _site_
 

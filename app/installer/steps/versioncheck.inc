@@ -320,10 +320,11 @@ class PHPCheckAction extends StepAction
         if (!extension_loaded('dom')) {
 
             $this->required_settings['dom']['available'] = false;
+            $this->success = false;
 
             $this->required_settings['dom']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
 
-            $this->errors[] = '<span class="errors">dom not found. You can proceed with the install, however some functionality will not be available to you</span>';
+            $this->errors[] = '<span class="errors">DOM is required to read and write configuration files.</span>';
 
         } else {
 
@@ -641,7 +642,6 @@ class PEARCheckAction extends StepAction
 
         'MDB2'             => Array('version'=>'2.0.2','available'=>false,'message' => ''),
         'MDB2_Schema'   => Array('version'=> '0.4.3','available'=>false,'message'=>''),
-        // 'Config'         => Array('version'=>'1.0.0','available'=>false,'message' => ''),
         // 'Log'         => Array('version'=>'1.0.0','available'=>false,'message' => ''),
         // 'XML_Util'         => Array('version'=>'1.1.4','available'=>false,'message' => '')
         );
@@ -714,23 +714,6 @@ class PEARCheckAction extends StepAction
             }
 
            
-            @include_once 'Config.php';
-
-            if (!class_exists('Config')) {
-
-                $this->errors[] = '<span class="errors">Could not find PEAR::Config </span>';
-
-                $this->required_packages['Config']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-                $this->success = false;
-
-            } else {
-
-                $this->required_packages['Config']['message'] =  '<img src="./extra/yellow_help_on.png" border="0" alt="Help" title="Help"  />';
-
-            }
-
-
-
             @include_once 'Log';
 
             if (!class_exists('Log')) {

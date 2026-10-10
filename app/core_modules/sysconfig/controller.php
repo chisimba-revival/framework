@@ -259,10 +259,21 @@ class sysconfig extends controller {
 
             case 'save':
                 //Get the module for the parameter
-                $pmodule = TRIM($_POST['pmodule']);
+                $pmodule = trim((string) $this->getParam('pmodule', ''));
+                if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' && $pmodule !== '_site_') {
+                    return $this->nextAction('step1', array());
+                }
 
                 if ($pmodule=='_site_') {
-                    $this->save();
+                    if (!$this->save()) {
+                        $this->setVar('mode', 'edit');
+                        $message = $this->objLanguage->languageText('mod_sysconfig_savefailed', 'sysconfig',
+                            'The configuration could not be saved. Your value is retained below. Copy it before reloading to check for newer settings; if saving still fails, contact the administrator.');
+                        $this->setVar('str', '<p role="alert">' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>'
+                            . $this->objInterface->showEditAddForm($pmodule));
+                        return 'edit_add_tpl.php';
+                    }
+                    return $this->nextAction('step2', array('pmodule_id'=> $pmodule));
                 }
                 $this->objSysConfig->updateSingle();
 
@@ -300,7 +311,13 @@ class sysconfig extends controller {
     private function save()
     {
         $this->objConfig =  $this->getObject('altconfig','config');
-        $result = $this->objConfig->updateParam($this->getParam('id'),'',$this->getParam('pvalue'));
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { return false; }
+        $token = $this->getParam('config_csrf', '');
+        $nativeAuth = $this->getObject('nativeauthwebcomposition', 'security')->build();
+        if (!is_string($token) || !$nativeAuth['csrf']->consume('sysconfig_site_save', $token)) { return false; }
+        $revision = $this->getParam('config_revision', '');
+        if (!is_string($revision) || !preg_match('/^[a-f0-9]{64}$/D', $revision)) { return false; }
+        $result = $this->objConfig->updateParam($this->getParam('id'), '', $this->getParam('pvalue'), false, $revision);
         return $result;
 
     }

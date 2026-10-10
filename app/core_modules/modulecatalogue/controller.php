@@ -254,6 +254,7 @@ class modulecatalogue extends controller {
             //$this->setVar('letter',$this->getParam('letter','none'));
             $this->setLayoutTemplate ( 'cat_layout.php' );
             $this->setVar ( 'connected', false );
+            $this->setVar('catalogueRefreshCsrf', $this->csrf()->issue('modulecatalogue_refresh'));
             switch ($action) { //check action
                 case 'updatedeps' :
                     $modname = $this->getParam('modname');
@@ -683,7 +684,16 @@ class modulecatalogue extends controller {
                     return 'front_tpl.php';
 
                 case 'updatexml' :
-                    $summary = $this->objCatalogueConfig->writeCatalogue ();
+                    try {
+                        if (!$this->validUpdateRequest('modulecatalogue_refresh')) {
+                            throw new RuntimeException('Invalid catalogue refresh request.');
+                        }
+                        $summary = $this->objCatalogueConfig->writeCatalogue();
+                    } catch (RuntimeException $e) {
+                        $message = $this->objLanguage->languageText('mod_modulecatalogue_refreshfailed', 'modulecatalogue',
+                            'The catalogue refresh did not complete. Reload the page and try again. If it still fails, check module files and configuration permissions.');
+                        return $this->nextAction('list', array('message'=>$message, 'cat'=>$activeCat, 'modulefilter'=>$moduleFilter));
+                    }
                     $message = $this->objLanguage->languageText ( 'mod_modulecatalogue_xmlupdated', 'modulecatalogue' );
                     if (is_array($summary)) {
                         $detail = $this->objLanguage->languageText(
