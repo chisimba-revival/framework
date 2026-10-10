@@ -122,3 +122,13 @@ is no translation-record format rewrite to reverse; restore matched code/module
 metadata on rollback. Keep the PEAR vendor-removal gate in
 `docs/PEAR_DEPENDENCY_REGISTER.md` open until deployment/extension/installer audits
 and the remaining dependency migrations are complete.
+
+## Release rehearsal finding
+
+The KengaLearn rehearsal detected a historical `word_skins` ownership collision:
+Language declared it as a global USES entry while Security owns its TEXT entry.
+Normal Language registration moved that Security translation to the system page
+and changed its text. The obsolete Language USES declaration is removed; no
+first-party caller uses it. Release checks compare translation identifiers, pages
+and text, plus legacy language descriptions independently of regenerated registry
+row IDs.
