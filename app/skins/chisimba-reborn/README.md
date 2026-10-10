@@ -50,6 +50,13 @@ owns dimensions, background and stacking; branding canvases need no overrides.
 
 ## Adjacent action buttons
 
+Keep related actions in one row when space permits, with the primary action first
+and secondary actions beside it. Use `chisimba-cluster` for a compact wrapping
+button/link group, or `chisimba-form-actions` for a form action row. Their shared
+gap separates targets horizontally and vertically when wrapping or stacking.
+Avoid unnecessary rows, empty containers and oversized spacing; preserve usable
+targets and clear separation on narrow screens rather than compressing controls.
+
 Text buttons and icon-only buttons in an action row must have matching rendered
 heights and aligned edges, including when text wraps on smaller screens. Check
 actual browser dimensions at desktop and mobile widths; sharing a button class

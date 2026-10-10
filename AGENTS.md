@@ -83,6 +83,11 @@ Read [the skin overview](app/skins/chisimba-reborn/README.md) and
 - Keep adjacent controls the same height, use the shared action gap, and align
   search, Help and actions coherently. Use horizontal space without breaking
   narrow layouts. Reuse the established wide-main/narrow-sidebar layout when suitable.
+- Place related primary and secondary actions on one row when they fit; use
+  shared wrapping layouts and a visible gap in both directions so neighbouring
+  targets are easy to distinguish and activate. Avoid unnecessary stacked rows,
+  empty panels or oversized spacing. Compact layouts must retain readable content,
+  usable targets and breathing room when actions wrap on narrow screens.
 - Respect semantic headings, labels, keyboard use, visible shared focus states,
   contrast, status messages and reduced motion. Dialogs and Help must support
   Escape and sensible focus return. Drag-and-drop needs a keyboard alternative.
