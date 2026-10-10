@@ -1,11 +1,11 @@
 # PEAR dependency register
 
-Status: native events, tag clouds and configuration released to KengaLearn on
-10 October 2026; framework `6e101d2ee`, modules `9cdde04de`. Release evidence and
-rollback details are in `tests/configuration/README.md`. Translation/database
-replacement and final vendor removal remain outstanding for production. Native
-translation/locale source and local validation are recorded below and in
-`tests/translation/README.md`.
+Status: native events, tag clouds and configuration were released to KengaLearn
+on 10 October 2026; native translation/locale lookup followed the same day.
+Translation release: `b97ac37d4` plus `3e1aabebd` over the earlier framework
+`6e101d2ee` / modules `9cdde04de` baseline. Evidence and rollback details are in
+`tests/configuration/README.md` and `tests/translation/README.md`. MDB2-to-PDO,
+the language-administration interface and final vendor cleanup remain separate.
 See the dated assessment below for corrected scope and replacement sequencing. A direct load proves that
 the framework can use a component; it does not prove that the corresponding
 module is installed, enabled or reached in KengaLearn production. Do not
@@ -45,7 +45,7 @@ has been changed. Keep the deployment and database migration as separate commits
 | Component | Direct caller(s) | Exposure to establish | Direction |
 | --- | --- | --- | --- |
 | Mail / Mail_mime | `core_modules/mail/classes/mailer_class_inc.php` | Whether legacy `mail` remains registered and sends production messages | Keep isolated; route new sending through Communications. Retire only after delivery, attachment and bounce/rollback tests |
-| Translation2 / Translation2_Admin / I18Nv2 | No identified active first-party loader after Language 1.613 | Native source locally validated; production release and external-extension audit outstanding | Retain vendors until release/cleanup gates pass; see translation test README |
+| Translation2 / Translation2_Admin / I18Nv2 | No identified active first-party loader after Language 1.613 | Native runtime released to KengaLearn; external-extension/installer audits outstanding | Retain vendors until release/cleanup gates pass; see translation test README |
 | XML/RPC | `core_modules/packages/classes/rpcserver_class_inc.php`; `core_modules/api/classes/xmlrpcapi_class_inc.php`; filter helpers | **F-006 update, 30 September:** KengaLearn's `api` and `packages` routes return HTTP 410 without loading services. ADM is retired. Backing classes and shared libraries remain; other sites require separate verification. | Do not restore legacy endpoints. Inventory internal/filter consumers before deleting XML/RPC libraries. Future integrations should use explicitly authenticated and authorised HTTP/JSON services. |
 | HTML_BBCodeParser | `core_modules/utilities/classes/bbcodeparser_class_inc.php` | Which rich-text inputs select this parser and the output sanitisation chain | Retire after content migration and sanitised rendering tests |
 | Archive_Tar | `core_modules/modulecatalogue/controller.php` | Module package upload/install feature reachability | Replace with a maintained archive implementation only after archive traversal and package signature policy are defined |
@@ -325,3 +325,14 @@ record rewrite occurred. The old language-admin UI is not revived by this work.
 Keep Translation2/I18Nv2 vendor code for release/extension audits and historical
 oracle tests; the locale JSON attribution/licence must survive later cleanup.
 MDB2-to-PDO remains separate, including native language write-lock semantics.
+
+### Translation production release — 10 October 2026
+
+KengaLearn reopened at 15:00:56 UTC on Language 1.613. The bounded nine-file
+release passed production-image fixtures, all 5,618 installed-English comparisons,
+repeat registration on an isolated database and live data/configuration checks.
+Rehearsal caught an obsolete Language USES entry that overwrote Security's
+`word_skins`; commit `3e1aabebd` removes that collision. Translated text/pages
+are unchanged after normal registration. See the translation README for exact
+source manifests, backup paths, browser evidence and utf8mb3 storage limits.
+The language-admin UI was not enabled and MDB2 remains the database adapter.

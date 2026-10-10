@@ -1,7 +1,7 @@
 # Native translation migration — Language 1.613
 
-Source/local validation: 10 October 2026. This change has not been deployed to
-KengaLearn. The database adapter remains MDB2.
+Source/local validation and KengaLearn release: 10 October 2026. The completed
+production release is recorded below. The database adapter remains MDB2.
 
 ## Behaviour and callers
 
@@ -132,3 +132,52 @@ and changed its text. The obsolete Language USES declaration is removed; no
 first-party caller uses it. Release checks compare translation identifiers, pages
 and text, plus legacy language descriptions independently of regenerated registry
 row IDs.
+
+## KengaLearn release completed — 10 October 2026
+
+KengaLearn reopened at 15:00:56 UTC (17:00:56 SAST), running
+`/srv/kengalearn/releases/release-translation-20261010-145828/ch`. Release
+preparation/cutover began at 14:58:28 UTC; maintenance was within that interval.
+The previous release is `/srv/kengalearn/releases/release-pear-20261010-113711/ch`.
+Verified database and persistent-file backups, release manifest and operational
+records are in `/srv/kengalearn/backups/translation-20261010-145828` on the server.
+
+The nine-file payload contains translation commit `b97ac37d4` plus registration
+correction `3e1aabebd`, over the previously deployed framework baseline
+`6e101d2ee` and modules `9cdde04de`. Other subsequent commits were not bundled.
+Deployed language files matched their expected pre-migration source before
+staging; all final payload hashes match the committed source. Language 1.613
+was registered through the normal catalogue update service.
+
+Production-image PHP 8.5.4 fixtures and lint passed. Against an isolated copy of
+KengaLearn, all 5,618 English items matched legacy output, native language/locale
+boot loaded no Translation2/I18Nv2, and normal registration passed twice.
+Fingerprint checks preserved every translation identifier/page/text. Catalogue
+descriptions owned by Language were checked against its registration declarations;
+other descriptions were preserved. Registry row IDs/timestamps are regenerated
+by the existing catalogue service and are not translation text.
+
+On production, the protected-data check passed for 125 tables (Language-owned
+legacy description metadata is checked separately as above), plus the complete
+English translation-content fingerprint: 126 recorded checks. Site configuration
+and catalogue XML retained their original bytes. Production native runtime and
+registered-version checks passed. Authenticated Chrome checks passed for home,
+configured Courses terminology, administration, profile/country selection (257
+options, South Africa selected), Knowledge Maps, preferences, quick/full Help
+and Escape. No personal settings or content were saved. Browser warnings/errors
+and recent PHP diagnostics were empty. Anonymous preferences, Sysconfig and
+catalogue requests required login; public home/login readiness passed after
+maintenance was disabled.
+
+The existing database still uses MDB2 and the language tables retain their
+InnoDB/utf8mb3 encoding. This release does not convert those tables to utf8mb4;
+four-byte characters still require a separately rehearsed encoding upgrade for
+those existing tables. New language tables created by the native service use
+utf8mb4. The language-administration UI remains unsupported/unrevived, and PEAR
+vendor removal remains gated by external-extension and installer audits.
+
+Rollback: the previous code release and matched database/persistent-file backups
+are retained. Before reopening a failed rollback, verify its module metadata and
+language lookups. Do not blindly restore the database backup over work performed
+since this release. No translation-text format or schema rewrite was performed.
+The release operator leaves maintenance enabled if post-switch checks fail.
