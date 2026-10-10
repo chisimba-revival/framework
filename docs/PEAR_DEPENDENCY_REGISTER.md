@@ -336,3 +336,11 @@ Rehearsal caught an obsolete Language USES entry that overwrote Security's
 are unchanged after normal registration. See the translation README for exact
 source manifests, backup paths, browser evidence and utf8mb3 storage limits.
 The language-admin UI was not enabled and MDB2 remains the database adapter.
+
+### MDB2-to-PDO assessment — 10 October 2026
+
+The [caller inventory and staged migration plan](database-migration/README.md)
+cover shared dbTable contracts, direct stores, security, translation, schema,
+installation, operators and final dependency cleanup. Read-only live inspection
+found that KengaLearn currently lacks pdo_mysql. This assessment changes no runtime
+behaviour and does not mark MDB2 as migrated or removable.
