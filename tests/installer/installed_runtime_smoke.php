@@ -10,7 +10,7 @@ $GLOBALS['kewl_entry_point_run'] = true;
 require 'classes/core/engine_class_inc.php';
 $engine = new engine();
 $db = $engine->getDbObj();
-if (!($db instanceof ChisimbaDatabaseConnection) || class_exists('MDB2', false)) {
+if (!($db instanceof ChisimbaDatabaseConnection) || class_exists('MDB2', false) || class_exists('PEAR', false) || class_exists('PEAR_Error', false)) {
     throw new RuntimeException('Fresh installation is not using native PDO');
 }
 $table = dbTable::forFrameworkConnection($db);
@@ -30,5 +30,5 @@ if ($label !== 'Forgot password') throw new RuntimeException('Native language re
 if (class_exists('Translation2', false) || class_exists('Config', false)) {
     throw new RuntimeException('Legacy configuration or translation loaded');
 }
-echo 'PASS fresh runtime: PDO, no MDB2/PEAR Config/Translation2, ' . count($ids)
+echo 'PASS fresh runtime: PDO, no PEAR/MDB2/Config/Translation2, ' . count($ids)
     . " installed modules, recovery translation and context index\n";

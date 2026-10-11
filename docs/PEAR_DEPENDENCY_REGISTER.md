@@ -5,7 +5,7 @@ on 10 October 2026; native translation/locale lookup followed the same day.
 Translation release: `b97ac37d4` plus `3e1aabebd` over the earlier framework
 `6e101d2ee` / modules `9cdde04de` baseline. Evidence and rollback details are in
 `tests/configuration/README.md` and `tests/translation/README.md`. PDO was deployed
-to chisimba.com and KengaLearn on 11 October; see the
+to chisimba.com, KengaLearn and LearnTheBirds on 11 October; see the
 [rollout record](database-migration/production-rollout-20261011.md). Other sites
 still await migration. The language-administration interface and final vendor
 cleanup remain separate.
@@ -34,11 +34,13 @@ shared dbTable/schema implementation, caller migrations, both-driver regression
 checks and PHP 8 warning cleanup. The local site now selects PDO. Production
 rollout is staged separately; MDB2 remains available for sites not yet migrated.
 
-PDO does not mean PEAR-free. The core error handler still loads PEAR/PEAR_Error.
+PDO does not mean every module is PEAR-free. The local core bootstrap no longer
+loads PEAR/PEAR_Error after the 11 October cleanup below.
 Mail/Mail_mime, BBCode parsing, XML serialisation, Archive_Tar and historical
-XML-RPC/graph helpers still have callers. Operator/import scripts, the unregistered
-Audience repository and the historical BlogImporter need separate direct-driver
-migration checks. Do not remove the vendor directory or claim all CLI/extension
+XML-RPC/graph helpers still have callers. Audience 0.017 now uses native dbTable repositories and is deployed on
+LearnTheBirds. Seven completed staging operators are retired; the two reusable
+schema operators now use dbTable. Historical BlogImporter still needs a separate
+direct-driver migration decision. Do not remove the vendor directory or claim all CLI/extension
 paths have migrated. Before enabling a dormant module on any site, audit its
 database calls and PHP 8 compatibility, then test its actual workflows.
 
@@ -48,7 +50,7 @@ database calls and PHP 8 compatibility, then test its actual workflows.
 | --- | --- | --- | --- | --- |
 | LiveUser / LiveUser_Admin | None: bootstrap and package files removed | Retired; native-auth is the supported identity boundary | Complete in source | Focused native-auth/session/logout contracts pass; production journey verification is pending release |
 | MDB2 / MDB2_Schema | `engine_class_inc.php`, `dbtable`, `dbtablemanager` | Configurable database abstraction and schema compatibility | Establish PDO as the canonical path; migrate API-by-API rather than replacing calls mechanically | No supported setting selects `MDB2`; schema install/upgrade tools and regression suite use PDO |
-| PEAR / PEAR_Error | Engine error callback, MDB2 error checks and historical base classes | Error representation coupled to MDB2 and LiveUser | Use native exceptions/results at adapter boundaries | MDB2/LiveUser removed and no active code extends or type-checks PEAR classes |
+| PEAR / PEAR_Error | MDB2 compatibility checks and legacy module consumers | Native PDO bootstrap no longer loads PEAR; native exceptions remain redacted | Local cleanup implemented; retain recognition of existing MDB2 errors without loading PEAR | Remaining supported MDB2 sites and other PEAR consumers migrated |
 | Config | No identified active first-party loader after native migration | Vendor retained for legacy fixtures/external-extension audit | Native XML/INI documents and checked writers now serve all identified callers | Deployment/extension audit and full database installation before vendor removal |
 
 ## Module-scoped direct loaders
@@ -355,3 +357,31 @@ cover shared dbTable contracts, direct stores, security, translation, schema,
 installation, operators and final dependency cleanup. Read-only live inspection
 found that KengaLearn currently lacks pdo_mysql. This assessment changes no runtime
 behaviour and does not mark MDB2 as migrated or removable.
+
+
+## Core bootstrap and operator cleanup — 11 October 2026
+
+Local change, not yet deployed to production. The framework errorhandler is a
+native message adapter: no PEAR inheritance, include or newly constructed
+PEAR_Error. It accepts Throwable and already-created legacy errors. Database
+manager initialisation and catalogue delete-row checks no longer invoke the PEAR
+class unconditionally. MDB2's own callbacks remain inside its selected backend.
+PDO database exceptions and their redacted failure contract are unchanged.
+
+Seven hard-coded operators for the completed LearnTheBirds staging move now
+refuse to execute before application bootstrap. See the modules repository's
+`docs/retired-staging-imports.md` for their exact paths and recovery commit.
+Reusable SitePages composition and Payment contribution schema commands now use
+module dbTable repositories and ChisimbaDatabaseSchema, preserving check/apply
+behaviour and guarding DDL against an existing transaction. No production import,
+payment, registration or email was executed for this cleanup.
+
+Validation covers native error/fallback messages without PEAR, existing legacy
+errors without callback side effects, refusal of all retired --apply commands,
+real PDO and MDB2 maintenance dry-run/apply/repeat, content and identity
+preservation, missing-table errors, transaction ownership, full PDO/MDB2
+contracts and PDO engine composition including database-manager initialisation.
+The disposable installed site's engine/catalogue/webinar repositories also boot
+without PEAR or MDB2. The fresh-install runtime smoke now asserts those classes
+are absent. Remaining Mail/XML/BBCode/archive consumers still require their own
+migration; vendor files and the MDB2 option are intentionally retained.

@@ -1,11 +1,11 @@
 <?php
 
 /**
- * PEAR Error handler
+ * Native error message adapter
  * 
- * This file contains the errorhandler class that extends the PEAR error handler
+ * This file contains the native errorhandler message adapter
  * 
- * PHP version 5
+ * PHP version 8
  * 
  * This program is free software; you can redistribute it and/or modify 
  * it under the terms of the GNU General Public License as published by 
@@ -31,70 +31,22 @@
  */
 
 /**
- * PEAR main class
+ * Preserve the historical message adapter without loading or extending PEAR.
+ * Already-created legacy errors remain readable for installations using MDB2.
  */
-require_once('PEAR.php');
-
-/**
- * PEAR error handler
- * 
- * Extension to the built in PEAR error handler
- * 
- * @category  Chisimba
- * @package   core
- * @author    Paul Scott <<pscott@uwc.ac.za>>
- * @copyright 2007 Paul Scott
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
- * @version   Release: @package_version@
- * @link      http://avoir.uwc.ac.za
- * @see       http://pear.php.net/
- */
-
-class errorhandler extends PEAR 
-    {
-    /**
-     * The error
-     * @var    mixed
-     * @access public 
-     */
+class errorhandler
+{
     public $error;
-
-    /**
-     * error handler
-     * @var    mixed
-     * @access public 
-     */
     public $handleErr;
 
-    /**
-     * constructor
-     * 
-     * Standard PHP5 constructor method
-     * 
-     * @param  string $errstr Error string
-     * @param  integer $errno  Error number
-     * @param  object  $object Error handler object
-     * @return void   
-     * @access public 
-     */
-    public function __construct($errstr, $errno, $object) {
-        $error = new PEAR_Error($errstr, $errno);
-        if (PEAR::isError($object)) {
-            $this->error = $object->getMessage();
-        }
+    public function __construct($errstr, $errno, $object)
+    {
+        $this->error = ($object instanceof Throwable || is_a($object, 'PEAR_Error'))
+            ? $object->getMessage() : $errstr;
     }
 
-    /**
-     * Method to handle the errors
-     * 
-     * Returns the error string in human readable format
-     * 
-     * @return string Return error string in human readable format
-     * @access public 
-     */
-    public function handleError() {
+    public function handleError()
+    {
         return $this->error;
     }
-
 }
-?>

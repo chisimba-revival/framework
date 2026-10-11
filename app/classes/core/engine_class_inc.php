@@ -797,7 +797,7 @@ class engine {
             //$_globalObjDbManager = &MDB2::connect ( $this->dsn );
 
             //Check for errors
-            if (PEAR::isError ( $_globalObjDbManager )) {
+            if (is_a($_globalObjDbManager, 'PEAR_Error')) {
                 /*
 				 * manually call the callback function here,
 				 * as we haven't had a chance to install it as

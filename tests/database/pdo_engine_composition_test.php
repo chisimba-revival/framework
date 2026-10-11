@@ -41,8 +41,11 @@ try {
     if ($table->query("SELECT 'composed' AS VALUE") !== [['value' => 'composed']]) {
         throw new RuntimeException('Real dbTable initialisation/composition failed');
     }
-    if (class_exists('MDB2', false)) throw new RuntimeException('PDO engine composition loaded MDB2');
-    echo "PASS: real engine getDbObj and dbTable init share one native connection; legacy DSN port parsed; MDB2 not loaded\n";
+    $first->getDbManagementObj();
+    foreach (['MDB2', 'PEAR', 'PEAR_Error'] as $legacy) {
+        if (class_exists($legacy, false)) throw new RuntimeException('PDO engine composition loaded ' . $legacy);
+    }
+    echo "PASS: real engine getDbObj and dbTable init share one native connection; legacy DSN port parsed; MDB2 and PEAR not loaded\n";
 } finally {
     chdir(sys_get_temp_dir());
     unlink($temporary . '/config/dbdetails_inc.php');

@@ -326,7 +326,7 @@ class patch extends dbtable {
                                         $deleteResult = $this->objModule->query(
                                             'DELETE FROM ' . $table . ' WHERE ' . implode(' AND ', $where)
                                         );
-                                        if ($deleteResult === false || PEAR::isError($deleteResult)) {
+                                        if ($deleteResult === false || is_a($deleteResult, 'PEAR_Error')) {
                                             return false;
                                         }
                                         $patch = array(
