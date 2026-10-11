@@ -234,3 +234,9 @@ as SQL NULL; the exact APIs preserve literal empty strings.
 it updates five named modules through Catalogue and checks protected data
 checksums. Rehearse on a restored private copy and retain a backup before using it
 on the installed local site. It is not a generic production upgrade command.
+
+`content_expiry_checks.php` exercises the Utilities notification API against real
+content and Communications outbox fixture tables on both drivers. It verifies
+canonical recipients/site sender, recipient rejection, a database-triggered queue
+failure, failed timestamp persistence followed by deduplicated retry, a 24-hour
+cooldown and a later notification. No transport runs and no email is sent.

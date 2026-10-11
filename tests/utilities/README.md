@@ -50,3 +50,16 @@ CHISIMBA_INSTALLER_FIXTURE=1 php tests/utilities/installed_bbcode_smoke.php /ins
 The local installed-module catalogue was also opened successfully in the browser,
 exercising its description-formatting path. Vendor files and the old INI remain
 for the final dependency/build cleanup stage; the native wrapper ignores the INI.
+
+## Content-expiry notices
+
+The PDO and MDB2 contract runners include `content_expiry_checks.php`. For an
+explicitly disposable, transaction-capable installed site, the public queue API
+can also be checked without delivery:
+
+```
+CHISIMBA_INSTALLER_FIXTURE=1 php tests/utilities/installed_expiry_smoke.php /installed/ch
+```
+
+This queues a synthetic `.invalid` address inside a transaction and verifies that
+the row disappears on rollback. It does not run a worker or enable a scheduler.

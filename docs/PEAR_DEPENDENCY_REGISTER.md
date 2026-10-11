@@ -60,7 +60,7 @@ database calls and PHP 8 compatibility, then test its actual workflows.
 | Mail / Mail_mime | `core_modules/mail/classes/mailer_class_inc.php` | Whether legacy `mail` remains registered and sends production messages | Keep isolated; route new sending through Communications. Retire only after delivery, attachment and bounce/rollback tests |
 | Translation2 / Translation2_Admin / I18Nv2 | No identified active first-party loader after Language 1.613 | Native runtime released to KengaLearn; external-extension/installer audits outstanding | Retain vendors until release/cleanup gates pass; see translation test README |
 | XML/RPC | `core_modules/packages/classes/rpcserver_class_inc.php`; `core_modules/api/classes/xmlrpcapi_class_inc.php`; filter helpers | **F-006 update, 30 September:** KengaLearn's `api` and `packages` routes return HTTP 410 without loading services. ADM is retired. Backing classes and shared libraries remain; other sites require separate verification. | Do not restore legacy endpoints. Inventory internal/filter consumers before deleting XML/RPC libraries. Future integrations should use explicitly authenticated and authorised HTTP/JSON services. |
-| HTML_BBCodeParser | `core_modules/utilities/classes/bbcodeparser_class_inc.php` | Which rich-text inputs select this parser and the output sanitisation chain | Retire after content migration and sanitised rendering tests |
+| HTML_BBCodeParser | Shared wrapper migrated to native formatting in Utilities 2.021 | Retained vendor fixtures and external/dormant extension audit; site content rollout gates below | Remove vendor/build entries only after those gates |
 | Archive_Tar | `core_modules/modulecatalogue/controller.php` | Module package upload/install feature reachability | Replace with a maintained archive implementation only after archive traversal and package signature policy are defined |
 
 ## Candidate baggage, not removal candidates yet
@@ -482,3 +482,21 @@ independence and washout delegation. The installed PDO engine composes the wrapp
 without PEAR, and the local installed-module catalogue renders its descriptions.
 Old blog/custom-filter stored-content comparison remains a per-site rollout gate;
 no production content was changed and no PEAR vendor files were deleted.
+
+### Content-expiry notices — 11 October 2026
+
+Utilities 2.022 routes dateandtime's retained notification API through Communications
+and declares the dependency. It resolves logical user IDs through Security's
+userservice, uses the configured site sender and intended subject, and corrects
+the old date format's month/minute mix-up. It records a timestamp only after queue
+acceptance; acceptance is not delivery. A key derived from the content identity,
+recipient and previous timestamp deduplicates retries when timestamp persistence
+fails. Invalid/missing content or recipients do not queue. Real outbox/content
+fixtures run on PDO and MDB2, including storage failure, cooldown and later notices.
+
+No active first-party sendExpiredMsg callers were found in this audit; this keeps
+the reusable API correct without enabling any dormant module or scheduler. The
+old optional explicit-address mailUser API remains; legacy placeholder addresses
+resolve by logical user ID. Message bodies are plain text. Other legacy mail
+callers, CC/BCC compatibility and archive installation remain pending. Production
+was not changed and tests did not send email.
