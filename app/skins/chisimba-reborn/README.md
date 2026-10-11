@@ -86,3 +86,10 @@ frequency; this root skin owns their sizes, spacing and link colour. Keep tag
 links underlined and keyboard focus visible. Do not add per-cloud inline CSS or
 age-based fading in a canvas. Tag selection, counts and access remain the owning
 module's responsibility.
+
+Native checkboxes and radios retain compact control dimensions and align with
+adjacent text. Text-field height/padding rules must exclude both input types.
+The shared radio helper emits `.chisimba-choice` wrappers: each input and associated
+label align on their first baseline, and wrapped labels stay in the text column.
+Keep native inputs, label associations and keyboard behaviour; avoid module-specific
+position offsets to compensate for stretched controls.

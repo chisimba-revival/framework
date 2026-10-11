@@ -7561,3 +7561,29 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-tag-cloud__weight-3 { font-size: 1.125rem; }
 .chisimba-tag-cloud__weight-4 { font-size: 1.25rem; }
 .chisimba-tag-cloud__weight-5 { font-size: 1.375rem; }
+
+/* Native choices align with text instead of inheriting text-field dimensions. */
+input[type="checkbox"],
+input[type="radio"] {
+    min-height: 0;
+    height: 1em;
+    padding: 0;
+    vertical-align: middle;
+}
+.chisimba-choice {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .45em;
+    max-width: calc(100% - .65em);
+    margin-block: .2em;
+    margin-inline-end: .65em;
+    vertical-align: top;
+}
+.chisimba-choice > input {
+    flex: 0 0 auto;
+    margin: 0;
+}
+.chisimba-choice > label {
+    min-width: 0;
+    margin: 0;
+}
