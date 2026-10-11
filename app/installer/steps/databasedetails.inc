@@ -303,7 +303,7 @@ class DbDetailsAction extends FiveStepAction
                 $db_array['mysql'] = 'MySQL';
             }
             if ($allowed_db['MDB2_Driver_mysqli']==TRUE) {
-                $db_array['mysqli'] = 'MySQLi';
+                $db_array['mysqli'] = 'MySQL / MariaDB (PDO)';
             }
             if($allowed_db['MDB2_Driver_pgsql']==TRUE) {
                 $db_array['pgsql'] = 'PostgreSQL';

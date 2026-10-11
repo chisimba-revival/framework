@@ -360,8 +360,8 @@ class systext_facet extends dbTable
     {
         $system_type = $this -> _getActiveSystemType();
 
-        $systemTypeList = $this -> listSystemTypes();
-        $textItemList = $this -> listTextItems();
+        $systemTypeList = $this -> listSystemTypes() ?: array();
+        $textItemList = $this -> listTextItems() ?: array();
         $abstractList = array();
 
         foreach($systemTypeList as $arrSystemType){

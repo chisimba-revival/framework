@@ -799,8 +799,10 @@ class modulesadmin extends dbTableManager
                 }
             }
             if (isset($indexes)) {
-                $name = array_keys($indexes['fields']);
-                $name = $name[0];
+                // Honour the schema's declared name; a long field name plus _idx can exceed MySQL's limit.
+                if (!isset($name)) {
+                    $name = array_key_first($indexes['fields']);
+                }
                 $this->createTableIndex($tablename, $name, $indexes);
             }
             return TRUE;
@@ -848,7 +850,7 @@ class modulesadmin extends dbTableManager
             foreach ($objXml as $table=>$dummy) {
                 $sqlArray = array();
                 foreach ($dummy as $field=>$value) {
-                    $sqlArray[$field]= $value;
+                    $sqlArray[$field] = (string) $value;
                 }
 
                 // check that the record does not already exist

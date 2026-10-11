@@ -543,8 +543,8 @@ class modulecatalogue extends controller {
 
                     if (!$this->ajaxInstall)
                     {
-                        $url = array ('username' => 'admin', 'password' => 'a', 'mod' => 'modulecatalogue' );
-                        return $this->nextAction ( 'login', $url, 'security' );
+                        $url = array ('mod' => 'modulecatalogue' );
+                        return $this->nextAction ( 'showlogin', $url, 'security' );
                     }
                     else
                     {

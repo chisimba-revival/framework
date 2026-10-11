@@ -99,7 +99,7 @@ class loginbox extends ChisimbaObject
     
     public function isEnable(){
        
-        if(strtolower($this->isEnabled) == 'true'){
+        if(strtolower((string) $this->isEnabled) == 'true'){
             return true;
         }else{
             return false;

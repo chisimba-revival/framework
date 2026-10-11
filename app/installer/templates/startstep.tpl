@@ -14,7 +14,7 @@
 		<h4>Introduction to Chisimba</h4>
 		
         Chisimba is a Web 2.0 enabled rapid application development framework for creating web applications that are platform independent, browser independent, xHTML compliant, 
-        and can use a number of common databases. Chisimba is written in PHP5 using the model-view-controller paradigm, implemented via a modular architecture. 
+        and uses MySQL or MariaDB through native PDO. Chisimba requires PHP 8.2 or later and uses the model-view-controller pattern with a modular architecture.
         <br />
         Over 100 modules of functionality are already available and these can be used out of the box to create a Content Management System, a feature-rich e-learning platform, 
         a group-based collaboration platform, a blogging system that allows posting from mobile phones, and many other applications.

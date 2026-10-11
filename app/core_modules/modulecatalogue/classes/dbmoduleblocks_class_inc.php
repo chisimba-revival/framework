@@ -213,7 +213,7 @@ class dbmoduleblocks extends dbTable
     public function deleteModuleBlocks($moduleid)
     {
         $record = $this->getAll("WHERE moduleid = '$moduleid'");
-        foreach($record as $block) {
+        foreach(($record ?: array()) as $block) {
             $this->delete('id',$block['id']);
         }
     }

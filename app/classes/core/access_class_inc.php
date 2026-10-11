@@ -150,7 +150,7 @@ class access extends ChisimbaObject {
         if (in_array($this->moduleName, $this->modulesNotToLog)) {
             $logThisModule = FALSE;
         }
-        if (strtoupper($this->logActivity) == 'TRUE' && $logThisModule) {
+        if (strtoupper((string) $this->logActivity) == 'TRUE' && $logThisModule) {
             $fields = array(
                 "userid" => $this->userid,
                 "module" => $this->moduleName,

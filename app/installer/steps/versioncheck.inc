@@ -22,7 +22,6 @@ require_once INSTALL_DIR.'/stepaction.inc';
 
 * @version $version$ - 1.0
 * @todo Still to add XML_DTD check
-* @todo Still to add MDB2_schema check
 
 * @package 5ive
 
@@ -66,8 +65,8 @@ function VersionCheck()
     {
         //Register PHP check actions
         $this->actions[] = new PHPCheckAction(get_class($this));
-        //Register PEAR check actions
-        $this->actions[] = new PEARCheckAction(get_class($this));
+        // Check the bundled runtime libraries.
+        $this->actions[] = new RuntimeLibrariesCheckAction(get_class($this));
 
         $this->step_title = 'System Requirements.';
 
@@ -84,6 +83,22 @@ function VersionCheck()
 
 
     }//end VersionCheck()
+
+    public function process()
+    {
+        // Confirmation must not bypass requirements that have failed or changed.
+        $this->errors = array();
+        foreach ($this->actions as $action) {
+            if (!$action->processAction()) {
+                $this->success = false;
+                $this->confirmed = false;
+                $this->errors = array_merge($this->errors, $action->errors);
+                return false;
+            }
+        }
+        return parent::process();
+    }
+
 
 
 
@@ -123,7 +138,7 @@ class PHPCheckAction extends StepAction
 
     */
 
-    public $min_version = '5.1.0';
+    public $min_version = '8.2.0';
 
 
 
@@ -137,7 +152,7 @@ class PHPCheckAction extends StepAction
 
     */
 
-    public $required_settings = Array(  'PHP' => Array('version'=>'5.1.0', 'available'=>true, 'message'=> ''),
+    public $required_settings = Array(  'PHP' => Array('version'=>'8.2.0', 'available'=>true, 'message'=> ''),
 
                                         'GD'=>Array('version'=>'', 'available' => true, 'message'=> ''),
 
@@ -192,6 +207,9 @@ class PHPCheckAction extends StepAction
     function processAction()
 
     {
+
+        $this->success = true;
+        $this->errors = array();
 
 
 
@@ -267,7 +285,7 @@ class PHPCheckAction extends StepAction
 
         // check zip
 
-        if (!function_exists('zip_open')) {
+        if (!class_exists('ZipArchive')) {
 
             $this->required_settings['zip']['available'] = false;
 
@@ -370,12 +388,13 @@ class PHPCheckAction extends StepAction
         // check SimpleXML
 
         if (!extension_loaded('SimpleXML')) {
+            $this->success = false;
 
             $this->required_settings['SimpleXML']['available'] = false;
 
             $this->required_settings['SimpleXML']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
 
-            $this->errors[] = '<span class="errors">SimpleXML not found. You can proceed with the install, however some functionality will not be available to you</span>';
+            $this->errors[] = '<span class="errors">SimpleXML is required to load installation data.</span>';
 
         } else {
 
@@ -460,11 +479,11 @@ class PHPCheckAction extends StepAction
             ? '<img src="./extra/ok.png" alt="OK" />'
             : '<img src="./extra/failed.png" alt="Failed" />';
         if (!$available) {
+            $this->success = false;
             $this->errors[] = 'Install PHP PDO with the MySQL driver (pdo_mysql).';
         }
 
-    //setup the chisimba PEAR PATH
-    $_SESSION['pear_path'] = isset($_POST['pear_path']) ? $_POST['pear_path']: $_SESSION['sys_root']."lib/pear/";
+
 
      return $this->success;
 
@@ -554,235 +573,58 @@ class PHPCheckAction extends StepAction
 
 }//end class
 
-/**
-
-* PEARCheckAction
-
-*
-
-* Check whether all the PEAR versions are up to date and available.
-
-*
-
-*/
-
-class PEARCheckAction extends StepAction
-
+/** Validate the packaged runtime, without a system PEAR registry or MDB2. */
+class RuntimeLibrariesCheckAction extends StepAction
 {
-
-
-
-    /**
-
-    * The required packages for PEAR
-
-    * @var array
-
-    */
-
-    var $required_packages = Array(
-
-        'MDB2'             => Array('version'=>'2.0.2','available'=>false,'message' => ''),
-        'MDB2_Schema'   => Array('version'=> '0.4.3','available'=>false,'message'=>''),
-        // 'Log'         => Array('version'=>'1.0.0','available'=>false,'message' => ''),
-        // 'XML_Util'         => Array('version'=>'1.1.4','available'=>false,'message' => '')
-        );
-
-
-
-    /**
-
-    * Check the pear versions
-
-    *
-
-    * @return boolean Whether this check succeeded or not.
-
-    * @access public
-
-    */
+    public $required_packages = array();
 
     function processAction()
     {
-        $available=class_exists('PDO') && in_array('mysql',PDO::getAvailableDrivers(),true);
-        $this->required_packages=['pdo_mysql'=>['version'=>PHP_VERSION,'available'=>$available,
-            'message'=>$available?'Available':'Install the PHP pdo_mysql extension before continuing.']];
-        $this->success=$available;
-        if (!$available) $this->errors[]='The installer requires PHP PDO with the MySQL driver (pdo_mysql).';
-        return $available;
+        $this->errors = array();
+        $this->required_packages = array();
+        $root = rtrim((string) ($_SESSION['sys_root'] ?? dirname(INSTALL_DIR)), '/\\');
+        // This is the same bundled directory used by the application bootstrap.
+        // Never accept a posted library path or fall back to an unrelated system copy.
+        $_SESSION['pear_path'] = $root . '/lib/pear/';
+        $files = array(
+            'PEAR compatibility' => 'PEAR.php',
+            'Archive extraction' => 'Archive/Tar.php',
+            'XML serialisation' => 'XML/Serializer.php',
+            'XML deserialisation' => 'XML/Unserializer.php',
+            'XML parser' => 'XML/Parser.php',
+            'XML utilities' => 'XML/Util.php',
+            'BBCode parser' => 'HTML/BBCodeParser.php',
+            'Mail transport' => 'Mail.php',
+            'MIME mail' => 'Mail/mime.php',
+        );
+        foreach ($files as $label => $file) {
+            $available = is_file($_SESSION['pear_path'] . $file)
+                && is_readable($_SESSION['pear_path'] . $file);
+            $message = $available ? 'Available' : 'Missing bundled file: lib/pear/' . $file;
+            $this->required_packages[$label] = array(
+                'version' => 'Bundled', 'available' => $available, 'message' => $message,
+            );
+            if (!$available) {
+                $this->errors[] = $message . '. Restore the complete application libraries before continuing.';
+            }
+        }
+        $this->success = !$this->errors;
+        return $this->success;
     }
 
     function paintAction()
-
     {
-
-        $tpl = new Template(INSTALL_DIR.'/templates/versioncheck.tpl');
-
-
-
+        $tpl = new Template(INSTALL_DIR . '/templates/versioncheck.tpl');
         $tpl->set('step_name', $this->parent_step);
-
         $tpl->set('required', $this->required_packages);
-
-        // $tpl->set('checking', 'PEAR DataBase Abstraction Packages');
-
         echo $tpl->fetch();
-
-
-
-        $pear_dir  = isset($_SESSION['pear_path']) ? $_SESSION['pear_path'] : $this->_findPEARPath();
-
-        $textbox = '<br><p></br>' .
-
-                    '<br><p>Please enter your PEAR path. The installer has guessed that the directory below is </br>'.
-
-                    'where PEAR is installed, but it may be in a different directory. '.
-
-                    'PEAR by default is installed underneath your PHP directory in /path/to/php/PEAR.</p>'.
-
-                    '<p>If the installer cannot find the PEAR registry, set this value blank before clicking '.
-
-                    'next, and the installer will try to detect the classes manually. You will then be able '.
-
-                    'to continue installing regardless of whether the PEAR classes were found.</p>'.
-
-                    '<input type="text" name="pear_path" size="40" value="'.$pear_dir.'" />';
-
-        echo $textbox;
-
-
-
-    }//end paintAction()
-
-
-
-    /**
-
-    * Show the confirmation of what passed and what failed.
-
-    *
-
-    * @return void
-
-    * @access public
-
-    */
+        echo '<p>New installations use native PDO MySQL. The remaining compatibility libraries '
+            . 'are supplied in the application’s lib/pear directory; no system PEAR installation '
+            . 'or PEAR registry is required.</p>';
+    }
 
     function confirmAction()
-
     {
-
-        $tpl = new Template(INSTALL_DIR.'/templates/versioncheck.tpl');
-
-
-
-        $tpl->set('checking', 'Database Abstraction Packages');
-
-        $tpl->set('step_name', $this->parent_step);
-
-        $tpl->set('required', $this->required_packages);
-
-
-
-        echo $tpl->fetch();
-
-
-
-    }//end confirmAction()
-
-
-
-
-
-    /**
-
-    * Try and find the PEAR path.
-
-    *
-
-    * @return string the likely PEAR path.
-
-    * @access private
-
-    */
-
-    function _findPEARPath()
-
-    {
-
-        $locations = Array( '/usr/lib/php/PEAR',
-
-                                    '/usr/lib/php',
-
-                                    '/usr/share/php',
-
-                                    '/usr/share/pear',
-
-                                    '/usr/local/lib/php',
-
-                                    '/usr/local/lib/php/PEAR',
-
-                                    'c:/php/pear',
-
-                                    'c:/php4/pear',
-
-                                    'c:/php5/pear'
-
-                                    );
-
-
-
-        foreach ($locations as $location) {
-
-            // if the location is a directory, see if there's a PEAR.php file there.
-
-            if(is_dir($location)) {
-
-                $pear_file = $location.'/PEAR.php';
-
-                if(file_exists($pear_file)) {
-
-                    return $location;
-
-                }
-
-            }
-
-
-
-        }
-
-
-
-        $pear_dir = '';
-
-        // if none of them were found, pass back a guess.
-
-        /*if ((strtolower(PHP_OS) == 'winnt') || (strtolower(PHP_OS) == 'win32')) {
-
-            $pear_dir = 'c:/php/pear';
-
-        } else {
-
-            $pear_dir = '/usr/local/lib/php';
-
-        }*/
-
-
-
-        return $pear_dir;
-
-
-
-    }//end _findPEARPath()
-
-
-
-
-
-}//end class
-
-
-
-
-?>
+        $this->paintAction();
+    }
+}

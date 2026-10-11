@@ -15,6 +15,10 @@
 
 class domtt
 {
+    public $javaScriptIsSet = false;
+    public $url;
+    public $linkText;
+    public $title;
     
 	/**
      * Constructor

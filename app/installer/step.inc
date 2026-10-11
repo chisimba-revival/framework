@@ -13,6 +13,7 @@ require_once dirname(__FILE__).'/customexception.inc';
 
 class Step
 {
+    public $step_help = "";
 
 	/**
 	* Was this step successful?
