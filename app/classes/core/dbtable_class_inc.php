@@ -422,7 +422,12 @@ class dbTable extends ChisimbaObject {
                 return $converted;
             }, $this->_db->fetchAll($sql, $parameters));
         }
-        $statement = $this->_db->prepare($sql, null,
+        // Explicit scalar types avoid MDB2's null datatype array key on PHP 8.5.
+        $types = array_map(static fn($value) => match (true) {
+            is_int($value) => 'integer', is_bool($value) => 'boolean',
+            is_float($value) => 'float', default => 'text',
+        }, $parameters);
+        $statement = $this->_db->prepare($sql, $types,
             $write ? MDB2_PREPARE_MANIP : MDB2_PREPARE_RESULT);
         $this->checkPreparedResult($statement);
         if (!is_object($statement) || !method_exists($statement, 'execute')) {

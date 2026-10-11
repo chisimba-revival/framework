@@ -10,6 +10,9 @@ class dbTable {
     public $siteName = 'KengaLearn';
     public function insert($message) { $this->stored = $message; return true; }
     public function getObject($name, $module) {
+        if ($name === 'communicationdeliverygate') return new class {
+            public function recipientAllowed($address) { return $address === 'recipient@example.test'; }
+        };
         return new class($this->siteName) {
             public function __construct(private $name) {}
             public function getSiteName() { return $this->name; }
