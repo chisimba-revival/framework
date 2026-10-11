@@ -1076,7 +1076,7 @@ class getID3
 					if (file_exists(GETID3_HELPERAPPSDIR.'vorbiscomment.exe')) {
 
 						$commandline = '"'.GETID3_HELPERAPPSDIR.'vorbiscomment.exe" -w -c "'.$empty.'" "'.$file.'" "'.$temp.'"';
-						$VorbisCommentError = `$commandline`;
+						$VorbisCommentError = shell_exec($commandline);
 
 					} else {
 
@@ -1087,7 +1087,7 @@ class getID3
 				} else {
 
 					$commandline = 'vorbiscomment -w -c "'.$empty.'" "'.$file.'" "'.$temp.'" 2>&1';
-					$VorbisCommentError = `$commandline`;
+					$VorbisCommentError = shell_exec($commandline);
 
 				}
 

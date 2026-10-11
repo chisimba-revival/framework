@@ -7,8 +7,8 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
  /**
  * Class for reading and writing arrays in XML
- * The Serialize and Unserialize classes extend PEAR
- * This is a wrapper class for them, that extends ChisimbaObject
+ * Native array/scalar XML metadata wrapper using PHP DOM.
+ * Object deserialisation and DTDs are deliberately unsupported.
  *
  
  * @category  Chisimba
@@ -21,7 +21,7 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
-require_once('XML/Unserializer.php');
+require_once __DIR__.'/nativexmlvalue.php';
 
 class xmlserial extends ChisimbaObject
 {
@@ -34,32 +34,32 @@ class xmlserial extends ChisimbaObject
 
     /**
     * Method to read in XML, and return an array
-    * by calling functions in the Unserialize class
+    * using the native array/scalar metadata contract
     * @param string $file the XML to read
-    * @param string $type whether its a filename or a string
-    * @returns array $data
+    * @param bool $type true for a local filename, false for XML text
+    * @return mixed array or scalar metadata
     */
     function readXML($file,$type=TRUE)
     {
-        $objUnserializer = new XML_Unserializer();
-        $objUnserializer->unserialize($file,$type);
-        $data = $objUnserializer->getUnserializedData();
-        return $data;
+        if ($type) {
+            if (!is_string($file) || str_contains($file, '://') || !is_file($file) || !is_readable($file) || filesize($file) > 8388608) {
+                throw new InvalidArgumentException('Readable local XML metadata file required.');
+            }
+            $file = file_get_contents($file, false, null, 0, 8388609);
+            if ($file === false) throw new RuntimeException('Cannot read XML metadata.');
+        }
+        return ChisimbaXmlValue::read($file);
     }
 
     /**
     * Method to export an array as XML
-    * by calling functions in the Serialize class
+    * using the native array/scalar metadata contract
     * @param array $data
-    * @returns string $xmldata
+    * @return string XML metadata
     */
     function writeXML($data)
     {
-        require_once('XML/Serializer.php');
-        $objSerializer = new XML_Serializer(NULL);
-        $objSerializer->serialize($data);
-        $xmldata=$objSerializer->getSerializedData();
-        return $xmldata;
+        return ChisimbaXmlValue::write($data);
     }
 
 }

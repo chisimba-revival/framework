@@ -385,3 +385,76 @@ The disposable installed site's engine/catalogue/webinar repositories also boot
 without PEAR or MDB2. The fresh-install runtime smoke now asserts those classes
 are absent. Remaining Mail/XML/BBCode/archive consumers still require their own
 migration; vendor files and the MDB2 option are intentionally retained.
+
+## Mail and content follow-up — 11 October 2026
+
+Local source changes; **not deployed**. Retained vendor files are not evidence of
+active use. Conversely, removing a wrapper's dependency does not make the entire
+vendor package removable: dormant modules, other sites, tests and build manifests
+still need to be checked.
+
+### Completed first migration slice
+
+- File Manager folder/file alerts now queue through Communications, using its
+  configured sender and delivery controls. Duplicate addresses across student and
+  instructor groups receive one personalised message. The service returns false
+  if any queue request fails. Existing controllers do not present that return to
+  the user; queued acceptance is not proof of delivery. There are no attachments,
+  CC or BCC in these two workflows. File Manager declares Communications as a
+  dependency; its worker must be configured before enabling alerts on a site.
+- Utilities `xmlserial` now uses PHP DOM for local files and array/scalar XML.
+  Existing default PEAR metadata shapes remain readable: scalar values normally
+  read as strings, empty arrays/elements as empty strings, repeated tags as lists,
+  mixed text under `_content`, and numeric/invalid output keys under
+  `XML_Serializer_Tag`. This intentionally preserves the old lossy contract rather
+  than changing stored formats. Empty-element whitespace is not byte-identical.
+- XML inputs are limited to 8 MiB, 64 levels and 100,000 elements. DTDs, remote
+  filename URLs, object/class deserialisation and invalid XML text are rejected
+  with exceptions. Object deserialisation is deliberately unsupported; ETD and
+  triplestore users must check their stored fixtures before revival/deployment.
+- Two shell backticks in bundled getID3 were replaced with equivalent shell_exec
+  calls to permit strict PHP 8.5 class loading. This is a local vendor patch, not
+  an upstream upgrade or a claim that all media parsing is modernised.
+
+Validation: native XML fixtures under strict PHP 8.5, bidirectional comparison
+with retained PEAR XML, invalid/DTD/object/depth/size rejection, local-file input,
+File Manager queue/dedup/failure fixtures, retained XML parser/BBCode boundary
+regressions, normal local catalogue updates, real engine/media-analyser composition
+and authenticated local File Manager page. The oracle comparison alone tolerates
+PEAR vendor E_DEPRECATED diagnostics; native tests do not suppress diagnostics.
+
+**Outstanding media gate:** a synthetic WAV through the full old getID3 analyser
+fails strict PHP 8.5 at `getID3::$info` dynamic-property creation. Its wrapper also
+suppresses reporting and restores it from the wrong setting, and the analyser
+still has a PHP 4 constructor. Do not claim a clean full media-upload regression.
+Modernise/replace that retained media dependency and test supported formats before
+rolling this slice out to production. It is separate from PEAR XML but encountered
+on the same File Manager path.
+
+### Remaining work in steps 3 and 4
+
+1. Legacy mailer remains in security/user registration, error reporting, utilities
+   date reminders and older forms, practicals, assignment, discussion, CMS/blog
+   and comment modules. Trace active workflows before changing delivery semantics.
+   Forms uses CC; discussion and CMS flag notifications use BCC. Communications
+   currently handles one recipient per outbox message, so preserve visible CC and
+   private BCC semantics explicitly rather than silently discarding fields.
+   The legacy attachment method references an uninitialised base mail object;
+   no active first-party attachment invocation was found in this audit. Verify
+   extensions before retiring it. Use the already-pinned PHPMailer boundary if
+   MIME support is needed; do not implement another mail protocol stack.
+2. BBCode's shared wrapper serves washout, older blog and catalogue descriptions.
+   Its filters include Basic, Extended, Images, Lists, Email and Links. Capture
+   saved-content fixtures for nested/malformed tags, URLs, images and mixed HTML,
+   and trace sanitisation at each output before replacing it. Its relative INI
+   lookup also needs correcting as part of that migration.
+3. Module Catalogue still exposes archive upload/extraction behind administration.
+   The non-ZIP branch invokes Archive_Tar; ZIP uses the old wzip service. Replacing
+   TAR alone would leave the shared installation risks: establish method/CSRF,
+   trusted package policy, traversal/link/size checks, staging and rollback before
+   adopting native archive facilities. No archive was extracted in this audit.
+4. XML-RPC backing/filter consumers and Image_Graph helpers remain. Retired public
+   API routes must stay retired; audit internal callers before deleting libraries.
+
+LearnTheBirds webinar reminders, production mail queues and production files were
+not changed. Vendor deletion/build-pack pruning remains a separate final stage.
