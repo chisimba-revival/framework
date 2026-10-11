@@ -470,3 +470,15 @@ XML metadata. Strict PHP 8.5 isolated and installed-runtime checks passed for WA
 MP3, FLAC, Ogg/Vorbis, PNG, JPEG and MP4, plus invalid/missing-file checks. A synthetic
 MP3 also passed the local browser upload and details workflow. This does not claim
 all codecs or legacy modules have been tested. No production deployment yet.
+
+### Native BBCode — 11 October 2026
+
+Utilities 2.021 replaces the shared BBCode wrapper's PEAR loader and relative INI
+lookup with a bounded native formatter. See `tests/utilities/README.md` for the
+supported grammar, intentional compatibility differences and HTML sanitisation
+boundary. Strict PHP 8.5 tests cover retained legacy fixtures, nested/malformed
+formatting, generated URL/style safety, Unicode, limits, working-directory
+independence and washout delegation. The installed PDO engine composes the wrapper
+without PEAR, and the local installed-module catalogue renders its descriptions.
+Old blog/custom-filter stored-content comparison remains a per-site rollout gate;
+no production content was changed and no PEAR vendor files were deleted.
