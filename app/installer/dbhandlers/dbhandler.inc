@@ -92,72 +92,23 @@ class DbHandler extends dbHandlermanager
 	public $_globalObjDbManager;
 
 	public function __construct()
-	{
-	        $mepath = $_SERVER["SCRIPT_FILENAME"];
-	        $mepath = str_replace('installer/index.php', '', $mepath);
-	        
-            ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $mepath.'lib/pear/');
-			$this->_objDbConfig = $_SESSION['dsn'];
-			// Connect to the database
-			if (!class_exists('MDB2.php', true)) {
-			
-			  require_once 'MDB2.php';
-
-			}
-          
-            //MDB2 has a factory method, so lets use it now...
-            // echo $_SESSION['dsn'];
-            $this->_globalObjDb = MDB2::connect($_SESSION['dsn']);
-            
-            //var_dump($this->_globalObjDb);
-
-            if (PEAR::isError($this->_globalObjDb)) {
-                echo $this->_pearErrorCallback($this->_globalObjDb);
-                die();
-               
-            }
-            $this->_globalObjDb->setCharset('utf8');
-            $this->_globalObjDb->setOption('portability', MDB2_PORTABILITY_FIX_CASE); // ^ MDB2_PORTABILITY_EMPTY_TO_NULL);
-            $this->_globalObjDb->setCharset('utf8');
-           // $this->_globalObjDb->setOption('quote_identifiers', true);
-			MDB2::loadFile('Date');
-			MDB2::loadFile('Iterator');
-			// install the error handler with our custom callback on error
-			$this->_globalObjDb->setErrorHandling(PEAR_ERROR_CALLBACK,
-                                            array(&$this, '_pearErrorCallback'));
-            // set the default fetch mode for the DB to assoc, as that's
-            // a much nicer mode than the default MDB2_FETCHMODE_ORDERED
-            $this->_globalObjDb->setFetchMode(MDB2_FETCHMODE_ASSOC);
-            $this->_globalObjDb->setOption('portability',MDB2_PORTABILITY_FIX_CASE);
-            $this->_globalObjDb->setOption('portability', MDB2_PORTABILITY_ALL);
-			$_SESSION['DbObj'] =  $this->_globalObjDb;
-			// echo ini_get('include_path'); die();
-			if (!class_exists('MDB2/Schema.php', true)) {
-			
-			  require_once'MDB2/Schema.php';
-
-			}
-		    //MDB2 has a factory method, so lets use it now...
-             $this->_globalObjDbManager = new MDB2_Schema();
-             $result = $this->_globalObjDbManager->connect($this->_globalObjDb);
-             if (PEAR::isError($result)) {
-                 echo $result->getMessage();
-                 die();
-             }
-	     //$this->_globalObjDbManager->setOption('quote_identifiers', true);
-             $_SESSION['pearDbManager'] = $this->_globalObjDbManager;
-             $this->dbmanager = new dbHandlermanager();
-             parent::__construct();
-
-	}
+    {
+        $this->dsn=ChisimbaDatabaseDsn::parse($_SESSION['dsn']);
+        // Database creation needs a server connection before the new DB exists.
+        $serverDsn=$this->dsn; $serverDsn['database']='information_schema';
+        $this->_globalObjDb=ChisimbaDatabaseConnection::fromLegacyDsn($serverDsn);
+        $this->dbmanager=new dbHandlermanager($this->_globalObjDb);
+        parent::__construct($this->_globalObjDb);
+        if (!empty($this->dsn['database'])) {
+            $databases=$this->dbmanager->listDatabases();
+            if (in_array($this->dsn['database'],$databases,true)) $this->dbmanager->setDatabase($this->dsn['database']);
+        }
+    }
 	/**
 	 * Disconnect
 	 *
 	 */
-	function disconnect(){
-		$this->_globalObjDb->disconnect();
-		
-	}
+	public function disconnect(){ $this->_globalObjDb=null; $this->dbmanager=null; }
 	function _pearErrorCallback($error)
     {
         // TODO: note $error->getMessage() returns a shorter and friendlier but
@@ -199,16 +150,7 @@ class DbHandler extends dbHandlermanager
 
 	}//end getDbHandler()
     //check for db connections
-    public function checkConnection($dbname)
-    {
-    	     $this->dbmanager->setDatabase($dbname);
-             $result = $this->dbmanager->listDBtables();
-             if (PEAR::isError($result)) {
-             	return FALSE;
-             	
-             }
-             return true;
-    }
+    public function checkConnection($dbname){try{$this->dbmanager->setDatabase($dbname);$this->dbmanager->listDbTables();return true;}catch(Throwable $e){return false;}}
 	/**
 
 	* Abstract emptyDatabase method
@@ -221,26 +163,7 @@ class DbHandler extends dbHandlermanager
 
 	*/
 
-	public function emptyDatabase($db,$dsn) {
-
-		try {
-			$this->schema =& MDB2_Schema::factory($dsn, array('debug' => true, 'log_line_break' => '<br>'));
-			//$this->schema->setCharset('utf8');
-			$ret = $this->schema->db->CreateDatabase($db);
-
-			if (PEAR::isError($ret)) {
-	        	$ret = $this->schema->db->DropDatabase($db);
-
-	        	$ret = $this->schema->db->CreateDatabase($db);
-
-	   		}
-	   		$this->schema->disconnect();
-	   		$this->success = true;
-			return true;
-		}catch (Exception $e){
-			return false;
-		}
-	}
+	public function emptyDatabase($db,$dsn){ throw new LogicException('Automatic destructive database replacement is disabled; use an explicit backup/restore workflow.'); }
 
 	/**
 	 * Create Tables for new 5ive installations
@@ -248,36 +171,7 @@ class DbHandler extends dbHandlermanager
 	 * @return TRUE / FALSE boolean
 	 * @access Public
 	 */
-	public function createTables($tablename,$fields,$options)
-	{
-		try {
-            $puid = array(
-            	 'puid' => array(
-				                     'type'          => 'integer',
-				                     'length'        => 50,
-				                     'autoincrement' => TRUE,
-				                    ),
-				         );
-		    $fields  = array_merge($fields, $puid);
-            if($this->_globalObjDb->phptype == 'mysql' || $this->_globalObjDb->phptype == 'mysqli')
-            {
-        	    $this->_globalObjDb->setOption('default_table_type', 'INNODB');
-        	    $toptions =  array('charset' => 'utf8', 'collate' => 'utf8_unicode_ci',);
-        	    $options = array_merge($toptions, $options);
-        	}
-			    $ret = $this->dbmanager->createTable($tablename, $fields, $options);
-		    
-			if ($ret==FALSE) {
-
-	        		throw new Exception('Error while creating table');
-	   		}
-
-	   		return true;
-		}catch (Exception $e){
-			return false;
-		}
-
-	}
+	public function createTables($tablename,$fields,$options){ return $this->dbmanager->createTable($tablename,$fields,$options); }
 
 	/**
      * Method to create an index on the table
@@ -288,20 +182,7 @@ class DbHandler extends dbHandlermanager
      * @param array $index
      * @return bool true on success | False on failure
      */
-    public function createTableIndex($tableName, $keyname, $index)
-    {
-    	try {
-
-	        $ret = $this->dbmanager->createTableIndex($tableName,$keyname,$index);
-	        if (PEAR::isError($ret)) {
-
-	        		throw new Exception('Error while creating table indexes');
-	   		}
-	        return TRUE;
-    	}catch (Exception $e){
-			return $e->getMessage();
-		}
-    }
+    public function createTableIndex($tableName,$keyname,$index,$trunc=false){ return $this->dbmanager->createTableIndex($tableName,$keyname,$index,$trunc); }
 
 	/**
      * create a new database
@@ -310,12 +191,7 @@ class DbHandler extends dbHandlermanager
      * @return bool true on success
      * @access public
      */
-    public function createDb($db)
-    {
-        $options =  array('charset' => 'utf8', 'collate' => 'utf8_unicode_ci',);
-    	$ret = $this->dbmanager->createDb($db, $options);
-    	return $ret;
-    }
+    public function createDb($db){$this->dbmanager->createDb($db);$this->dbmanager->setDatabase($db);return true;}
 
 
 	/**
@@ -353,43 +229,7 @@ class DbHandler extends dbHandlermanager
 
 	*/
 
-	public function checkVersion($dsn)
-
-	{
-		try{
-
-			$sql = 'SELECT version()';
-
-			$this->schema =&MDB2::factory($dsn, array('debug' => true, 'log_line_break' => '<br>'));
-            $this->schema->setCharset('utf8');
-	   		if (PEAR::isError($this->schema)) {
-	        	$error = $this->schema->getMessage() . ' ' . $this->schema->getUserInfo();
-	        	throw new Exception();
-	   		}
-
-			// get a list of tables in the database
-
-			$result =  $this->schema->getServerVersion(false);
-			if (MDB2::isError($this->schema)) {
-
-				$this->errors[] =  $this->schema->getMessage();
-				 $schema->disconnect();
-				$this->success = false;
-				throw new Exception();
-
-			}
-
-			$ver = $result[0];
-
-
-			return version_compare($ver, $this->minVersion) >= 0;
-		}catch (Exception $e){
-
-			return false;
-		}
-
-
-	}//end version()
+	public function checkVersion($dsn){return version_compare($this->dbmanager->getServerVersion(true),$this->minVersion??'5.0','>=');}//end version()
 
 
 
@@ -409,79 +249,17 @@ class DbHandler extends dbHandlermanager
 
 	*/
 
-	public function setDSN($dsn) {
+	public function setDSN($dsn){$parsed=ChisimbaDatabaseDsn::parse($dsn);$connection=ChisimbaDatabaseConnection::fromLegacyDsn($parsed);$this->dsn=$parsed;$this->_globalObjDb=$connection;$this->dbmanager=new dbHandlermanager($connection);$this->useConnection($connection);return true;}//end setDSN()
 
-	try{
-
-		$this->dsn = $dsn;
-
-		$schema =& MDB2_Schema::factory($dsn, array('debug' => true, 'log_line_break' => '<br>'));
-		//$schema->setCharset('utf8');
-   		if (PEAR::isError($schema)) {
-        	$error = $schema->getMessage() . ' ' . $schema->getUserInfo();
-			$this->errors[] = $$error.' when connecting to database.';
-
-			throw new Exception("Exception caught");
-
-		}
-
-		$this->success = true;
-
-
-
-		return true;
-	}catch (Exception $e){
-
-		return false;
-	}
-
-
-
-	}//end setDSN()
-
-	function insert($fields, $tablename = '')
-    {
-        //log_debug("dbtable insert into $tablename");
-        //log_debug($fields);
-        if (empty($tablename)) {
-            $tablename = $this->_tableName;
-        }
-        $fieldnames = NULL;
-        $fieldValues = NULL;
-        $comma = "";
-        if (empty($fields['id'])) {
-            $id = "init";
-            $fields['id'] = $id;
-        } else {
-            $id = $fields['id'];
-        }
-        $keys = array_keys($fields);
-        $comma = ", ";
-        foreach($keys as $key) {
-        	$fieldnames .= "{$comma}{$key}";
-        }
-        foreach ($fields as $fieldName => $fieldValue) {
-
-        	$fieldValues .= "{$comma}'{$fieldValue}'";
-        }
-        $fieldValues = "VALUES ($fieldValues)";
-		$fieldValues = str_replace("(, ","(",$fieldValues);
-		$fieldnames = "($fieldnames)";
-		$fieldnames = str_replace("(, ","(", $fieldnames);
-        $sql = "INSERT INTO {$tablename} {$fieldnames} {$fieldValues}";
-        $this->_lastId = $id;
-        $ret = $this->_globalObjDb->query($sql);
-        //$ret = $this->_execute($sql, $params);
-        //log_debug("success $ret");
-
-        return $ret ? $id : false;
+	public function insert($fields,$tablename='') {
+        $tablename=$tablename?:$this->_tableName;
+        if (empty($fields['id'])) $fields['id']='init';
+        $columns=array_map([ChisimbaDatabaseSchema::class,'identifier'],array_keys($fields));
+        dbTable::forFrameworkConnection($this->_globalObjDb)->executeExactPrepared('INSERT INTO '.ChisimbaDatabaseSchema::identifier($tablename).' ('.implode(',',$columns).') VALUES ('.implode(',',array_fill(0,count($fields),'?')).')',array_values($fields));
+        return $fields['id'];
     }
 
-    function _execute($stmt, $params = array())
-    {
-    	$sh = $this->_globalObjDb->prepare($stmt, $params, MDB2_PREPARE_MANIP);
-    	return ($sh->execute());
-    }
+    public function _execute($stmt,$params=[]) { return dbTable::forFrameworkConnection($this->_globalObjDb)->executeExactPrepared($stmt,$params); }
 
 
 }//end class

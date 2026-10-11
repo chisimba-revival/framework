@@ -51,6 +51,9 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class block_language extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $availableLanguages;
+
     /**
     * @var string $title The title of the block
     */

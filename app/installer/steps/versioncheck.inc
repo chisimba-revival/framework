@@ -157,7 +157,7 @@ class PHPCheckAction extends StepAction
                                         'pgsql'=>Array('version'=>'', 'available' => true, 'message'=> ''),
 
                                         'imap'=>Array('version'=>'', 'available' => true, 'message'=> ''),
-                                        
+
                                         'mbstring'=>Array('version'=>'', 'available' => true, 'message'=> ''),
 
                                         'SimpleXML'=>Array('version'=>'', 'available' => true, 'message'=> ''),
@@ -173,7 +173,7 @@ class PHPCheckAction extends StepAction
                                     );
 
 
-	
+
 
 
 
@@ -228,7 +228,7 @@ class PHPCheckAction extends StepAction
             $this->required_settings['GD']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
 
         }
-        
+
         // check if mbstring is available
 
         if (!function_exists('mb_get_info')) {
@@ -446,84 +446,26 @@ class PHPCheckAction extends StepAction
             $this->required_settings['xmlwriter']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
 
         }
-        
-        // check mysqlclient
-        // Check for a supported MySQL client extension.
-        //
-        // PHP 7 and later removed the original mysql extension. Prefer mysqli
-        // when it is available, while retaining the legacy mysql check for
-        // historical PHP environments.
 
-        $_SESSION['allowed_db'] = Array(
-            'MDB2_Driver_mysql' => FALSE,
-            'MDB2_Driver_pgsql' => FALSE,
-            'MDB2_Driver_mysqli' => FALSE
+        // New installations use the shared native PDO MySQL connection.
+        $available = class_exists('PDO') && in_array('mysql', PDO::getAvailableDrivers(), true);
+        $_SESSION['allowed_db'] = array(
+            'MDB2_Driver_mysql' => false,
+            'MDB2_Driver_pgsql' => false,
+            'MDB2_Driver_mysqli' => $available,
         );
-
-        if (function_exists('mysqli_get_client_info')) {
-
-            $client_ver = mysqli_get_client_info();
-
-            $_SESSION['allowed_db']['MDB2_Driver_mysqli'] = TRUE;
-
-            $this->required_settings['mysqlclient']['available'] = true;
-            $this->required_settings['mysqlclient']['version'] = $client_ver;
-            $this->required_settings['mysqlclient']['message'] =
-                '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-        } elseif (function_exists('mysql_get_client_info')) {
-
-            $client_ver = mysql_get_client_info();
-
-            if (version_compare($client_ver, '4.1.12', '>=')) {
-
-                $_SESSION['allowed_db']['MDB2_Driver_mysql'] = TRUE;
-
-                $this->required_settings['mysqlclient']['available'] = true;
-                $this->required_settings['mysqlclient']['version'] = $client_ver;
-                $this->required_settings['mysqlclient']['message'] =
-                    '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-            } else {
-
-                $this->required_settings['mysqlclient']['available'] = false;
-                $this->required_settings['mysqlclient']['message'] =
-                    '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-                $this->errors[] =
-                    '<span class="errors">mysqlclient is not meeting System requirements. You need to upgrade this extension</span>';
-            }
-
-        } else {
-
-            $this->required_settings['mysqlclient']['available'] = false;
-            $this->required_settings['mysqlclient']['message'] =
-                '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-            $this->errors[] =
-                '<span class="errors">No supported MySQL client extension was found. Install mysqli or the legacy mysql extension.</span>';
+        $this->required_settings['mysqlclient']['available'] = $available;
+        $this->required_settings['mysqlclient']['version'] = $available ? 'PDO MySQL' : '';
+        $this->required_settings['mysqlclient']['message'] = $available
+            ? '<img src="./extra/ok.png" alt="OK" />'
+            : '<img src="./extra/failed.png" alt="Failed" />';
+        if (!$available) {
+            $this->errors[] = 'Install PHP PDO with the MySQL driver (pdo_mysql).';
         }
 
-        // check pgsql
-
-        if (!extension_loaded('pgsql')) {
-
-            $this->required_settings['pgsql']['available'] = false;
-
-            $this->required_settings['pgsql']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-            $this->errors[] = '<span class="errors">pgsql not found. You can proceed with the install, however some functionality will not be available to you</span>';
-
-        } else {
-        	$_SESSION['allowed_db']['MDB2_Driver_pgsql'] = TRUE;
-            $this->required_settings['pgsql']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-        }
-        
-        
     //setup the chisimba PEAR PATH
     $_SESSION['pear_path'] = isset($_POST['pear_path']) ? $_POST['pear_path']: $_SESSION['sys_root']."lib/pear/";
-	
+
      return $this->success;
 
 
@@ -661,284 +603,14 @@ class PEARCheckAction extends StepAction
     */
 
     function processAction()
-
     {
-
-        
-        $_SESSION['pear_path'] = isset($_POST['pear_path']) ? $_POST['pear_path'] : '';
-		$db = array();
-        // check if the pear DB classes exist
-         if($_SESSION['allowed_db']['MDB2_Driver_mysql']==TRUE) $db['MDB2_Driver_mysql'] = Array('version'=>'1.0.0','available'=>false,'message' => '');
-         if($_SESSION['allowed_db']['MDB2_Driver_mysqli']==TRUE)$db['MDB2_Driver_mysqli']= Array('version'=>'1.0.0','available'=>false,'message' => '');
-		 if($_SESSION['allowed_db']['MDB2_Driver_pgsql']==TRUE)$db['MDB2_Driver_pgsql']= Array('version'=>'1.0.0','available'=>false,'message' => '');	
-		 $this->required_packages = array_merge($this->required_packages,$db);
-		
-        if ($_SESSION['pear_path'] == '') {
-
-            $this->errors[] = 'Could not find the PEAR registry. You can still proceed with install, '.
-
-                              'but you may encounter some errors.';
-
-
-
-            // go through and manually try and instantiate PEAR classes.
-
-            @include_once 'MDB2.php';
-
-            if (!class_exists('MDB2')) {
-
-                $this->errors[] = '<span class="errors">Could not find PEAR::MDB2 </span>';
-
-                $this->required_packages['MDB2']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-                $this->success = false;
-
-            } else {
-
-                $this->required_packages['MDB2']['message'] =  '<img src="./extra/yellow_help_on.png" border="0" alt="Help" title="Help"  />';
-
-            }
-
-           @include_once 'MDB2/Schema.php';
-
-            if (!class_exists('MDB2_Schema')) {
-
-                $this->errors[] = '<span class="errors">Could not find PEAR::MDB2_Schema </span>';
-
-                $this->required_packages['MDB2_Schema']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-                 $this->success = false;
-
-            } else {
-
-                $this->required_packages['MDB2_Schema']['message'] =  '<img src="./extra/yellow_help_on.png" border="0" alt="Help" title="Help"  />';
-
-            }
-
-           
-            @include_once 'Log';
-
-            if (!class_exists('Log')) {
-
-                $this->errors[] = '<span class="errors">Could not find PEAR::Log </span>';
-
-                $this->required_packages['Log']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-            } else {
-
-                $this->required_packages['Log']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-            }
-            
-            // Check for XML_Util
-            @include_once 'XML/Util';
-
-            if (!class_exists('XML_Util')) {
-
-                $this->errors[] = '<span class="errors">Could not find PEAR::XML_Util </span>';
-
-                $this->required_packages['XML_Util']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-            } else {
-
-                $this->required_packages['XML_Util']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-            }
-            
-            $allowed_db = isset($_SESSION['allowed_db'])? $_SESSION['allowed_db']:NULL;
-			
-          
-            if($allowed_db['MDB2_Driver_mysql']==TRUE) {
-
-            	@include('MDB2_Driver_mysql');
-            	if (!class_exists('MDB2_Driver_mysql')) {
-            		$this->errors[] = '<span class="errors">Could not find PEAR::MDB2_Driver_mysql </span>';
-
-                	$this->required_packages['MDB2_Driver_mysql']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-            	}else{ 
-            		$this->required_packages['MDB2_Driver_mysql']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';	
-            	}
-            	
-            }
-            if ($allowed_db['MDB2_Driver_mysqli']==TRUE) {
-                @include_once 'MDB2.php';
-                @include_once 'MDB2/Driver/mysqli.php';
-
-                if (!class_exists('MDB2_Driver_mysqli')) {
-                    $this->errors[] = '<span class="errors">Could not find bundled PEAR::MDB2_Driver_mysqli </span>';
-
-                    $this->required_packages['MDB2_Driver_mysqli']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-                    $this->success = false;
-                } else {
-                    $this->required_packages['MDB2_Driver_mysqli']['available'] = true;
-                    $this->required_packages['MDB2_Driver_mysqli']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-                }
-            }
-            if($allowed_db['MDB2_Driver_pgsql']==TRUE) {
-               @include('MDB2_Driver_pgsql');
-            	if (!class_exists('MDB2_Driver_pgsql')) {
-            		$this->errors[] = '<span class="errors">Could not find PEAR::MDB2_Driver_mysqli </span>';
-
-                	$this->required_packages['MDB2_Driver_pgsql']['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-            	}else{
-            		$this->required_packages['MDB2_Driver_pgsql']['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';	
-            	}
-            }
-            
-        } else { //end if registry not found
-
-            include_once 'PEAR/Registry.php';
-            $pear_registry = new PEAR_Registry($_SESSION['pear_path']);
-            //chmod($pear_registry, 0777);
-
-
-            if ($pear_registry == null) {
-
-                $this->errors[] = '<span class="errors">PEAR Registry could not be found.</span>';
-
-                $this->success = false;
-
-                return false;
-
-            }
-
-            foreach ($this->required_packages as $package_name => $required_version) {
-
-                /*
-                 * Chisimba ships its curated MDB2 mysqli driver with the
-                 * application. The historical installer also expected a
-                 * system PEAR registry entry, which is not required when the
-                 * bundled driver is present and loadable.
-                 */
-                /*
-                 * Chisimba ships a pinned, tested PEAR/MDB2 compatibility
-                 * pack. These packages are validated by loading their
-                 * classes, rather than by consulting the legacy PEAR
-                 * registry.
-                 */
-                if ($package_name == 'MDB2') {
-                    @include_once 'MDB2.php';
-
-                    if (class_exists('MDB2')) {
-                        $this->required_packages[$package_name]['available'] = true;
-                        $this->required_packages[$package_name]['message'] = '<img src="./extra/ok.png" border="0" alt="OK" title="OK" />';
-                        continue;
-                    }
-                }
-
-                if ($package_name == 'MDB2_Schema') {
-                    @include_once 'MDB2.php';
-                    @include_once 'XML/Parser.php';
-                    @include_once 'MDB2/Schema.php';
-
-                    if (class_exists('MDB2_Schema')) {
-                        $this->required_packages[$package_name]['available'] = true;
-                        $this->required_packages[$package_name]['message'] = '<img src="./extra/ok.png" border="0" alt="OK" title="OK" />';
-                        continue;
-                    }
-                }
-
-                if ($package_name == 'MDB2_Driver_mysqli') {
-                    @include_once 'MDB2.php';
-                @include_once 'MDB2/Driver/mysqli.php';
-
-                    if (class_exists('MDB2_Driver_mysqli')) {
-                        $this->required_packages[$package_name]['available'] = true;
-                        $this->required_packages[$package_name]['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-                        continue;
-                    }
-                }
-
-                $package_info = $pear_registry->packageInfo($package_name);
-
-                if (empty($package_info)) {
-
-                    $this->errors[] = '<br> Required PEAR module "'.$package_name.'" is not installed. Please run';
-                    if ($package_name == 'MDB2') {
-                        $this->errors[] = '<span class="errors"><pre>pear install --alldeps -f  MDB2-2.5.0b2 </pre></span>';
-                    } else {
-                        $this->errors[] = '<span class="errors"><pre>pear install --alldeps -f '.$package_name.'</pre></span>';
-                    }
-                    
-
-                    $this->required_packages[$package_name]['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-                    $this->success = false;
-
-                } else {
-
-                    if(is_array($package_info['version'])){
-                        $package_info['version']=$package_info['version']['release'];
-                    }
-
-                    if(is_array($package_info['version']))
-                    {
-                        $dk = $package_info['version']['api'];
-
-                        if($dk > 0)
-                        {
-                            $this->required_packages[$package_name]['available'] = true;
-                            $this->required_packages[$package_name]['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-                        }
-                    }
-
-                    elseif (version_compare($required_version['version'], $package_info['version']) < 0) {
-
-                        $this->required_packages[$package_name]['available'] = true;
-
-                        $this->required_packages[$package_name]['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-                        $this->errors[] = '<span class="success">Your version of '.$package_name.' meets minimum requirements</span>';
-
-
-
-                    } elseif (version_compare($required_version['version'], $package_info['version']) == 0) {
-
-                        $this->required_packages[$package_name]['available'] = true;
-
-                        $this->required_packages[$package_name]['message'] =  '<img src="./extra/ok.png" border="0" alt="OK" title="OK"  />';
-
-                    } else {
-
-                        $this->required_packages[$package_name]['message'] =  '<img src="./extra/failed.png" border="0" alt="Failed" title="Failed"  />';
-
-                        $this->errors[] = '<span class="errors">Please run <pre>pear upgrade '.$package_name.'</pre></span>';
-
-                        $this->success = false;
-
-                    }
-
-                }
-
-            }
-
-        }// end if registry was found
-
-
-
-        unset($pear_registry);
-
-        return $this->success;
-
-
-
-    }//end processAction()
-
-
-
-
-
-    /**
-
-    * Display whether the PEAR versions where up to date or not.
-
-    *
-
-    * @return void
-
-    * @access public
-
-    */
+        $available=class_exists('PDO') && in_array('mysql',PDO::getAvailableDrivers(),true);
+        $this->required_packages=['pdo_mysql'=>['version'=>PHP_VERSION,'available'=>$available,
+            'message'=>$available?'Available':'Install the PHP pdo_mysql extension before continuing.']];
+        $this->success=$available;
+        if (!$available) $this->errors[]='The installer requires PHP PDO with the MySQL driver (pdo_mysql).';
+        return $available;
+    }
 
     function paintAction()
 
@@ -957,7 +629,7 @@ class PEARCheckAction extends StepAction
         echo $tpl->fetch();
 
 
-		
+
         $pear_dir  = isset($_SESSION['pear_path']) ? $_SESSION['pear_path'] : $this->_findPEARPath();
 
         $textbox = '<br><p></br>' .

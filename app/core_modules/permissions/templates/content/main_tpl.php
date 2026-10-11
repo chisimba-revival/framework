@@ -4,7 +4,7 @@ ob_start();
  //-------------------------//
  // Acl list
  $fields = array ( 'id', 'name', 'description' );
- $aclList =& $this->objPermAcl->getAcls( $fields );
+ $aclList = $this->objPermAcl->getAcls( $fields );
 
  //Create dropdown.
  $ddbAcls = "<SELECT style='width:100pt' name='aclId' >";
@@ -40,7 +40,7 @@ ob_start();
  $tblFooter.= "</TABLE>";
 
 // Form Elements
- $frmPermissions =& $this->getObject('form', 'htmlelements');
+ $frmPermissions = $this->getObject('form', 'htmlelements');
  $frmPermissions->name = 'frmPermissions';
  $frmPermissions->displayType = '3';
  $frmPermissions->action = $this->uri ( array( 'action'=>'edit_form' ) );
@@ -57,7 +57,7 @@ ob_start();
        Create a new access control
   </DIV>
    <?php echo $frmPermissions->show(); ?>
-   
+
 <?php
 $display = ob_get_contents();
 ob_end_clean();

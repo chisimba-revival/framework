@@ -25,24 +25,20 @@ class FiveStepAction extends StepAction
 	* @return boolean whether the dsn is accessible.
 	* @access private
 	*/
-	function _testDSN($dsn)
-	{
-
-//		$schema =&MDB2_Schema::factory($dsn, array('debug' => true, 'log_line_break' => '<br>'));
-//		$schema->setOption('portability', MDB2_PORTABILITY_FIX_CASE);
-//		MDB2::loadFile('Date');
-//		MDB2::loadFile('Iterator');
-//   		if (PEAR::isError($schema)) {
-//        	 $error = $schema->getMessage() . ' ' . $schema->getUserInfo();
-//        	 echo $error;
-//        	 $schema->disconnect();
-//			return false;
-//   		}
-//
-//		 $schema->disconnect();
-
-		return true;
-	}//end _testDSN()
+    function _testDSN($dsn)
+    {
+        require_once __DIR__.'/dbhandlers/dbhandlermanager.inc';
+        try {
+            $parsed = ChisimbaDatabaseDsn::parse($dsn);
+            $parsed['database'] = 'information_schema';
+            $connection = ChisimbaDatabaseConnection::fromLegacyDsn($parsed);
+            $connection->query('SELECT 1');
+            return true;
+        } catch (Throwable $error) {
+            $this->errors[] = 'Cannot connect to MySQL using PDO. Check the host, credentials and pdo_mysql extension.';
+            return false;
+        }
+    }
 
 
 	/**

@@ -191,7 +191,8 @@ class Zend_Search_Lucene_Index_Writer
 
             // write version (is initialized by current time
             // $segmentsFile->writeLong((int)microtime(true));
-            $version = microtime(true);
+            // Chisimba PHP 8 maintenance: the stored version is an integer.
+            $version = (int) microtime(true);
             $segmentsFile->writeInt((int)($version/((float)0xFFFFFFFF + 1)));
             $segmentsFile->writeInt((int)($version & 0xFFFFFFFF));
 
@@ -216,7 +217,8 @@ class Zend_Search_Lucene_Index_Writer
 
             // write version (is initialized by current time
             // $segmentsFile->writeLong((int)microtime(true));
-            $version = microtime(true);
+            // Chisimba PHP 8 maintenance: the stored version is an integer.
+            $version = (int) microtime(true);
             $segmentsFile->writeInt((int)($version/((float)0xFFFFFFFF + 1)));
             $segmentsFile->writeInt((int)($version & 0xFFFFFFFF));
 

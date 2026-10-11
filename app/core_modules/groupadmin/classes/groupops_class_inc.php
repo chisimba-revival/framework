@@ -58,6 +58,16 @@ $GLOBALS['kewl_entry_point_run']) {
  * whether the users array contains one or more records.
  */
 class groupops extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $_serverName;
+    public $loading;
+    public $objDBConfig;
+    public $objDBContext;
+    public $objGroups;
+    public $objIdentityService;
+    public $objLanguage;
+    public $objUserService;
+
 
     /**
      * $_objUsers an association to the userDb object.

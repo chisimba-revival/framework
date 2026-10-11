@@ -56,6 +56,9 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @see       core
  */
 class dbcontentnodes extends dbtable {
+    /** Dependencies and state initialised by this component. */
+    public $objDBParent;
+
 
     /**
      * The id of the user currently logged in

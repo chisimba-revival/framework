@@ -63,6 +63,16 @@ if (!
  *
  */
 class buildcanvas extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $cbExists;
+    public $objBlocks;
+    public $objBlocksContent;
+    public $objContextBlocks;
+    public $objDynamicBlocks;
+    public $objModule;
+    public $smallDynamicBlocks;
+    public $wideDynamicBlocks;
+
 
     /**
      *
@@ -213,7 +223,7 @@ class buildcanvas extends ChisimbaObject {
                 $pageId = $objBestGuess->guessPageId();
                 return $this->showPage($pageId);
                 break;
-            default;
+            default:
                 return NULL;
         }
     }

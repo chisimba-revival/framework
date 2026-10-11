@@ -3,6 +3,22 @@
 Assessment date: 10 October 2026. **Planning only; no application, database,
 container or production configuration changes were made by this assessment.**
 
+## Execution decision — 11 October 2026
+
+Develop and test on the local Chisimba installation only. Do not commit or push
+migration changes until local testing is complete. Add pdo_mysql to the local PHP
+image first, retaining MDB2 until the replacement passes its gates. Production
+rollout is a later task, beginning with chisimba.com; other sites receive their
+PDO driver when needed. KengaLearn is not the migration test site. This decision
+supersedes the KengaLearn rollout sequence and earlier maintenance-window wording
+below; its captured runtime remains useful historical evidence.
+
+## Local execution result — 11 October 2026
+
+The installed local site now runs the tested native PDO boundary. See
+[local acceptance evidence and limits](local-acceptance-20261011.md). The original
+assessment below is historical; no production deployment or commit has occurred.
+
 ## Recommendation
 
 Preserve the public `dbTable` API and replace its database implementation with
@@ -105,8 +121,8 @@ not assurances that the current code already satisfies them.
 
 ## Implementation sequence and acceptance gates
 
-Each step should be a small reviewed commit with its evidence recorded. Keep the
-live site on the known-good MDB2 release until the combined release passes.
+Keep each step bounded and record its evidence locally. Do not commit or push
+until local acceptance is complete. Keep production on MDB2 throughout local work.
 
 1. **Freeze contracts and prepare the image.** Capture representative real MariaDB
    fixtures against MDB2, build an image with pdo_mysql, and verify DSN/connection
@@ -122,19 +138,23 @@ live site on the known-good MDB2 release until the combined release passes.
    direct repository; preserve their existing public interfaces. Gate: authentication,
    MFA, remembered-login races, permissions, translation rollback/concurrency and
    English-output parity on real MariaDB, not just repository doubles.
-4. **Migrate direct module callers.** Start with registered KengaLearn modules, then
-   maintained unregistered stores. Re-run inventory and assign a disposition to
+4. **Migrate direct module callers.** Start with modules registered on the local installation, then
+   maintained unregistered stores. Recheck the local registry rather than using the
+   historical KengaLearn snapshot as the local module list. Re-run inventory and assign a disposition to
    every direct candidate. Gate: each supported module's critical reads/writes,
    isolation, concurrency and error handling pass; unsupported activation is explicit.
 5. **Migrate schema, installation and operator paths.** Exercise normal module
    registration/upgrade twice, fresh install, indexes/defaults and deliberate failures.
    MariaDB DDL can implicitly commit: do not promise a transaction can undo an entire
    upgrade. Gate: schema comparison and restore rehearsal on disposable databases.
-6. **Rehearse and release to KengaLearn.** Run the full matrix below against the exact
-   release image and a protected clone with external delivery disabled. Prepare a
-   manifest, backup and tested rollback. Use the already-approved brief maintenance
-   window only after gates pass; pause workers as well as web writes, then apply the
-   tested release and perform bounded live checks. Reopen only after success.
+6. **Complete local acceptance, then plan chisimba.com deployment.** Run the full
+   matrix below on local Chisimba and disposable local fixtures, using the exact
+   proposed image and external delivery disabled. Once local acceptance is complete,
+   commit/push the tested changes. The later first production target is chisimba.com:
+   inspect its image, add pdo_mysql if needed, reconcile its release manifest, prepare
+   backups and rollback, and establish a site-specific maintenance window. The old
+   KengaLearn window is not approval to use it for this migration. Pause workers as
+   well as web writes during any later switch. Update other sites only when needed.
 7. **Remove obsolete dependencies and close the register.** Audit supported runtime,
    installer, worker, operator, build and embedded paths. Remove MDB2/MDB2_Schema and
    driver installation requirements and vendor files only after no supported consumer
@@ -187,3 +207,12 @@ PDO driver and separate security/schema paths.
 The next bounded task is step 1: prepare the PDO-capable image and freeze dbTable
 contracts on disposable MariaDB fixtures. It produces a concrete go/no-go result
 without changing the live site and does not require continuous user attention.
+
+## Local shared-layer progress — 11 October 2026
+
+The native PDO connection boundary, engine composition and ordinary dbTable CRUD
+path are implemented locally with passing disposable MariaDB contracts and MDB2
+regression checks. See [database test evidence](../../tests/database/README.md).
+The installed local site remains on MDB2; direct security/translation/module and
+schema consumers still need migration before a full local PDO switch. No changes
+have been committed or pushed. Production remains untouched.

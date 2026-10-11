@@ -46,6 +46,7 @@ if (!
  * Logging layer
  */
 require_once "lib/logging.php";
+require_once __DIR__ . "/chisimbadatabaseconnection.php";
 
 /**
  * dbTable class
@@ -121,6 +122,12 @@ class dbTable extends ChisimbaObject {
      */
     private $_inTransaction = FALSE;
 
+    /** Native connection generation owned by this table, never another caller. */
+    private ?int $nativeTransactionId = null;
+
+    /** Connections owned by callback transactions; legacy methods may not end them. */
+    private static ?WeakMap $callbackTransactions = null;
+
     /**
      * property to hold the last id inserted into the db
      *
@@ -168,6 +175,17 @@ class dbTable extends ChisimbaObject {
      * @param  callback $errorCallback The name of a custom error callback function (defaults to the global)
      * @return void
      */
+    /** Framework bootstrap only: reuse a connection before module composition exists. */
+    public static function forFrameworkConnection($connection): self
+    {
+        $table=new self();
+        $table->_db=$connection;
+        $table->dbLayer=$connection instanceof ChisimbaDatabaseConnection?'PDO':'MDB2';
+        $table->dbType='mysqli';
+        $table->_serverName='framework';
+        return $table;
+    }
+
     public function init($tableName = null, $pearDb = NULL, $errorCallback = "globalPearErrorCallback") {
         $modname = $this->objEngine->_moduleName;
         $this->objLuAdmin = null;
@@ -206,9 +224,238 @@ class dbTable extends ChisimbaObject {
         if ($this->dbLayer === 'MDB2') {
             $this->dbType = $this->_db->phptype;
         } elseif ($this->dbLayer === 'PDO') {
+            if (!($this->_db instanceof ChisimbaDatabaseConnection)) {
+                throw new LogicException('PDO requires the native Chisimba database boundary.');
+            }
             $this->dbType = $this->objEngine->pdsn['phptype'];
         }
         $this->appid = $this->objEngine->appid;
+    }
+
+    /**
+     * Preserve dbTable's established associative/string row contract at its boundary.
+     * Repositories needing exact text use the explicit exact prepared APIs below.
+     * Database failures return false as documented; diagnostics contain no SQL/data.
+     */
+    private function nativeQuery($sql, array $parameters = []) {
+        try {
+            // Match MDB2_PORTABILITY_EMPTY_TO_NULL for legacy CRUD/bindings.
+            $parameters = array_map(static fn($value) => $value === '' ? null : $value, $parameters);
+            $result = $this->_db->query($sql, $parameters);
+            if (!is_array($result)) {
+                if ($this->objAPC) apc_clear_cache("user");
+                return $result;
+            }
+            return array_map(static function ($row) {
+                $converted = [];
+                foreach ($row as $key => $value) {
+                    if ($value !== null) {
+                        $value = $value === '' ? null : rtrim((string)$value);
+                    }
+                    $converted[strtolower($key)] = $value;
+                }
+                return $converted;
+            }, $result);
+        } catch (ChisimbaDatabaseException $error) {
+            error_log($error->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Run one atomic repository operation. Nested/foreign transactions are
+     * rejected before the callback runs. A failed commit never returns success.
+     * The callback must not execute DDL or manage transactions itself.
+     */
+    public function transaction(callable $operation) {
+        $native = $this->_db instanceof ChisimbaDatabaseConnection;
+        if ($native) {
+            $owner = $this->_db->beginTransaction();
+        } else {
+            if ($this->_db->in_transaction) throw new LogicException('A transaction is already active.');
+            if (!$this->_db->supports('transactions')) throw new RuntimeException('Transactions are required.');
+            $this->checkPreparedResult($this->_db->beginTransaction());
+            if (!$this->_db->in_transaction) throw new RuntimeException('Transaction did not start.');
+        }
+        self::$callbackTransactions ??= new WeakMap();
+        self::$callbackTransactions[$this->_db] = true;
+        try {
+            $value = $operation();
+            if ($native) {
+                $this->_db->commit($owner);
+            } else {
+                if (!$this->_db->in_transaction) throw new LogicException('Transaction ended before commit.');
+                $this->checkPreparedResult($this->_db->commit());
+            }
+            return $value;
+        } catch (Throwable $error) {
+            try {
+                if ($native) {
+                    if ($this->_db->inTransaction()) $this->_db->rollback($owner);
+                } elseif ($this->_db->in_transaction) {
+                    $this->checkPreparedResult($this->_db->rollback());
+                }
+            } catch (Throwable $rollbackError) {
+                // Preserve the original failure; never report the write as saved.
+                error_log('Database transaction rollback failed.');
+            }
+            throw $error;
+        } finally {
+            unset(self::$callbackTransactions[$this->_db]);
+        }
+    }
+
+    /**
+     * Compose an atomic operation with an existing MySQL transaction. The server
+     * state also recognises legacy callers that used SQL START TRANSACTION.
+     * Only this savepoint is released/rolled back; the outer owner keeps control.
+     */
+    public function transactionWithSavepoint(callable $operation) {
+        if (!in_array($this->dbType, ['mysql','mysqli'], true)) {
+            throw new RuntimeException('Savepoints require a validated MySQL/MariaDB adapter.');
+        }
+        $state = $this->selectExactPrepared('SELECT @@in_transaction AS active');
+        if (empty($state[0]['active'])) return $this->transaction($operation);
+        $name = 'chisimba_' . bin2hex(random_bytes(12));
+        $this->executeExactPrepared('SAVEPOINT ' . $name);
+        self::$callbackTransactions ??= new WeakMap();
+        $alreadyOwned = isset(self::$callbackTransactions[$this->_db]);
+        self::$callbackTransactions[$this->_db] = true;
+        try {
+            $value = $operation();
+            $this->executeExactPrepared('RELEASE SAVEPOINT ' . $name);
+            return $value;
+        } catch (Throwable $error) {
+            try {
+                $this->executeExactPrepared('ROLLBACK TO SAVEPOINT ' . $name);
+                $this->executeExactPrepared('RELEASE SAVEPOINT ' . $name);
+            } catch (Throwable $rollbackError) {
+                error_log('Database savepoint rollback failed.');
+            }
+            throw $error;
+        } finally {
+            if (!$alreadyOwned) unset(self::$callbackTransactions[$this->_db]);
+        }
+    }
+
+    /**
+     * Checked, positional prepared reads for repositories. Retains dbTable's
+     * legacy row values; unlike getArray(), a database failure throws.
+     */
+    public function selectPrepared(#[\SensitiveParameter] $sql, #[\SensitiveParameter] array $parameters = []): array {
+        return $this->checkedPrepared($sql, $parameters, false);
+    }
+
+    /** Checked writes return affected rows, including zero for a failed CAS. */
+    public function executePrepared(#[\SensitiveParameter] $sql, #[\SensitiveParameter] array $parameters = []): int {
+        $affected = $this->checkedPrepared($sql, $parameters, true);
+        if ($this->objAPC) apc_clear_cache("user");
+        return $affected;
+    }
+
+    /** Exact text reads: retain empty strings, whitespace and column case. */
+    public function selectExactPrepared(#[\SensitiveParameter] $sql, #[\SensitiveParameter] array $parameters = []): array {
+        return $this->exactPrepared($sql, $parameters, false);
+    }
+
+    /** Exact text writes must not apply MDB2's empty-string-to-NULL portability. */
+    public function executeExactPrepared(#[\SensitiveParameter] $sql, #[\SensitiveParameter] array $parameters = []): int {
+        $result = $this->exactPrepared($sql, $parameters, true);
+        if ($this->objAPC) apc_clear_cache('user');
+        return $result;
+    }
+
+    private function exactPrepared(#[\SensitiveParameter] $sql, #[\SensitiveParameter] array $parameters, bool $write) {
+        if (!is_string($sql) || trim($sql) === '' || !array_is_list($parameters)) {
+            throw new InvalidArgumentException('Prepared queries require SQL and positional parameters.');
+        }
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            return $write ? $this->_db->execute($sql, $parameters) : $this->_db->fetchAll($sql, $parameters);
+        }
+        $portability = $this->_db->getOption('portability');
+        $this->checkPreparedResult($portability);
+        $this->checkPreparedResult($this->_db->setOption('portability', 0));
+        try {
+            return $this->checkedPrepared($sql, $parameters, $write);
+        } finally {
+            $this->checkPreparedResult($this->_db->setOption('portability', $portability));
+        }
+    }
+
+    public function hasActiveTransaction(): bool {
+        return $this->_db instanceof ChisimbaDatabaseConnection
+            ? $this->_db->inTransaction() : (bool)$this->_db->in_transaction;
+    }
+
+    /** Database-scoped MySQL/MariaDB coordination on this canonical connection. */
+    public function withDatabaseLock(string $scope, callable $operation, int $timeout = 5) {
+        if (!in_array($this->dbType, ['mysql', 'mysqli'], true)) {
+            throw new RuntimeException('Database locks require MySQL or MariaDB.');
+        }
+        if (!preg_match('/^[a-z0-9:-]{1,24}$/D', $scope) || $timeout < 0 || $timeout > 60) {
+            throw new InvalidArgumentException('Invalid database lock request.');
+        }
+        $name = "CONCAT(?,LEFT(SHA2(DATABASE(),256),40))";
+        $rows = $this->selectExactPrepared('SELECT GET_LOCK(' . $name . ',?) AS acquired', [$scope, $timeout]);
+        if ((int)($rows[0]['acquired'] ?? 0) !== 1) throw new RuntimeException('Database data is busy; retry the operation.');
+        try { return $operation(); }
+        finally {
+            $rows = $this->selectExactPrepared('SELECT RELEASE_LOCK(' . $name . ') AS released', [$scope]);
+            if ((int)($rows[0]['released'] ?? 0) !== 1) throw new RuntimeException('Database lock release failed.');
+        }
+    }
+
+    /** Driver mechanics stay here, never in authentication/domain repositories. */
+    private function checkedPrepared(#[\SensitiveParameter] $sql, #[\SensitiveParameter] array $parameters, bool $write) {
+        if (!is_string($sql) || trim($sql) === '' || !array_is_list($parameters)) {
+            throw new InvalidArgumentException('Prepared queries require SQL and positional parameters.');
+        }
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            $parameters = array_map(static fn($value) => $value === '' ? null : $value, $parameters);
+            if ($write) return $this->_db->execute($sql, $parameters);
+            return array_map(static function ($row) {
+                $converted = [];
+                foreach ($row as $key => $value) {
+                    $converted[strtolower($key)] = $value === null || $value === ''
+                        ? null : rtrim((string) $value);
+                }
+                return $converted;
+            }, $this->_db->fetchAll($sql, $parameters));
+        }
+        $statement = $this->_db->prepare($sql, null,
+            $write ? MDB2_PREPARE_MANIP : MDB2_PREPARE_RESULT);
+        $this->checkPreparedResult($statement);
+        if (!is_object($statement) || !method_exists($statement, 'execute')) {
+            throw new RuntimeException('Database prepare failed.');
+        }
+        $result = null;
+        try {
+            $result = $statement->execute($parameters);
+            $this->checkPreparedResult($result);
+            if ($write) {
+                if (!is_int($result) && !(is_string($result) && ctype_digit($result))) {
+                    throw new RuntimeException('Database write did not return an affected-row count.');
+                }
+                return (int) $result;
+            }
+            if (!is_object($result) || !method_exists($result, 'fetchAll')) {
+                throw new RuntimeException('Database read did not return rows.');
+            }
+            $rows = $result->fetchAll(MDB2_FETCHMODE_ASSOC);
+            $this->checkPreparedResult($rows);
+            if (!is_array($rows)) throw new RuntimeException('Database fetch failed.');
+            return $rows;
+        } finally {
+            if (is_object($result) && method_exists($result, 'free')) $result->free();
+            $statement->free();
+        }
+    }
+
+    /** Do not propagate SQL, credentials or bound personal data in errors. */
+    private function checkPreparedResult(#[\SensitiveParameter] $result): void {
+        if (is_object($result) && is_a($result, 'PEAR_Error')) {
+            throw new RuntimeException('Database prepared operation failed.');
+        }
     }
 
     /**
@@ -220,6 +467,12 @@ class dbTable extends ChisimbaObject {
      * @return bool   TRUE |FALSE if exists return TRUE, otherwise FALSE.
      */
     public function valueExists($field, $value, $table = NULL) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            $rows = $this->nativeQuery('SELECT COUNT(*) AS fcount FROM '
+                . $this->_db->quoteIdentifier($table ?? $this->_tableName) . ' WHERE '
+                . $this->_db->quoteIdentifier($field) . ' = ?', [$value]);
+            return $rows !== false && (int)$rows[0]['fcount'] > 0;
+        }
         if ($table == NULL) {
             $table = $this->_tableName;
         }
@@ -325,6 +578,12 @@ class dbTable extends ChisimbaObject {
      * @param  mixed  $pkvalue the value of the primary key field for the record
      */
     public function getRow($pk_field, $pk_value, $table = NULL) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            if ($table !== null) $this->_tableName = $table;
+            $rows = $this->nativeQuery('SELECT * FROM ' . $this->_db->quoteIdentifier($this->_tableName)
+                . ' WHERE ' . $this->_db->quoteIdentifier($pk_field) . ' = ?', [$pk_value ?? '']);
+            return $rows === false ? false : ($rows[0] ?? null);
+        }
         $pk_value = addslashes($pk_value ?? '');
         if ($table != NULL) {
             $this->_tableName = $table;
@@ -364,6 +623,7 @@ class dbTable extends ChisimbaObject {
      * @return array  |FALSE Rows as an array of associate arrays, or FALSE on failure
      */
     public function getArray($stmt) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) return $this->nativeQuery($stmt);
         if ($this->objMemcache == TRUE) {
             if (chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt))) {
                 $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt));
@@ -409,6 +669,15 @@ class dbTable extends ChisimbaObject {
      * @return array  |FALSE Rows as an array of associate arrays, or FALSE on failure
      */
     public function getArrayWithLimit($stmt, $first, $count) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            foreach ([$first, $count] as $bound) {
+                if (!(is_int($bound) || is_string($bound) && ctype_digit($bound)) || $bound < 0
+                    || (string)(int)$bound !== (string)$bound) {
+                    throw new InvalidArgumentException('Limits must be non-negative integers.');
+                }
+            }
+            return $this->nativeQuery(rtrim(rtrim($stmt), ';') . ' LIMIT ' . (int)$count . ' OFFSET ' . (int)$first);
+        }
         if ($this->objMemcache == TRUE) {
             if (chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt))) {
                 $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt));
@@ -469,6 +738,7 @@ class dbTable extends ChisimbaObject {
      * @return array $ret return values array
      */
     public function subSelect($sql, $ss_sql) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) return $this->nativeQuery(sprintf($sql, $ss_sql));
         $subselect = $this->_db->subSelect($ss_sql);
         // update and print the main query
         $stmt = sprintf($sql, $subselect);
@@ -595,10 +865,18 @@ class dbTable extends ChisimbaObject {
      * @return void
      */
     public function beginTransaction() {
-        if ($this->_db->supports('transactions')) {
-            $this->_db->beginTransaction();
-            $this->_inTransaction = TRUE;
+        if (isset(self::$callbackTransactions[$this->_db])) {
+            throw new LogicException("The callback owns this transaction.");
         }
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            $this->nativeTransactionId = $this->_db->beginTransaction();
+            $this->_inTransaction = true;
+            return;
+        }
+        if ($this->hasActiveTransaction() || (int)($this->selectExactPrepared('SELECT @@in_transaction AS active')[0]['active']??0)) throw new LogicException('A transaction is already active.');
+        if (!$this->_db->supports('transactions')) throw new RuntimeException('Transactions are required.');
+        $this->checkPreparedResult($this->_db->beginTransaction());
+        $this->_inTransaction = TRUE;
     }
 
     /**
@@ -609,10 +887,19 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function commitTransaction() {
-        if ($this->_db->in_transaction) {
-            $this->_db->commit();
-            $this->_inTransaction = FALSE;
+        if (isset(self::$callbackTransactions[$this->_db])) {
+            throw new LogicException("The callback owns this transaction.");
         }
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            if (!$this->_inTransaction) throw new LogicException('This dbTable does not own a transaction.');
+            $this->_db->commit($this->nativeTransactionId);
+            $this->nativeTransactionId = null;
+            $this->_inTransaction = false;
+            return;
+        }
+        if (!$this->_inTransaction || !$this->_db->in_transaction) throw new LogicException('This dbTable does not own a transaction.');
+        $this->checkPreparedResult($this->_db->commit());
+        $this->_inTransaction = FALSE;
     }
 
     /**
@@ -623,7 +910,18 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function rollbackTransaction() {
-        $this->_db->rollback();
+        if (isset(self::$callbackTransactions[$this->_db])) {
+            throw new LogicException("The callback owns this transaction.");
+        }
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            if (!$this->_inTransaction) throw new LogicException('This dbTable does not own a transaction.');
+            $this->_db->rollback($this->nativeTransactionId);
+            $this->nativeTransactionId = null;
+            $this->_inTransaction = false;
+            return;
+        }
+        if (!$this->_inTransaction) throw new LogicException('This dbTable does not own a transaction.');
+        $this->checkPreparedResult($this->_db->rollback());
         $this->_inTransaction = FALSE;
     }
 
@@ -637,6 +935,18 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function insert($fields, $tablename = '') {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            if (!isset($fields['id']) || $fields['id'] === '') {
+                $fields['id'] = $this->_serverName . '_' . random_int(1000, 99999) . '_' . time();
+            }
+            $columns = array_map([$this->_db, 'quoteIdentifier'], array_keys($fields));
+            $sql = 'INSERT INTO ' . $this->_db->quoteIdentifier($tablename ?: $this->_tableName)
+                . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', array_fill(0, count($fields), '?')) . ')';
+            $result = $this->nativeQuery($sql, array_values($fields));
+            if ($result === false) return false;
+            $this->_lastId = $fields['id'];
+            return $this->_lastId;
+        }
 
         if (empty($tablename)) {
             $tablename = $this->_tableName;
@@ -680,14 +990,6 @@ class dbTable extends ChisimbaObject {
             } else {
                 $ret = $this->_db->query($sql);
             }
-        } elseif ($this->dbLayer === 'PDO') {
-            try {
-                $ret = $this->query($sql);
-            } catch (PDOException $e) {
-                throw new customException($e->getMessage());
-                customException::cleanUp();
-                exit;
-            }
         }
         if ($this->objMemcache == TRUE) {
             chisimbacache::getMem()->flush();
@@ -695,7 +997,7 @@ class dbTable extends ChisimbaObject {
         if ($this->objAPC == TRUE) {
             apc_clear_cache("user");
         }
-        return $ret ? $id : FALSE;
+        return $ret && !PEAR::isError($ret) ? $id : FALSE;
     }
 
     /**
@@ -709,6 +1011,15 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function update($pkfield, $pkvalue, $fields, $tablename = '') {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            if ($fields === []) throw new InvalidArgumentException('Update fields are required.');
+            $assignments = array_map(fn($name) => $this->_db->quoteIdentifier($name) . ' = ?', array_keys($fields));
+            $sql = 'UPDATE ' . $this->_db->quoteIdentifier($tablename ?: $this->_tableName)
+                . ' SET ' . implode(', ', $assignments) . ' WHERE ' . $this->_db->quoteIdentifier($pkfield) . ' = ?';
+            // Legacy update/delete results were truthy even when zero rows changed.
+            // Keep their documented success boolean; query/_execute expose counts.
+            return $this->nativeQuery($sql, [...array_values($fields), $pkvalue]) !== false;
+        }
         if (empty($tablename)) {
             $tablename = $this->_tableName;
         }
@@ -735,14 +1046,6 @@ class dbTable extends ChisimbaObject {
             } else {
                 $ret = $this->_db->query($sql);
             }
-        } elseif ($this->dbLayer === 'PDO') {
-            try {
-                $ret = $this->query($sql);
-            } catch (PDOException $e) {
-                throw new customException($e->getMessage());
-                customException::cleanUp();
-                exit;
-            }
         }
         if ($this->objMemcache == TRUE) {
             chisimbacache::getMem()->flush();
@@ -750,7 +1053,7 @@ class dbTable extends ChisimbaObject {
         if ($this->objAPC == TRUE) {
             apc_clear_cache("user");
         }
-        return $ret;
+        return PEAR::isError($ret) ? FALSE : $ret;
     }
 
     /**
@@ -762,6 +1065,10 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function delete($pkfield, $pkvalue, $tablename = '') {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            return $this->nativeQuery('DELETE FROM ' . $this->_db->quoteIdentifier($tablename ?: $this->_tableName)
+                . ' WHERE ' . $this->_db->quoteIdentifier($pkfield) . ' = ?', [$pkvalue]) !== false;
+        }
         if (empty($tablename)) {
             $tablename = $this->_tableName;
         }
@@ -776,14 +1083,6 @@ class dbTable extends ChisimbaObject {
             } else {
                 $ret = $this->_db->query($sql);
             }
-        } elseif ($this->dbLayer === 'PDO') {
-            try {
-                $ret = $this->query($sql);
-            } catch (PDOException $e) {
-                throw new customException($e->getMessage());
-                customException::cleanUp();
-                exit;
-            }
         } else {
             $ret = $this->_db->query($sql);
         }
@@ -793,7 +1092,7 @@ class dbTable extends ChisimbaObject {
         if ($this->objAPC == TRUE) {
             apc_clear_cache("user");
         }
-        return $ret;
+        return PEAR::isError($ret) ? FALSE : $ret;
     }
 
     /**
@@ -811,6 +1110,7 @@ class dbTable extends ChisimbaObject {
      * @todo   create an alias for this for public use and mark it as private
      */
     public function _execute($stmt, $params = array()) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) return $this->nativeQuery($stmt, $params === '' ? [] : $params);
         return $this->_db->query($stmt);
     }
 
@@ -865,6 +1165,7 @@ class dbTable extends ChisimbaObject {
      * @access     public
      */
     public function query($stmt) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) return $this->nativeQuery($stmt);
         $isResultQuery = $this->_isResultQuery($stmt);
 
         if ($this->debug == TRUE) {
@@ -939,14 +1240,6 @@ class dbTable extends ChisimbaObject {
             return $ret;
         }
 
-        if ($this->dbLayer === 'PDO') {
-            try {
-                return $this->_db->exec($stmt);
-            } catch (PDOException $e) {
-                throw new customException($e->getMessage());
-            }
-        }
-
         return FALSE;
     }
 
@@ -992,6 +1285,9 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function generateId() {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            throw new LogicException('This legacy database operation is not supported by the native boundary.');
+        }
         $id = $this->_db->nextId($this->_tableName);
         $id = $this->_serverName . "_" . $id;
         return $id;
@@ -1023,6 +1319,9 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function setDatabaseTo($name) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            throw new LogicException('This legacy database operation is not supported by the native boundary.');
+        }
         // PEAR::popErrorHandling();
         $ret = $this->_db->setDatabase($name);
         return $ret;
@@ -1041,6 +1340,9 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function executeStoredProc($name, $params = NULL, $types = NULL, $result_class = TRUE, $result_wrap_class = FALSE) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            throw new LogicException('This legacy database operation is not supported by the native boundary.');
+        }
         return $this->_db->executeStoredProc($name, $params, $types, $result_class, $result_wrap_class);
     }
 
@@ -1069,42 +1371,13 @@ class dbTable extends ChisimbaObject {
      * @access public
      */
     public function listDbTables() {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            $rows = $this->nativeQuery("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'");
+            return $rows === false ? false : array_map(fn($row) => reset($row), $rows);
+        }
         if ($this->dbLayer === 'MDB2') {
             $ret = $this->_db->mgListTables();
             return $ret;
-        } elseif ($this->dbLayer === 'PDO') {
-            if ($this->objEngine->pdsn['phptype'] == 'pgsql') {
-                $sql = "select * from information_schema.tables where table_schema='public' and table_type='BASE TABLE'";
-                try {
-                    $ret = $this->query($sql);
-                } catch (PDOException $e) {
-                    throw new customException($e->getMessage());
-                    customException::cleanUp();
-                    exit;
-                }
-                foreach ($ret as $tables) {
-                    $tbls[] = $tables['table_name'];
-                }
-                return $tbls;
-            } elseif ($this->objEngine->pdsn['phptype'] == 'mysql' || $this->objEngine->pdsn['phptype'] == 'mysqli') {
-                $query = "SHOW /*!50002 FULL*/ TABLES";
-                if (!is_NULL($this->objEngine->pdsn['database'])) {
-                    $database = $this->objEngine->pdsn['database'];
-                    $query .= " FROM $database";
-                }
-                $query.= "/*!50002  WHERE Table_type = 'BASE TABLE'*/";
-                try {
-                    $ret = $this->query($query);
-                } catch (PDOException $e) {
-                    throw new customException($e->getMessage());
-                    customException::cleanUp();
-                    exit;
-                }
-                foreach ($ret as $tables) {
-                    $tbls[] = $tables[0];
-                }
-                return $tbls;
-            }
         }
     }
 
@@ -1139,17 +1412,6 @@ class dbTable extends ChisimbaObject {
             if (PEAR::isError($ret)) {
                 $ret = FALSE;
             }
-        } elseif ($this->dbLayer === 'PDO') {
-            try {
-                $stmt = $this->_db->prepare($query);
-                $stmt->execute();
-                $ret = $stmt->fetchAll();
-                $stmt->closeCursor();
-            } catch (PDOException $e) {
-                throw new customException($e->getMessage());
-                customException::cleanUp();
-                exit;
-            }
         }
 
         return $ret;
@@ -1171,22 +1433,14 @@ class dbTable extends ChisimbaObject {
             }
 
             return $ret;
-        } elseif ($this->dbLayer === 'PDO') {
-            try {
-                $stmt = $this->_db->prepare($query);
-                $stmt->execute();
-                $row = $stmt->fetch();
-                $stmt->closeCursor();
-            } catch (PDOException $e) {
-                throw new customException($e->getMessage());
-                customException::cleanUp();
-                exit;
-            }
-            return $row;
         }
     }
 
     public function queryRow($query) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            $rows = $this->nativeQuery($query);
+            return $rows === false ? false : ($rows[0] ?? null);
+        }
         return $this->_queryRow($query);
     }
 
@@ -1200,6 +1454,14 @@ class dbTable extends ChisimbaObject {
      * @return string.
      */
     public function getSubstring($value, $postion, $length = NULL) {
+        if ($this->_db instanceof ChisimbaDatabaseConnection) {
+            $identifier = $this->_db->quoteIdentifier($value);
+            if (filter_var($postion, FILTER_VALIDATE_INT) === false
+                || ($length !== null && (filter_var($length, FILTER_VALIDATE_INT) === false || $length < 0))) {
+                throw new InvalidArgumentException('Invalid substring bounds.');
+            }
+            return 'SUBSTRING(' . $identifier . ', ' . (int)$postion . ($length === null ? '' : ', ' . (int)$length) . ')';
+        }
         return $this->_db->subString($value, $postion, $length);
     }
 

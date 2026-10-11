@@ -17,7 +17,6 @@ class dbmenu extends dbtable
 {
 
     // Explicit state used by this component.
-    public $_db;
     public $table;
 
     public function init(
@@ -26,7 +25,6 @@ class dbmenu extends dbtable
         $errorCallback = 'globalPearErrorCallback'
     ) {
         parent::init('tbl_menu_category');
-        $this->_db = $this->objEngine->getDbObj();
         $this->table = 'tbl_menu_category';
     }
 
@@ -117,10 +115,9 @@ class dbmenu extends dbtable
     public function linksForModule($module)
     {
         $module = $this->moduleName($module);
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . $this->table
-            . ' WHERE module = ' . $this->quoteValue($module)
-            . ' ORDER BY category, id'
+            . ' WHERE module = ? ORDER BY category, id', [$module]
         );
         return is_array($rows) ? $rows : array();
     }
@@ -128,10 +125,9 @@ class dbmenu extends dbtable
     public function getLinkById($id)
     {
         $id = $this->recordId($id);
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . $this->table
-            . ' WHERE id = ' . $this->quoteValue($id)
-            . ' LIMIT 2'
+            . ' WHERE id = ? LIMIT 2', [$id]
         );
         return is_array($rows) && count($rows) === 1
             ? $rows[0]
@@ -164,13 +160,6 @@ class dbmenu extends dbtable
             'module',
             $this->moduleName($module)
         ) !== false;
-    }
-
-    private function quoteValue($value)
-    {
-        return method_exists($this->_db, 'quote')
-            ? $this->_db->quote($value)
-            : "'" . addslashes($value) . "'";
     }
 
     private function moduleName($value)

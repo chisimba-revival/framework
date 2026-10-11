@@ -78,7 +78,7 @@ class permissions_acl extends dbTable
     */
     function deleteAclUser( $aclId, $userId )
     {
-        return parent::delete( 'user_id', "$userId' AND acl_id = '$aclId" );
+        return $this->executePrepared('DELETE FROM tbl_permissions_acl WHERE user_id=? AND acl_id=?', [$userId, $aclId]) >= 0;
     }
 
     /**
@@ -108,7 +108,7 @@ class permissions_acl extends dbTable
     */
     function deleteAclGroup( $aclId, $groupId )
     {
-        return parent::delete( 'group_id', "$groupId' AND acl_id = '$aclId" );
+        return $this->executePrepared('DELETE FROM tbl_permissions_acl WHERE group_id=? AND acl_id=?', [$groupId, $aclId]) >= 0;
     }
 
     /**
@@ -128,9 +128,9 @@ class permissions_acl extends dbTable
         $sql .= " FROM $permission_aclDb";
         $join = " INNER JOIN $usersDb";
         $join .= " ON ( user_id = $usersDb.id )";
-        $filter = " WHERE acl_id = '$aclId'";
+        $filter = ' WHERE acl_id = ?';
 
-        $data1=$this->getArray( $sql . $join . $filter );
+        $data1=$this->selectPrepared( $sql . $join . $filter, [$aclId] );
         if (!is_null($fields)){
             // Jump out here if non-default fields were asked for
             return $data1;
@@ -160,9 +160,9 @@ class permissions_acl extends dbTable
         $sql .= " FROM $permission_aclDb";
         $join = " INNER JOIN $groupsDb";
         $join .= " ON ( group_id = $groupsDb.id )";
-        $filter = " WHERE acl_id = '$aclId'";
+        $filter = ' WHERE acl_id = ?';
 
-        return $this->getArray( $sql . $join . $filter );
+        return $this->selectPrepared( $sql . $join . $filter, [$aclId] );
     }
 
     /**
@@ -224,13 +224,15 @@ class permissions_acl extends dbTable
         $storageUserId = $this->objUser->PKId($logicalUserId);
         foreach (array($storageUserId, $permissionUserId) as $directId) {
             if (is_scalar($directId) && trim((string) $directId) !== '') {
-                $directIds[] = $this->quoteValue((string) $directId);
+                $directIds[] = (string) $directId;
             }
         }
 
+        $directIds = array_values(array_unique($directIds));
+        $parameters = $directIds;
         $conditions = array();
         if (!empty($directIds)) {
-            $conditions[] = 'user_id IN (' . implode(',', array_unique($directIds)) . ')';
+            $conditions[] = 'user_id IN (' . implode(',', array_fill(0, count($directIds), '?')) . ')';
         }
         if (!empty($groupIds)) {
             $conditions[] = 'group_id IN ('
@@ -240,10 +242,14 @@ class permissions_acl extends dbTable
             return array();
         }
 
-        $aclRows = parent::getArray(
-            'SELECT DISTINCT acl_id FROM ' . $this->_tableName
-            . ' WHERE ' . implode(' OR ', $conditions)
-        );
+        try {
+            $aclRows = parent::selectPrepared(
+                'SELECT DISTINCT acl_id FROM ' . $this->_tableName
+                . ' WHERE ' . implode(' OR ', $conditions), $parameters
+            );
+        } catch (RuntimeException $error) {
+            return array(); // A failed lookup must not grant access.
+        }
         if (!is_array($aclRows)) {
             return array();
         }
@@ -257,13 +263,4 @@ class permissions_acl extends dbTable
         return array_keys($result);
     }
 
-    private function quoteValue($value)
-    {
-        $db = $this->objEngine->getDbObj();
-        return method_exists($db, 'quoteSmart')
-            ? $db->quoteSmart($value)
-            : "'" . str_replace("'", "''", $value) . "'";
-    }
 }
-
-?>

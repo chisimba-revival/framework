@@ -2,18 +2,18 @@
 require_once dirname(__FILE__) . '/persistentloginrepositoryinterface.php';
 
 /**
- * MDB2 persistence for rotating remembered-login credentials.
+ * dbTable persistence for rotating remembered-login credentials.
  *
  * Rotation locks and consumes the old credential in the same transaction as
  * inserting its replacement. This class canonically owns its table writes.
  *
  * @author Derek Keats
  */
-class Mdb2PersistentLoginRepository implements PersistentLoginRepositoryInterface
+class DbTablePersistentLoginRepository implements PersistentLoginRepositoryInterface
 {
     private $db;
 
-    public function __construct($connection)
+    public function __construct(dbTable $connection)
     {
         $this->db = $connection;
     }
@@ -42,15 +42,13 @@ class Mdb2PersistentLoginRepository implements PersistentLoginRepositoryInterfac
 
     public function rotate($id, array $replacement, $usedAt)
     {
-        $this->begin();
-        try {
+        return $this->db->transaction(function () use ($id, $replacement, $usedAt) {
             $current = $this->fetchOne(
                 'SELECT id FROM tbl_auth_persistent_logins '
                 . 'WHERE id=? AND revoked_at IS NULL FOR UPDATE',
                 array((string) $id)
             );
             if (!$current) {
-                $this->rollback();
                 return false;
             }
             if (!$this->store($replacement)) {
@@ -65,12 +63,8 @@ class Mdb2PersistentLoginRepository implements PersistentLoginRepositoryInterfac
             if ($changed !== 1) {
                 throw new RuntimeException('old token was already consumed');
             }
-            $this->commit();
             return true;
-        } catch (Throwable $error) {
-            $this->rollback();
-            throw $error;
-        }
+        });
     }
 
     public function revoke($id, $revokedAt)
@@ -101,27 +95,11 @@ class Mdb2PersistentLoginRepository implements PersistentLoginRepositoryInterfac
 
     private function fetchOne($sql, array $args)
     {
-        $statement = $this->db->prepare($sql, null, MDB2_PREPARE_RESULT);
-        $result = $statement->execute($args);
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $result->free();
-        $statement->free();
-        return $row ?: null;
+        return $this->db->selectPrepared($sql, $args)[0] ?? null;
     }
-
     private function execute($sql, array $args)
     {
-        $statement = $this->db->prepare($sql, null, MDB2_PREPARE_MANIP);
-        $affected = $statement->execute($args);
-        $statement->free();
-        if (PEAR::isError($affected)) {
-            throw new RuntimeException($affected->getMessage());
-        }
-        return (int) $affected;
+        return $this->db->executePrepared($sql, $args);
     }
-
-    private function begin() { $this->db->beginTransaction(); }
-    private function commit() { $this->db->commit(); }
-    private function rollback() { $this->db->rollback(); }
     private function date($timestamp) { return gmdate('Y-m-d H:i:s', (int) $timestamp); }
 }

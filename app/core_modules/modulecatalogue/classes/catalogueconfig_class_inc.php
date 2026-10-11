@@ -59,6 +59,9 @@ $GLOBALS['kewl_entry_point_run']){
 require_once dirname(__DIR__, 2) . '/config/classes/configurationdocument.php';
 
 class catalogueconfig extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+
 
 
     /**

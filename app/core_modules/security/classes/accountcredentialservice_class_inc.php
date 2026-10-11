@@ -6,6 +6,11 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class accountcredentialservice extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objAuthentication;
+    public $objNativeAuth;
+    public $objUsers;
+
     public function init(
         $tableName = null,
         $pearDb = null,

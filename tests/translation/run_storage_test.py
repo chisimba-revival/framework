@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Disposable MariaDB fixture, internal network, no published ports or site writes."""
-import subprocess,secrets,time,pathlib
+import subprocess,secrets,time,pathlib,sys
+driver=sys.argv[1] if len(sys.argv)>1 else "MDB2"
+if driver not in ("MDB2","PDO"):raise SystemExit("Expected MDB2 or PDO")
 root=pathlib.Path(__file__).resolve().parents[2];network='chisimba-translation-fixture-'+secrets.token_hex(4);container=network+'-db';password=secrets.token_hex(24)
 def run(args,**kw):
  result=subprocess.run(args,**kw)
@@ -13,7 +15,7 @@ try:
   if subprocess.run(['docker','exec',container,'mariadb','-uroot','-p'+password,'-e','SELECT 1'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:break
   time.sleep(1)
  else:raise RuntimeError('Fixture DB unavailable')
- run(['docker','run','--rm','--network',network,'--entrypoint','php','-e','TRANSLATION_FIXTURE=1','-e','TRANSLATION_FIXTURE_PASSWORD='+password,'-v',str(root)+':/framework:ro','chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','/framework/tests/translation/storage_test.php','/framework/app'])
+ run(['docker','run','--rm','--network',network,'--entrypoint','php','-e','TRANSLATION_FIXTURE=1','-e','TRANSLATION_DRIVER='+driver,'-e','TRANSLATION_FIXTURE_PASSWORD='+password,'-v',str(root)+':/framework:ro','chisimba-php85-web','-d','display_errors=1','-d','auto_prepend_file=','/framework/tests/translation/storage_test.php','/framework/app'])
 finally:
  subprocess.run(['docker','stop',container],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
  subprocess.run(['docker','network','rm',network],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)

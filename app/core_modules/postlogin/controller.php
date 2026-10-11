@@ -16,6 +16,17 @@ if (!$GLOBALS['kewl_entry_point_run']) {
  * @author Derek Keats, Tohir Solomons
  */
 class postlogin extends controller {
+    /** Dependencies and state initialised by this component. */
+    public $cbExists;
+    public $contextCode;
+    public $dbSysConfig;
+    public $objBlocks;
+    public $objBlocksContent;
+    public $objContextBlocks;
+    public $objDynamicBlocks;
+    public $objLanguage;
+    public $objModule;
+
 
     /**
      * init method to instantiate the class

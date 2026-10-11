@@ -12,7 +12,7 @@ require_once dirname(__FILE__) . '/nativeauth/nativeauthwebcompositionfactory.ph
 require_once dirname(__FILE__) . '/nativeauth/nativesessionservice.php';
 require_once dirname(__FILE__) . '/nativeauth/configurablemfaenforcementpolicy.php';
 
-class nativeauthwebcomposition extends ChisimbaObject
+class nativeauthwebcomposition extends dbTable
 {
     private $stack;
     private $resumptionAttempted = false;
@@ -35,7 +35,7 @@ class nativeauthwebcomposition extends ChisimbaObject
             )
         );
         $this->stack = NativeAuthWebCompositionFactory::build(
-            $this->objEngine->getDbObj(),
+            $this,
             $this,
             new NativeSessionService($this),
             $this->getObject('auth_database', 'security'),

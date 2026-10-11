@@ -8,13 +8,23 @@
  * @copyright 2026 Derek Keats
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU GPL version 2
  */
+$GLOBALS['kewl_entry_point_run'] = true;
+$app = dirname(__DIR__, 2) . '/app';
+set_include_path($app . PATH_SEPARATOR . get_include_path());
+class ChisimbaObject {}
+require_once $app . '/classes/core/dbtable_class_inc.php';
+function adapterTable($connection) {
+    $table = new dbTable();
+    (new ReflectionProperty(dbTable::class, '_db'))->setValue($table, $connection);
+    return $table;
+}
 define('MDB2_PREPARE_RESULT', 1);
 define('MDB2_PREPARE_MANIP', 2);
 define('MDB2_FETCHMODE_ASSOC', 2);
 
 $base = dirname(__FILE__)
     . '/../../app/core_modules/security/classes/nativeauth/';
-require_once $base . 'mdb2nativedatabaseadapter.php';
+require_once $base . 'dbtablenativedatabaseadapter.php';
 require_once $base . 'nativeuserrepository.php';
 require_once $base . 'nativepasswordverifier.php';
 require_once $base . 'localpasswordprovider.php';
@@ -103,7 +113,7 @@ $connection = new V99Connection(array(
     v99row('u-legacy', 'legacy', $legacy),
 ));
 $repository = new NativeUserRepository(
-    new Mdb2NativeDatabaseAdapter($connection),
+    new DbTableNativeDatabaseAdapter(adapterTable($connection)),
     false
 );
 $verifier = new NativePasswordVerifier();

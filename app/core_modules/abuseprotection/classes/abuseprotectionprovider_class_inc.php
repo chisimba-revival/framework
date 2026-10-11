@@ -8,17 +8,18 @@
  * @copyright 2026 Derek Keats
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
  */
-class abuseprotectionprovider extends ChisimbaObject
+class abuseprotectionprovider extends dbTable
 {
     private $service;
 
-    public function init()
+    public function init($tableName = null, $pearDb = null, $errorCallback = "globalPearErrorCallback")
     {
+        parent::init('tbl_abuse_events');
         require_once dirname(__FILE__) . '/abuseprotectionservice.php';
-        require_once dirname(__FILE__) . '/mdb2abuseeventrepository.php';
+        require_once dirname(__FILE__) . '/dbtableabuseeventrepository.php';
         require_once dirname(__FILE__) . '/installationabusekeyprovider.php';
         $this->service = new AbuseProtectionService(
-            new Mdb2AbuseEventRepository($this->objEngine->getDbObj()),
+            new DbTableAbuseEventRepository($this),
             (new InstallationAbuseKeyProvider())->getKey()
         );
     }

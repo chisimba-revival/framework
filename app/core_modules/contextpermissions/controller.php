@@ -57,6 +57,11 @@ $GLOBALS['kewl_entry_point_run'] ) {
  * @see       core
  */
 class contextpermissions extends controller {
+    /** Shared decision-table services used by the controller. */
+    public $objLanguage;
+    public $objAction;
+    public $objRule;
+    public $objCond;
 
     /**
      * Description for var

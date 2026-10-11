@@ -27,6 +27,9 @@ $this->loadClass( 'decisiontablebase', 'decisiontable' );
  */
 class condition extends decisionTableBase
 {
+    /** Dependencies and state initialised by this component. */
+    public $objConditionType;
+
     // --- ATTRIBUTES ---
     /**
      * Property used for storing the function used for the condition.

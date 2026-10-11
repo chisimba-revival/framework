@@ -181,3 +181,39 @@ are retained. Before reopening a failed rollback, verify its module metadata and
 language lookups. Do not blindly restore the database backup over work performed
 since this release. No translation-text format or schema rewrite was performed.
 The release operator leaves maintenance enabled if post-switch checks fail.
+
+## Local PDO migration — 11 October 2026 (uncommitted)
+
+The translation store now extends dbTable. Ordinary reads and writes use bound
+parameters through `selectExactPrepared`/`executeExactPrepared`; no MDB2 result,
+quoting, manager or connection API remains in the language store. These exact
+methods preserve empty strings, nulls, whitespace and column case. The temporary
+MDB2 portability override is restored even after errors; existing dbTable callers
+retain their historical conversions. Unlike the old storage read, trailing spaces
+are now preserved. All 7,328 installed English outputs still match the legacy
+oracle; no installed text has been rewritten.
+
+Database-scoped locking is provided by dbTable on the canonical connection,
+using the same language lock name as before. MDB2 and PDO writers therefore
+coordinate during migration. Checked callback transactions handle multilingual
+saves. Explicit DDL is delegated to `ChisimbaDatabaseSchema`, which provides
+validated identifiers, table/column inspection, InnoDB validation and explicit
+text-table creation/removal. It refuses DDL inside an active transaction. This
+small schema service is not a replacement for the entire catalogue schema manager.
+Creation remains InnoDB/utf8mb4; retained tables are neither converted nor erased.
+The nontransactional DDL/retry limitations described above still apply.
+
+Run both isolated database variants:
+
+```sh
+python3 tests/translation/run_storage_test.py MDB2
+python3 tests/translation/run_storage_test.py PDO
+```
+
+Both cover the original lifecycle/rollback checks plus exact empty/whitespace
+text, portability restoration after failed queries, nested-transaction refusal,
+incompatible retained tables, and an MDB2/PDO pair writing concurrently without
+creating duplicate items. The PDO parent process loads neither MDB2 nor PEAR.
+Installed smoke and full English parity checks pass read-only. The local site
+still uses MDB2; production deployment, full installed PDO acceptance and the
+language-administration UI are outside this completed storage slice.

@@ -401,6 +401,7 @@ class CreateConfigsAction extends FiveStepAction
 
 
         if ($_SESSION ['install_type'] == 'install') {
+            $this->config_vars['DATABASE_ABSTRACTION']='PDO';
 
             foreach ( $this->config_vars as $name => $val ) {
 

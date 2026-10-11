@@ -19,6 +19,10 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class page extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objDbMenu;
+    public $objTools;
+
     /**
     * Method to construct the class
     */

@@ -89,7 +89,7 @@ class block_canvasviewer extends ChisimbaObject
     public function init()
     {
         try {
-            $this->objLanguage = &$this->getObject('language', 'language');
+            $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             $this->title = $this->objLanguage->languageText("mod_canvas_viewer", "canvas");
         } catch(Exception $e) {

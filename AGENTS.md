@@ -62,6 +62,30 @@ source and assembly configuration. Do not blindly reset, rebuild or reinstall.
   suppression. Preserve encoding and data contracts; a warning fix is not permission
   for an unrelated data-format migration. Identify vendor changes explicitly.
 
+## Database access is a project rule
+
+**All module persistence must use `dbTable`, directly or through a shared
+Chisimba service backed by `dbTable`.** This applies to core and application
+modules, including new repositories, background jobs and installation hooks.
+
+- Use dbTable CRUD methods or its prepared-query APIs; bind data values rather
+  than interpolating or manually quoting them. Custom SQL belongs behind dbTable.
+- Do not obtain a raw connection with `getDbObj()`, instantiate PDO/MDB2/mysqli,
+  or call driver query, quoting, result or transaction APIs from module code.
+  Driver access belongs only inside the shared framework database implementation.
+- Use shared checked transaction and locking APIs. Preserve the enclosing
+  transaction's ownership; a module must not commit or roll back another caller's
+  work. Use the shared savepoint API when composition requires it.
+- Schema changes use the shared framework schema/catalogue services through
+  guarded, repeatable installation or upgrade paths, never a module-owned driver
+  connection or opportunistic DDL during normal requests.
+- If the abstraction lacks a needed capability, extend the shared framework
+  boundary with appropriate tests instead of bypassing it in a module.
+- Review new and changed persistence for direct driver calls. Existing legacy
+  callers are migration debt, not examples or exceptions for new code. During
+  the MDB2-to-PDO transition, verify changed persistence against both supported
+  drivers with disposable fixtures, including failure and rollback behaviour.
+
 ## Skin primitives are a project rule
 
 **The skin renders the canvas. Modules supply semantic content and behaviour.**

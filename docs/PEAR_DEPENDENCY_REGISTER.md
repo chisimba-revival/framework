@@ -25,11 +25,19 @@ rebuild from the cleaned manifests and prove removed classes are not loaded.
 Record licences, exact removals and a tested rollback. Do not delete still-used
 MDB2/Translation2 components as part of the current configuration release.
 
-Database work is queued after the completed PEAR release. Initial inspection
-found existing PDO branches are not a drop-in switch: connection construction,
-result shape, direct MDB2 consumers, native-auth adapter and schema/installer
-paths need separate compatibility coverage. No database-layer setting or schema
-has been changed. Keep the deployment and database migration as separate commits.
+The local MySQL/MariaDB PDO migration passed acceptance on 11 October 2026.
+See [local acceptance](database-migration/local-acceptance-20261011.md) for the
+shared dbTable/schema implementation, caller migrations, both-driver regression
+checks and PHP 8 warning cleanup. The local site now selects PDO. Production
+rollout is staged separately; MDB2 remains available for sites not yet migrated.
+
+PDO does not mean PEAR-free. The core error handler still loads PEAR/PEAR_Error.
+Mail/Mail_mime, BBCode parsing, XML serialisation, Archive_Tar and historical
+XML-RPC/graph helpers still have callers. Operator/import scripts, the unregistered
+Audience repository and the historical BlogImporter need separate direct-driver
+migration checks. Do not remove the vendor directory or claim all CLI/extension
+paths have migrated. Before enabling a dormant module on any site, audit its
+database calls and PHP 8 compatibility, then test its actual workflows.
 
 ## Bootstrap and persistence boundary
 

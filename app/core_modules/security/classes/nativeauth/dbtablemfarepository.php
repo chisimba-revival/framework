@@ -3,14 +3,14 @@ require_once dirname(__FILE__) . '/mfarepositoryinterface.php';
 require_once dirname(__FILE__) . '/mfaenrolment.php';
 
 /**
- * Atomic MDB2 repository for MFA factors and recovery codes.
+ * Atomic dbTable repository for MFA factors and recovery codes.
  *
  * @author Derek Keats
  */
-class Mdb2MfaRepository implements MfaRepositoryInterface
+class DbTableMfaRepository implements MfaRepositoryInterface
 {
     private $db;
-    public function __construct($connection) { $this->db = $connection; }
+    public function __construct(dbTable $connection) { $this->db = $connection; }
 
     public function findActiveTotpForUser($userId)
     {
@@ -92,8 +92,7 @@ class Mdb2MfaRepository implements MfaRepositoryInterface
                 'At least one recovery code is required.'
             );
         }
-        $this->db->beginTransaction();
-        try {
+        return $this->db->transaction(function () use ($userId, $codes, $createdAt) {
             $this->execute(
                 'DELETE FROM tbl_auth_mfa_recovery_codes WHERE user_id=?',
                 array((string) $userId)
@@ -122,12 +121,8 @@ class Mdb2MfaRepository implements MfaRepositoryInterface
                     );
                 }
             }
-            $this->db->commit();
             return true;
-        } catch (Throwable $error) {
-            $this->db->rollback();
-            throw $error;
-        }
+        });
     }
 
     public function disableTotpForUser($userId, $disabledAt)
@@ -155,8 +150,7 @@ class Mdb2MfaRepository implements MfaRepositoryInterface
 
     public function consumeRecoveryCode($userId, $code, $usedAt)
     {
-        $this->db->beginTransaction();
-        try {
+        return $this->db->transaction(function () use ($userId, $code, $usedAt) {
             $rows = $this->fetchAll(
                 'SELECT id,code_hash FROM tbl_auth_mfa_recovery_codes '
                 . 'WHERE user_id=? AND used_at IS NULL FOR UPDATE',
@@ -170,40 +164,23 @@ class Mdb2MfaRepository implements MfaRepositoryInterface
                         array(gmdate('Y-m-d H:i:s', (int) $usedAt), $row['id'])
                     );
                     if ($changed !== 1) throw new RuntimeException('code reuse');
-                    $this->db->commit();
                     return true;
                 }
             }
-            $this->db->rollback();
             return false;
-        } catch (Throwable $error) {
-            $this->db->rollback();
-            throw $error;
-        }
+        });
     }
 
-    private function prepared($sql, array $args, $mode)
-    {
-        $statement = $this->db->prepare($sql, null, $mode);
-        $result = $statement->execute($args);
-        $statement->free();
-        if (PEAR::isError($result)) throw new RuntimeException($result->getMessage());
-        return $result;
-    }
     private function fetchOne($sql, array $args)
     {
-        $result = $this->prepared($sql, $args, MDB2_PREPARE_RESULT);
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC); $result->free();
-        return $row ?: null;
+        return $this->db->selectPrepared($sql, $args)[0] ?? null;
     }
     private function fetchAll($sql, array $args)
     {
-        $result = $this->prepared($sql, $args, MDB2_PREPARE_RESULT);
-        $rows = $result->fetchAll(MDB2_FETCHMODE_ASSOC); $result->free();
-        return $rows ?: array();
+        return $this->db->selectPrepared($sql, $args);
     }
     private function execute($sql, array $args)
     {
-        return (int) $this->prepared($sql, $args, MDB2_PREPARE_MANIP);
+        return $this->db->executePrepared($sql, $args);
     }
 }

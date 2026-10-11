@@ -44,6 +44,9 @@
  */
 
 class modulecatalogue extends controller {
+    /** Dependencies and state initialised by this component. */
+    public $objPOFile;
+
 
     private const UPDATE_CSRF_CONTEXT = 'modulecatalogue_apply_update';
     private const UPDATE_ALL_CSRF_CONTEXT = 'modulecatalogue_apply_all_updates';

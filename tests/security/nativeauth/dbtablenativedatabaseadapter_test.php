@@ -1,10 +1,20 @@
 <?php
+$GLOBALS['kewl_entry_point_run'] = true;
+$app = dirname(__DIR__, 3) . '/app';
+set_include_path($app . PATH_SEPARATOR . get_include_path());
+class ChisimbaObject {}
+require_once $app . '/classes/core/dbtable_class_inc.php';
+function adapterTable($connection) {
+    $table = new dbTable();
+    (new ReflectionProperty(dbTable::class, '_db'))->setValue($table, $connection);
+    return $table;
+}
 define('MDB2_PREPARE_RESULT', 1);
 define('MDB2_PREPARE_MANIP', 2);
 define('MDB2_FETCHMODE_ASSOC', 2);
 
 require_once dirname(__FILE__) . '/../../../app/core_modules/security/classes/'
-    . 'nativeauth/mdb2nativedatabaseadapter.php';
+    . 'nativeauth/dbtablenativedatabaseadapter.php';
 
 function assertSameValue($expected, $actual, $message)
 {
@@ -107,7 +117,7 @@ $row = array('userid' => '7', 'username' => 'admin');
 $result = new AdapterFakeResult($row, array($row));
 $statement = new AdapterFakeStatement($result);
 $connection = new AdapterFakeConnection($statement);
-$adapter = new Mdb2NativeDatabaseAdapter($connection);
+$adapter = new DbTableNativeDatabaseAdapter(adapterTable($connection));
 
 $actual = $adapter->fetchOne(
     'SELECT userid, username FROM tbl_users WHERE username = ?',
@@ -131,7 +141,7 @@ assertTrueValue($result->freed, 'fetchOne frees the result');
 $result = new AdapterFakeResult(null, array($row));
 $statement = new AdapterFakeStatement($result);
 $connection = new AdapterFakeConnection($statement);
-$adapter = new Mdb2NativeDatabaseAdapter($connection);
+$adapter = new DbTableNativeDatabaseAdapter(adapterTable($connection));
 
 assertSameValue(
     array($row),
@@ -149,7 +159,7 @@ assertSameValue(
 
 $statement = new AdapterFakeStatement(3);
 $connection = new AdapterFakeConnection($statement);
-$adapter = new Mdb2NativeDatabaseAdapter($connection);
+$adapter = new DbTableNativeDatabaseAdapter(adapterTable($connection));
 
 assertSameValue(
     3,
@@ -174,7 +184,7 @@ assertTrueValue($statement->freed, 'execute frees the statement');
 $result = new AdapterFakeResult(false, array());
 $statement = new AdapterFakeStatement($result);
 $connection = new AdapterFakeConnection($statement);
-$adapter = new Mdb2NativeDatabaseAdapter($connection);
+$adapter = new DbTableNativeDatabaseAdapter(adapterTable($connection));
 
 assertSameValue(
     null,
@@ -182,4 +192,4 @@ assertSameValue(
     'fetchOne normalises no row to null'
 );
 
-echo "All MDB2 native database adapter tests passed.\n";
+echo "All dbTable native database adapter tests passed.\n";

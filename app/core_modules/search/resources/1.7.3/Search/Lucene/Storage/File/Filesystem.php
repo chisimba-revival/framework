@@ -52,24 +52,20 @@ class Zend_Search_Lucene_Storage_File_Filesystem extends Zend_Search_Lucene_Stor
      */
     public function __construct($filename, $mode='r+b')
     {
-        global $php_errormsg;
 
         if (strpos($mode, 'w') === false  &&  !is_readable($filename)) {
             // opening for reading non-readable file
             throw new Zend_Search_Lucene_Exception('File \'' . $filename . '\' is not readable.');
         }
 
-        $trackErrors = ini_get('track_errors');
-        ini_set('track_errors', '1');
+        // Chisimba PHP 8 maintenance: track_errors/php_errormsg were removed.
 
         $this->_fileHandle = @fopen($filename, $mode);
 
         if ($this->_fileHandle === false) {
-            ini_set('track_errors', $trackErrors);
-            throw new Zend_Search_Lucene_Exception($php_errormsg);
+            throw new Zend_Search_Lucene_Exception('Unable to open search index file: ' . $filename);
         }
 
-        ini_set('track_errors', $trackErrors);
     }
 
     /**

@@ -2,30 +2,22 @@
 /** Existing language tables through the canonical connection; no private DSN.
  * @author Derek Keats <derek@dkeats.com>
  */
-class translationstore extends ChisimbaObject
+class translationstore extends dbTable
 {
-    private $db;
+    private $schema;
     private $available;
     private $generation = 0;
-    public function init() { $this->db = $this->objEngine->getDbObj(); }
+    public function init($tableName = null, $pearDb = null, $errorCallback = "globalPearErrorCallback")
+    {
+        parent::init('tbl_langs_avail', $pearDb, $errorCallback);
+        require_once __DIR__ . '/../../../classes/core/chisimbadatabaseschema.php';
+        $this->schema = new ChisimbaDatabaseSchema($this);
+    }
     public function revision() { return $this->generation; }
-    private function checked($result)
-    {
-        if ($result === false || (class_exists('PEAR', false) && PEAR::isError($result))) {
-            throw new RuntimeException('Language storage operation failed.');
-        }
-        return $result;
-    }
-    private function quote($value)
-    {
-        // MDB2 portability can turn an empty string into SQL NULL. Metadata and
-        // page IDs distinguish those values, so preserve the explicit empty value.
-        return $value === '' ? "''" : $this->checked($this->db->quote($value, 'text'));
-    }
     private function identifier($value)
     {
         if (!is_string($value) || !preg_match('/^[a-z][a-z0-9_]{0,47}$/D', $value)) { throw new InvalidArgumentException('Invalid language identifier.'); }
-        return $this->db->quoteIdentifier($value, true);
+        return ChisimbaDatabaseSchema::identifier($value);
     }
     private function languageId($id)
     {
@@ -34,12 +26,9 @@ class translationstore extends ChisimbaObject
         }
         return $id;
     }
-    private function rows($sql)
+    private function rows($sql, array $parameters = [])
     {
-        $result = $this->checked($this->db->query($sql)); $rows = [];
-        try { while ($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) { $rows[] = $this->checked($row); } }
-        finally { $result->free(); }
-        return $rows;
+        return $this->selectExactPrepared($sql, $parameters);
     }
     public function languages()
     {
@@ -63,9 +52,9 @@ class translationstore extends ChisimbaObject
     public function page($language,$page)
     {
         $table=$this->table($language);$column=$this->identifier($language);
-        $where=$page===null?'pageID IS NULL':'pageID='.$this->quote($page);
+        $where=$page===null?'pageID IS NULL':'pageID=?';
         $result=[];
-        foreach($this->rows('SELECT id,'.$column.' AS translation FROM '.$table.' WHERE '.$where) as $row) { $result[$row['id']]=$row['translation']; }
+        foreach($this->rows('SELECT id,'.$column.' AS translation FROM '.$table.' WHERE '.$where, $page===null?[]:[$page]) as $row) { $result[$row['id']]=$row['translation']; }
         return $result;
     }
     /** Update only submitted languages; never erase other translations first. */
@@ -81,24 +70,21 @@ class translationstore extends ChisimbaObject
         foreach($translations as $language=>$text) {
             if (!is_string($text)||!preg_match('//u',$text)) { throw new InvalidArgumentException('Translation must be valid UTF-8 text.'); }
             $tables[$language]=$this->table($language);
-            $status=$this->rows('SELECT ENGINE AS engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='.$this->quote('tbl_'.$language));
-            if (strcasecmp($status[0]['engine']??'', 'InnoDB')!==0) { throw new RuntimeException('Translation writes require transactional InnoDB tables.'); }
+            $this->schema->requireTransactional('tbl_'.$language);
         }
         if (!$tables) { return true; }
-        if (!empty($this->db->in_transaction)) { throw new RuntimeException('Language save requires its own transaction.'); }
-        $this->checked($this->db->beginTransaction());
-        try {
-            $where='id='.$this->quote($id).' AND '.($page===null?'pageID IS NULL':'pageID='.$this->quote($page));
+        $this->transaction(function () use ($id, $page, $translations, $tables) {
+            $where='id=? AND '.($page===null?'pageID IS NULL':'pageID=?');
+            $parameters=$page===null?[$id]:[$id,$page];
             foreach($tables as $language=>$table) {
-                $column=$this->identifier($language);$text=$this->quote($translations[$language]);
-                if ($this->rows('SELECT id FROM '.$table.' WHERE '.$where)) {
-                    $this->checked($this->db->exec('UPDATE '.$table.' SET '.$column.'='.$text.' WHERE '.$where));
+                $column=$this->identifier($language);
+                if ($this->rows('SELECT id FROM '.$table.' WHERE '.$where, $parameters)) {
+                    $this->executeExactPrepared('UPDATE '.$table.' SET '.$column.'=? WHERE '.$where, array_merge([$translations[$language]],$parameters));
                 } else {
-                    $this->checked($this->db->exec('INSERT INTO '.$table.' (id,pageID,'.$column.') VALUES ('.$this->quote($id).','.$this->quote($page).','.$text.')'));
+                    $this->executeExactPrepared('INSERT INTO '.$table.' (id,pageID,'.$column.') VALUES (?,?,?)', [$id,$page,$translations[$language]]);
                 }
             }
-            $this->checked($this->db->commit());
-        } catch(Throwable $e) { $this->db->rollback(); throw $e; }
+        });
         ++$this->generation;return true;
     }
     public function getPageNames()
@@ -121,22 +107,20 @@ class translationstore extends ChisimbaObject
         if (($data['table_name']??'tbl_'.$id)!=='tbl_'.$id) { throw new InvalidArgumentException('Unexpected language table.'); }
         if (isset($this->languages()[$id])) { throw new RuntimeException('Language already registered.'); }
         $metadata=$this->metadata($data);
-        $this->checked($this->db->loadModule('Manager'));
-        $tables=$this->checked($this->db->manager->listTables());
-        if (!in_array('tbl_'.$id,$tables,true)) {
-            $this->checked($this->db->manager->createTable('tbl_'.$id,[
-                'id'=>['type'=>'text','length'=>255,'notnull'=>true],
-                'pageID'=>['type'=>'text','length'=>150],
-                $id=>['type'=>'text'],
-            ],['charset'=>'utf8mb4','type'=>'InnoDB']));
+        if (!$this->schema->tableExists('tbl_'.$id)) {
+            $this->schema->createTextTable('tbl_'.$id,[
+                'id'=>['length'=>255,'notnull'=>true],
+                'pageID'=>['length'=>150],
+                $id=>[],
+            ]);
         } else {
-            // A retained table may be re-registered, but never alter/drop its data.
-            $fields=$this->checked($this->db->manager->listTableFields('tbl_'.$id));
+            // Re-registration retains the existing table and all its text.
+            $fields=array_map('strtolower',$this->schema->columns('tbl_'.$id));
             foreach(['id','pageid',$id] as $field) {
-                if (!in_array($field,array_map('strtolower',$fields),true)) { throw new RuntimeException('Retained language table is incompatible.'); }
+                if (!in_array($field,$fields,true)) { throw new RuntimeException('Retained language table is incompatible.'); }
             }
         }
-        $this->checked($this->db->exec('INSERT INTO tbl_langs_avail (id,name,meta,error_text,encoding) VALUES ('.implode(',',array_map(fn($v)=>$this->quote($v),array_merge([$id],array_values($metadata)))).')'));
+        $this->executeExactPrepared('INSERT INTO tbl_langs_avail (id,name,meta,error_text,encoding) VALUES (?,?,?,?,?)', array_merge([$id],array_values($metadata)));
         $this->invalidate();return true;
     }
     private function metadata(array $data)
@@ -159,8 +143,8 @@ class translationstore extends ChisimbaObject
         $id=$this->languageId($data['lang_id']??null);$existing=$this->languages()[$id]??null;
         if (!$existing) { throw new InvalidArgumentException('Language is not registered.'); }
         $metadata=$this->metadata(array_merge($existing,$data));$sets=[];
-        foreach($metadata as $key=>$value) { $sets[]=$this->identifier($key).'='.$this->quote($value); }
-        $this->checked($this->db->exec('UPDATE tbl_langs_avail SET '.implode(',',$sets).' WHERE id='.$this->quote($id)));
+        foreach($metadata as $key=>$value) { $sets[]=$this->identifier($key).'=?'; }
+        $this->executeExactPrepared('UPDATE tbl_langs_avail SET '.implode(',',$sets).' WHERE id=?', array_merge(array_values($metadata),[$id]));
         $this->invalidate();return true;
     }
     /** By default unregister only; retained translations can be re-registered. */
@@ -173,30 +157,20 @@ class translationstore extends ChisimbaObject
         $id=$this->languageId($id);$table=$this->table($id);
         if ($id==='en') { throw new InvalidArgumentException('The English fallback cannot be removed.'); }
         if ($destroy) {
-            $this->checked($this->db->loadModule('Manager'));
-            $this->checked($this->db->manager->dropTable('tbl_'.$id));
+            $this->schema->dropTable('tbl_'.$id);
         }
-        $this->checked($this->db->exec('DELETE FROM tbl_langs_avail WHERE id='.$this->quote($id)));
+        $this->executeExactPrepared('DELETE FROM tbl_langs_avail WHERE id=?', [$id]);
         $this->invalidate();return true;
     }
-    /** Current supported MariaDB/MySQL adapter: serialize all native language writes.
-     * The database migration must supply an equivalent lock on its new adapter.
-     * Catalogue registration still has its own installation/maintenance boundary.
-     */
+    /** Serialise native language writes, including inserts into tables without keys. */
     private function locked($operation)
     {
-        if (!empty($this->db->in_transaction)) { throw new RuntimeException('Language writes require their own transaction boundary.'); }
-        if(!in_array($this->db->phptype,['mysql','mysqli'],true))throw new RuntimeException('Language writes require a validated database adapter.');
-        $name="CONCAT('chisimba-lang:',LEFT(SHA2(DATABASE(),256),40))";
-        $rows=$this->rows('SELECT GET_LOCK('.$name.',5) AS acquired');
-        if((int)($rows[0]['acquired']??0)!==1)throw new RuntimeException('Language data is busy; retry the operation.');
-        // Another worker may have changed registration while this request waited.
-        $this->available=null;
-        try{return $operation();}
-        finally {
-            $released=$this->rows('SELECT RELEASE_LOCK('.$name.') AS released');
-            if((int)($released[0]['released']??0)!==1)throw new RuntimeException('Language lock release failed.');
-        }
+        if ($this->hasActiveTransaction()) { throw new RuntimeException('Language writes require their own transaction boundary.'); }
+        return $this->withDatabaseLock('chisimba-lang:', function () use ($operation) {
+            // Another worker may have changed registration while this request waited.
+            $this->available=null;
+            return $operation();
+        });
     }
     private function invalidate() { $this->available=null; ++$this->generation; }
 }

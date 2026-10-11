@@ -20,8 +20,8 @@ foreach (array(
     'guardedloginapplicationservice.php',
     'installationmfakeyprovider.php',
     'deferredmfasecretprotector.php',
-    'mdb2mfarepository.php',
-    'mdb2persistentloginrepository.php',
+    'dbtablemfarepository.php',
+    'dbtablepersistentloginrepository.php',
     'mfapolicycontextresolver.php',
     'nativeauthpolicycontextreaders.php',
     'mfachallengeservice.php',
@@ -44,14 +44,14 @@ foreach (array(
 require_once dirname(__FILE__)
     . '/../../../abuseprotection/classes/abuseprotectionservice.php';
 require_once dirname(__FILE__)
-    . '/../../../abuseprotection/classes/mdb2abuseeventrepository.php';
+    . '/../../../abuseprotection/classes/dbtableabuseeventrepository.php';
 require_once dirname(__FILE__)
     . '/../../../abuseprotection/classes/installationabusekeyprovider.php';
 
 final class NativeAuthWebCompositionFactory
 {
     public static function build(
-        $connection,
+        dbTable $connection,
         $sessionBackend,
         NativeSessionServiceInterface $sessions,
         $credentialVerifier,
@@ -75,14 +75,14 @@ final class NativeAuthWebCompositionFactory
             return $sessions->getUserId() . ':' . $epoch;
         });
         $pending = new PendingAuthenticationService($sessionBackend);
-        $factors = new Mdb2MfaRepository($connection);
+        $factors = new DbTableMfaRepository($connection);
         $totp = new TotpService();
         $protector = new DeferredMfaSecretProtector(
             new InstallationMfaKeyProvider()
         );
         $persistent = new PersistentLoginCoordinator(
             new PersistentLoginService(
-                new Mdb2PersistentLoginRepository($connection),
+                new DbTablePersistentLoginRepository($connection),
                 $rememberDays
             ),
             new PersistentLoginCookiePolicy()
@@ -125,7 +125,7 @@ final class NativeAuthWebCompositionFactory
             array($policyReaders, 'policyEnabledAt')
         );
         $abuse = new AbuseProtectionService(
-            new Mdb2AbuseEventRepository($connection),
+            new DbTableAbuseEventRepository($connection),
             (new InstallationAbuseKeyProvider())->getKey()
         );
         $guardedLogin = new GuardedLoginApplicationService(

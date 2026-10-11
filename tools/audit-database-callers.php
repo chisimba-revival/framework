@@ -1,5 +1,5 @@
 <?php
-/** Static migration inventory; reads tracked PHP/INC/SQL source without executing it.
+/** Static migration inventory; reads tracked and non-ignored untracked PHP/INC/SQL source without executing it.
  * @author Derek Keats <derek@dkeats.com>
  * Usage: php tools/audit-database-callers.php /path/to/modules /path/to/output
  */
@@ -28,10 +28,11 @@ $patterns = [
     'schema_subclass' => '/\bextends\s+dbTableManager\b/i',
     'pdo' => '/\bPDO(?:Exception|Statement)?\b/',
 ];
-$rows = []; $summary = ['method'=>'PHP tokenisation removes comments and inline HTML; regex signals are candidates, not call-graph reachability proof.', 'sourceCommits'=>[], 'scannedFiles'=>[], 'signals'=>[], 'owners'=>[]];
+$rows = []; $summary = ['method'=>'PHP tokenisation removes comments and inline HTML; regex signals are candidates, not call-graph reachability proof.', 'sourceCommits'=>[], 'workingTreeChanges'=>[], 'scannedFiles'=>[], 'signals'=>[], 'owners'=>[]];
 foreach ($roots as $repo=>$root) {
     $summary['sourceCommits'][$repo] = trim(shell_exec('git -C '.escapeshellarg($root).' rev-parse HEAD'));
-    $files = explode("\0", shell_exec('git -C '.escapeshellarg($root).' ls-files -z'));
+    $summary['workingTreeChanges'][$repo] = trim(shell_exec('git -C '.escapeshellarg($root).' status --short'));
+    $files = array_unique(explode("\0", shell_exec('git -C '.escapeshellarg($root).' ls-files --cached --others --exclude-standard -z')));
     $scanned = 0;
     foreach ($files as $path) {
         if ($repo === 'framework' && $path === 'tools/audit-database-callers.php') continue;

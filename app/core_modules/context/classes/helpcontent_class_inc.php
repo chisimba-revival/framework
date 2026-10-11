@@ -2,6 +2,12 @@
 /** Contextual Help topics owned by Context. @package context */
 class helpcontent extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $context;
+    public $groups;
+    public $language;
+    public $user;
+
     public function init()
     {
         $this->language = $this->getObject('language', 'language');

@@ -444,13 +444,13 @@ class engine {
      * @var string
      */
     public $purifier;
-    
+
     // The current user agent
     public static $user_agent;
-    
+
     // Protected key names (cannot be set by the user)
     protected $sessprotect = array('session_id', 'user_agent', 'last_activity', 'ip_address', 'total_hits');
-    
+
     // Configuration and driver
     protected $sessconfig;
 
@@ -463,23 +463,6 @@ class engine {
      * @access public
      */
     public function __construct() {
-        /*
-         * Resume an application session only from Chisimba's cookie.
-         *
-         * sessionStart() owns the PHPSESSION name. Testing session_name()
-         * before calling it observes PHP's PHPSESSID default instead, while
-         * ordinary cookies are not guaranteed to appear in $_REQUEST. That
-         * split discarded a newly authenticated identity on the first
-         * redirected request. Session identifiers are never accepted from
-         * query-string or form input.
-         */
-        if (isset($_COOKIE['PHPSESSION'])
-            && is_string($_COOKIE['PHPSESSION'])
-            && $_COOKIE['PHPSESSION'] !== ''
-        ) {
-            $this->sessionStart();
-        }
-
         // Populate the core modules array with the contents of the core_modules directory.
         $this->coremods = array_map('basename', glob('core_modules/*', GLOB_ONLYDIR));
 
@@ -507,12 +490,31 @@ class engine {
         		'cookiedomain' => $this->_objConfig->getValue ( 'auth_cookiedomain', 'security', NULL ),
         		'cookiesecure' => $this->_objConfig->getValue ( 'auth_cookiesecure', 'security', true )
         );
-        
-        // Configure garbage collection
-        ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
-        ini_set('session.gc_divisor', 100);
-        ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
-        
+
+        // PHP session settings must be configured before starting the session.
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
+            ini_set('session.gc_divisor', 100);
+            ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
+        }
+
+        /*
+         * Resume an application session only from Chisimba's cookie.
+         *
+         * sessionStart() owns the PHPSESSION name. Testing session_name()
+         * before calling it observes PHP's PHPSESSID default instead, while
+         * ordinary cookies are not guaranteed to appear in $_REQUEST. That
+         * split discarded a newly authenticated identity on the first
+         * redirected request. Session identifiers are never accepted from
+         * query-string or form input.
+         */
+        if (isset($_COOKIE['PHPSESSION'])
+            && is_string($_COOKIE['PHPSESSION'])
+            && $_COOKIE['PHPSESSION'] !== ''
+        ) {
+            $this->sessionStart();
+        }
+
         // Ensure the site is being accessed at the correct location.
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $base = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
@@ -753,27 +755,13 @@ class engine {
                 }
                 // include the dbtable base class for future use
             } elseif ($this->_dbabs === 'PDO') {
-                // PDO stuff
-                if (! extension_loaded ( 'PDO' )) {
-                    die ( "You must install the PDO extension before trying to use it!" );
+                require_once __DIR__ . '/chisimbadatabaseconnection.php';
+                // One shared native connection. Direct MDB2 callers must be migrated
+                // before enabling this backend in an installed site.
+                if (!($_globalObjDb instanceof ChisimbaDatabaseConnection)) {
+                    $_globalObjDb = ChisimbaDatabaseConnection::fromLegacyDsn($this->dsn);
                 }
-                // dsn is in the form of 'mysql:host=localhost;dbname=test', $user, $pass
-                if ($this->_objDb === NULL) {
-                    try {
-                        $this->_objDb = new PDO ( $this->dsn ['phptype'] . ":" . "host=" . $this->dsn ['hostspec'] . ";dbname=" . $this->dsn ['database'], $this->dsn ['username'], $this->dsn ['password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8") );
-                        $this->_objDb->setAttribute ( PDO::ATTR_EMULATE_PREPARES, true );
-                        $this->_objDb->setAttribute ( PDO::ATTR_CASE, PDO::CASE_LOWER );
-                        $this->_objDb->setAttribute ( PDO::ATTR_PERSISTENT, true );
-
-
-                        if ($this->dsn ['phptype'] == 'pgsql') {
-                            $this->_objDb->setAttribute ( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-                        }
-                    } catch ( PDOException $e ) {
-                        echo $e->getMessage ();
-                        exit ();
-                    }
-                }
+                $this->_objDb = $_globalObjDb;
             }
             //return the local copy
             return $this->_objDb;
@@ -1106,63 +1094,8 @@ class engine {
      * @return array Parsed DSN as an array
      */
     public static function parseDSN_($dsn) {
-        //$parsed = NULL;
-        $parsed = array();
-        //$arr = NULL;
-        if (is_array ( $dsn )) {
-            //$dsn = array_merge ( $parsed, $dsn );
-            return $dsn;
-        }
-
-        // Find the 'phptype(dbsyntax)'
-        if (($pos = strpos ( $dsn, '://' )) !== false) {
-            $str = substr ( $dsn, 0, $pos );
-            $dsn = substr ( $dsn, $pos + 3 );
-        } else {
-            //return array();
-            $str = $dsn;
-            $dsn = '';
-        }
-        // Split 'phptype'/'dbsyntax'
-        if (preg_match ( '|^(.+?)\((.*?)\)$|', $str, $arr )) {
-            $parsed ['phptype'] = rawurldecode($arr[1]);
-            if (!empty($arr[2])) {
-                $parsed ['dbsyntax'] = rawurldecode($arr[2]);
-            }
-        } else {
-            $parsed ['phptype'] = rawurldecode($str);
-        }
-        if ($dsn == '') {
-            return $parsed;
-        }
-
-        // Find the 'username:password'
-        if (($pos = strrpos ( $dsn, '@' )) !== false) {
-            $str = substr ( $dsn, 0, $pos );
-            $dsn = substr ( $dsn, $pos + 1 );
-            if (($pos_inner = strpos ( $str, ':' )) !== false) {
-                $str_username = substr ( $str, 0, $pos_inner );
-                $str_password = substr ( $str, $pos_inner + 1 );
-                $parsed ['username'] = rawurldecode ( $str_username );
-                $parsed ['password'] = rawurldecode ( $str_password );
-            } else {
-                $parsed ['username'] = rawurldecode ( $str );
-            }
-        }
-
-        // Find the 'hostspec'('hostname[:port]')
-        if (($pos = strrpos ( $dsn, '/' )) !== false) {
-            $str_hostspec = substr ( $dsn, 0, $pos );
-            $str_database = substr ( $dsn, $pos + 1 );
-            $parsed ['hostspec'] = rawurldecode ( $str_hostspec );
-            $parsed ['database'] = rawurldecode($str_database);
-        } else {
-            $parsed ['hostspec'] = rawurldecode($dsn);
-        }
-        $parsed ['hostspec'] = str_replace ( "+", "/", $parsed ['hostspec'] );
-        //trigger_error($parsed ['hostspec']);
-
-        return $parsed;
+        require_once __DIR__.'/chisimbadatabasedsn.php';
+        return ChisimbaDatabaseDsn::parse($dsn);
     }
 
     /**

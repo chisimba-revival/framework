@@ -96,7 +96,7 @@ class textinput extends abhtmlbase implements ifhtml
         public function textinput($name=null, $value=null, $type=null, $size=null)
     {
         $this->name = $name;
-        $this->value = htmlentities($value);
+        $this->value = htmlentities($value ?? '');
         $this->cssClass = 'text';
         if (!is_null($type)) {
             $this->fldType=$type;
