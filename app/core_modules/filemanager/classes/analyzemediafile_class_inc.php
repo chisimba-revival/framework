@@ -54,7 +54,6 @@ class analyzemediafile extends ChisimbaObject
     // State used by authenticated editing and file selection.
     public $objFileParts;
     public $objGetId3;
-    public $objOggReader;
     public $objSingleArray;
     public $objXMLSerializer;
 
@@ -68,7 +67,6 @@ class analyzemediafile extends ChisimbaObject
         $this->objFileParts = $this->getObject('fileparts', 'files');
         $this->objXMLSerializer = $this->getObject('xmlserial', 'utilities');
         $this->objSingleArray = $this->getObject('singlearray');
-        $this->objOggReader = $this->getObject('oggreader');
     }
     
     /**
@@ -84,7 +82,13 @@ class analyzemediafile extends ChisimbaObject
     public function getId3Info($filepath)
     {
         // Get Details and Convert to SingleArray
-        return $this->objSingleArray->convertArray($this->objGetId3->analyze($filepath));
+        $info = $this->objGetId3->analyze($filepath);
+        $flat = $this->objSingleArray->convertArray($info);
+        if (($info['fileformat'] ?? '') === 'ogg') {
+            $flat['mime_type'] = !empty($info['video']) ? 'video/ogg'
+                : (!empty($info['audio']) ? 'audio/ogg' : 'application/ogg');
+        }
+        return $flat;
     }
     
     /**
@@ -113,8 +117,16 @@ class analyzemediafile extends ChisimbaObject
                 unset($analysis[$item]);
             }
             
+            // getID3 also returns raw binary chunks (e.g. WAV headers/artwork).
+            // The searchable XML metadata contains text/scalars, not file bytes.
+            if (is_string($value) && (!mb_check_encoding($value, 'UTF-8')
+                || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $value))) {
+                unset($analysis[$item]);
+                continue;
+            }
+
             // Remove if Item has no Value
-            if (trim($value) == '' || trim($value) == '?=') {
+            if (trim((string)($value ?? '')) == '' || trim((string)($value ?? '')) == '?=') {
                 unset($analysis[$item]);
             }
             
@@ -151,7 +163,7 @@ class analyzemediafile extends ChisimbaObject
             $mediaInfo['format'] = $analysis['dataformat'];
             
             // If JPEG, attempt to get width and height via Exif
-            if ($format == 'jpg') {
+            if ($mediaInfo['format'] == 'jpg') {
                 $info = getimagesize($filepath);
                 $mediaInfo['width'] = $info[0]; // Width
                 $mediaInfo['height'] = $info[1]; // Height
@@ -198,42 +210,13 @@ class analyzemediafile extends ChisimbaObject
             $mediaInfo['url'] = $analysis['url'];
         }
         
-        // Convert rest of the data to XML for storage
-        // NOTE: this xml may not be well formed, but keep so long
-        
-        // If Ogg Format, run through another parse
-        if ($this->objFileParts->getExtension($filepath) == 'ogg') {
-            
-            // Get Metadata
-            $metadata = $this->objOggReader->getMetadata($filepath);
-            
-            // Set Format to Ogg
+        // Modern getID3 recognises Ogg audio/video itself. The old secondary
+        // reader returned no result for audio and overwrote sample rate as fps.
+        if (($analysis['fileformat'] ?? '') === 'ogg') {
             $mediaInfo['format'] = 'ogg';
-            
-            // Switch Mimetype
-            $mimetype = $metadata['subtype'];
-            
-            // Set Width
-            if (isset($metadata['width'])) {
-                $mediaInfo['width'] = $metadata['width'];
-            }
-            
-            // Set Height
-            if (isset($metadata['height'])) {
-                $mediaInfo['height'] = $metadata['height'];
-            }
-            
-            // Set Framerate
-            if (isset($metadata['rate'])) {
-                $mediaInfo['framerate'] = $metadata['rate'];
-            }
-            
-            // Add remaining items to the list
-            foreach ($metadata as $item=>$value) {
-                $analysis[$item] = $value;
-            }
+            $mimetype = $analysis['mime_type'] ?? '';
         }
-        
+
         // Serialize All Information into XML so that are not lost
         $mediaInfo['getid3info'] = $this->objXMLSerializer->writeXML($analysis);
         

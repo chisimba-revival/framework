@@ -458,3 +458,15 @@ on the same File Manager path.
 
 LearnTheBirds webinar reminders, production mail queues and production files were
 not changed. Vendor deletion/build-pack pruning remains a separate final stage.
+
+### Media gate follow-up — getID3 1.9.27
+
+The preceding getID3 gate is resolved for the seven fixture formats in
+`tests/media/README.md`. Files now pins official stable 1.9.27 with unmodified
+vendor checksums/licences; the temporary backtick patch is superseded by upstream.
+The wrapper no longer suppresses diagnostics. File Manager now uses upstream Ogg
+analysis, preserves plain UTF-8 titles and excludes raw binary chunks from textual
+XML metadata. Strict PHP 8.5 isolated and installed-runtime checks passed for WAV,
+MP3, FLAC, Ogg/Vorbis, PNG, JPEG and MP4, plus invalid/missing-file checks. A synthetic
+MP3 also passed the local browser upload and details workflow. This does not claim
+all codecs or legacy modules have been tested. No production deployment yet.

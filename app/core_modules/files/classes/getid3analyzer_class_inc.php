@@ -64,19 +64,13 @@ class getid3analyzer extends ChisimbaObject
     */
     public function analyze($file)
     {
-        // Turn Off Errors
-        $displayErrors = ini_get('display_errors');
-        error_reporting(0);
-        
         $getID3 = new getID3();
-                
+        $getID3->encoding = 'UTF-8';
+        // File Manager stores text metadata and escapes it at rendering time.
+        $getID3->option_tags_html = false;
         $ThisFileInfo = $getID3->analyze($file);
-        
-        getid3_lib::CopyTagsToComments($ThisFileInfo);
-        
-        // Turn Errors back On
-        error_reporting($displayErrors);
-        
+        getid3_lib::CopyTagsToComments($ThisFileInfo, false);
+
         return $ThisFileInfo;
     }
 }
