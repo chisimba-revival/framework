@@ -61,6 +61,12 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class systext_installscripts extends dbtable
 {
+    public $objUser;
+    public $userId;
+    public $facet;
+    public $objConfig;
+    public $objModules;
+
     /**
      * Instance of the altconfig class in the config module.
      *
