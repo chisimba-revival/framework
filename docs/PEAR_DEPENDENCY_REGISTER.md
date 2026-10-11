@@ -4,8 +4,11 @@ Status: native events, tag clouds and configuration were released to KengaLearn
 on 10 October 2026; native translation/locale lookup followed the same day.
 Translation release: `b97ac37d4` plus `3e1aabebd` over the earlier framework
 `6e101d2ee` / modules `9cdde04de` baseline. Evidence and rollback details are in
-`tests/configuration/README.md` and `tests/translation/README.md`. MDB2-to-PDO,
-the language-administration interface and final vendor cleanup remain separate.
+`tests/configuration/README.md` and `tests/translation/README.md`. PDO was deployed
+to chisimba.com and KengaLearn on 11 October; see the
+[rollout record](database-migration/production-rollout-20261011.md). Other sites
+still await migration. The language-administration interface and final vendor
+cleanup remain separate.
 See the dated assessment below for corrected scope and replacement sequencing. A direct load proves that
 the framework can use a component; it does not prove that the corresponding
 module is installed, enabled or reached in KengaLearn production. Do not

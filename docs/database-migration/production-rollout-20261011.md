@@ -31,12 +31,53 @@ This is a PDO migration milestone, not final PEAR removal.
   checked against the committed block declarations; they are catalogue metadata,
   not user-authored block content. Business-data checksums remain a separate gate.
 
-## Completion status
+## Completed deployment and live verification
 
-Both rehearsals passed: catalogue updates ran twice and native runtime checks
-passed under strict warning handling. Business-data fingerprints are unchanged
-across 107 tables on chisimba.com and 171 on KengaLearn. Deployment is pending;
-the final verification section must record completed release paths.
+Both sites are online using `DATABASE_ABSTRACTION=PDO`, in the authorised order.
+Runtime source: framework `2986e585b` (including the extra terminology-hook fix)
+and modules `1485314d6`. The shared overlay manifest SHA-256 is
+`78a07c9eee826daf4b5b6a6863ab56589bbb062fc21ac899cc1c99c5e8e6c6d6`.
+
+| Site | Release directory | Backup directory | Protected tables |
+| --- | --- | --- | --- |
+| chisimba.com | `/srv/chisimba-com/releases/release-pdo-20261011-125528/ch` | `/srv/chisimba-com/backups/pdo-20261011-125528` | 107 |
+| KengaLearn | `/srv/kengalearn/releases/release-pdo-20261011-125725/ch` | `/srv/kengalearn/backups/pdo-20261011-125725` | 171 |
+
+- Database dumps and configuration/uploads/session archives were checked before
+  switching. Catalogue updates and strict native runtime verification ran while
+  web writers were stopped. Protected table fingerprints matched before/after.
+- Chisimba.com has no registered System Management module. Its window used a
+  stopped web container; an initial unset-flag guard stopped before any live
+  change. No maintenance module was installed just for the deployment.
+- KengaLearn's existing maintenance flag was enabled, its two AI/worksheet worker
+  locks were held, and its web container was stopped. Maintenance was cleared
+  before the verified candidate reopened. No worker was triggered by the tests.
+- Live browser checks on chisimba.com: homepage, published blog post, registration
+  and password-recovery forms, without submitting either form.
+- Live KengaLearn browser checks: preserved administrator session, home and site
+  administration, permissions, question banks, Kanban, Question Generator,
+  knowledge maps, products, notes, catalogue, pages, maintenance, existing course
+  home/chapter listing and chapter editor. No content changes were saved; the
+  session was restored to Lobby. No payment, mail or AI request was submitted.
+- Final checks inside each actual running web container confirmed native PDO,
+  configuration/translation/authentication/MFA/catalogue composition, healthy
+  container status and exact deployed file hashes. Disposable rehearsal containers
+  and networks were removed.
+- Both browser consoles were clean at the final checks. Across the complete
+  recorded deployment/browser windows, the checked PHP log files contained zero
+  new warning/error lines (one file on chisimba.com; three on KengaLearn).
+- The non-target containers on the shared chisimba.com host retained their exact
+  container IDs and image references: LearnTheBirds, KengaPub, KengaSolutions,
+  HeritageTreazures and their databases were not recreated or updated.
+- Production browser checks use public routes on chisimba.com and an existing
+  authenticated administrator session on KengaLearn. They do not constitute a
+  fresh password/MFA browser challenge or destructive production workflow tests.
+  Those boundaries have separate isolated service/concurrency/local evidence.
+
+The dated deployment operators and manifest are saved in the dev-environment
+repository under `tools/pdo-rollout-20261011/`. Private databases, installation keys,
+backups and rehearsal outputs remain outside Git. This record describes tested
+workflows, not a guarantee that every dormant module is PHP 8/PDO compatible.
 
 ## Rollback and remaining scope
 

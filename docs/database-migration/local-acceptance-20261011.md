@@ -1,5 +1,9 @@
 # Local PDO acceptance — 11 October 2026
 
+Subsequent authorised production work is recorded in
+[the staged rollout report](production-rollout-20261011.md). The local-stage
+statements below describe the state at that earlier acceptance checkpoint.
+
 The three authorised stages are complete for the installed local MySQL/MariaDB
 site: remaining active module callers, shared catalogue/installer schema work,
 and local PDO activation with browser acceptance. This is not a production
