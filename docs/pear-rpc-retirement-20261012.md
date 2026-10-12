@@ -35,9 +35,12 @@ historical-content usage audit. Production source is unchanged by this batch.
   retained core API Trac client. These can be invoked by legacy stored content;
   don't silently remove their output or assume the entire Filters module unused.
 
-Derek was asked whether to retire the CMS/SimpleGal publishing integrations; no
-answer was available while preparing this batch, so those endpoints were left
-unchanged. PEAR XML_RPC itself is retained. Retiring optional MDB2 and its XML
+Derek subsequently authorised retirement of CMS/SimpleGal publishing. Their
+controllers now return HTTP 410 before initialisation for the retired actions;
+four publishing implementation classes are removed in the modules repository.
+GET/POST, mixed-case and normal gallery dispatch tests pass on PHP 8.5. The
+legacy CMSAdmin checklist no longer loads the removed RPC repository.
+PEAR XML_RPC itself is retained for the content filters. Retiring optional MDB2 and its XML
 schema dependency chain remains separate work. All six production backends
 already run PDO, but framework compatibility code and tests still support MDB2.
 
