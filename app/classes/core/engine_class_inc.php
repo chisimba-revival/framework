@@ -97,7 +97,7 @@ include ('lucene.php');
 /**
  * HTML Purifier
  */
-require_once 'lib/HTMLPurifier.auto.php';
+require_once __DIR__ . '/chisimbahtmlsanitizer.php';
 
 /**
  * The parseDSN function
@@ -578,11 +578,7 @@ class engine {
         //the language elements module
         $this->_objLanguage = $this->getObject ( 'language', 'language' );
 
-        // HTMLPURIFIER_BOOTSTRAP_PHP82: load the bundled library before use.
-        if (!class_exists('HTMLPurifier', false)) {
-            require_once dirname(dirname(dirname(__FILE__))) . '/lib/HTMLPurifier.auto.php';
-        }
-        $this->purifier = new HTMLPurifier();
+        $this->purifier = ChisimbaHtmlSanitizer::purifier();
 
         // other fields
         //set the messages array
@@ -1509,7 +1505,7 @@ class engine {
         }
         else {
             //if(!is_object($this->purifier)) {
-            //    $this->purifier = new HTMLPurifier();
+            //    $this->purifier = ChisimbaHtmlSanitizer::purifier();
             //}
             //$result = $this->purifier->purify( $result );
             //$result = filter_var($result, FILTER_SANITIZE_ENCODED); //FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
@@ -1560,7 +1556,7 @@ class engine {
      * @return string $strip_keys Whether or not to strip array keys
      */
     public function purifyArray($array, $strip_keys = false) {
-        $this->purifier = new HTMLPurifier();
+        $this->purifier = ChisimbaHtmlSanitizer::purifier();
         if (is_string ( $array ))
             return $this->purifier->purify ( $array );
         $keys_to_replace = Array ();
@@ -1568,9 +1564,9 @@ class engine {
             if (is_string ( $value )) {
                 $array [$key] = $this->purifier->purify ( $value );
             } elseif (is_array ( $value )) {
-                $this->purifyArray ( $array [$key], $strip_keys );
+                $array [$key] = $this->purifyArray ( $array [$key], $strip_keys );
             }
-            if ($strip_keys && $key != ($stripped_key = $this->purifier->purify ( $key ))) {
+            if ($strip_keys && is_string($key) && $key != ($stripped_key = $this->purifier->purify ( $key ))) {
                 $keys_to_replace [$key] = $stripped_key;
             }
         }
