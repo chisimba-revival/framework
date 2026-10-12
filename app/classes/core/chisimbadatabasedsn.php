@@ -62,4 +62,51 @@ final class ChisimbaDatabaseDsn
         return $parsed;
     }
 
+    /** Parse saved installer settings without loading a database driver.
+     * Runtime parse() intentionally keeps its historical host representation.
+     */
+    public static function forInstaller(#[SensitiveParameter] $dsn): array
+    {
+        $defaults = array_fill_keys(['phptype', 'dbsyntax', 'username', 'password',
+            'protocol', 'hostspec', 'port', 'socket', 'database'], '');
+        if (is_array($dsn)) {
+            $fields = array_replace($defaults, $dsn);
+        } else {
+            // Split options before decoding: encoded ? and & belong to values.
+            [$base] = explode('?', (string)$dsn, 2);
+            $fields = array_replace($defaults, self::parse($base));
+            $host = (string)$fields['hostspec'];
+            // parse() decodes the historical protocol+host form as protocol/host.
+            if (preg_match('~^(tcp|unix)\((.*)\)$~s', $host, $match)
+                || preg_match('~^(tcp|unix)/(.*)$~s', $host, $match)) {
+                $fields['protocol'] = $match[1];
+                $host = $match[2];
+            }
+            if ($fields['protocol'] === 'unix') {
+                $fields['socket'] = $host;
+                $fields['hostspec'] = '';
+            } else {
+                $fields['protocol'] = 'tcp';
+                if (preg_match('/^(\[[^]]+\]|[^:]+):(\d+)$/', $host, $match)) {
+                    $fields['hostspec'] = $match[1];
+                    $fields['port'] = $match[2];
+                } else {
+                    $fields['hostspec'] = $host;
+                }
+            }
+        }
+        foreach ($defaults as $key => $unused) {
+            $fields[$key] = (string)$fields[$key];
+        }
+        if ($fields['dbsyntax'] === '') $fields['dbsyntax'] = $fields['phptype'];
+        return $fields;
+    }
+
+    /** Location field used when reconstructing the installer's DSN. */
+    public static function installerLocation(array $fields): string
+    {
+        if ($fields['socket'] !== '') return 'unix(' . $fields['socket'] . ')';
+        return $fields['hostspec'] . ($fields['port'] !== '' ? ':' . $fields['port'] : '');
+    }
+
 }

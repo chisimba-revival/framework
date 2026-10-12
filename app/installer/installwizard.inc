@@ -11,6 +11,7 @@
 
 
 require_once dirname(__FILE__).'/wizard.inc';
+require_once dirname(__DIR__).'/classes/core/chisimbadatabasedsn.php';
 require_once dirname(__FILE__).'/domtt/domtt_class_inc.php';
 
 
@@ -219,7 +220,7 @@ class InstallWizard extends Wizard
 
 				// load the dsn details
 
-				$dsn_details = DB::parseDSN($_SESSION['dsn']);
+				$dsn_details = ChisimbaDatabaseDsn::forInstaller($_SESSION['dsn']);
 
 				
 
@@ -229,7 +230,7 @@ class InstallWizard extends Wizard
 
 				if (!isset($_SESSION['db_type'])) $_SESSION['db_type'] = $dsn_details['phptype'];
 
-				if (!isset($_SESSION['db_loc']))  $_SESSION['db_loc']  = (strlen($dsn_details['hostspec']) > 0) ? $dsn_details['hostspec'] : $dsn_details['protocol'].'()';
+				if (!isset($_SESSION['db_loc']))  $_SESSION['db_loc']  = ChisimbaDatabaseDsn::installerLocation($dsn_details);
 
 				if (!isset($_SESSION['db_user'])) $_SESSION['db_user'] = $dsn_details['username'];
 

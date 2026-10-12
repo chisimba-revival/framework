@@ -6,6 +6,8 @@
   "Calendar.php",
   "Console",
   "Crypt",
+  "DB",
+  "DB.php",
   "File",
   "HTML",
   "Image",
