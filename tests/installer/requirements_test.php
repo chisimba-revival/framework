@@ -19,24 +19,32 @@ try {
     $action = new RuntimeLibrariesCheckAction();
     check(!$action->processAction(), 'missing libraries must block installation');
     check($_SESSION['pear_path'] === $root . '/lib/pear/', 'posted path must not override bundle');
-    check(count($action->errors) === 9, 'every required bundled file is checked');
-    $files = ['PEAR.php','Archive/Tar.php','XML/Serializer.php','XML/Unserializer.php',
-        'XML/Parser.php','XML/Util.php','HTML/BBCodeParser.php','Mail.php','Mail/mime.php'];
+    check(count($action->errors) === 8, 'every required bundled file is checked');
+    $files = ['core_modules/config/classes/configurationdocument.php',
+        'core_modules/language/classes/nativetranslation.php',
+        'core_modules/utilities/classes/nativexmlvalue.php',
+        'core_modules/utilities/classes/nativebbcode.php',
+        'core_modules/mail/vendor/phpmailer/src/PHPMailer.php',
+        'core_modules/mail/vendor/phpmailer/src/SMTP.php',
+        'core_modules/mail/vendor/phpmailer/src/Exception.php',
+        'core_modules/files/resources/getid3/getid3.php'];
     foreach ($files as $file) {
-        $path = $root . '/lib/pear/' . $file;
+        $path = $root . '/' . $file;
         if (!is_dir(dirname($path))) mkdir(dirname($path), 0700, true);
         file_put_contents($path, "<?php\n");
     }
     check($action->processAction(), 'complete bundle should pass without MDB2 or PEAR registry');
     ob_start(); $action->paintAction(); $html = ob_get_clean();
     check(!str_contains($html, 'name="pear_path"'), 'no editable PEAR path');
-    unlink($root . '/lib/pear/XML/Parser.php');
+    unlink($root . '/' . $files[0]);
     check(!(new VersionCheck())->process(), 'forged confirmation cannot bypass a missing dependency');
     $php = new PHPCheckAction(); $php->processAction();
     $pdo = class_exists('PDO') && in_array('mysql', PDO::getAvailableDrivers(), true);
     check($php->required_settings['mysqlclient']['available'] === $pdo, 'actual PDO driver detection');
     if (!$pdo) check(!$php->success, 'missing PDO must fail closed');
     check(!class_exists('MDB2', false), 'checks do not load MDB2');
+    $_SESSION['sys_root'] = dirname(INSTALL_DIR);
+    check((new RuntimeLibrariesCheckAction())->processAction(), 'actual source bundle passes native requirements');
     echo 'PASS installer requirements; PDO MySQL ' . ($pdo ? 'available' : 'missing and blocked') . "\n";
 } finally {
     $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);

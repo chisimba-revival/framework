@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 /** Read-only comparison against all installed English items; explicit local opt-in. */
 if(PHP_SAPI!=='cli'||getenv('TRANSLATION_SMOKE')!=='1')exit(64);
 chdir($argv[1]);$GLOBALS['kewl_entry_point_run']=true;$_SERVER['REQUEST_METHOD']='CLI';$_SERVER['HTTP_HOST']='chisimba.test:8445';$_SERVER['SCRIPT_NAME']='/ch/index.php';$_SERVER['QUERY_STRING']='';

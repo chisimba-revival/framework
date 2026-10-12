@@ -1,5 +1,10 @@
 # Native tag-cloud migration
 
+**12 October 2026:** migrated PEAR packages now live under
+`tests/fixtures/pear-oracle`, outside the deployable application. Comparison tests
+opt in explicitly; native runtime tests must not load those fixtures. Earlier
+notes below about retaining the packages in app/lib/pear are superseded.
+
 The utilities tagcloud service now renders a semantic list without loading
 PEAR HTML_TagCloud. Ship its class, utilities register.conf (2.019), and the
 shared chisimba-reborn stylesheet together. No database/schema changes are needed;

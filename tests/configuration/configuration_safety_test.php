@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 /**
  * Verify repaired Config/altconfig behaviour using disposable fixtures.
  * Every run requires all safety gates to pass; --require-safe remains accepted.

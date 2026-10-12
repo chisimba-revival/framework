@@ -1,5 +1,10 @@
 # Native event-dispatch checks
 
+**12 October 2026:** migrated PEAR packages now live under
+`tests/fixtures/pear-oracle`, outside the deployable application. Comparison tests
+opt in explicitly; native runtime tests must not load those fixtures. Earlier
+notes below about retaining the packages in app/lib/pear are superseded.
+
 The engine owns one `ChisimbaEventDispatcher`. Modules retain their existing
 `eventDispatcher->addObserver()` / `post()` calls and notification getters.
 This service is synchronous and request-local; it does not deliver queued jobs.

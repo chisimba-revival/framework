@@ -1,5 +1,10 @@
 # Native translation migration — Language 1.613
 
+**12 October 2026:** migrated PEAR packages now live under
+`tests/fixtures/pear-oracle`, outside the deployable application. Comparison tests
+opt in explicitly; native runtime tests must not load those fixtures. Earlier
+notes below about retaining the packages in app/lib/pear are superseded.
+
 Source/local validation and KengaLearn release: 10 October 2026. The completed
 production release is recorded below. The database adapter remains MDB2.
 

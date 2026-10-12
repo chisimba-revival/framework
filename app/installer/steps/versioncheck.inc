@@ -587,20 +587,19 @@ class RuntimeLibrariesCheckAction extends StepAction
         // Never accept a posted library path or fall back to an unrelated system copy.
         $_SESSION['pear_path'] = $root . '/lib/pear/';
         $files = array(
-            'PEAR compatibility' => 'PEAR.php',
-            'Archive extraction' => 'Archive/Tar.php',
-            'XML serialisation' => 'XML/Serializer.php',
-            'XML deserialisation' => 'XML/Unserializer.php',
-            'XML parser' => 'XML/Parser.php',
-            'XML utilities' => 'XML/Util.php',
-            'BBCode parser' => 'HTML/BBCodeParser.php',
-            'Mail transport' => 'Mail.php',
-            'MIME mail' => 'Mail/mime.php',
+            'Native configuration' => 'core_modules/config/classes/configurationdocument.php',
+            'Native translation' => 'core_modules/language/classes/nativetranslation.php',
+            'Native XML values' => 'core_modules/utilities/classes/nativexmlvalue.php',
+            'Native BBCode' => 'core_modules/utilities/classes/nativebbcode.php',
+            'Mail library' => 'core_modules/mail/vendor/phpmailer/src/PHPMailer.php',
+            'Mail SMTP transport' => 'core_modules/mail/vendor/phpmailer/src/SMTP.php',
+            'Mail exceptions' => 'core_modules/mail/vendor/phpmailer/src/Exception.php',
+            'Media metadata' => 'core_modules/files/resources/getid3/getid3.php',
         );
         foreach ($files as $label => $file) {
-            $available = is_file($_SESSION['pear_path'] . $file)
-                && is_readable($_SESSION['pear_path'] . $file);
-            $message = $available ? 'Available' : 'Missing bundled file: lib/pear/' . $file;
+            $available = is_file($root . '/' . $file)
+                && is_readable($root . '/' . $file);
+            $message = $available ? 'Available' : 'Missing bundled file: ' . $file;
             $this->required_packages[$label] = array(
                 'version' => 'Bundled', 'available' => $available, 'message' => $message,
             );
@@ -618,9 +617,8 @@ class RuntimeLibrariesCheckAction extends StepAction
         $tpl->set('step_name', $this->parent_step);
         $tpl->set('required', $this->required_packages);
         echo $tpl->fetch();
-        echo '<p>New installations use native PDO MySQL. The remaining compatibility libraries '
-            . 'are supplied in the application’s lib/pear directory; no system PEAR installation '
-            . 'or PEAR registry is required.</p>';
+        echo '<p>New installations use native PDO MySQL and bundled application libraries. '
+            . 'No system PEAR installation or PEAR registry is required.</p>';
     }
 
     function confirmAction()

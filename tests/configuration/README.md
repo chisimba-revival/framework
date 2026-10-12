@@ -1,5 +1,10 @@
 # Configuration contracts and safety gates
 
+**12 October 2026:** migrated PEAR packages now live under
+`tests/fixtures/pear-oracle`, outside the deployable application. Comparison tests
+opt in explicitly; native runtime tests must not load those fixtures. Earlier
+notes below about retaining the packages in app/lib/pear are superseded.
+
 Updated 10 October 2026: all identified first-party PEAR Config callers now use
 native configuration documents. Site/properties XML, installer configuration,
 module catalogue, user INI preferences, the general INI/ADM helper and canvas/RTT

@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 /** Behavioural contract shared by the legacy oracle and the native dispatcher. */
 error_reporting(E_ALL);
 set_error_handler(static function ($severity, $message, $file, $line) {

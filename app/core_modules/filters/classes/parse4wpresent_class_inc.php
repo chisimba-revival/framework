@@ -104,8 +104,6 @@ class parse4wpresent extends ChisimbaObject
         $this->objLanguage = $this->getObject('language', 'language');
         // Get an instance of the params extractor
         $this->objExpar = $this->getObject("extractparams", "utilities");
-        // Load the XML_RPC PEAR Class
-        require_once($this->getPearResource('XML/RPC/Server.php'));
        // $this->objConfig = $this->getObject('altconfig', 'config');
     }
 

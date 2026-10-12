@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 /** Strict boundary checks for country lists and empty/leading-text BBCode. */
 error_reporting(E_ALL);
 set_error_handler(static function($s,$m,$f,$l){throw new ErrorException($m,0,$s,$f,$l);});

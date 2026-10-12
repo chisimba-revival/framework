@@ -77,7 +77,7 @@ tagCheck(!class_exists('HTML_TagCloud', false), 'native renderer loads no PEAR c
 
 // Compare valid link content/destinations with the retained vendor oracle.
 // Equal timestamps avoid its PHP 8 fractional colour-index deprecation.
-require dirname(__DIR__, 2) . '/app/lib/pear/HTML/TagCloud.php';
+require dirname(__DIR__) . '/fixtures/pear-oracle/HTML/TagCloud.php';
 $old = new HTML_TagCloud();
 foreach ($fixtures as $tag) { $old->addElement($tag['name'], $tag['url'], $tag['weight'], 100); }
 $c->clearElements();

@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 /** Characterise the installed decorator order using synthetic storage only. */
 set_include_path(dirname(__DIR__,2).'/app/lib/pear'.PATH_SEPARATOR.get_include_path());
 require_once 'Translation2.php';

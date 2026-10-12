@@ -1,5 +1,72 @@
 # PEAR dependency register
 
+## Current local state — 12 October 2026
+
+This section supersedes dated remaining-work notes below. Production is unchanged.
+
+- Mail 1.006 removes PEAR Mail/Mail_mime from the shared `mailer` facade. The
+  pinned PHPMailer MIME service preserves synchronous acceptance, To/CC/private
+  BCC and configured HTML alternatives, with shared transport configuration.
+  New workflow migrations to Communications remain separate from PEAR removal.
+  See `tests/mail/README.md` for recipient limits, transport restrictions and the
+  deliberately unsupported historical attachment method. Tests sent no real mail.
+- Config, Event Dispatcher, Translation2, I18Nv2, HTML TagCloud and HTML BBCodeParser
+  have moved from `app/lib/pear` into licensed CLI-only comparison fixtures under
+  `tests/fixtures/pear-oracle`. They remain in Git for tests, **not in app releases**.
+  Full PHP application/module scanning found no imports outside their old vendor
+  directories (the engine only contains a historical comment).
+- Utilities 2.023 retires the unused `graph` wrapper and PEAR Image_Graph package.
+  No application/module graph consumer was found. The wrapper was not PHP 8
+  parseable and suppressed diagnostics globally; no new renderer is invented for
+  an unused API. Recover it from Git only for a deliberate consumer migration.
+- Filters 1.564 drops the unused XML-RPC include in `parse4wpresent`; its API stub
+  contains no XML-RPC implementation. Actual remote blog/screenshot filters and
+  legacy RPC support still require their own product/data audit.
+- The installer validates native configuration/translation/XML/BBCode, PHPMailer
+  and getID3 files, no longer the migrated PEAR packages. Missing files and missing
+  PDO MySQL still block installation. The PEAR web installer and channel packager
+  refuse with HTTP 410 / CLI 64 before loading any package-manager code.
+- The fresh-install test exposed an unrelated long-server-ID defect. Shared
+  dbTable now uses a 32-character random ID when the historical site-prefixed ID
+  would overflow VARCHAR(32). Existing short IDs and explicitly supplied IDs are
+  unchanged; existing data/schema are untouched. Both PDO/MDB2 fixtures cover it.
+
+### Deliberately retained compatibility
+
+Do not delete the entire PEAR directory. MDB2 and MDB2_Schema remain for sites
+awaiting PDO; Schema/Parser2 imports XML_Unserializer, so XML Serializer/Parser/Util
+cannot yet be removed. Mail vendor files also serve dormant maillist MIME decoding,
+File_Archive's mail writer and Log's mail backend. Calendar and other legacy module
+libraries need per-consumer revival/retirement decisions. XML-RPC remains in old
+client/filter/backing classes even though public api/packages routes stay retired.
+The legacy blog directory was renamed by Derek to `blog__PAUSED`; SimpleBlog is
+separate and unaffected. Renaming source does not unregister a deployed module.
+
+Module Catalogue archive upload still uses Archive_Tar/wzip. A decision has been
+requested on retiring that executable-code upload in favour of Git-based releases;
+no archive upload behaviour is changed pending that answer.
+
+### Validation and release requirements
+
+Strict MIME fixtures, a loopback SMTP capture (success/rejection/BCC privacy),
+mocked SendGrid payload tests, 18 native/legacy configuration/translation/tag-cloud/
+XML/BBCode fixtures, event oracle/native checks, installer requirements and complete
+PDO/MDB2 contracts pass. The new disposable PHP 8.5 site at localhost:8087 completed
+schema creation and, after the ID fix, initial registration and admin login.
+Administration and installed-module catalogue render; the real installed mail and
+BBCode services compose without PEAR. All 2,724 installed English translations
+match the retained oracle. No PHP warning/deprecation/fatal appeared in its logs.
+The installer reports optional calendar/imap extensions missing; these are not PHP
+warnings and those optional features were not tested.
+
+Deploy a complete versioned release so removed files do not survive additive copy
+operations. Never ship tests/fixtures. Preserve current site configuration and
+check each site's transport and external extensions before release. Run
+`php tests/dependencies/retired_runtime_test.php` against source/assembly changes
+to catch accidental reintroduction. The existing curated compatibility pack does
+not contain the six moved packages or Image_Graph; no download/build was needed.
+
+
 Status: native events, tag clouds and configuration were released to KengaLearn
 on 10 October 2026; native translation/locale lookup followed the same day.
 Translation release: `b97ac37d4` plus `3e1aabebd` over the earlier framework

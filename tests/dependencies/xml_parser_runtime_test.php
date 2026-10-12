@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 /** XML callbacks, error handling and Config fidelity under strict PHP diagnostics. */
 error_reporting(E_ALL);
 set_error_handler(static function($severity,$message,$file,$line){throw new ErrorException($message,0,$severity,$file,$line);});
