@@ -5,6 +5,9 @@ foreach (array_merge(json_decode(file_get_contents(__DIR__ . '/retired-pear-path
     'PHPUnit2', 'Benchmark', 'HTML/TagCloud.php', 'HTML/BBCodeParser.php', 'HTML/BBCodeParser', 'Image/Graph.php', 'Image/Graph']) as $path) {
     if (file_exists($root . '/app/lib/pear/' . $path)) throw new RuntimeException('Retired runtime dependency: ' . $path);
 }
+foreach (['app/lib/Auth/OpenID/MDB2Store.php', 'app/core_modules/security/classes/Auth/OpenID/MDB2Store.php'] as $path) {
+    if (file_exists($root . '/' . $path)) throw new RuntimeException('Unused OpenID MDB2 adapter returned: ' . $path);
+}
 if (file_exists($root . '/app/tests')) {
     throw new RuntimeException('Historical web test harness returned to application');
 }
