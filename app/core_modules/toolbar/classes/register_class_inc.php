@@ -87,24 +87,34 @@ class register extends ChisimbaObject
     }
 
     /**
-     * Replace one module's registered navigation with its declared defaults.
+     * Refresh registered links while preserving editable site navigation.
      *
-     * Module Catalogue uses this when defaults are inserted or reinserted so
-     * declarations removed or corrected in register.conf cannot leave stale
-     * menu rows behind.
+     * Module Catalogue replaces generated menu/page defaults, but existing site
+     * links are administrator configuration. Explicit Restore defaults opts out
+     * of that preservation and reinstalls the declared site links.
      */
     public function replaceDefaults($module)
     {
         $data = $this->getModuleData($module);
-        $this->replaceData($data);
+        $this->replaceData($data, false);
     }
 
-    public function replaceData($regData)
+    public function replaceData($regData, $preserveSiteLinks = true)
     {
         if (!is_array($regData) || empty($regData['MODULE_ID'])) {
             throw new RuntimeException('Invalid toolbar registration data');
         }
-        if (!$this->objDbMenu->deleteLinksForModule($regData['MODULE_ID'])) {
+        // Site navigation is editable configuration. Seed defaults only when
+        // no links exist; an explicit Restore defaults still replaces them.
+        if ($preserveSiteLinks) {
+            foreach ($this->objDbMenu->linksForModule($regData['MODULE_ID']) as $link) {
+                if (str_starts_with((string)$link['category'], 'site_')) {
+                    unset($regData['SITE_NAV']);
+                    break;
+                }
+            }
+        }
+        if (!$this->objDbMenu->deleteLinksForModule($regData['MODULE_ID'], $preserveSiteLinks)) {
             throw new RuntimeException('Toolbar default replacement failed');
         }
         $this->readData($regData);

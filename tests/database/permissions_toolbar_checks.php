@@ -49,5 +49,24 @@ foreach (["link' OR 1=1 --",'../link'] as $invalid) {
 }
 ensureBaseline($menu->saveLinks(['category'=>'changed'],'link') && $menu->getLinkById('link')['category']==='changed','Menu update');
 ensureBaseline($menu->deleteLinkById('link') && $menu->getLinkById('link')===null && $menu->getLinkById('orphan')!==null,'Menu targeted deletion');
+// Catalogue refreshes replace generated administration links but preserve site choices.
+require_once $app . '/core_modules/toolbar/classes/register_class_inc.php';
+class NavigationRegistrationFixture extends register {
+    public array $data=[];
+    public function canonicalRightForRegistration($data,$module,$scope='default'){return '';}
+    public function getModuleData($module){return $this->data;}
+}
+$table->executePrepared('INSERT INTO tbl_menu_category (id,category,module,permissions) VALUES (?,?,?,?), (?,?,?,?)',
+    ['custom-contact','site_031||view|mail|custom','fixture',null,'old-page','page_admin_old','fixture',null]);
+$customBefore=$menu->getLinkById('custom-contact');
+$registrar=new NavigationRegistrationFixture();$registrar->objDbMenu=$menu;
+$registrar->data=['MODULE_ID'=>'fixture','PAGE'=>['admin_site|manage|inbox|new|site'],'SITE_NAV'=>['010||view|mail|default']];
+$registrar->replaceData($registrar->data);$registrar->replaceData($registrar->data);
+ensureBaseline($menu->getLinkById('custom-contact')===$customBefore,'Catalogue reset custom navigation or its exact permission marker');
+ensureBaseline($menu->getLinkById('old-page')===null && count($menu->linksForModule('fixture'))===2,'Repeat registration duplicated or retained stale admin links');
+ensureBaseline($menu->getLinkById('orphan')!==null,'Registration changed another module');
+$registrar->replaceDefaults('fixture');
+ensureBaseline($menu->getLinkById('custom-contact')===null && count($menu->linksForModule('fixture'))===2,'Explicit defaults did not replace custom links');
+echo "PASS: real catalogue navigation preservation, repeat updates and explicit reset on ".$table->dbLayer."\n";
 foreach (['tbl_permissions_acl','tbl_perms_groupusers','tbl_perms_group_subgroups','tbl_users','tbl_groupadmin_group','tbl_menu_category','tbl_modules'] as $name) $table->executePrepared('DROP TABLE '.$name);
 echo "PASS: ACL identity/ancestor isolation, bound removals, menu registration and targeted edits\n";

@@ -154,8 +154,15 @@ class dbmenu extends dbtable
         return $this->delete('id', $this->recordId($id)) !== false;
     }
 
-    public function deleteLinksForModule($module)
+    public function deleteLinksForModule($module, $preserveSiteLinks = false)
     {
+        if ($preserveSiteLinks) {
+            return $this->executePrepared(
+                'DELETE FROM tbl_menu_category WHERE module = ?'
+                . ' AND (category IS NULL OR SUBSTR(category, 1, 5) <> ?)',
+                [$this->moduleName($module), 'site_']
+            ) !== false;
+        }
         return $this->delete(
             'module',
             $this->moduleName($module)
