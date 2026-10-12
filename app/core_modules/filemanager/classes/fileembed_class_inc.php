@@ -178,16 +178,7 @@ class fileembed extends ChisimbaObject {
      * @param string $file Path to the Object
      */
     function showObj3d($file) {
-        // This does not work :-(  $file = $this->objConfig->getsiteRoot().'/'.$file;
-        // The Applet needs a relative path to the file, hence this approach
-        $file = '../../../../' . $file;
-
-        $file = $this->objCleanUrl->cleanUpUrl($file);
-
-        return '<applet CODE="ObjLoad.class"  CODEBASE="core_modules/files/resources/obj3d" width="100%" height="400">
-   <param name="type" value="application/x-java-applet;version=1.4" />
-   <param name="filename" value="' . $file . '" />
-   </applet>';
+        return $this->getObject('nativeplayer', 'files')->download($file, false);
     }
 
     /**
@@ -195,9 +186,7 @@ class fileembed extends ChisimbaObject {
      * @param string $file Path to the File
      */
     function showVRML($file) {
-        $width = '100%';
-        $height = '400';
-        return '<embed src="' . $file . '" width="' . $width . '" height="' . $height . '" ></embed>';
+        return $this->getObject('nativeplayer', 'files')->download($file, false);
     }
 
     /**
@@ -206,9 +195,7 @@ class fileembed extends ChisimbaObject {
      * @param string $file Path to the File
      */
     function showFreemind($file) {
-        $objFlashFreemind = $this->newObject('flashfreemind', 'files');
-        $objFlashFreemind->setMindMap($file);
-        return $objFlashFreemind->show();
+        return $this->getObject('nativeplayer', 'files')->download($file, false);
     }
 
     /**

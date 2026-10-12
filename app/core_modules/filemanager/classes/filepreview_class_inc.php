@@ -44,6 +44,8 @@ class filepreview extends ChisimbaObject {
 
     // Services and state populated during initialisation.
     public $objFileParts;
+    public $objConfig;
+    public $file;
     public $objFiles;
     public $objCleanurl;
     public $objThumbnails;
@@ -211,10 +213,10 @@ class filepreview extends ChisimbaObject {
      */
     function show3dObject() {
         switch ($this->file['datatype']) {
-            // An exception is made for the obj 3d because of the way the applet works
-            case 'obj': return $this->objFileEmbed->embed($this->file['path'], 'obj3d');
+            // Original files use the same authorised route as other previews.
+            case 'obj': return $this->objFileEmbed->embed($this->file['linkname'], 'obj3d');
             case 'wrl': return $this->objFileEmbed->embed($this->file['linkname'], 'vrml');
-            default: return $this->objFileEmbed->embed($this->file['path'], 'unknown');
+            default: return $this->objFileEmbed->embed($this->file['linkname'], 'unknown');
         }
     }
 
@@ -229,7 +231,7 @@ class filepreview extends ChisimbaObject {
      * Method to preview an Audio File
      */
     function showAudio() {
-        return $this->objFileEmbed->embed($this->file['path'], 'audio');
+        return $this->objFileEmbed->embed($this->file['linkname'], 'audio');
     }
 
     /**
@@ -258,15 +260,15 @@ class filepreview extends ChisimbaObject {
             case 'avi':
                 return $this->objFileEmbed->embed($this->file['linkname'], 'avi', $width, $height);
             case 'flv':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'flv', $width, $height + 26);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'flv', $width, $height + 26);
             case 'ogg':
             case 'ogv':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'ogg', $width, $height + 12);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'ogg', $width, $height + 12);
             case 'mpg':
             case 'mpeg':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'mpg', $width, $height + 12);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'mpg', $width, $height + 12);
             case 'mp4':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'mp4', $width, $height + 12);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'mp4', $width, $height + 12);
             case 'm4v' :
                 return $this->objFileEmbed->embed($this->file['fullurl'], 'm4v', $width, $height + 12);
             case 'webm':

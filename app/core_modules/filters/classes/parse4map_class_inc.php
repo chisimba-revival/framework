@@ -52,6 +52,7 @@ $GLOBALS['kewl_entry_point_run'])
 
 class parse4map extends ChisimbaObject
 {
+
     
     /**
      * Short description for function
@@ -63,7 +64,7 @@ class parse4map extends ChisimbaObject
      */
     function init()
     {
-        $this->objFlashFreemind = $this->newObject('flashfreemind', 'files');
+        // Active Knowledge Maps replaces FreeMind viewing.
     }
     
     /**
@@ -75,23 +76,8 @@ class parse4map extends ChisimbaObject
     */
     function parse($str)
     {
-        $str = stripslashes($str);
-        $str = stripslashes($str);
-        $str = stripslashes($str);
-        
-        preg_match_all('/\\[MAP]<a.*?href="(?P<maplink>.*?)".*?>.*?<\/a>\\[\/MAP]/', $str, $results, PREG_PATTERN_ORDER);
-        
-        $counter = 0;
-        
-        foreach ($results[0] as $item)
-        {
-            $this->objFlashFreemind->setMindMap($results['maplink'][$counter]);
-            $replacement = $this->objFlashFreemind->show();
-            $str = str_replace($item, $replacement, $str);
-            $counter++;
-        }
-        
-        return $str;
+        return preg_replace_callback('~\[MAP\]\s*(?:<a\b[^>]*href=["\x27]([^"\x27]+)["\x27][^>]*>.*?</a>|([^<\[]+))\s*\[/MAP\]~is',
+            fn($match) => $this->getObject('nativeplayer', 'files')->download(trim($match[1] ?: ($match[2] ?? '')), false), $str);
     }
 
 }

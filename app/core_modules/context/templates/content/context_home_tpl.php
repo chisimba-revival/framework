@@ -254,11 +254,6 @@ if ($this->isValid('addblock')) {
             . $editBut . '</div>';
 }
 
-$liveChatIsRegistered = $objModule->checkIfRegistered('livechat');
-if ($liveChatIsRegistered) {
-    $liveChatBlock = $this->getObject("block_livechat", "livechat");
-    $utillink.=$liveChatBlock->show();
-}
 $objCssLayout->rightColumnContent .= $utillink;
 $objCssLayout->rightColumnContent .= '<div id="rightblocks">' . $rightBlocksStr . '</div>';
 
