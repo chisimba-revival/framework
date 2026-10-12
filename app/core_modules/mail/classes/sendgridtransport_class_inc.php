@@ -13,6 +13,36 @@ class sendgridtransport extends ChisimbaObject
         $payload=['personalizations'=>[['to'=>[['email'=>$to]]]],'from'=>['email'=>$from],'reply_to'=>['email'=>$reply],'subject'=>$subject,'content'=>[['type'=>'text/plain','value'=>$body]],'tracking_settings'=>['click_tracking'=>['enable'=>false,'enable_text'=>false],'open_tracking'=>['enable'=>false]]];
         return $this->request($key,json_encode($payload,JSON_THROW_ON_ERROR))===202;
     }
+    /** Deliver a validated MIME-service message, preserving visible CC and private BCC. */
+    public function sendPrepared($mail)
+    {
+        $personalisation = [];
+        foreach (['to'=>'getToAddresses', 'cc'=>'getCcAddresses', 'bcc'=>'getBccAddresses'] as $field=>$method) {
+            $addresses = $mail->$method();
+            if ($addresses) {
+                $personalisation[$field] = array_map(static function ($address) {
+                    return ['email'=>$address[0]];
+                }, $addresses);
+            }
+        }
+        // SendGrid requires a To recipient; never promote a private BCC address into headers.
+        if (empty($personalisation['to'])) {
+            throw new InvalidArgumentException('SendGrid requires a visible To recipient');
+        }
+        $content = [];
+        if ($mail->ContentType === 'text/html') {
+            if ($mail->AltBody !== '') $content[] = ['type'=>'text/plain', 'value'=>$mail->AltBody];
+            $content[] = ['type'=>'text/html', 'value'=>$mail->Body];
+        } else {
+            $content[] = ['type'=>'text/plain', 'value'=>$mail->Body];
+        }
+        $payload = ['personalizations'=>[$personalisation], 'from'=>['email'=>$mail->From, 'name'=>$mail->FromName],
+            'subject'=>$mail->Subject, 'content'=>$content,
+            'tracking_settings'=>['click_tracking'=>['enable'=>false, 'enable_text'=>false], 'open_tracking'=>['enable'=>false]]];
+        $key = (string)$this->getObject('dbsysconfig', 'sysconfig')->getValue('MAIL_SENDGRID_KEY', 'mail', '');
+        if ($key === '' || preg_match('/[\r\n]/', $key)) throw new RuntimeException('SendGrid credential unavailable');
+        return $this->request($key, json_encode($payload, JSON_THROW_ON_ERROR)) === 202;
+    }
     protected function request($key,$payload)
     {
         $ch=curl_init('https://api.sendgrid.com/v3/mail/send');$received=0;

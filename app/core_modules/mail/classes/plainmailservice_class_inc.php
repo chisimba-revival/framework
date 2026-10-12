@@ -19,6 +19,11 @@ class plainmailservice extends ChisimbaObject
         $mail=new \PHPMailer\PHPMailer\PHPMailer(true);
         $mail->CharSet='UTF-8';$mail->Encoding='quoted-printable';$mail->SMTPDebug=0;$mail->Timeout=10;
         $mail->setFrom($from);$mail->addAddress($to);$mail->addReplyTo($reply);$mail->Subject=$subject;$mail->Body=$body;$mail->isHTML(false);
+        return $this->configureTransport($mail);
+    }
+    /** Apply the shared transport policy to a prepared plain or MIME message. */
+    public function configureTransport($mail)
+    {
         $c=$this->getObject('dbsysconfig','sysconfig');$method=$c->getValue('MAIL_SEND_METHOD','mail','smtp');
         if($method==='smtp'){
             $mail->isSMTP();$mail->Host=(string)$c->getValue('MAIL_SMTP_SERVER','mail');$mail->Port=(int)$c->getValue('MAIL_SMTP_PORT','mail',587);
