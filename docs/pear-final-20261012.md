@@ -46,9 +46,36 @@ requirements, configuration and real schema gates, not that entire wizard.
 
 ## Release boundary
 
-Source and the local runtime have been validated. Existing production sites already
-use PDO, but need the final code/dependency removal release. Retain previous code
-and verified backups, audit deployed drift, rehearse with isolated database copies,
-and switch one site at a time beginning with Chisimba.com. Coordinate mail workers
-and verify login, catalogue, translation and protected data after switching. Do
-not remove live PEAR directories ahead of the matching native-only source.
+The final release is now deployed; the verified results follow.
+
+## Completed production rollout
+
+All six sites were deployed and verified on 12 October 2026, beginning with
+Chisimba.com. Each now runs without an application `lib/pear` directory.
+The deployed framework source is `e082c178e`, modules `02498125c`; release tooling
+and the empty dependency pack were based on dev-environment `9179440`.
+
+| Site | Release stamp (UTC) | Protected tables checked | Result |
+|---|---|---:|---|
+| Chisimba.com | 20261012-123301 | 107 | Online, verified |
+| KengaLearn | 20261012-123421 | 171 | Online, verified |
+| Learn the Birds | 20261012-123535 | 109 | Online, verified |
+| KengaPub | 20261012-123740 | 222 | Online, verified |
+| KengaSolutions | 20261012-123838 | 218 | Online, verified |
+| Heritage Treazures | 20261012-123936 | 218 | Online, verified |
+
+All final manifests matched, PEAR paths were absent, and the checked post-release
+PHP log deltas contained zero new diagnostics. Mail timers were active on all four
+sites with configured mail timers. Protected business rows and editable site
+navigation remained unchanged across each switch. Previous releases and verified
+database/persistent-file backups remain available on each server.
+
+Browser checks covered every site: sign-in pages/session status, KengaLearn's
+authenticated Kanban boards, and Learn the Birds' webinar management and reminder
+dashboard. No test email was sent and no real board or webinar was edited. The
+LTB dashboard retained its reminder schedule and reported a resumed worker run.
+
+Historical test oracles, dormant-module references and recoverable old releases
+are intentionally distinct from the deployed runtime. Retiring those records is
+not required for PEAR-free operation; dormant modules still require modernisation
+and testing before activation.
