@@ -59,6 +59,8 @@
   "System.php",
   "Text",
   "Validate.php",
+  "XML/RPC",
+  "XML/RPC.php",
   "data/Image_Canvas",
   "data/Log",
   "data/Mail_Mime",

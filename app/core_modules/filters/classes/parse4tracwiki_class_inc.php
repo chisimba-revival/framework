@@ -51,64 +51,11 @@ $GLOBALS['kewl_entry_point_run'])
 *
 */
 
+/** Retired remote XML-RPC filter. Keep stored markup intact for editors/imports.
+ * No network request, cache write or service bootstrap is performed.
+ */
 class parse4tracwiki extends ChisimbaObject
 {
-    /**
-    *
-    * String to hold an error message
-    * @accesss private
-    */
-    private $errorMessage;
-
-    /**
-     *
-     * Constructor for the tracwiki parser
-     *
-     * @return void
-     * @access public
-     *
-     */
-    function init()
-    {
-        $this->objLanguage = $this->getObject('language', 'language');
-        //Get an instance of the params extractor
-        $this->objExpar = $this->getObject("extractparams", "utilities");
-    }
-
-    /**
-    *
-    * Method to parse the string
-    * @param  String $str The string to parse
-    * @return The parsed string
-    *
-    */
-    public function parse($txt)
-    {
-        //Instantiate the modules class to check if youtube is registered
-        $objModule = $this->getObject('modules','modulecatalogue');
-        
-        //Match filters based on a wordpress style
-        preg_match_all('/\\[TRACWIKI:(.*?)\\]/', $txt, $results, PREG_PATTERN_ORDER);
-        //Get all the ones in links
-        $counter = 0;
-        //Get the wiki display object
-        $objTracClient = $this->newObject('tracrpcclient', 'api');
-        foreach ($results[0] as $item)
-        {
-               $str = $results[1][$counter];
-               $ar= $this->objExpar->getArrayParams($str, ",");
-               if (isset($this->objExpar->page)) {
-                   $page = $this->objExpar->page;
-               } else {
-                   $page="WikiStart";
-               }
-               $page = $objTracClient->grabTracWikiPageHTML($page);
-               $replacement = $page;
-               $txt = str_replace($item, $replacement, $txt);
-               $counter++;
-        }
-       
-       return $txt;
-    }
+    public function init() {}
+    public function parse($txt) { return $txt; }
 }
-?>

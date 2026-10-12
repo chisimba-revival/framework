@@ -22,6 +22,7 @@
   "core_modules/api/classes/sahrisapi_class_inc.php",
   "core_modules/api/classes/screenapi_class_inc.php",
   "core_modules/api/classes/skypeapi_class_inc.php",
+  "core_modules/api/classes/tracrpcclient_class_inc.php",
   "core_modules/api/classes/twitterizerapi_class_inc.php",
   "core_modules/api/classes/userapi_class_inc.php",
   "core_modules/api/classes/webpresentapi_class_inc.php",
