@@ -2,6 +2,14 @@
 
 ## Complete remaining-tree audit — 12 October follow-up
 
+Approved follow-up: Derek authorised removal of the dormant mail/network cluster.
+The earlier automatic-review hold is resolved; production remains unchanged.
+Both complete PDO/MDB2 regression suites, MIME/privacy fixtures and loopback SMTP
+acceptance/rejection tests pass after this removal. Local Communications and Site
+Administration render without new PHP web diagnostics. No real email was sent.
+Local removed files have rollback copies in container directory
+`/tmp/chisimba-paused-mail-20261012`.
+
 This section supersedes the earlier retained-package lists below. Production is
 unchanged. Derek has renamed `maillist` to `maillist__PAUSED`; all eleven files are
 byte-identical. Neither it nor `blog__PAUSED` should be revived without replacing
@@ -11,16 +19,15 @@ Removed unused vendor groups: Crypt/Rc4, File (Archive/Gettext/MARC/Bittorrent),
 HTML QuickForm/Common, Image Canvas, OpenDocument, PHP CodeSniffer/CompatInfo/
 DocBlockGenerator, Text Diff/Wiki/LanguageDetect/helpers, MIME, Log, Console,
 System, OS, Structures, Calendar and PEAR package-manager internals/commands.
-Associated vendor data for removed groups is also removed. The base `PEAR.php`
-and `PEAR/Exception.php` remain for identified compatibility consumers. Full
+Associated vendor data for removed groups is also removed. Only the base `PEAR.php` remains for identified compatibility consumers. Full
 removed-path inventory: `tests/dependencies/retired-pear-paths.json`. Original
 source/licences remain in Git parent `c1e7774b8`; no vendor rewriting was done.
 Calendar's names in module labels and Log's method names are not library loads.
 Chisimba's calendar and logging implementations are independent of these packages.
 
 The dev-environment pack and builder now omit Calendar and install only PEAR's
-base/error and exception classes, not its package manager. Existing runtimes need
-the same removals; additive copying is insufficient. The pack's thirteen required
+base/error class, not its package manager or exception class. Existing runtimes need
+the same removals; additive copying is insufficient. The pack's twelve required
 files are present in source and the curated pack. Build syntax passes; no network
 rebuild or upstream version change was performed.
 
@@ -34,12 +41,14 @@ rebuild or upstream version change was performed.
 | RDF, MDB (pre-MDB2) | FOAF parser loads RDF; RDF's optional database store loads MDB | Modernise or retire the FOAF/RDF path and database store; not covered by PDO conversion of dbTable |
 | DB (pre-MDB2) | Historical installer secondarydetails.inc imports DB.php; OpenID SQLStore recognises db_common; bundled ADOdb compatibility/examples | Remove unused installer/adapter paths after confirming reachability; do not confuse these with MDB2 |
 | Validate | FOAF validation | Replace its used validation contract if FOAF is retained |
-| Mail, Net, Auth, Cache, PEAR Exception | Paused maillist imports MIME decoding/POP3; paused Blog uses Net DNSBL; vendor SMTP uses Auth SASL, DNS uses Cache, URL mapper uses PEAR Exception | Dormant dependency cluster retained pending explicit approval after automatic review rejected removal; no need to modernise maillist now |
+| Mail, Net, Auth, Cache, PEAR Exception | Paused maillist imports MIME decoding/POP3; paused Blog uses Net DNSBL; vendor SMTP uses Auth SASL, DNS uses Cache, URL mapper uses PEAR Exception | Removed after Derek explicitly approved on 12 October; both paused modules require replacement dependencies before revival |
 | data | MDB2, driver, RDF and XML Serializer supporting files | Remove together with their owning libraries |
 
-The paused maillist already references Net/POP3.php and Mail/mimeDecode.php that
-are absent from this vendor tree. Pausing does not make it runnable; this is
-recorded revival debt, not a reason to reinstall obsolete packages.
+Correction to the initial audit: Mail/mimeDecode.php was present; Net/POP3.php
+was already absent. With explicit approval, Mail, Net, Auth/SASL, Cache/Lite,
+PEAR/Exception and Mail_Mime data are now removed together. The shared modern
+PHPMailer service is unaffected. Do not revive Blog or Maillist by restoring old
+network libraries; replace their required functionality through maintained services.
 
 ### Method and limitations
 
