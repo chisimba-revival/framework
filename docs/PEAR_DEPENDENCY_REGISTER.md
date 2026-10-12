@@ -1,5 +1,68 @@
 # PEAR dependency register
 
+## Complete remaining-tree audit — 12 October follow-up
+
+This section supersedes the earlier retained-package lists below. Production is
+unchanged. Derek has renamed `maillist` to `maillist__PAUSED`; all eleven files are
+byte-identical. Neither it nor `blog__PAUSED` should be revived without replacing
+legacy dependencies and checking PHP 8, persistence and permissions.
+
+Removed unused vendor groups: Crypt/Rc4, File (Archive/Gettext/MARC/Bittorrent),
+HTML QuickForm/Common, Image Canvas, OpenDocument, PHP CodeSniffer/CompatInfo/
+DocBlockGenerator, Text Diff/Wiki/LanguageDetect/helpers, MIME, Log, Console,
+System, OS, Structures, Calendar and PEAR package-manager internals/commands.
+Associated vendor data for removed groups is also removed. The base `PEAR.php`
+and `PEAR/Exception.php` remain for identified compatibility consumers. Full
+removed-path inventory: `tests/dependencies/retired-pear-paths.json`. Original
+source/licences remain in Git parent `c1e7774b8`; no vendor rewriting was done.
+Calendar's names in module labels and Log's method names are not library loads.
+Chisimba's calendar and logging implementations are independent of these packages.
+
+The dev-environment pack and builder now omit Calendar and install only PEAR's
+base/error and exception classes, not its package manager. Existing runtimes need
+the same removals; additive copying is insufficient. The pack's thirteen required
+files are present in source and the curated pack. Build syntax passes; no network
+rebuild or upstream version change was performed.
+
+### Exact remaining groups and removal gates
+
+| Group | Remaining source evidence | Gate |
+| --- | --- | --- |
+| MDB2, XML Parser/Serializer/Util, PEAR base/error | dbTable's retained MDB2 branch and MDB2 Schema Parser2 | Migrate remaining sites to PDO, then retire the shared fallback and its tests deliberately |
+| XML RPC | Core blog/screenshot filters, API/packages backing classes; CMS, Simplegal, IM and paused Blog | Audit supported integrations/content and retire or replace each caller; retired public routes remain retired |
+| Archive/Tar | Bundled Zend Filter Compress Tar | Establish supported Zend archive consumers before dropping the adapter/dependency |
+| RDF, MDB (pre-MDB2) | FOAF parser loads RDF; RDF's optional database store loads MDB | Modernise or retire the FOAF/RDF path and database store; not covered by PDO conversion of dbTable |
+| DB (pre-MDB2) | Historical installer secondarydetails.inc imports DB.php; OpenID SQLStore recognises db_common; bundled ADOdb compatibility/examples | Remove unused installer/adapter paths after confirming reachability; do not confuse these with MDB2 |
+| Validate | FOAF validation | Replace its used validation contract if FOAF is retained |
+| Mail, Net, Auth, Cache, PEAR Exception | Paused maillist imports MIME decoding/POP3; paused Blog uses Net DNSBL; vendor SMTP uses Auth SASL, DNS uses Cache, URL mapper uses PEAR Exception | Dormant dependency cluster retained pending explicit approval after automatic review rejected removal; no need to modernise maillist now |
+| data | MDB2, driver, RDF and XML Serializer supporting files | Remove together with their owning libraries |
+
+The paused maillist already references Net/POP3.php and Mail/mimeDecode.php that
+are absent from this vendor tree. Pausing does not make it runnable; this is
+recorded revival debt, not a reason to reinstall obsolete packages.
+
+### Method and limitations
+
+`php tools/dependencies/audit-pear.php /path/to/modules` inventories class and
+literal include references, ignoring PHP comments and including nested vendors,
+paused modules and SQL/PHP schema files. Its conservative output includes ordinary
+words such as `calendar`, `log`, `db` and MIME metadata keys; these were manually
+checked. Broader textual/include/build scans supplemented it. It does not prove
+arbitrary computed class names, external extensions or per-site runtime usage.
+No library was removed solely because a single direct-import scan was empty.
+The source scan is reproducible; local before/after JSON evidence is under
+`work/pear-cleanup-20261012/remaining-pear-*.json` in the workspace.
+
+Validation: complete PDO/MDB2 disposable suites pass, including native installer
+creation of 107 definitions, updates/repeats, rollback and race checks. Native
+configuration, translation, XML, BBCode, MIME and loopback SMTP checks pass.
+Ownership check passes in its required root container context. Tests requiring an
+installed fixture were not counted as passes when invoked without their opt-in.
+No real mail was sent. The reduced local runtime renders administration and the
+system-log page without new web PHP diagnostics. Retired runtime files have a
+container-local rollback copy at `/tmp/chisimba-unused-pear-20261012`.
+Remaining production rollout is separate.
+
 ## Current local state — 12 October 2026
 
 This section supersedes dated remaining-work notes below. Production is unchanged.

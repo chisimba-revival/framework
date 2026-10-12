@@ -1,8 +1,8 @@
 <?php
 /** Prevent migrated libraries from re-entering the deployable bundle. */
 $root = dirname(__DIR__, 2);
-foreach (['Config.php', 'Config', 'Event', 'Translation2.php', 'Translation2', 'I18Nv2.php', 'I18Nv2',
-    'PHPUnit2', 'Benchmark', 'HTML/TagCloud.php', 'HTML/BBCodeParser.php', 'HTML/BBCodeParser', 'Image/Graph.php', 'Image/Graph'] as $path) {
+foreach (array_merge(json_decode(file_get_contents(__DIR__ . '/retired-pear-paths.json'), true, 512, JSON_THROW_ON_ERROR), ['Config.php', 'Config', 'Event', 'Translation2.php', 'Translation2', 'I18Nv2.php', 'I18Nv2',
+    'PHPUnit2', 'Benchmark', 'HTML/TagCloud.php', 'HTML/BBCodeParser.php', 'HTML/BBCodeParser', 'Image/Graph.php', 'Image/Graph']) as $path) {
     if (file_exists($root . '/app/lib/pear/' . $path)) throw new RuntimeException('Retired runtime dependency: ' . $path);
 }
 if (file_exists($root . '/app/tests')) {
