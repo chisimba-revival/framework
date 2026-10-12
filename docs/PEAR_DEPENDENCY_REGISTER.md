@@ -1,5 +1,29 @@
 # PEAR dependency register
 
+## Zend TAR adapter retired — 12 October
+
+Removed the sole remaining Archive_Tar consumer,
+`modules/zend/resources/Zend/Filter/Compress/Tar.php`, and
+`app/lib/pear/Archive/Tar.php`. PHP class/include scans and compression-option
+searches across framework/modules (including nested vendors), plus deployment
+scripts and manifests, found no caller selecting this adapter. Zend's compression
+factory constructs adapters dynamically but defaults to Gz; no supported caller
+selected Tar. The remaining PEAR.php mention is an explanatory comment only.
+The retained Gz adapter received one explicit vendor compatibility patch: guard
+its optional archive path before file_exists(), avoiding PHP 8 null deprecation
+for the default in-memory mode. No archive workflow or format was changed.
+
+The generic Zend factory no longer supports selecting Tar. Any external extension
+that selects it must migrate explicitly before upgrading; arbitrary external
+extensions are outside this source audit. Neither the curated compatibility pack
+nor its builder contains Archive_Tar. Remove both files together on deployment;
+Git parents preserve the original vendor sources and licences. Regression checks
+verify the adapter/library absence and retained default Gz round-trip without PEAR
+on host PHP and the local PHP 8.5 image. Retired-package and catalogue refusal
+checks pass. Local Communications renders with no new web PHP diagnostics.
+Production is unchanged; the runtime TAR library has a rollback copy at container
+`/tmp/chisimba-retired-tar-20261012`.
+
 ## FOAF paused — 12 October
 
 Derek approved pausing FOAF: its original social-networking purpose needs
@@ -52,7 +76,7 @@ rebuild or upstream version change was performed.
 | --- | --- | --- |
 | MDB2, XML Parser/Serializer/Util, PEAR base/error | dbTable's retained MDB2 branch and MDB2 Schema Parser2 | Migrate remaining sites to PDO, then retire the shared fallback and its tests deliberately |
 | XML RPC | Core blog/screenshot filters, API/packages backing classes; CMS, Simplegal, IM and paused Blog | Audit supported integrations/content and retire or replace each caller; retired public routes remain retired |
-| Archive/Tar | Bundled Zend Filter Compress Tar | Establish supported Zend archive consumers before dropping the adapter/dependency |
+| Archive/Tar | No remaining executable caller after Zend adapter retirement | Removed with the unused adapter; see follow-up above |
 | RDF, MDB (pre-MDB2) | FOAF parser loads RDF; RDF's optional database store loads MDB | Modernise or retire the FOAF/RDF path and database store; not covered by PDO conversion of dbTable |
 | DB (pre-MDB2) | Historical installer secondarydetails.inc imports DB.php; OpenID SQLStore recognises db_common; bundled ADOdb compatibility/examples | Remove unused installer/adapter paths after confirming reachability; do not confuse these with MDB2 |
 | Validate | FOAF validation | Replace its used validation contract if FOAF is retained |
