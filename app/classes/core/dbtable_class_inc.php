@@ -930,6 +930,13 @@ class dbTable extends ChisimbaObject {
         $this->_inTransaction = FALSE;
     }
 
+    /** Preserve existing short site IDs; long names must still fit the 32-byte ID schema. */
+    private function newRecordId()
+    {
+        $id = $this->_serverName . '_' . random_int(1000, 99999) . '_' . time();
+        return strlen($id) <= 32 ? $id : bin2hex(random_bytes(16));
+    }
+
     /**
      * Method to insert a new record into the table.
      *
@@ -942,7 +949,7 @@ class dbTable extends ChisimbaObject {
     public function insert($fields, $tablename = '') {
         if ($this->_db instanceof ChisimbaDatabaseConnection) {
             if (!isset($fields['id']) || $fields['id'] === '') {
-                $fields['id'] = $this->_serverName . '_' . random_int(1000, 99999) . '_' . time();
+                $fields['id'] = $this->newRecordId();
             }
             $columns = array_map([$this->_db, 'quoteIdentifier'], array_keys($fields));
             $sql = 'INSERT INTO ' . $this->_db->quoteIdentifier($tablename ?: $this->_tableName)
@@ -957,7 +964,7 @@ class dbTable extends ChisimbaObject {
             $tablename = $this->_tableName;
         }
         if (!isset($fields['id']) || $fields['id']=="") {
-            $id = $this->_serverName . "_" . rand(1000, 99999) . "_" . time();
+            $id = $this->newRecordId();
             $fields['id'] = $id;
         } else {
             $id = $fields['id'];
