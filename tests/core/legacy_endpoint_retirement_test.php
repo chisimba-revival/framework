@@ -19,3 +19,8 @@ foreach (array('api','packages') as $name) {
     }
 }
 echo "PASS: both controllers reject all legacy actions without loading services\n";
+
+foreach (json_decode(file_get_contents(dirname(__DIR__).'/dependencies/retired-rpc-paths.json'),true,512,JSON_THROW_ON_ERROR) as $path) {
+    if (file_exists(dirname(__DIR__,2).'/app/'.$path)) throw new RuntimeException('Retired RPC implementation returned: '.$path);
+}
+echo "PASS retired RPC implementation classes absent; Trac client remains separately supported\n";

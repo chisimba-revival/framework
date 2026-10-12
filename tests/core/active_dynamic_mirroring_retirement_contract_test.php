@@ -3,7 +3,6 @@
 $root = dirname(__DIR__, 2) . '/app';
 $sources = array(
     $root . '/classes/core/dbtable_class_inc.php',
-    $root . '/core_modules/api/classes/xmlrpcapi_class_inc.php',
     $root . '/core_modules/config/classes/altconfig_class_inc.php',
     $root . '/core_modules/sysconfig/classes/dbsysconfig_class_inc.php',
     $root . '/installer/steps/createconfigs.inc',
@@ -29,7 +28,8 @@ foreach ($sources as $source) {
     }
 }
 
-if (file_exists($root . '/core_modules/api/classes/admapi_class_inc.php')) {
+if (file_exists($root . '/core_modules/api/classes/admapi_class_inc.php')
+    || file_exists($root . '/core_modules/api/classes/xmlrpcapi_class_inc.php')) {
     fwrite(STDERR, "FAIL: ADM XML-RPC implementation remains on disk\n");
     exit(1);
 }
