@@ -7587,3 +7587,14 @@ input[type="radio"] {
     min-width: 0;
     margin: 0;
 }
+
+/* Shared insertion marker for ordered drag-and-drop lists. */
+.chisimba-drop-marker {
+    border-block-start: 3px solid var(--chisimba-focus);
+    color: var(--chisimba-text);
+    background: var(--chisimba-surface);
+    border-radius: var(--chisimba-radius-sm);
+    padding: var(--chisimba-space-1) var(--chisimba-space-2);
+    font-weight: 600;
+    pointer-events: none;
+}

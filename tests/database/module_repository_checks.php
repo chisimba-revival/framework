@@ -21,6 +21,7 @@ ensureBaseline(!$access->replaceUserGrants($board,['replacement'=>'view'],'actor
 $table->executeExactPrepared('DROP TRIGGER fixture_deny_grant');
 ensureBaseline($access->replacePublicLink($board,'opaque','actor') && $access->publicLinkBoardId('opaque')===$board,'Public link creation');
 ensureBaseline($access->replacePublicLink($board,null,'actor') && $access->publicLinkBoardId('opaque')===false,'Public link revocation');
+require '/modules/kanban/tests/task_order_database_checks.php';
 $maps=new dbknowledgemaps();injectCallerTable($maps,'tbl_knowledgemap_maps');
 $nodes=new dbknowledgemapnodes();injectCallerTable($nodes,'tbl_knowledgemap_nodes');
 $mapAccess=new dbknowledgemapaccess();injectCallerTable($mapAccess,'tbl_knowledgemap_access');
