@@ -1,5 +1,20 @@
 # PEAR dependency register
 
+## FOAF paused — 12 October
+
+Derek approved pausing FOAF: its original social-networking purpose needs
+reassessment before any revival. Source is renamed to `foaf__PAUSED`, with file
+contents unchanged, following Blog and Maillist. A first-party PHP/registration
+scan found no other module requesting or declaring a dependency on `foaf`.
+This source rename does not unregister installed modules or delete stored data;
+production has not been changed. Do not enable it through the catalogue.
+
+FOAF no longer needs an active-feature migration. Its PEAR RDF/Validate usage is
+now dormant. Before removing those libraries and RDF's old MDB store, check the
+remaining bundled adapters and other consumers independently. The separate
+`rdfgen` module is not paused by this decision. Any revival needs a fresh product,
+PHP 8, dbTable, permissions and dependency review.
+
 ## Complete remaining-tree audit — 12 October follow-up
 
 Approved follow-up: Derek authorised removal of the dormant mail/network cluster.
