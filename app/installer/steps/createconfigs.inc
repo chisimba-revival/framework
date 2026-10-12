@@ -351,7 +351,6 @@ class CreateConfigsAction extends FiveStepAction
         //$this->_addConfigVar('KEWL_LOGGED_IN_TEMPLATE', 'loggedin_tpl.php');
 
 
-        $this->_addConfigVar ( 'KEWL_PEAR_PATH', $_SESSION ['pear_path'] );
 
         $this->_addConfigVar ( 'KEWL_CONTENT_BASEPATH', $_SESSION ['contentPath'] );
 

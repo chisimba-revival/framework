@@ -144,24 +144,14 @@ class dbTableManager extends ChisimbaObject {
      * @return void
      */
     public function init($dbName = NULL, $pearDbManager = NULL, $errorCallback = "globalPearErrorCallback") {
+
         $this->_errorCallback = $errorCallback;
         if ($pearDbManager == NULL) {
             $this->_dbmanager = $this->objEngine->getDbManagementObj();
             $this->_db = $this->objEngine->getDbObj();
         } else {
             $this->_dbmanager = $pearDbManager;
-            $this->_db = $pearDb;
-        }
-
-        // check for PEAR Var_dump and initialise it,
-        // otherwise just use regular PHP var_dump();
-        if (class_exists('Var_Dump')) {
-            $var_dump = array(
-                'Var_Dump',
-                'display',
-            );
-        } else {
-            $var_dump = 'var_dump';
+            throw new LogicException('External legacy schema managers are retired.');
         }
 
         // Load up the config object and get the servername
@@ -169,9 +159,6 @@ class dbTableManager extends ChisimbaObject {
         $this->_serverName = $this->objDBConfig->serverName();
         $this->appid = $this->objEngine->appid;
 
-        // instantiate the MDB2 Management module
-        //$this->_db = $this->_db->loadModule('Manager');
-        // call_user_func($var_dump, $this->_dbmanager);
     }
 
     /**
@@ -188,8 +175,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function parseDbDefFile($input_file, $variables = array(), $fail_on_invalid_names = TRUE) {
-        return $this->_dbmanager->parseDatabaseDefinitionFile($input_file, $variables,
-                $fail_on_invalid_names, $structure = FALSE);
+        throw new LogicException('Legacy XML database definitions are retired. Use registered native table definitions.');
     }
 
     /**
@@ -201,8 +187,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function getDefFromDb() {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        return $this->_dbmanager->getDefinitionFromDatabase();
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -219,38 +204,7 @@ class dbTableManager extends ChisimbaObject {
      * @return bool
      */
     public function dumpDatabaseToFile($option, $dumptype, $dumpfile) {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        // lets set a time limit on this
-        set_time_limit(0);
-
-        if ($option == 'dump') {
-            switch ($dumptype) {
-                case 'structure':
-                    $dump_what = MDB2_SCHEMA_DUMP_STRUCTURE;
-                    break;
-
-                case 'content':
-                    $dump_what = MDB2_SCHEMA_DUMP_CONTENT;
-                    break;
-
-                default:
-                    $dump_what = MDB2_SCHEMA_DUMP_ALL;
-                    break;
-            }
-
-            $dump_config = array(
-                'output_mode' => 'file',
-                'output' => $dumpfile,
-            );
-            $definition = $this->_dbmanager->getDefinitionFromDatabase();
-            $operation = $this->_dbmanager->dumpDatabase($definition, $dump_config, $dump_what);
-            if (PEAR::isError($operation)) {
-                die($operation->getMessage() . ' ' . $operation->getUserInfo());
-            }
-            return TRUE;
-        }//if
-
-        return FALSE;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
 //func
@@ -287,10 +241,7 @@ class dbTableManager extends ChisimbaObject {
      * @return string    message
      */
     private function printQueries($db, $scope, $message) {
-        if ($scope == 'query') {
-            return $message . $db->getOption('log_line_break');
-        }
-        MDB2_defaultDebugOutput($db, $scope, $message);
+        return $scope === 'query' ? $message : null;
     }
 
     /**
@@ -386,9 +337,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listDbUsers() {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        $ret = $this->_db->mgListUsers();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -398,9 +347,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listDbViews() {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        $ret = $this->_db->mgListViews();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -410,9 +357,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listDbFunctions() {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        $ret = $this->_db->mgListFunctions();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -537,9 +482,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function createSequence($seq_name, $start = 1) {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        $ret = $this->_db->mgCreateSequence($seq_name, $start);
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -550,9 +493,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function dropSequence($name) {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        $ret = $this->_db->mgDropSequence($name);
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -562,9 +503,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listSequences() {
-        if ($this->_db instanceof ChisimbaDatabaseConnection) throw new LogicException('This legacy database operator API is not supported by the native backend.');
-        $ret = $this->_db->mgListSequences();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**

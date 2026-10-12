@@ -508,15 +508,14 @@ class XML_HTMLSax3 {
             $this->state_parser->handler_default =& $object;
             return true;
         } else {
-            require_once('PEAR.php');
-            PEAR::raiseError('XML_HTMLSax3::set_object requires '.
+            throw new InvalidArgumentException('XML_HTMLSax3::set_object requires '.
                 'an object instance');
         }
     }
 
     /**
     * Sets a parser option. By default all options are switched off.
-    * Returns a PEAR Error if option is invalid<br />
+    * Throws InvalidArgumentException if option is invalid<br />
     * <b>Available options:</b>
     * <ul>
     * <li>XML_OPTION_TRIM_DATA_NODES: trim whitespace off the beginning
@@ -546,8 +545,7 @@ class XML_HTMLSax3 {
             $this->state_parser->parser_options[$name] = $value;
             return true;
         } else {
-            require_once('PEAR.php');
-            PEAR::raiseError('XML_HTMLSax3::set_option('.$name.') illegal');
+            throw new InvalidArgumentException('XML_HTMLSax3::set_option('.$name.') illegal');
         }
     }
 

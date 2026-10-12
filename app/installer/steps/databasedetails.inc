@@ -299,13 +299,13 @@ class DbDetailsAction extends FiveStepAction
 		
             $db_array = array();
 
-            if($allowed_db['MDB2_Driver_mysql']==TRUE) {
+            if($allowed_db['PDO_Driver_mysql']==TRUE) {
                 $db_array['mysql'] = 'MySQL';
             }
-            if ($allowed_db['MDB2_Driver_mysqli']==TRUE) {
+            if ($allowed_db['PDO_Driver_mysqli']==TRUE) {
                 $db_array['mysqli'] = 'MySQL / MariaDB (PDO)';
             }
-            if($allowed_db['MDB2_Driver_pgsql']==TRUE) {
+            if($allowed_db['PDO_Driver_pgsql']==TRUE) {
                 $db_array['pgsql'] = 'PostgreSQL';
             }
             if(empty($db_array)){

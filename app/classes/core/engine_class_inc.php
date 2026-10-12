@@ -545,7 +545,7 @@ class engine {
 
         //and we need a general system config too
         $this->_objConfig = clone $this->_objDbConfig;
-        ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $this->_objConfig->getsiteRootPath () . 'lib/pear/' );
+        // PEAR runtime and include-path bootstrap retired.
         // One native dispatcher belongs to this engine/request. All framework
         // objects receive it through their existing eventDispatcher property.
         require_once __DIR__ . '/nativeeventdispatcher.php';
@@ -686,87 +686,19 @@ class engine {
      * @return kngConfig The config object
      */
     public function getDbObj() {
-
-        global $_globalObjDb;
-        /*
-		* do the checks that the db object gets instantiated once, then let MDB2 take over for the on-demand * *construction
-		*/
-        if ($this->_objDb == NULL || $_globalObjDb == NULL) {
-            $this->_objDbConfig = $this->getObject ( 'altconfig', 'config' );
-            /*
-			 * set up the DSN. Some RDBM's do not operate with the string style DSN (most noticeably Oracle)
-			 * so we parse the DSN to an array and then send that to the object instantiation to be safe
-			 */
-            $dsn = KEWL_DB_DSN;
-            $this->dsn = $this->parseDSN ( $dsn );
-            $this->pdsn = $this->dsn;
-
-            // now check whether to use PDO or MDB2
-            if ($this->_dbabs === 'MDB2') {
-                // Connect to the database
-                require_once ('MDB2.php');
-                //trigger_error(var_export($this->dsn, TRUE));
-                $_globalObjDb = MDB2::singleton ( $this->dsn );
-                //Check for errors on the factory method
-                if (PEAR::isError ( $_globalObjDb )) {
-                    $this->_pearErrorCallback ( $_globalObjDb );
-                    //return the db object for use globally
-                    return $_globalObjDb;
-                }
-                // a much nicer mode than the default MDB2_FETCHMODE_ORDERED
-                $_globalObjDb->setFetchMode ( MDB2_FETCHMODE_ASSOC );
-                //set the options for portability!
-                $_globalObjDb->setOption ( 'portability', MDB2_PORTABILITY_FIX_CASE | MDB2_PORTABILITY_ALL );
-                $_globalObjDb->setOption ('quote_identifier', true);
-                $_globalObjDb->setCharset('utf8');
-
-                //Check for errors
-                if (PEAR::isError ( $_globalObjDb )) {
-                    /*
-					* manually call the callback function here, as we haven't had a chance to install it as
-					* the error handler
-					*/
-                    $this->_pearErrorCallback ( $_globalObjDb );
-                    //return the db object for use globally
-                    return $_globalObjDb;
-                }
-                // Load the MDB2 Functions module
-                $_globalObjDb->loadModule ( 'Function' );
-                // keep a copy as a field as well
-                $this->_objDb = $_globalObjDb;
-
-                //Load up some of the extra MDB2 modules:
-                MDB2::loadFile ( 'Date' );
-                MDB2::loadFile ( 'Iterator' );
-
-                // install the error handler with our custom callback on error
-                $this->_objDb->setErrorHandling ( PEAR_ERROR_CALLBACK, array ($this, '_pearErrorCallback' ) );
-                /* set the default fetch mode for the DB to assoc, as that's a much nicer mode than the default  * MDB2_FETCHMODE_ORDERED
-				 */
-                $this->_objDb->setFetchMode ( MDB2_FETCHMODE_ASSOC );
-                if ($this->_objDb->phptype == 'oci8') {
-                    $this->_objDb->setOption ( 'field_case', CASE_LOWER );
-                    //oracle numRows() hack plus some extras
-                    $this->_objDb->setOption ( 'portability', MDB2_PORTABILITY_NUMROWS | MDB2_PORTABILITY_FIX_CASE | MDB2_PORTABILITY_RTRIM | MDB2_PORTABILITY_ALL );
-                    $this->_objDb->setCharset('utf8');
-                } else {
-                    $this->_objDb->setOption ( 'portability', MDB2_PORTABILITY_FIX_CASE | MDB2_PORTABILITY_ALL );
-                    $this->_objDb->setCharset('utf8');
-                }
-                // include the dbtable base class for future use
-            } elseif ($this->_dbabs === 'PDO') {
-                require_once __DIR__ . '/chisimbadatabaseconnection.php';
-                // One shared native connection. Direct MDB2 callers must be migrated
-                // before enabling this backend in an installed site.
-                if (!($_globalObjDb instanceof ChisimbaDatabaseConnection)) {
-                    $_globalObjDb = ChisimbaDatabaseConnection::fromLegacyDsn($this->dsn);
-                }
-                $this->_objDb = $_globalObjDb;
-            }
-            //return the local copy
-            return $this->_objDb;
+        if ($this->_dbabs !== 'PDO') {
+            throw new RuntimeException('Unsupported database backend. MDB2 is retired; configure PDO and install pdo_mysql.');
         }
-        // Return the existing cached database object on subsequent calls.
+        global $_globalObjDb;
+        require_once __DIR__ . '/chisimbadatabaseconnection.php';
+        if (!$this->_objDb instanceof ChisimbaDatabaseConnection) {
+            $this->dsn = $this->parseDSN(KEWL_DB_DSN);
+            $this->pdsn = $this->dsn;
+            if (!$_globalObjDb instanceof ChisimbaDatabaseConnection) {
+                $_globalObjDb = ChisimbaDatabaseConnection::fromLegacyDsn($this->dsn);
+            }
+            $this->_objDb = $_globalObjDb;
+        }
         return $this->_objDb;
     }
 
@@ -780,41 +712,7 @@ class engine {
      * @return kngConfig The config object
      */
     public function getDbManagementObj() {
-        //global for the management object
-        global $_globalObjDbManager;
-        /*
-		*do the checks that the db object gets instantiated once, then
-		*let MDB2 take over for the on-demand construction
-		*/
-        if ($this->_objDbManager == NULL || $_globalObjDbManager == NULL) {
-            //load the config object (same as the db Object)
-            $this->_objDbConfig = $this->getObject ( 'altconfig', 'config' );
-            $mdsn = KEWL_DB_DSN; //$this->_objDbConfig->getDsn();
-            $this->mdsn = $this->parseDSN ( $mdsn );
-            // Connect to the database
-            //require_once $this->getPearResource ( 'MDB2/Schema.php' );
-            //MDB2 has a factory method, so lets use it now...
-            //$_globalObjDbManager = &MDB2::connect ( $this->dsn );
-
-            //Check for errors
-            if (is_a($_globalObjDbManager, 'PEAR_Error')) {
-                /*
-				 * manually call the callback function here,
-				 * as we haven't had a chance to install it as
-				 * the error handler
-				 */
-                $this->_pearErrorCallback ( $_globalObjDbManager );
-                //return the db object for use globally
-                return $_globalObjDbManager;
-            }
-            // keep a copy as a field as well
-            $this->_objDbManager = $_globalObjDbManager;
-            // install the error handler with our custom callback on error
-            //$this->_objDbManager->setErrorHandling ( PEAR_ERROR_CALLBACK, array ($this, '_pearErrorCallback' ) );
-
-        }
-        //return the local copy
-        return $this->_objDbManager;
+        return null; // Schema operations use the shared native schema service.
     }
 
     /**
@@ -1982,11 +1880,7 @@ class engine {
      * @return string Path to the Resource in a module
      */
     public function getPearResource($resourceFile) {
-        if (@include_once ($resourceFile)) {
-            return $resourceFile;
-        } else {
-            return $this->_objConfig->getsiteRootPath () . "lib/pear/" . $resourceFile;
-        }
+        throw new LogicException('PEAR resources are retired. Use maintained native services.');
 
     }
 

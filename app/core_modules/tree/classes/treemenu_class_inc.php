@@ -259,28 +259,7 @@ class treemenu
     */
     function createFromXML($xml)
     {
-        if (!class_exists('Tree')) {
-            die('Could not find Tree class');
-        }
-
-        // Supplied $xml is a string
-        if (is_string($xml)) {
-            require_once('XML/Tree.php');
-            $xmlTree = new XML_Tree();
-            $xmlTree->getTreeFromString($xml);
-
-        // Supplied $xml is an XML_Tree object
-        } else {
-            $xmlTree = $xml;
-        }
-
-        // Now process the XML_Tree object, setting the XML attributes
-        // to be the tag data (with out the XML tag name or contents).
-        $treeStructure = Tree::createFromXMLTree($xmlTree, true);
-        $treeStructure->nodes->traverse(create_function('&$node', '$tagData = $node->getTag(); $node->setTag($tagData["attributes"]);'));
-
-        
-        return HTML_TreeMenu::createFromStructure(array('structure' => $treeStructure));
+        throw new LogicException('Legacy XML tree import is retired. Use createFromStructure().');
     }
 } // HTML_TreeMenu
 //require_once('other_classes.php');

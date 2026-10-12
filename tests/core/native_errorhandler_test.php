@@ -8,7 +8,7 @@ checkHandler(!class_exists('PEAR',false)&&!class_exists('PEAR_Error',false),'Nat
 foreach ([null,false,new stdClass()] as $value) checkHandler((new errorhandler('Fallback',42,$value))->handleError()==='Fallback','Fallback lost');
 foreach ([new RuntimeException('Native failure'),new TypeError('Native failure')] as $value) checkHandler((new errorhandler('Fallback',42,$value))->handleError()==='Native failure','Throwable message lost');
 checkHandler(!class_exists('PEAR',false),'Native adaptation loaded PEAR');
-require __DIR__.'/../../app/lib/pear/PEAR.php';
+require __DIR__.'/../fixtures/pear-oracle/PEAR.php';
 $called=0;
 $old=new PEAR_Error('Existing legacy failure',42,PEAR_ERROR_RETURN);
 PEAR::setErrorHandling(PEAR_ERROR_CALLBACK,static function()use(&$called){$called++;});

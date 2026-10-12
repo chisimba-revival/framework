@@ -1,3 +1,12 @@
+# Current status — 12 October 2026
+
+PDO MySQL is the sole supported backend. Run `python3 tests/database/run-pdo-contracts.py`.
+The runtime PEAR directory and MDB2 recorder have been removed.
+`mdb2-baseline.json` preserves result semantics; `schema-baseline.json` preserves
+real MDB2 column definitions captured using MariaDB 10.11.18 before retirement.
+The disposable PDO runner validates those contracts without loading any PEAR code.
+The dated notes below describe earlier migration stages, not current deployment.
+
 # Database migration baseline
 
 Run from the framework repository, with Docker access:

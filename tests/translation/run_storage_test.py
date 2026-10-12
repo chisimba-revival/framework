@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Disposable MariaDB fixture, internal network, no published ports or site writes."""
 import subprocess,secrets,time,pathlib,sys
-driver=sys.argv[1] if len(sys.argv)>1 else "MDB2"
-if driver not in ("MDB2","PDO"):raise SystemExit("Expected MDB2 or PDO")
+driver=sys.argv[1] if len(sys.argv)>1 else "PDO"
+if driver != "PDO":raise SystemExit("Only PDO is supported")
 root=pathlib.Path(__file__).resolve().parents[2];network='chisimba-translation-fixture-'+secrets.token_hex(4);container=network+'-db';password=secrets.token_hex(24)
 def run(args,**kw):
  result=subprocess.run(args,**kw)

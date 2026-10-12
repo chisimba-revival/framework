@@ -469,9 +469,9 @@ class PHPCheckAction extends StepAction
         // New installations use the shared native PDO MySQL connection.
         $available = class_exists('PDO') && in_array('mysql', PDO::getAvailableDrivers(), true);
         $_SESSION['allowed_db'] = array(
-            'MDB2_Driver_mysql' => false,
-            'MDB2_Driver_pgsql' => false,
-            'MDB2_Driver_mysqli' => $available,
+            'PDO_Driver_mysql' => false,
+            'PDO_Driver_pgsql' => false,
+            'PDO_Driver_mysqli' => $available,
         );
         $this->required_settings['mysqlclient']['available'] = $available;
         $this->required_settings['mysqlclient']['version'] = $available ? 'PDO MySQL' : '';
@@ -585,7 +585,7 @@ class RuntimeLibrariesCheckAction extends StepAction
         $root = rtrim((string) ($_SESSION['sys_root'] ?? dirname(INSTALL_DIR)), '/\\');
         // This is the same bundled directory used by the application bootstrap.
         // Never accept a posted library path or fall back to an unrelated system copy.
-        $_SESSION['pear_path'] = $root . '/lib/pear/';
+        unset($_SESSION['pear_path']);
         $files = array(
             'Native configuration' => 'core_modules/config/classes/configurationdocument.php',
             'Native translation' => 'core_modules/language/classes/nativetranslation.php',

@@ -7,7 +7,6 @@ if (version_compare(PHP_VERSION, '8.2.0', '<')) {
 }
 $mepath = $_SERVER["SCRIPT_FILENAME"];
 $mepath = str_replace('installer/index.php', '', $mepath);
-ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $mepath.'lib/pear/');
 
 require_once dirname(__FILE__).'/installwizard.inc';
 

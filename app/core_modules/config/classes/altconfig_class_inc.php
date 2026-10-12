@@ -1102,13 +1102,14 @@ class altconfig extends ChisimbaObject {
         //var_dump($SettingsDirective);
         if($SettingsDirective == FALSE)
         {
-                $newsettings = array("DATABASE_ABSTRACTION" => "MDB2");
-                $this->appendToConfig($newsettings);
-                return "MDB2";
+                return "PDO"; // Defaults must not mutate configuration during reads.
         }
         //finally unearth whats inside
         $databaseAbstraction = $SettingsDirective->getContent();
 
+        if ($databaseAbstraction !== 'PDO') {
+            throw new RuntimeException('Unsupported database backend. MDB2 is retired; configure PDO and install pdo_mysql.');
+        }
         return $databaseAbstraction;
     }
 

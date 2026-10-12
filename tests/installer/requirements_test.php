@@ -18,7 +18,7 @@ try {
         'confirm_step' => 'VersionCheck', 'next' => '1'];
     $action = new RuntimeLibrariesCheckAction();
     check(!$action->processAction(), 'missing libraries must block installation');
-    check($_SESSION['pear_path'] === $root . '/lib/pear/', 'posted path must not override bundle');
+    check(!isset($_SESSION['pear_path']), 'retired PEAR path must not be retained');
     check(count($action->errors) === 8, 'every required bundled file is checked');
     $files = ['core_modules/config/classes/configurationdocument.php',
         'core_modules/language/classes/nativetranslation.php',

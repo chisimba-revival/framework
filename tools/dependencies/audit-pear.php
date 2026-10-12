@@ -6,6 +6,10 @@
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $root = dirname(__DIR__, 2);
 $pear = $root . '/app/lib/pear/';
+if (!is_dir($pear)) {
+    echo json_encode(['runtime_present'=>false, 'status'=>'PEAR runtime retired; dormant modules must be audited before activation.'], JSON_PRETTY_PRINT), "\n";
+    exit;
+}
 $modules = $argv[1] ?? dirname($root) . '/modules';
 if (!is_dir($modules)) { fwrite(STDERR, "Modules directory required\n"); exit(1); }
 function sources($dir) {

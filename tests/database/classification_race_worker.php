@@ -2,20 +2,13 @@
 /** Child process, used only inside the isolated fixture network. */
 if (PHP_SAPI !== 'cli' || getenv('CHISIMBA_DB_BASELINE') !== '1') exit(64);
 $app = '/framework/app';
-set_include_path($app . PATH_SEPARATOR . $app . '/lib/pear' . PATH_SEPARATOR . get_include_path());
+set_include_path($app . PATH_SEPARATOR . get_include_path());
 $GLOBALS['kewl_entry_point_run'] = true;
 class ChisimbaObject {}
 require_once $app . '/classes/core/dbtable_class_inc.php';
 $dsn = ['phptype'=>'mysqli','hostspec'=>'baseline-db','username'=>'root','password'=>getenv('CHISIMBA_DB_PASSWORD'),'database'=>'contract_fixture'];
-if ($argv[1] === 'PDO') {
-    $db = ChisimbaDatabaseConnection::fromLegacyDsn($dsn);
-} else {
-    require_once 'MDB2.php';
-    $db = MDB2::connect($dsn);
-    if (PEAR::isError($db)) throw new RuntimeException('Fixture connection failed');
-    $db->setFetchMode(MDB2_FETCHMODE_ASSOC);
-    $db->setOption('portability', MDB2_PORTABILITY_ALL);
-}
+if ($argv[1] !== 'PDO') throw new InvalidArgumentException('Only PDO is supported');
+$db = ChisimbaDatabaseConnection::fromLegacyDsn($dsn);
 $table = new dbTable();
 (new ReflectionProperty(dbTable::class, '_db'))->setValue($table, $db);
 require_once $app.'/core_modules/classification/classes/classificationstore_class_inc.php';

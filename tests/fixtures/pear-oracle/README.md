@@ -8,8 +8,10 @@ add this directory to the application include path. `bootstrap.php` is CLI-only.
 Original copyright/licence notices remain in each source file.
 
 Packages: Config, Event Dispatcher, Translation2, I18Nv2, HTML TagCloud and
-HTML BBCodeParser. Runtime compatibility dependencies needed by some comparison
-tests still resolve from app/lib/pear (notably PEAR, XML and DB adapters).
+HTML BBCodeParser. PEAR core, XML Parser and XML Util are also retained here solely for historical
+comparison tests. The application PEAR directory is removed. No runtime imports
+resolve from this fixture directory. MDB2 is not retained; its recorded result
+and schema baselines cover the native database contracts.
 
 Recover historical application locations from the parent commit if an external
 extension unexpectedly imports these packages; migrate that extension before

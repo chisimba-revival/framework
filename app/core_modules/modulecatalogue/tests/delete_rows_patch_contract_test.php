@@ -6,7 +6,7 @@ $checks=array(
     'empty conditions are rejected'=>str_contains($patch,'deleteRows requires conditions'),
     'table and field names are bounded'=>substr_count($patch,"preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/")>=2,
     'conditions are joined with AND'=>str_contains($patch,"implode(' AND ', \$where)"),
-    'database deletion failure stops the update'=>str_contains($patch,'PEAR::isError($deleteResult)'),
+    'database deletion failure stops the update'=>str_contains($patch,'$deleteResult === false'),
     'deletion uses the initialised module database object'=>str_contains($patch,'$this->objModule->query(')
         && !str_contains($patch,'$this->objModules->query('),
     'applied deletion is recorded'=>str_contains($patch,"\$this->objModule->insert(\$patch, 'tbl_module_patches')"),

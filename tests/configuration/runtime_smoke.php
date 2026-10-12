@@ -24,9 +24,9 @@ if ($language->eventDispatcher !== $engine->eventDispatcher) {
 if (!is_string($language->languageText('word_home', 'system', 'Home'))) {
     throw new RuntimeException('Translation lookup failed');
 }
-$db = $engine->getDbObj();
+$db = dbTable::forFrameworkConnection($engine->getDbObj());
 $result = $db->query("SELECT 'event-smoke' AS marker");
-if (PEAR::isError($result) || $result->fetchRow(MDB2_FETCHMODE_ASSOC)['marker'] !== 'event-smoke') {
+if ($result === false || $result[0]['marker'] !== 'event-smoke') {
     throw new RuntimeException('Database smoke query failed');
 }
 $seen = array();

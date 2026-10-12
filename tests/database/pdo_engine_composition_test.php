@@ -9,7 +9,7 @@ mkdir($temporary . '/config', 0700, true);
 file_put_contents($temporary . '/config/dbdetails_inc.php', '<?php');
 file_put_contents($temporary . '/lucene.php', '<?php');
 chdir($temporary);
-set_include_path($temporary . PATH_SEPARATOR . $app . PATH_SEPARATOR . $app . '/lib/pear');
+set_include_path($temporary . PATH_SEPARATOR . $app);
 $GLOBALS['kewl_entry_point_run'] = true;
 define('KEWL_DB_DSN', 'mysqli://root:' . rawurlencode(getenv('CHISIMBA_DB_PASSWORD')) . '@baseline-db:3306/contract_fixture');
 try {
@@ -20,8 +20,8 @@ try {
         public function getenable_dbabs() { return 'PDO'; }
     }
     class FixturePdoEngine extends engine {
-        public function __construct() {
-            $this->_dbabs = 'PDO';
+        public function __construct($backend = 'PDO') {
+            $this->_dbabs = $backend;
             $this->_moduleName = 'fixture';
             $this->enableLogging = false;
         }
@@ -29,6 +29,12 @@ try {
             if ($name !== 'altconfig' || $moduleName !== 'config') throw new LogicException('Unexpected fixture service');
             return new FixtureDatabaseConfig();
         }
+    }
+    try {
+        (new FixturePdoEngine('MDB2'))->getDbObj();
+        throw new LogicException('Retired backend was accepted');
+    } catch (RuntimeException $expected) {
+        if (!str_contains($expected->getMessage(), 'MDB2 is retired')) throw $expected;
     }
     $first = new FixturePdoEngine();
     $second = new FixturePdoEngine();

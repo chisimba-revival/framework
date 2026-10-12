@@ -4,7 +4,7 @@
  */
 if (PHP_SAPI !== 'cli' || getenv('CHISIMBA_DB_BASELINE') !== '1') exit(64);
 $app = '/framework/app';
-set_include_path($app . PATH_SEPARATOR . $app . '/lib/pear' . PATH_SEPARATOR . get_include_path());
+set_include_path($app . PATH_SEPARATOR . get_include_path());
 require_once $app . '/classes/core/chisimbadatabaseconnection.php';
 $db = ChisimbaDatabaseConnection::fromLegacyDsn(['phptype' => 'mysqli', 'hostspec' => 'baseline-db:3306',
     'username' => 'root', 'password' => getenv('CHISIMBA_DB_PASSWORD'), 'database' => 'contract_fixture']);

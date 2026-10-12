@@ -82,9 +82,9 @@ modules, including new repositories, background jobs and installation hooks.
 - If the abstraction lacks a needed capability, extend the shared framework
   boundary with appropriate tests instead of bypassing it in a module.
 - Review new and changed persistence for direct driver calls. Existing legacy
-  callers are migration debt, not examples or exceptions for new code. During
-  the MDB2-to-PDO transition, verify changed persistence against both supported
-  drivers with disposable fixtures, including failure and rollback behaviour.
+  callers are migration debt, not examples or exceptions for new code. PDO MySQL
+  is the sole supported backend. Verify changed persistence with
+  disposable PDO fixtures, including failure and rollback behaviour.
 
 ## Skin primitives are a project rule
 
