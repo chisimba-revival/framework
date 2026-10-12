@@ -42,9 +42,18 @@ client/filter/backing classes even though public api/packages routes stay retire
 The legacy blog directory was renamed by Derek to `blog__PAUSED`; SimpleBlog is
 separate and unaffected. Renaming source does not unregister a deployed module.
 
-Module Catalogue archive upload still uses Archive_Tar/wzip. A decision has been
-requested on retiring that executable-code upload in favour of Git-based releases;
-no archive upload behaviour is changed pending that answer.
+Module Catalogue 3.141 retires the manual ZIP/TAR uploader with Derek's approval.
+The upload controls and extraction code are removed; the former administrator
+route returns HTTP 410 before inspecting files or changing catalogue state.
+Normal installation/updates of deployed modules remain available. Contextual Help
+explains deployment from versioned source, catalogue refresh, then installation.
+Archive vendor files remain pending an audit of their other legacy consumers.
+
+The focused retirement test covers GET/POST, forged uploads, administrator access,
+untouched upload bytes and no archive parser loading. Catalogue discovery, view
+filters, dependency updates and batch-install redirect checks pass. The local
+PHP 8.5 browser update from 3.139 to 3.141 succeeded; the retirement message,
+quick/full Help and Escape were verified. Production remains unchanged.
 
 ### Validation and release requirements
 

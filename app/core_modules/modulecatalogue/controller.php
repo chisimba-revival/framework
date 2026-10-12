@@ -236,6 +236,11 @@ class modulecatalogue extends controller {
             if (($action != 'firsttimeregistration') && (! $this->objUser->isAdmin ())) { //no access to non-admin users
                 return 'noaccess_tpl.php';
             }
+            // Retired executable-code upload: reject before inspecting files or changing state.
+            if ($action === 'uploadarchive') {
+                http_response_code(410);
+                return 'archive_retired_tpl.php';
+            }
             if (! isset ( $activeCat )) {
                 $activeCat = $this->getParm ( 'cat', 'Local Updates' );
             }
@@ -717,43 +722,6 @@ class modulecatalogue extends controller {
                     }
                     return $this->nextAction('list', array('message' => $message, 'cat' => $activeCat, 'modulefilter' => $moduleFilter));
 
-                case 'uploadarchive' :
-                    $file = $_FILES ['archive'] ['name'];
-                    $module = substr ( $file, 0, strpos ( $file, '.' ) );
-                    $tmpFile = $_FILES ['archive'] ['tmp_name'];
-                    var_dump ( $_FILES );
-                    if ($_FILES ['archive'] ['size'] == 0) {
-                        $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_notfound', 'modulecatalogue' ) );
-                        $this->setVar ( 'error', 1 );
-                        return 'front_tpl.php';
-                    }
-                    if (is_dir ( $this->objConfig->getModulePath () . $module )) {
-                        $this->setSession ( 'output', $this->objLanguage->languageText ( 'mod_modulecatalogue_directoryexists', 'modulecatalogue' ) );
-                        $this->setVar ( 'error', 1 );
-                        return 'front_tpl.php';
-                    }
-                    if (! file_exists ( $file )) {
-                        $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_transferfailed', 'modulecatalogue' ) );
-                        $this->setVar ( 'error', 1 );
-                        return 'front_tpl.php';
-                    }
-                    if (strtolower ( substr ( $file, strlen ( $file ) - 4, 4 ) ) == '.zip') {
-                        $objZip = $this->getObject ( 'wzip', 'utilities' );
-                        if (! $objZip->unZipArchive ( $tmpFile, $this->objConfig->getModulePath () )) {
-                            $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' ) . "<br /> $objZip->error" );
-                            $this->setVar ( 'error', 1 );
-                            return 'front_tpl.php';
-                        }
-                    } else {
-                        require_once ($this->getPearResource ( 'Archive/Tar.php' ));
-                        $objArchive = new Archive_Tar ( $tmpFile );
-                        if (! $objArchive->extract ( $this->objConfig->getModulePath () )) {
-                            $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_untarerror', 'modulecatalogue' ) );
-                            $this->setVar ( 'error', 1 );
-                            return 'front_tpl.php';
-                        }
-                    }
-                    return $this->nextAction ( 'install', array ('cat' => $activeCat, 'mod' => $module ) );
                 case 'downloadpo' :
                     $this->setPageTemplate ( NULL );
                     $this->setLayoutTemplate ( NULL );
