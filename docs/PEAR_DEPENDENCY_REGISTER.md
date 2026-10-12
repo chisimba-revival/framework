@@ -31,6 +31,46 @@ This section supersedes dated remaining-work notes below. Production is unchange
   would overflow VARCHAR(32). Existing short IDs and explicitly supplied IDs are
   unchanged; existing data/schema are untouched. Both PDO/MDB2 fixtures cover it.
 
+### Unused development packages — 12 October follow-up
+
+Removed `app/lib/pear/Benchmark` (3 files), `app/lib/pear/PHPUnit2`
+(40 files), and the obsolete `app/tests` harness (57 files). Benchmark has no
+identified external caller. PHPUnit2's only application callers were eight files
+in that historical harness. The harness also contains PHPUnit 1-era MDB2 browser
+tests, hard-coded `/var/www/5ive` paths and direct-driver test setup. None of the
+current regression runners consumes it; `build.xml` already excluded `app/tests`.
+Modern `tests/database` PDO/MDB2 and `tests/configuration` checks remain intact.
+
+Evidence: case-sensitive source/class/include scans across the complete framework
+and modules trees (including vendor resources), transitive PEAR library scans,
+and dev-environment scripts/manifests. References outside the removed trees are
+historical reports, the old build exclusion and the retirement guard. Neither
+removed package occurs in the curated compatibility-pack manifest. Assemblers
+copy `framework/app`, so fresh assemblies inherit the removals. Existing runtimes
+must explicitly remove these three paths; additive copying alone is insufficient.
+
+The exact historical source and licence notices remain recoverable from parent
+commit `c10256cce` (PHPUnit2 BSD notices; Benchmark contains historical BSD/PHP
+licence wording). These are removals, not modified vendor redistributions. No
+security-advisory claim is made and no external extensions were tested.
+
+Remaining caller audit confirms `maillist` loads Net/POP3 and Mail/mimeDecode;
+FOAF loads Validate; paused blog, CMS, simplegal and core filters/backing RPC
+classes still reference XML/RPC. Vendor Mail is also reachable through Log and
+File_Archive. Calendar, old DB/MDB drivers and package-manager internals require
+further transitive/build analysis; absence from a direct application scan is not
+enough to delete them. MDB2 and its schema/XML dependencies remain untouched.
+
+Validation after removal: current complete PDO/MDB2 disposable database suites
+passed, including native installer creation of 107 registered definitions, schema
+upgrade/repeat checks and rollback/race tests. The retirement guard and catalogue
+route test pass. A case-insensitive post-removal PHP/INC/CONF scan across app and
+modules finds no PHPUnit2 or Benchmark class/path references. The three obsolete
+paths were moved out of the running local PHP 8.5 web root into container-local
+`/tmp/chisimba-retired-development-20261012` for rollback. Browser catalogue and
+Site Administration render successfully; local web logs contain no new PHP
+warnings, deprecations or fatal errors. No production files or data were changed.
+
 ### Deliberately retained compatibility
 
 Do not delete the entire PEAR directory. MDB2 and MDB2_Schema remain for sites
