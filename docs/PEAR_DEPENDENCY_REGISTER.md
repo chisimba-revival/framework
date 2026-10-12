@@ -6,9 +6,11 @@ The retired libraries and native replacements below are now deployed to all six
 existing sites. See [release evidence](pear-rollout-20261012.md) for source commits,
 backups, isolated rehearsals, browser checks and the remaining backend boundary.
 This supersedes the earlier same-day statements that production was unchanged.
-Chisimba.com, KengaLearn and Learn the Birds use PDO; KengaPub, KengaSolutions and
-Heritage Treazures still use MDB2. Database/XML compatibility PEAR code remains
-required and must not be deleted wholesale.
+A later authorised switch completed PDO deployment on KengaPub, KengaSolutions
+and Heritage Treazures: all six sites now use PDO. See the
+[remaining-site PDO evidence](database-migration/remaining-sites-pdo-20261012.md).
+Database/XML compatibility PEAR code is still retained pending caller clearance;
+the whole directory must not be deleted merely because the live backend is PDO.
 
 ## Zend TAR adapter retired — 12 October
 

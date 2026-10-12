@@ -18,6 +18,10 @@ Learn the Birds use PDO; the other three sites still use MDB2. A future PDO swit
 for those sites requires image preparation and a separate rehearsed switch.
 Do not delete the entire PEAR directory based on this release.
 
+The later authorised [PDO switch](database-migration/remaining-sites-pdo-20261012.md)
+completed those three backends on the same day. The backend column below records
+the state during this earlier PEAR rollout; all six now use PDO.
+
 ## Checks and corrections
 
 - All six code trees were compared with current committed source and Git history.
