@@ -1,5 +1,15 @@
 # PEAR dependency register
 
+## Six-site production rollout — 12 October
+
+The retired libraries and native replacements below are now deployed to all six
+existing sites. See [release evidence](pear-rollout-20261012.md) for source commits,
+backups, isolated rehearsals, browser checks and the remaining backend boundary.
+This supersedes the earlier same-day statements that production was unchanged.
+Chisimba.com, KengaLearn and Learn the Birds use PDO; KengaPub, KengaSolutions and
+Heritage Treazures still use MDB2. Database/XML compatibility PEAR code remains
+required and must not be deleted wholesale.
+
 ## Zend TAR adapter retired — 12 October
 
 Removed the sole remaining Archive_Tar consumer,
