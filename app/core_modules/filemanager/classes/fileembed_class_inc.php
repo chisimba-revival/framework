@@ -60,6 +60,7 @@ class fileembed extends ChisimbaObject {
 
     // Services and state populated during initialisation.
     public $objCleanUrl;
+    public $objConfig;
 
     /**
     *
@@ -146,12 +147,7 @@ class fileembed extends ChisimbaObject {
      */
     public function showWebm($file, $width, $height)
     {
-        $ret = "\n\n<video width=\"$width\" height=\"$height\" controls=\"controls\">\n";
-        $ret .= "<source src=\"$file\"  type=\"video/webm\"></source>\n";
-        $ret .= $this->objLanguage->languageText("mod_files_err_nohtmk5", 'files',
-           "Your browser does not support the HTML5 VIDEO tag.");
-        $ret .= "</video>";
-        return $ret;
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height);
     }
 
     /**
@@ -216,27 +212,21 @@ class fileembed extends ChisimbaObject {
     }
 
     /**
-     * Method to show the Sound Player Applet
+     * Render audio with the shared native player
      * @param string $file Path to the File
      */
     function showSoundPlayer($file) {
-        $objSoundPlayerBuilder = $this->newObject('buildsoundplayer', 'files');
-        $objSoundPlayerBuilder->setSoundFile($file);
-        return $objSoundPlayerBuilder->show();
+        return $this->getObject('nativeplayer', 'files')->audio($file);
     }
 
     /**
-     * Method to embed a flash object
+     * Keep the original Flash file available without a browser plugin
      * @param string $file   Path to the File
      * @param string $width  Width of Object
      * @param string $height Height of Object
      */
     function showFlash($file, $width='100%', $height='400') {
-        return '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,29,0" width="' . $width . '" height="' . $height . '">
-  <param name="movie" value="' . $file . '" />
-  <param name="quality" value="high" />
-  <embed src="' . $file . '" quality="high" pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" width="' . $width . '" height="' . $height . '"></embed>
-</object>';
+        return $this->getObject('nativeplayer', 'files')->download($file);
     }
 
     /**
@@ -246,26 +236,7 @@ class fileembed extends ChisimbaObject {
      * @param string $height Height of Object
      */
     function showQuicktime($file, $width='100%', $height='400') {
-        $width = $width == '' ? '100%' : $width;
-        $height = $height == '' ? '400' : $height;
-
-        $replace = '<object classid="CLSID:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"';
-        $replace .= '        codebase="http://www.apple.com/qtactivex/qtplugin.cab" ';
-        $replace .= '        height="' . $height . '" width="' . $width . '"';
-        $replace .= '        id="quicktime" type="application/x-oleobject">';
-        $replace .= "<param name=\"src\" value=\"{$file}\" />";
-        $replace .= '<param name="autoplay" value="false" />';
-        $replace .= '<param name="loop" value="false" />';
-        $replace .= '<param name="controller" value="true" />';
-        $replace .= '<param name="scale" value="aspect" />';
-        $replace .= "\n<embed src=\"{$file}\" name=\"quicktime\" type=\"video/quicktime\" ";
-        $replace .= ' height="' . $height . '" width="' . $width . '" scale="aspect" ';
-        $replace .= ' autoplay="false" controller="true" loop="true" ';
-        $replace .= ' pluginspage="http://quicktime.apple.com/">';
-        $replace .= '</embed>';
-        $replace .= '</object>';
-
-        return $replace;
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height);
     }
 
     /**
@@ -275,31 +246,7 @@ class fileembed extends ChisimbaObject {
      * @param string $height Height of Object
      */
     function showWMV($file, $width='100%', $height='400') {
-        $width = $width == '' ? '100%' : $width;
-        $height = $height == '' ? '400' : $height;
-
-        $replace = '<object classid="CLSID:22D6f312-B0F6-11D0-94AB-0080C74C7E95"';
-        $replace .= ' codebase="http://activex.microsoft.com/activex/controls/mplayer/en/nsmp2inf.cab#Version=5,1,52,701" ';
-        $replace .= ' standby="Loading Microsoft Windows Media Player components..." ';
-        $replace .= ' id="msplayer" align="" type="application/x-oleobject">';
-        $replace .= "<param name=\"Filename\" value=\"{$file}\" />";
-        $replace .= '<param name="ShowControls" value="true" />';
-        $replace .= '<param name="AutoRewind" value="true" />';
-        $replace .= '<param name="AutoStart" value="false" />';
-        $replace .= '<param name="Autosize" value="true" />';
-        $replace .= '<param name="EnableContextMenu" value="true" />';
-        $replace .= '<param name="TransparentAtStart" value="false" />';
-        $replace .= '<param name="AnimationAtStart" value="false" />';
-        $replace .= '<param name="ShowGotoBar" value="false" />';
-        $replace .= '<param name="EnableFullScreenControls" value="true" />';
-        $replace .= "\n<embed src=\"{$file}\" name=\"msplayer\" type=\"video/x-ms\" ";
-        $replace .= ' ShowControls="1" AutoRewind="1" AutoStart="0" Autosize="0" EnableContextMenu="1"';
-        $replace .= ' TransparentAtStart="0" AnimationAtStart="0" ShowGotoBar="0" EnableFullScreenControls="1"';
-        $replace .= ' pluginspage="http://www.microsoft.com/Windows/Downloads/Contents/Products/MediaPlayer/" >';
-        $replace .= '</embed>';
-        $replace .= '</object>';
-
-        return $replace;
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height, true);
     }
 
     /**
@@ -309,17 +256,7 @@ class fileembed extends ChisimbaObject {
      * @param string $height Height of Object
      */
     function showAVI($file, $width='100%', $height='400') {
-        $width = $width == '' ? '100%' : $width;
-        $height = $height == '' ? '400' : $height;
-
-        $replace = '<object width="' . $width . '" height="' . $height . '">';
-        $replace .= '<param name="src" value="' . $file . '" />';
-        $replace .= '<param name="controller" value="1" />';
-        $replace .= '<param name="autoplay" value="0" />';
-        $replace .= '<embed src="' . $file . '" width="' . $width . '" height="' . $height . '" controller="1" autoplay="0" pluginspage ="http://www.microsoft.com/Windows/MediaPlayer/" type="video/x-ms-wvx" > </embed>';
-        $replace .= '</object>';
-
-        return $replace;
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height, true);
     }
 
     /**
@@ -329,14 +266,7 @@ class fileembed extends ChisimbaObject {
      * @param string $height Height of Object
      */
     public function old______showFLV($file, $width='100%', $height='400') {
-        $width = $width == '' ? '100%' : $width;
-        $height = $height == '' ? '400' : $height;
-
-        $objBuildPlayer = $this->getObject('buildflowplayer', 'files');
-        $objBuildPlayer->setMovieFile($file);
-        $objBuildPlayer->width = $width;
-        $objBuildPlayer->height = $height;
-        return $objBuildPlayer->show();
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height, true);
     }
 
     /**
@@ -348,19 +278,7 @@ class fileembed extends ChisimbaObject {
      * @return string The rendered video
      */
     public function showOggVideo($file, $width='100%', $height='400') {
-        //die($width . " / " . $height);
-        $css = '<link href="' . $this->getResourceUri('video-js/video-js.css',
-          'files') . '" rel="stylesheet">';
-        $js = $this->getJavaScriptFile('video-js/video.min.js',
-          'files');
-        $load = "\n\n$css\n$js\n\n";
-        $this->appendArrayVar('headerParams', $load);
-        $videoId = md5($file);
-        return '<video id="' . $videoId . '" class="video-js vjs-default-skin" controls
-  preload="auto" width="' . $width . '" height="' . $height . '" poster="' . $file . '.png"
-  data-setup="{}">
-  <source src="' . $file . '" type="application/ogg">
-</video>';
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height);
     }
 
     /**
@@ -388,20 +306,13 @@ class fileembed extends ChisimbaObject {
      * @param string $height Height of Object
      */
     function showMPG($file, $width='100%', $height='400') {
-
-        return '<object ID="MediaPlayer" width="' . $width . '" height="' . $height . '"
-CLASSID="CLSID:22D6F312-B0F6-11D0-94AB-0080C74C7E95"
-STANDBY="Loading Windows Media Player components..."
-TYPE="application/x-oleobject">
-<param name="FileName" value="' . $file . '" />
-<embed TYPE="application/x-mplayer2" src="' . $file . '" name="MediaPlayer"
-width="' . $width . '" height="' . $height . '"></embed></object>';
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height, true);
     }
 
 
     /**
      *
-     * Show a FLV flash video. Note that width and height are here for
+     * Keep a legacy FLV file available for conversion. Width and height are here for
      * legacy reasons, they are not needed since we have implemented this
      * as a fluid div, and the video will resize to available space or
      * can be styled using the CSS Fluid video settings. See common2.css
@@ -415,14 +326,12 @@ width="' . $width . '" height="' . $height . '"></embed></object>';
      *
      */
     public function showFLV($file, $width=FALSE, $height=FALSE) {
-        $objFlow = $this->getObject('flowplayer', 'files');
-        return $objFlow->show($file);
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height, true);
     }
 
     /**
      *
-     * Show an MP4 or Flash video with the standard settings using
-     * FlowPlayer.
+     * Historical entry point for the shared native video player.
      *
      * @param string $file The full URL for the file to play
      * @return string The rendered player with the video
@@ -431,8 +340,7 @@ width="' . $width . '" height="' . $height . '"></embed></object>';
      */
     public function showWithFlowPlayer($file)
     {
-        $objFlow = $this->getObject('flowplayer', 'files');
-        return $objFlow->show($file);
+        return $this->getObject('nativeplayer', 'files')->video($file);
     }
 
     /**
@@ -452,8 +360,7 @@ width="' . $width . '" height="' . $height . '"></embed></object>';
      */
     public function showMP4($file, $width='100%', $height='auto')
     {
-        // Use flowplayer to play it.
-        return $this-> showWithFlowPlayer($file);
+        return $this->getObject('nativeplayer', 'files')->video($file, $width, $height);
     }
 
     /**
