@@ -29,12 +29,12 @@ Existing cached file previews are not invalidated.
 - Assignment, Practicals and CMS administration: utilities htmlcleaner wrappers.
 - Paused Blog: same wrapper if it is ever deliberately revived.
 
-PHPIDS has a separate old vendor copy under
-`modules/phpids/resources/phpids-0.6.3.1/lib/IDS/vendors/htmlpurifier`.
-Its monitor uses purification as part of intrusion detection, with a different
-ID/cache policy. This slice does not change that module or claim that its copy
-has been removed. Trace its installation and security hooks before retiring it
-or replacing its vendor integration. Do not activate it merely to test removal.
+Follow-up dependency audit: PHPIDS was unregistered on local and all six live
+sites, and had no external framework/module caller. Its only entry was its own
+scanner demonstration page. The modules repository now removes that entire
+unused module, including its separate old HTML Purifier copy. See
+`modules/docs/retired-phpids.md` in the sibling repository. Production removal
+remains pending; recheck registration and source drift before deploying.
 
 ## Vendor provenance
 
@@ -46,9 +46,9 @@ The upstream `library/` files are copied without code changes into `app/lib/`.
 Licence and credits are retained as `HTMLPurifier.LICENSE` and
 `HTMLPurifier.CREDITS`. Upstream has three trailing-whitespace lines in
 AttrDef/CSS/FontFamily.php and Config.php; retained for a reproducible vendor
-copy. Application changes pass diff whitespace checks. Old dev-environment
-`fix-htmlpurifier-autoload*.sh` operators target the retired library and must
-not be run against this version.
+copy. Application changes pass diff whitespace checks. The obsolete dev-environment
+`fix-htmlpurifier-autoload*.sh` operators have also been removed; they targeted
+the retired library and must not be restored against this version.
 
 ## Validation
 
@@ -75,7 +75,7 @@ or remove user content as part of deployment.
 
 ## Agreed follow-up work
 
-1. Resolve the separate PHPIDS vendor dependency and obsolete repair operators.
+1. Completed locally: remove unused PHPIDS and obsolete repair operators; production rollout pending.
 2. Remove retired OpenID and Twitter login libraries, tracing callers first.
 3. Replace verified Flash/Java media callers with native media and remove assets.
 4. Migrate ExtJS callers completely and remove ExtJS.
