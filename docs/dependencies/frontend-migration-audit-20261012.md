@@ -53,3 +53,9 @@ Removed the four contextgroups ExtJS resources (lecturer, student, users, member
 Retirement guards pass in both repositories. Membership authorisation, role exclusivity and lecturer-assignment journey checks pass, as do MCQ bank-question, question-button and overview-management checks. The old control_panel_members_contract_test fails identically against HEAD before removal: it expects lecturer-specific variable names and management-link/title behaviour superseded by the current all-role block. This is pre-existing test debt, not a passing check.
 
 Local Chrome smoke checks passed for the MCQ overview, question banks, course membership page and assignment creation form. The old MCQ picker URL preserves the active-test edit guard; the native bank screen loads through its current link. No records were saved or changed. Production deployment is not included. The next implementation slice remains the reachable context-content reports; neither ExtJS runtimes nor jQuery have been removed.
+
+## 14 October: remaining module decisions
+
+Context-content activity reports have been migrated to native UI (modules commit `2021c0fcd`), and duplicate Context Instructor retired (`90fec4755`). Derek approved renaming Practicals to `practicals__PAUSED`; its source and historical data are retained. Triple Store and Mentors are explicitly preserved for future revival, alongside Activity Streamer. Their current unregistered state does not authorise deletion. See the modules repository's `docs/legacy-module-revival.md` for revival and deployment conditions.
+
+The next ExtJS work is to migrate the preserved Triple Store and Activity Streamer interfaces, with an associated Mentors compatibility review. ExtJS runtimes remain until these callers and the shared wrappers have been addressed. These decisions do not activate modules or authorise production deployment.
