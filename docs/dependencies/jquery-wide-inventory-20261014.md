@@ -92,4 +92,7 @@ ran after removal. No database schema or user content changed.
 - Course block editing: see [native course block report](native-course-blocks-20261014.md).
 
 The inventory above is a dated starting point, not a claim that these callers
-still depend on jQuery. Calendar is next; global skin loading remains.
+still depend on jQuery. Calendar has also migrated and the shared changes were
+deployed to all six sites. Global skin loading remains. The next investigation is
+recorded in [shared plugin tracing](jquery-plugin-tracing-20261014.md), including
+direct resource callers, local registration and stored-reference checks.
