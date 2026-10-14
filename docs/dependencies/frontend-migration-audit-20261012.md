@@ -84,3 +84,12 @@ validation limits. No production deployment is included.
 
 The next step is the final shared ExtJS wrapper/runtime caller audit, accounting
 for paused source separately. The shared libraries have not yet been removed.
+
+## 14 October: shared ExtJS retired
+
+The final caller audit and local smoke tests passed. Shared ExtJS distributions,
+loaders and theme assets are now removed, together with one additional unreferenced
+MCQ grid script in modules. See `extjs-retirement-20261014.md` for evidence,
+validation limits and the mandatory coordinated framework/modules deployment.
+Production remains unchanged. Paused modules require native UI migration before
+revival; retaining their source does not retain an executable ExtJS runtime.
