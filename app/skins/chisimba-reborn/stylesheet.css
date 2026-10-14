@@ -7602,3 +7602,13 @@ input[type="radio"] {
 /* Shared browser media players fit their content column on every canvas. */
 .chisimba-native-media { display: block; max-width: 100%; }
 video.chisimba-native-media { height: auto; }
+
+/* Native document viewing retains the browser toolbar and a download fallback. */
+.chisimba-document { width:100%; min-width:0; }
+.chisimba-document-preview { display:block; width:100%; height:70vh; border:0; }
+
+/* Shared responsive image collections, usable without scripts or plug-ins. */
+.chisimba-image-gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr)); gap:1rem; }
+.chisimba-image-gallery figure { margin:0; min-width:0; }
+.chisimba-image-gallery img { display:block; max-width:100%; height:auto; }
+.chisimba-image-gallery figcaption { overflow-wrap:anywhere; }

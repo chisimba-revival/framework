@@ -93,3 +93,11 @@ MCQ grid script in modules. See `extjs-retirement-20261014.md` for evidence,
 validation limits and the mandatory coordinated framework/modules deployment.
 Production remains unchanged. Paused modules require native UI migration before
 revival; retaining their source does not retain an executable ExtJS runtime.
+
+## 14 October: native document remnants
+
+Completed the targeted SWFUpload, Runway/PICTURESHOW, document-to-Flash,
+Java presentation picker, desktop translator and TinyMCE Flash-plugin slice.
+See [evidence and limitations](native-document-remnants-20261014.md).
+Source/local only; remaining ZeroClipboard/OpenFlashChart/optional jQuery assets
+must still be traced before claiming universal Flash retirement.

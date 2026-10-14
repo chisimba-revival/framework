@@ -417,103 +417,38 @@ class filepreview extends ChisimbaObject {
             case 'htm':
                 return '<iframe src="' . $this->file['linkname'] . '" width="99%" height="300"></iframe>';
             case 'pdf':
-                // Check if registered
-                //Instantiate the modules class to check if simplemap is registered
-                $objModule = $this->getObject('modules', 'modulecatalogue');
-                //See if the simple map module is registered and set a param
-                $isRegistered = $objModule->checkIfRegistered('swftools');
-                if ($isRegistered) {
-                    $objPDF2Flash = $this->getObject('pdf2flash', 'swftools');
-
-                    $fullFlashPath = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-                    $finalFlash = $contentPath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-                    $htmlFileDestination = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.htm';
-
-                    if (file_exists($htmlFileDestination) && file_exists($fullFlashPath)) {
-                        //$destination = $this->objConfig->getcontentBasePath().'filemanager_thumbnails/'.$this->file['id'].'.htm';
-                        return file_get_contents($htmlFileDestination);
-                    } else {
-
-                        if ($objPDF2Flash->convert2SWF($this->file['path'], $fullFlashPath)) {
-                            $objPDF2Flash->generateHTMLWrapper($fullFlashPath, $finalFlash, $htmlFileDestination);
-                            return file_get_contents($htmlFileDestination);
-                        } else {
-
-                            return NULL;
-                        }
-                    }
-                } else {
-                    return NULL;
-                }
+                // The canonical endpoint rechecks current access before serving bytes.
+                $url = htmlspecialchars($this->file['linkname'], ENT_QUOTES, 'UTF-8');
+                $name = htmlspecialchars($this->file['filename'], ENT_QUOTES, 'UTF-8');
+                return '<div class="chisimba-document"><iframe class="chisimba-document-preview" src="' . $url
+                    . '" title="' . $name . '"></iframe>' . $this->documentDownload() . '</div>';
             case 'odt':
             case 'sxw':
             case 'rtf':
             case 'doc':
+            case 'docx':
             case 'wpd':
             case 'ods':
             case 'sxc':
             case 'xls':
+            case 'xlsx':
             case 'odp':
             case 'sxi':
             case 'ppt':
-
-                // Local path to file
-                $finalFlash = $contentPath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-
-                // Full path to flash preview thumbnail file
-                $fullFlashPath = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-
-                $htmlFileDestination = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.htm';
-
-                // Check if preview exists already
-                if (file_exists($htmlFileDestination) && file_exists($fullFlashPath)) {
-                    return file_get_contents($htmlFileDestination);
-                } else {
-
-                    // Preview needs to be generated
-                    // First step is to convert document to PDF
-                    // Then we use swftools to convert PDF to Flash
-                    // Check if registered
-                    //Instantiate the modules class to check if documentconverter is registered
-                    $objModule = $this->getObject('modules', 'modulecatalogue');
-
-                    //See if the documentconverter module is registered and set a param
-                    $isDocumentConverterRegistered = $objModule->checkIfRegistered('documentconverter');
-                    $isSWFToolsRegistered = $objModule->checkIfRegistered('documentconverter');
-
-                    if ($isDocumentConverterRegistered && $isSWFToolsRegistered) {
-
-                        $objConvertDoc = $this->getObject('convertdoc', 'documentconverter');
-
-                        $pdfFile = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.pdf';
-
-                        // If PDF does not already exist
-                        if (!file_exists($pdfFile)) {
-                            $objConvertDoc->convert($this->file['fullpath'], $pdfFile);
-                        }
-                        // Break if PDF is not generated
-                        if (!file_exists($pdfFile)) {
-                            return '';
-                        }
-                        $objPDF2Flash = $this->getObject('pdf2flash', 'swftools');
-                        if (file_exists($fullFlashPath)) {
-                            return $this->objFileEmbed->embed($finalFlash, 'flash', '100%', 700);
-                        } else {
-                            //echo $pdfFile.' - '.$fullFlashPath.' - '.$finalFlash;
-                            if ($objPDF2Flash->convert2SWF($pdfFile, $fullFlashPath)) {
-                                $objPDF2Flash->generateHTMLWrapper($fullFlashPath, $finalFlash, $htmlFileDestination);
-                                return file_get_contents($htmlFileDestination);
-                            } else {
-                                return NULL;
-                            }
-                        }
-                    } else {
-                        return NULL;
-                    }
-                }
+            case 'pptx':
+                // Office documents remain available in their original format.
+                return $this->documentDownload();
             default:
                 return NULL;
         }
+    }
+
+    /** Render an original-file link without consulting obsolete Flash derivatives. */
+    private function documentDownload() {
+        $label = $this->getObject('language', 'language')->languageText('word_download');
+        return '<p><a href="' . htmlspecialchars($this->file['linkname'], ENT_QUOTES, 'UTF-8')
+            . '">' . htmlspecialchars($label . ': ' . $this->file['filename'], ENT_QUOTES, 'UTF-8')
+            . '</a></p>';
     }
 
     /**
