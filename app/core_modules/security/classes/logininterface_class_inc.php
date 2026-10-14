@@ -112,9 +112,6 @@ class loginInterface extends ChisimbaObject {
             $objBox = $this->newObject('alertbox', 'htmlelements');
             $authIcons = $this->getObject('iconservice', 'ui');
 
-            // prepare the link for the oAuth providers 
-            $box = $this->oauthDisp();
-            $fb = $this->fbButton(); //fbConnect();
             // Use the canonical web composition so this embedded form receives
             // the same CSRF and signed abuse evidence as the native login page.
             $nativeAuthStack = $this->getObject(
