@@ -70,3 +70,17 @@ installed locally for testing and its disposable records removed. See the module
 repository's `triplestore/README.md` for route changes and validation limits.
 Activity Streamer remains the next preserved ExtJS caller; shared runtimes have
 not yet been removed. No production deployment is included.
+
+## 14 October: Activity Streamer native browser
+
+Activity Streamer 0.045 replaces all six retained blocks and the old grids/pop-ups
+with a shared native browser. Site events are administrator-only; current-context
+reports require administrator/instructor access. Counts, JSON and blocks share
+that policy. Event recording is opt-in and remains off locally; obsolete external
+hub publishing is retired. A guarded catalogue migration preserves numeric author
+values while allowing current string user IDs. Local policy, PDO, catalogue and
+browser checks passed; see `activitystreamer/README.md` in modules for scope and
+validation limits. No production deployment is included.
+
+The next step is the final shared ExtJS wrapper/runtime caller audit, accounting
+for paused source separately. The shared libraries have not yet been removed.
