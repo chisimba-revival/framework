@@ -59,3 +59,14 @@ Local Chrome smoke checks passed for the MCQ overview, question banks, course me
 Context-content activity reports have been migrated to native UI (modules commit `2021c0fcd`), and duplicate Context Instructor retired (`90fec4755`). Derek approved renaming Practicals to `practicals__PAUSED`; its source and historical data are retained. Triple Store and Mentors are explicitly preserved for future revival, alongside Activity Streamer. Their current unregistered state does not authorise deletion. See the modules repository's `docs/legacy-module-revival.md` for revival and deployment conditions.
 
 The next ExtJS work is to migrate the preserved Triple Store and Activity Streamer interfaces, with an associated Mentors compatibility review. ExtJS runtimes remain until these callers and the shared wrappers have been addressed. These decisions do not activate modules or authorise production deployment.
+
+## 14 October: Triple Store native administration
+
+Triple Store 0.012 now uses native, administrator-only forms and shared Help,
+with bound dbTable queries, POST/CSRF protection and conflicting-edit checks.
+Its old ExtJS resources and Ingrid/Editable helper are removed. Mentors storage
+compatibility is tested; the Mentors module remains dormant. Triple Store was
+installed locally for testing and its disposable records removed. See the modules
+repository's `triplestore/README.md` for route changes and validation limits.
+Activity Streamer remains the next preserved ExtJS caller; shared runtimes have
+not yet been removed. No production deployment is included.
