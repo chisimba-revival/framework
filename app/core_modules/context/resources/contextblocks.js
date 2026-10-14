@@ -1,4 +1,4 @@
-/* Native course-home editing. Persist first; never replay an uncertain write. */
+/* Native scoped block editing. Persist first; never replay an uncertain write. */
 (function () {
     'use strict';
     var settings, busy=false, editing=false, uncertain=false;
@@ -24,7 +24,7 @@
         sides.forEach(function(side){var select=byId('dd'+side+'blocks');if(select)select.disabled=busy||uncertain;});
     }
     async function request(action,data,write){
-        var body=new URLSearchParams(Object.assign({module:'context',action:action,contextcode:settings.contextcode,csrf_token:settings.csrf,revision:settings.revision},data));
+        var body=new URLSearchParams(Object.assign({module:settings.module==='personalspace'?'personalspace':'context',action:action,contextcode:settings.contextcode,csrf_token:settings.csrf,revision:settings.revision},data));
         try {
             var response=await fetch('index.php',{method:'POST',credentials:'same-origin',headers:{'Accept':'application/json'},body:body});
             var result=await response.json();
@@ -82,7 +82,10 @@
     }
     window.switchEditMode=function(){
         if(!settings)return;editing=!editing;byId('editmodeswitchbutton').textContent=editing?window.turnEditingOff:window.turnEditingOn;
-        byId('modeswitch_wrapper').classList.toggle('editing_on',editing);byId('modeswitch_wrapper').classList.toggle('editing_off',!editing);update();
+        byId('editmodeswitchbutton').setAttribute('aria-pressed', String(editing));
+        var wrapper=byId('modeswitch_wrapper');
+        if(wrapper){wrapper.classList.toggle('editing_on',editing);wrapper.classList.toggle('editing_off',!editing);}
+        update();
     };
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 }());

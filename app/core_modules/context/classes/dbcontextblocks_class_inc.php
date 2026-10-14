@@ -81,34 +81,10 @@ class dbcontextblocks extends dbTable {
         return hash('sha256', json_encode($this->editingRows($code)));
     }
     public function editPlacement($code, $revision, $action, $id, $side, $direction) {
-        return $this->withDatabaseLock('context-blocks', function() use($code,$revision,$action,$id,$side,$direction) {
-            return $this->transactionWithSavepoint(function() use($code,$revision,$action,$id,$side,$direction) {
-                if (!hash_equals($this->editingRevision($code), $revision)) throw new RuntimeException('block_stale');
-                $rows=$this->editingRows($code);
-                if ($action==='addblock') {
-                    $position=0;
-                    foreach($rows as $row) if($row['side']===$side) $position=max($position,(int)$row['position']);
-                    $parts=explode('|',$id);
-                    $result=$this->insert(['contextcode'=>$code,'block'=>$id,'side'=>$side,'module'=>$parts[2],'position'=>$position+1,'updatedby'=>$this->objUser->userId(),'datelastupdated'=>date('Y-m-d H:i:s')]);
-                    if (!$result) throw new RuntimeException('block_failed');
-                } else {
-                    $record=null;
-                    foreach($rows as $row) if($row['id']===$id) $record=$row;
-                    if (!$record) throw new RuntimeException('block_denied');
-                    if ($action==='removeblock') {
-                        if (!$this->delete('id',$id)) throw new RuntimeException('block_failed');
-                    } elseif ($action==='moveblock') {
-                        $ordered=array_values(array_filter($rows,static fn($row)=>$row['side']===$record['side']));
-                        $index=array_search($id,array_column($ordered,'id'),true);
-                        $other=$index+($direction==='up'?-1:1);
-                        if (!isset($ordered[$other])) throw new RuntimeException('block_stale');
-                        [$ordered[$index],$ordered[$other]]=[$ordered[$other],$ordered[$index]];
-                        foreach($ordered as $i=>$row) if ($this->update('id',$row['id'],['position'=>$i+1])===false) throw new RuntimeException('block_failed');
-                    } else throw new RuntimeException('block_denied');
-                }
-                return $this->editingRevision($code);
-            });
-        });
+        return $this->getObject('blockplacementorder', 'blocks')->edit(
+            $this, $code, $revision, $action, $id, $side, $direction,
+            ['contextcode'=>$code, 'updatedby'=>$this->objUser->userId()]
+        );
     }
 
     /**

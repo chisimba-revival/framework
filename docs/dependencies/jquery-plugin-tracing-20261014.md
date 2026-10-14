@@ -1,5 +1,9 @@
 # Shared jQuery dependency tracing — 14 October 2026
 
+Follow-up: the [Personal Space repair](native-personalspace-20261014.md) completes
+the first cleanup locally and corrects the editor integration/security problems
+found by behavioural testing. The observations below describe the earlier trace.
+
 Read-only follow-up to the all-site rollout. No application code, libraries,
 module registration, content or production settings changed in this investigation.
 Source baseline: framework `4ab9eec6f`, modules `9dfc7326a`.

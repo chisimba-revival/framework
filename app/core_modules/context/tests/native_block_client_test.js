@@ -6,10 +6,11 @@ class Element {
 const elements={};['block-editor-settings','block-editor-status','ddleftblocks','leftbutton','leftpreviewcontent','leftblocks','leftaddblock','editmodeswitchbutton','modeswitch_wrapper'].forEach(id=>elements[id]=new Element());
 elements['block-editor-settings'].dataset={contextcode:'fixture',csrf:'old',revision:'original',saving:'Saving',saved:'Saved',failed:'Failed',uncertain:'Reload first',denied:'Denied'};
 const select=elements.ddleftblocks,button=elements.leftbutton,status=elements['block-editor-status'];
+elements['block-editor-settings'].dataset.module=process.env.BLOCK_EDITOR_MODULE || 'context';
 const queue=[];let reloads=0;
 const document={readyState:'complete',getElementById:id=>elements[id],querySelectorAll:()=>[button],createElement:()=>new Element()};
 const window={location:{reload(){++reloads;}}};
-vm.runInNewContext(fs.readFileSync(__dirname+'/../resources/contextblocks.js','utf8'),{document,window,URLSearchParams,fetch:()=>new Promise((resolve,reject)=>queue.push({resolve,reject}))});
+vm.runInNewContext(fs.readFileSync(__dirname+'/../resources/contextblocks.js','utf8'),{document,window,URLSearchParams,fetch:(url,options)=>{assert.equal(options.body.get('module'),process.env.BLOCK_EDITOR_MODULE || 'context');return new Promise((resolve,reject)=>queue.push({resolve,reject}));}});
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{
  select.value='block|old|fixture';let first=select.events.change();select.value='block|new|fixture';let second=select.events.change();

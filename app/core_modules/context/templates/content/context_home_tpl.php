@@ -53,7 +53,7 @@ if ($this->isValid('addblock')) {
     echo '<div id="block-editor-settings"';
     foreach($attributes as $key=>$value)echo ' data-'.$key.'="'.htmlspecialchars($value,ENT_QUOTES,'UTF-8').'"';
     echo '><p id="block-editor-status" role="status" aria-live="polite"></p></div>';
-    echo $this->getJavaScriptFile('contextblocks.js?v=2056');
+    echo $this->getJavaScriptFile('contextblocks.js?v=2057');
 } // End Addition of JavaScript
 
 $objModule = $this->getObject('modules', 'modulecatalogue');
