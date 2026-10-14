@@ -66,6 +66,9 @@ class userdetails extends controller
     * 
     */
     public $objConfig;
+    public $objOps;
+    public $objUser;
+    public $objModules;
     
     /**
     * 
@@ -99,7 +102,7 @@ class userdetails extends controller
         // Create the configuration object
         $this->objConfig = $this->getObject('config', 'config');
         $this->appendArrayVar('headerParams',
-            $this->getJavaScriptFile('userdetails.js',
+            $this->getJavaScriptFile('userdetails.js?v=2012',
             'userdetails'));
         //Get the activity logger class
         $this->objLog=$this->newObject('logactivity', 'logger');
@@ -120,7 +123,24 @@ class userdetails extends controller
     public function dispatch()
     {
         //Get action from query string and set default to view
+        if (!$this->objUser->isLoggedIn()) { http_response_code(403); return null; }
         $action=$this->getParam('action', 'main');
+        $actions = $this->getObject('profileactions', 'userdetails');
+        if (in_array($action, ['ajaxChangeImage','ajaxResetImage','ajaxChangeGrade'], true)) {
+            $response = $actions->handle($action, ['csrf_token'=>$this->getParam('csrf_token'), 'imageselect'=>$this->getParam('imageselect'), 'new_name'=>$this->getParam('new_name')], strtoupper($_SERVER['REQUEST_METHOD'] ?? ''));
+            http_response_code($response['status']);
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store');
+            echo json_encode($response); exit;
+        }
+        if ($action === 'findSchools') {
+            header('Content-Type: application/json; charset=UTF-8');
+            header('Cache-Control: no-store');
+            $term=$this->getParam('term','');
+            echo json_encode($actions->schools(is_string($term)?$term:'')); exit;
+        }
+        if (in_array($action, ['resetimage','ajaxResetSession'], true)) { http_response_code(410); return null; }
+
         /*
         * Convert the action into a method (alternative to 
         * using case selections)
@@ -189,57 +209,6 @@ class userdetails extends controller
     }   
     
     /**
-     *
-     * Method corresponding to the ajaxChangeGradeAction
-     * 
-     * @access private
-     * @return VOID 
-     */
-    private function __ajaxChangeGrade()
-    {
-        return $this->objOps->ajaxChangeGrade();
-    }
-    
-    /**
-     * 
-     * Method corresponding to the ajaxChangeImage action
-     * 
-     * @access private
-     * @return VOID
-     */
-    private function __ajaxChangeImage()
-    {
-        return $this->objOps->ajaxChangeImage();
-    }
-    
-    /**
-     * 
-     * Method corresponding to the imagereset action.
-     * Resets the user's image to the default
-     * 
-     * @access private
-     * @return VOID
-     */
-    private function __ajaxResetImage()
-    {
-        return $this->objOps->ajaxResetImage();
-    }
-    
-    /**
-     * 
-     * Method corresponding to the imagereset action.
-     * Resets the user's image to the default
-     * 
-     * @access private
-     * @return VOID
-     */
-    private function __resetimage()
-    {
-        $this->objOps->ajaxResetImage(FALSE);
-        return $this->nextAction(NULL);
-    }
-    
-    /**
      * 
      * Method corresponding to the validate action.
      * 
@@ -248,14 +217,10 @@ class userdetails extends controller
      */
     private function __validate()
     {
-        $reset = $this->getParam('reset', NULL);
-        if (!empty($reset))
-        {
-            $this->setSession('errors', array());
-            $this->setSession('success', array());
-            return $this->nextAction('main');
+        if (strtoupper($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            return 'main_tpl.php';
         }
-        
         $check = $this->objModules->checkIfRegistered('schoolusers');
         
         $data = array();
@@ -271,6 +236,7 @@ class userdetails extends controller
         if ($check)
         {
             $data['school_id'] = $this->getParam('school_id');
+            $data['school'] = $this->getParam('school','');
             $data['middle_name'] = $this->getParam('middle_name');
             $data['date_of_birth'] = $this->getParam('date_of_birth');
             $data['address'] = $this->getParam('address');
@@ -284,31 +250,40 @@ class userdetails extends controller
             $data['staffnumber'] = $this->getParam('staffnumber');
         }
      
+        foreach ($data as $key => $value) {
+            if (in_array($key, ['date_of_birth','address'], true)) {
+                $length=$key==='address'?2:3;
+                $data[$key]=array_slice(array_pad(is_array($value)?array_map(static fn($part)=>is_scalar($part)?(string)$part:'',$value):[], $length, ''),0,$length);
+            } else $data[$key]=is_scalar($value)?(string)$value:'';
+        }
+        $actions = $this->getObject('profileactions', 'userdetails');
+        $token = $this->getParam('csrf_token');
+        if (strtoupper($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST'
+            || !is_string($token) || !$actions->csrf()->consume('profile_details', $token)) {
+            $data['password'] = $data['confirm_password'] = '';
+            $this->setSession('errors', ['data'=>$data,'errors'=>['form'=>htmlspecialchars($this->objLanguage->languageText('mod_userdetails_profile_csrf','userdetails'),ENT_QUOTES,'UTF-8')]]);
+            http_response_code(403);
+            return 'main_tpl.php';
+        }
         $errorsFound = $this->objOps->validate($data);
         if ($errorsFound == FALSE)
         {
             $this->setSession('errors', array());
-            $this->objOps->save($data);
+            try {
+                $this->objOps->save($data);
+            } catch (Throwable $error) {
+                $data['password'] = $data['confirm_password'] = '';
+                $this->setSession('success', []);
+                $this->setSession('errors', ['data'=>$data,'errors'=>['form'=>htmlspecialchars($this->objLanguage->languageText('mod_userdetails_profile_uncertain','userdetails'),ENT_QUOTES,'UTF-8')]]);
+                http_response_code(422);
+                return 'main_tpl.php';
+            }
             return $this->nextAction('main');
         }
         else
         {
             return $this->nextAction('main');
         }        
-    }
-    
-    /**
-     *
-     * Method corresponding to ajaxResetSession sction.
-     * 
-     * @access private
-     * @return VOID 
-     */
-    private function __ajaxResetSession()
-    {
-        $this->setSession('success', array());
-        echo NULL;
-        die();
     }
     
     /**

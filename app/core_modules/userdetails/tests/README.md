@@ -37,3 +37,17 @@ PHP and JavaScript syntax, existing biography regression tests and whitespace ch
 ## Contextual help
 
 The editor includes Help with this page with a quick walkthrough and the existing full-guide drawer. Marketing help covers drafting, publication, sharing, product-backed actions and automatic biographies; biography help covers writing, profile photos, links, saving, draft recovery and missing-biography reminders. My Profile also links to the biography guide. Text uses the language system and systext role terminology. Both guides were opened in the local browser; the marketing drawer was verified visible inside the viewport. The existing context-home Help contract still passes. Include language registration refresh for context and userdetails with the next deployment.
+
+Native profile migration checks:
+
+```sh
+php app/core_modules/userdetails/tests/native_profile_actions_test.php
+php app/core_modules/userdetails/tests/native_profile_details_test.php
+php app/core_modules/userdetails/tests/native_profile_photo_test.php # requires GD
+node app/core_modules/userdetails/tests/native_profile_client_test.js
+```
+
+From an installed **local** root, run
+`CHISIMBA_PROFILE_TEST=1 php core_modules/userdetails/tests/native_profile_photo_pdo_test.php`.
+It creates a random synthetic file owner, rolls back its file/folder records and
+removes its image files. It does not change an existing account.

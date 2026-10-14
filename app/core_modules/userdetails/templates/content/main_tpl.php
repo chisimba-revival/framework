@@ -8,8 +8,8 @@ $ops = $this->getObject('userdetailsops', 'userdetails');
 $user = $this->getObject('user', 'security');
 ob_start();
 ?>
-<?php if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) echo $this->getObject('contextualhelp','help')->show('userdetails','author-biography'); ?>
-<section class="chisimba-form-page"><div class="chisimba-form-card chisimba-form-card--wide">
+<?php if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) echo $this->getObject('contextualhelp','help')->show('userdetails','profile'); ?>
+<section class="chisimba-form-page" data-profile-workspace data-school-url="<?php echo $e($this->uri(['action'=>'findSchools'],'userdetails')); ?>" <?php foreach (['saving'=>'profile_saving','failed'=>'profile_failed','uncertain'=>'profile_uncertain','no-schools'=>'profile_no_schools'] as $attribute=>$key) echo ' data-'.$attribute.'="'.$e(html_entity_decode($t($key), ENT_QUOTES, 'UTF-8')).'"'; ?>><div class="chisimba-form-card chisimba-form-card--wide">
 <nav class="chisimba-form-actions" aria-label="<?php echo $e($t('profile_navigation')); ?>"><span aria-current="page"><?php echo $e($t('profile_details')); ?></span><a class="button chisimba-button-secondary" href="<?php echo $e($this->uri(array('action'=>'biography'),'userdetails')); ?>"><?php echo $icons->render('contact',array('decorative'=>true)); ?><span><?php echo $e($t('my_bio')); ?></span></a></nav>
 <header class="chisimba-form-card__header"><h1><?php echo $e($t('profile_details')); ?></h1><p><?php echo $e($user->fullName()); ?></p></header>
 <div class="chisimba-profile-columns"><section class="chisimba-form-section"><?php echo $ops->showMain(); ?></section>
