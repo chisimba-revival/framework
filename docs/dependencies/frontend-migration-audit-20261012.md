@@ -45,3 +45,11 @@ Before migration, capture actual scripts and console errors on representative lo
 5. Consolidate jQuery loading only after page-level dependency evidence, then migrate feature groups with browser coverage. Choose any temporary supported vendor version using current upstream documentation at implementation time.
 
 No runtime files, site configuration, databases or deployed sites were changed by this audit. Browser regression testing is required for implementation; this document does not claim those future migrations are tested.
+
+## 14 October: obsolete asset removal
+
+Removed the four contextgroups ExtJS resources (lecturer, student, users, members), assignment/resources/addedit_assignment.js, and the unreachable MCQ choosequestiontype2 template plus chooseqtype, mcqdb and calculateQ scripts. Repository caller searches found no remaining resource loaders; the old MCQ action retains its redirect to native banks. The native assignment template and group-service member renderer remain. No registration/schema change is required for unused asset deletion.
+
+Retirement guards pass in both repositories. Membership authorisation, role exclusivity and lecturer-assignment journey checks pass, as do MCQ bank-question, question-button and overview-management checks. The old control_panel_members_contract_test fails identically against HEAD before removal: it expects lecturer-specific variable names and management-link/title behaviour superseded by the current all-role block. This is pre-existing test debt, not a passing check.
+
+Local Chrome smoke checks passed for the MCQ overview, question banks, course membership page and assignment creation form. The old MCQ picker URL preserves the active-test edit guard; the native bank screen loads through its current link. No records were saved or changed. Production deployment is not included. The next implementation slice remains the reachable context-content reports; neither ExtJS runtimes nor jQuery have been removed.
