@@ -40,7 +40,7 @@ class helpcontent extends ChisimbaObject
             'step_editing' => 'Select Turn Editing On to reveal controls for adding, moving and removing blocks.',
             'step_create' => 'Select Manage [-context-] landing content to create rich text or a welcome video for this landing page.',
             'step_add' => 'Return to the [-context-] home page, choose the new item in the main Add a Block list, and select Add Block.',
-            'step_arrange' => 'Use the arrow controls to place blocks in a useful reading order. Removing a block from the page does not delete its saved content.',
+            'step_arrange' => 'Use the arrow controls to place blocks in a useful reading order. Removing a block from the page does not delete its saved content. Changes save immediately; adding reloads the page. Reload before continuing after an interrupted response or a stale-page warning.',
             'step_review' => 'Turn editing off and review the finished landing page as a learner will encounter it.',
             'content_heading' => 'Landing content and learning content',
             'content_body' => 'Landing-page text and welcome videos introduce the [-context-] and are not attached to chapters. Pages, assessments and the learning sequence remain in [-context-] Content.',

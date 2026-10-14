@@ -31,12 +31,12 @@ if ($this->isValid('addblock')) {
         moveDownLabel = <?php echo json_encode($moveDownLabel); ?>;
         removeBlockLabel = <?php echo json_encode($removeBlockLabel); ?>;
         blockControlsLabel = <?php echo json_encode($blockControlsLabel); ?>;
-        deleteConfirm = '<?php echo $objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block'); ?>';
-        unableMoveBlock = '<?php echo $objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block'); ?>';
-        unableDeleteBlock = '<?php echo $objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block'); ?>';
-        unableAddBlock = '<?php echo $objLanguage->languageText('mod_context_unableaddblock', 'context', 'Error - Unable to add block'); ?>';
-        turnEditingOn = '<?php echo $objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On'); ?>';
-        turnEditingOff = '<?php echo $objLanguage->languageText('mod_context_turneditingoff', 'context', 'Turn Editing Off'); ?>';
+        deleteConfirm = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_confirmremoveblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableMoveBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unablemoveblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableDeleteBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unabledeleteblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableAddBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unableaddblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        turnEditingOn = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_turneditingon', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        turnEditingOff = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_turneditingoff', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
         theModule = 'context';
 
         // ]]>
@@ -44,7 +44,16 @@ if ($this->isValid('addblock')) {
 
 
     <?php
-    echo $this->getJavaScriptFile('contextblocks.js?v=2002');
+    $editor=$this->getObject('contextblockeditor','context');
+    $attributes=['contextcode'=>$contextCode,'csrf'=>$editor->csrf()->issue($editor->purpose($contextCode)),
+        'revision'=>$blockEditingRevision,'cancel'=>html_entity_decode($objLanguage->languageText('word_cancel'),ENT_QUOTES,'UTF-8')];
+    foreach(['saving','saved','failed','stale','uncertain','denied','method','csrf-error'] as $key) {
+        $attributes[$key]=html_entity_decode($objLanguage->languageText('mod_context_block_'.($key==='csrf-error'?'csrf':$key),'context'),ENT_QUOTES,'UTF-8');
+    }
+    echo '<div id="block-editor-settings"';
+    foreach($attributes as $key=>$value)echo ' data-'.$key.'="'.htmlspecialchars($value,ENT_QUOTES,'UTF-8').'"';
+    echo '><p id="block-editor-status" role="status" aria-live="polite"></p></div>';
+    echo $this->getJavaScriptFile('contextblocks.js?v=2056');
 } // End Addition of JavaScript
 
 $objModule = $this->getObject('modules', 'modulecatalogue');
@@ -118,7 +127,7 @@ if ($this->isValid('addblock')) {
     $wideBlocksDropDown->cssId = 'ddmiddleblocks';
     $wideBlocksDropDown->addOption('', $objLanguage->languageText('phrase_selectone', 'phrase', 'Select One') . '...');
     foreach ($wideDynamicBlocks as $wideBlock) {
-        $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
+        $wideBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
     }
     foreach ($wideBlocks as $wideBlock) {
         if($wideBlock["moduleid"]!="contentblocks"){

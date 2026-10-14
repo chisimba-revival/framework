@@ -84,3 +84,12 @@ ran after removal. No database schema or user content changed.
 5. Remove unconditional skin loading only after consumer migrations and page-level
    verification. Any interim library upgrade needs a separate compatibility plan
    and current upstream checks. This slice changes no library version.
+
+
+## Completed caller migrations later on 14 October
+
+- My Profile: see [native profile report](native-profile-20261014.md).
+- Course block editing: see [native course block report](native-course-blocks-20261014.md).
+
+The inventory above is a dated starting point, not a claim that these callers
+still depend on jQuery. Calendar is next; global skin loading remains.
