@@ -110,3 +110,11 @@ teaching staff to the maintained content activity report; old chart endpoints
 return 410. See [tests and the remaining plugin map](flash-utilities-retirement-20261014.md).
 The remaining 12 optional jquerycore plugins are retained for complete caller
 migration, including dynamically selected wrappers and duplicate legacy stacks.
+
+## 14 October: wider jQuery baseline and ImageFit
+
+Added a repeatable cross-repository jQuery source inventory, traced three live
+local pages, and removed unused ImageFit wrappers and three bundled copies.
+See [the wider inventory and migration order](jquery-wide-inventory-20261014.md).
+Eleven optional jquerycore plugins remain. The next bounded live workflow is
+User Details, including its dialogs, photo actions and optional school selector.

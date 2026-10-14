@@ -119,18 +119,7 @@ class jquery extends ChisimbaObject
     }
     
     /**
-     * Method to load the Image Fit plugin script files to the header
-     */
-    public function loadImageFitPlugin()
-    {
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile('plugins/imagefit/0.2/jquery.imagefit_0.2.js',
-          'jquery'));
-    }
-
-
-    /**
-     * Method to load the Image Fit plugin script files to the header
+     * Method to load the easing plugin script files to the header
      */
     public function loadEasingPlugin($version = '1.3')
     {

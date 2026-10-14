@@ -112,18 +112,6 @@
         </version>
     </plugin>
 
-    <plugin name="imagefit">
-        <description>
-            A jQuery plugin which scales images to fit their parent container.
-            It is reliant on support for the CSS property max-width to prevent
-            images from being enlarged beyond their native resolution. 
-        </description>
-        <version ver="0.2.0">
-            <file>jquery.imagefit.js</file>
-            <min_core_version>1.2.1</min_core_version>
-        </version>
-    </plugin>
-
     <plugin name="livequery">
         <description>
             Live Query utilizes the power of jQuery selectors by binding events

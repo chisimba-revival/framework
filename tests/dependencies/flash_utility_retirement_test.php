@@ -32,9 +32,12 @@ $context->code='root';check($block->show()==='','Root has no course report');
 $context->code='course-a';$modules->registered=false;check($block->show()==='','Missing optional report module hidden');
 $logger=new logger();$logger->action='modulestats';$logger->init();ob_start();$result=$logger->dispatch();$out=ob_get_clean();check($result===null&&$out===''&&http_response_code()===410,'Legacy statistics route retired without data access');
 $loader=new coreloader();(new ReflectionMethod(coreloader::class,'getPluginDeps'))->invoke($loader);
-$loader->setPlugins(['flash','tooltip']);$loader->setPlugin('flash');
-check((new ReflectionProperty(coreloader::class,'plugins'))->getValue($loader)===['tooltip'],'Stale Flash session request ignored; supported plugin retained');
-foreach(json_decode(file_get_contents(__DIR__.'/retired-flash-utility-paths.json'),true) as $path)check(!file_exists($root.'/'.$path),'Retired path returned: '.$path);
+$loader->setPlugins(['flash','imagefit','tooltip']);$loader->setPlugin('flash');
+check((new ReflectionProperty(coreloader::class,'plugins'))->getValue($loader)===['tooltip'],'Stale retired plugin session requests ignored; supported plugin retained');
+foreach(array_merge(
+    json_decode(file_get_contents(__DIR__.'/retired-flash-utility-paths.json'),true),
+    json_decode(file_get_contents(__DIR__.'/retired-imagefit-paths.json'),true)
+) as $path)check(!file_exists($root.'/'.$path),'Retired path returned: '.$path);
 $moduleRoot=dirname($root).'/modules';
 if(is_file($moduleRoot.'/formbuilder/controller.php')){
     require $moduleRoot.'/formbuilder/controller.php';$form=new formbuilder();$form->action='newtest';$form->init();
