@@ -101,3 +101,12 @@ Java presentation picker, desktop translator and TinyMCE Flash-plugin slice.
 See [evidence and limitations](native-document-remnants-20261014.md).
 Source/local only; remaining ZeroClipboard/OpenFlashChart/optional jQuery assets
 must still be traced before claiming universal Flash retirement.
+
+## 14 October: Flash clipboard/chart utilities
+
+Removed ZeroClipboard, OpenFlashChart and the jquerycore Flash plugin after
+tracing their callers. The incorrect Context statistics demo now links authorised
+teaching staff to the maintained content activity report; old chart endpoints
+return 410. See [tests and the remaining plugin map](flash-utilities-retirement-20261014.md).
+The remaining 12 optional jquerycore plugins are retained for complete caller
+migration, including dynamically selected wrappers and duplicate legacy stacks.

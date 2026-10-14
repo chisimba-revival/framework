@@ -63,6 +63,8 @@ class block_contextstats extends ChisimbaObject
     * @var object $objContext : The Context Object
     */
     public $objContext;
+    public $contextCode;
+    public $title;
     
     /**
     * @var object $objLanguage : The Language Object
@@ -88,12 +90,18 @@ class block_contextstats extends ChisimbaObject
      */
     public function show()
     {
-        $objFlashGraph = $this->getObject('flashgraph', 'utilities');
-        $objFlashGraph->dataSource = $this->uri(array('action'=>'modulestats'), 'logger');
-        $objFlashGraph->width = '90%';
-        $objFlashGraph->height = 400;
-            
-        return $objFlashGraph->show().'<br />Note: Stats are currently incorrect - this is just a demo!';
+        // The former graph displayed site-wide demo totals as course statistics.
+        // Keep existing block placements, linking to the maintained scoped report.
+        $context = (string) $this->objContext->getContextCode();
+        $user = $this->getObject('user', 'security');
+        if ($context === '' || $context === 'root' || !$user->isLoggedIn()
+            || !$this->getObject('modules', 'modulecatalogue')->checkIfRegistered('contextcontent')
+            || !($user->isAdmin() || $this->getObject('managegroups', 'contextgroups')->isContextLecturer())) {
+            return '';
+        }
+        $label = $this->objLanguage->languageText('mod_context_activityreport', 'context');
+        return '<p><a href="' . htmlspecialchars($this->uri(array('action' => 'viewlogdetails'), 'contextcontent'), ENT_QUOTES, 'UTF-8')
+            . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</a></p>';
     }
 
 }

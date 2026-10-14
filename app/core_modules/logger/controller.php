@@ -42,11 +42,17 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class logger extends controller
 {
+    public $logDisplay;
+    public $showLog;
+    public $objlanguage;
+    public $objLog;
+    public $objUser;
     /**
      * Standard init function
      */
     function init()
     {
+        if ($this->getParam('action') === 'modulestats') return;
         try{
             $this->logDisplay = $this->getObject('logdisplay', 'logger');
             //Instantiate the show log class
@@ -176,27 +182,9 @@ class logger extends controller
                 break;
                 
             case 'modulestats':
-                
-                $stats = $this->showLog->showStatsByModule();
-                
-                $objFlashGraphData = $this->newObject('flashgraphdata', 'utilities');
-                $objColorGenerator = $this->getObject('randomcolorgenerator', 'utilities');
-                
-                $objFlashGraphData->graphType = 'pie';
-                foreach ($stats as $stat)
-                {
-                    $objFlashGraphData->addPieDataSet($stat['calls'], '#'.$objColorGenerator->generateColor(), $stat['module']);
-                }
-                
-                /*
-                foreach ($stats as $stat)
-                {
-                    $objFlashGraphData->addDataSet(array($stat['calls']), '#'.$objColorGenerator->generateColor(), 5, 'bar', $stat['module']);
-                }*/
-                
-                echo $objFlashGraphData->show();
-                
-                break;
+                // Retired Flash data endpoint; never expose unscoped totals.
+                http_response_code(410);
+                return null;
             default:
                 $display = $this->logDisplay->show();
                 $this->setVarByRef('display', $display);
