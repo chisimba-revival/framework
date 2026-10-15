@@ -121,16 +121,6 @@ class jquery extends ChisimbaObject
     }
 
     /**
-     * Method to load the form plugin script files to the header
-     */
-    public function loadFormPlugin()
-    {
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile('plugins/form/2.12/jquery.form.js',
-          'jquery'));
-    }
-    
-    /**
      * Method to load the easing plugin script files to the header
      */
     public function loadEasingPlugin($version = '1.3')

@@ -18,21 +18,6 @@
         </version>
     </plugin>
 
-    <plugin name="form">
-        <description>
-            The jQuery Form Plugin allows you to easily and unobtrusively upgrade
-            HTML forms to use AJAX. The main methods, ajaxForm and ajaxSubmit, gather
-            information from the form element to determine how to manage the submit
-            process. Both of these methods support numerous options which allows you
-            to have full control over how the data is submitted. Submitting a form
-            with AJAX doesn't get any easier than this!
-        </description>
-        <version ver="3.0.8">
-            <file>jquery.form.js</file>
-            <min_core_version>1.3.2</min_core_version>
-        </version>
-    </plugin>
-
 
 
 </plugins>
