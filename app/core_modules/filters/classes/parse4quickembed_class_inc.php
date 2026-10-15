@@ -122,7 +122,7 @@ class parse4quickembed extends ChisimbaObject
 
     /**
     *
-    * Method to get the replacement for the filter using the jqoembed object
+    * Method to get the replacement for the filter using the native media consumer
     *
     * @access private
     * @param string $oembedUrl The URL for a compatible object
@@ -131,13 +131,7 @@ class parse4quickembed extends ChisimbaObject
     */
     private function getReplacement($oembedUrl)
     {
-        //$this->setVar('JQUERY_VERSION', '1.3.1');
-        $oEmb = $this->getObject('jqoembed', 'oembed');
-        $oEmb->loadOembedPlugin();
-        $ret = $oEmb->getEmbedAppend();
-        $ret .= '<div><a href="' . $oembedUrl . '" class="oembed">Loading...</a></div>';
-        return $ret;
-        //return htmlentities($ret);
+        return $this->getObject('nativeembed', 'oembed')->link($oembedUrl);
     }
 }
 ?>

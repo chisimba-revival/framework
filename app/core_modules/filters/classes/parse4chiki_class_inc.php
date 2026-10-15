@@ -134,21 +134,9 @@ class parse4chiki extends ChisimbaObject
     {
         $objModule = $this->getObject('modules','modulecatalogue');
         if ($objModule->checkIfRegistered('oembed', 'oembed')) {
-            $oEmb = $this->getObject('jqoembed', 'oembed');
-            $oEmb->loadOembedPlugin();
-            $oEmb->getEmbedAppend();
-            $script = '
-                <script type=\'text/javascript\'>
-                    jQuery(function(){
-                        jQuery(".msg a").oembed(null, {
-                            embedMethod: "append",
-                            maxWidth: 480
-                        });
-                    });
-                </script>
-                ';
-            $this->appendArrayVar('headerParams', $script);
+            $this->getObject('nativeembed', 'oembed')->load('.msg a');
         }
+        return '';
     }
     /**
     *

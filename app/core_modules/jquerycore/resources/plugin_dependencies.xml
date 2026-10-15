@@ -47,15 +47,5 @@
     </plugin>
 
 
-    <plugin name="oembed">
-        <description>
-            A simple jQuery plugin that uses OEmbed API to help displaying embedded 
-            content (such as photos or videos) in your website. 
-        </description>
-        <version ver="1.1.0">
-            <file>jquery.oembed.min.js</file>
-            <min_core_version>1.3.0</min_core_version>
-        </version>
-    </plugin>
 
 </plugins>

@@ -7618,3 +7618,9 @@ video.chisimba-native-media { height: auto; }
 .chisimba-icon-panel :is(.icon, ._icon) > a {
     border-radius: var(--chisimba-radius-md, .5rem);
 }
+
+/* Opt-in external media previews preserve the source link. */
+.chisimba-media-preview { display: block; margin-block: .5rem; max-width: 100%; }
+.chisimba-media-preview__media { display: block; max-width: 100%; border: 0; }
+iframe.chisimba-media-preview__media, video.chisimba-media-preview__media { width: min(100%, 40rem); aspect-ratio: 16 / 9; }
+a[data-native-embed] { overflow-wrap: anywhere; }
