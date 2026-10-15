@@ -28,3 +28,5 @@ replaced buttons with one callback, quoted/script-like titles and row IDs,
 refresh targeting and non-bubbling focus. No console warnings/errors occurred.
 The test fixture loads neither jQuery nor LiveQuery and invokes no write endpoints.
 No new user journey was introduced; existing module Help remains unchanged.
+
+[Six-site deployment and verification](../native-livequery-rollout-20261015.md).
