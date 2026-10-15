@@ -58,15 +58,6 @@
         </version>
     </plugin>
 
-    <plugin name="pngfix">
-        <description>
-            This plugin will fix the missing PNG-Transparency in Windows Internet Explorer 5.5 and 6. 
-        </description>
-        <version ver="1.2.0">
-            <file>jquery.pngFix.pack.js</file>
-            <min_core_version>1.3.0</min_core_version>
-        </version>
-    </plugin>
 
     <plugin name="oembed">
         <description>

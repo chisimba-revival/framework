@@ -42,8 +42,8 @@ function render(array $selection): string
     check(ChisimbaObject::$session === $before, 'Skin must not clear or rewrite the session');
     return (string) $html;
 }
-$retired = ['tooltip', 'flexigrid', 'bgiframe', 'delegate', 'dimensions'];
-$retained = ['validate', 'form', 'corner', 'livequery', 'pngfix', 'oembed'];
+$retired = ['tooltip', 'flexigrid', 'bgiframe', 'delegate', 'dimensions', 'pngfix'];
+$retained = ['validate', 'form', 'corner', 'livequery', 'oembed'];
 $baseline = render([]);
 check(str_contains($baseline, 'core/1.7.2/jquery.min.js'), 'Configured core missing');
 check(str_contains($baseline, 'ui/javascript/1.8.18/jquery-ui.min.js'), 'UI changed');

@@ -334,26 +334,6 @@ class jquery extends ChisimbaObject
          . '/facebox.css' .'">'));
     }
 
-    /**
-     * Method to load the pngFix that enables png transparency in IE 5.5 & 6
-     * Simply load the plugin and voila, all pngs maintain transparency
-     */
-    public function loadPngFixPlugin($version = '1.1')
-    {
-        $basePath = 'plugins/pngfix/'.$version.'/';
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath
-          . 'jquery.pngFix.js'));
-        //Activating the plugin
-        $script = '
-        <script type="text/javascript">
-            jQuery(document).ready(function(){ 
-                jQuery(document).pngFix();
-            });
-        </script>';
-        $this->appendArrayVar('headerParams', $script);
-    }
-
    /**
      * Method to load the jframe plugin
      *
