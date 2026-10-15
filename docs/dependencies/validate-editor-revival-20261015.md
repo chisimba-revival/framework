@@ -280,3 +280,23 @@ and Formbuilder are unregistered on all six sites, with no stored Validate asset
 references in the scanned text/relevant varchar columns (125/174/124/244/237/237
 columns respectively). This is bounded scan evidence, not proof about encoded or
 external references. Receipts remain in work/validate-trace-20261015.
+
+## Validate supporting files removed
+
+Removed the remaining 47 files in jquery/resources/plugins/validate: translations,
+locale-specific/additional methods and package documentation. The earlier removal
+covered entry scripts only; that incomplete package cleanup is now corrected.
+A fresh source trace found no active caller of these support files. Paused OER
+and disabled deprecated Pagenotes retain migration references, not supported
+runtime dependencies. The shared optional-plugin catalogue remains empty.
+
+The loader/stale-session regression and maintained Pagenotes contracts pass;
+whitespace checks pass. Local Docker still has no running containers, so the
+previously pending browser acceptance remains pending. No production rollout.
+
+Next grid tracing: the older jquery loadFlexgridPlugin method immediately dies
+with a deprecation message. CMS Admin's apparent Flexigrid load is inside a PHP
+block comment in cms_test_tpl.php. Verify the entire commented section and direct
+asset references before removing the old Flexigrid package; jqGrid is separate
+and is still used by that example template. Do not retire CMS Admin as a whole
+based on this observation.
