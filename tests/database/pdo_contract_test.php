@@ -77,6 +77,7 @@ require __DIR__ . '/permissions_toolbar_checks.php';
 require __DIR__ . '/classification_checks.php';
 require __DIR__ . '/schema_checks.php';
 require __DIR__ . '/module_repository_checks.php';
+require __DIR__ . '/legacy_editor_read_checks.php';
 require __DIR__ . '/catalogue_upgrade_checks.php';
 require __DIR__ . '/maintenance_checks.php';
 require __DIR__ . '/content_expiry_checks.php';
