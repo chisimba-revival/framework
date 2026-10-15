@@ -205,21 +205,6 @@ class jquery extends ChisimbaObject
 
 
     /**
-     * Method to load the flexgrid
-     * - The flexgrid plugin draws a sortable by column click/multi selectable/configurable column display table
-     * Input : An HTML table
-     * OR
-     * Input : A Json object representing the table structure
-     *
-     * Output : Local Spreadsheet-like Grid View
-     * Depricated: use jqGrid instead
-     */
-    public function loadFlexgridPlugin($version = '')
-    {
-        die("<H1>THIS CODE USES THE loadFlexgridPlugin which is deprecated</h1>");
-    }
-
-    /**
      * Method to load the jQuery Core API UI Tabbing library
      * 
      */
