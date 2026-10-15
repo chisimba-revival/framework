@@ -7612,3 +7612,9 @@ video.chisimba-native-media { height: auto; }
 .chisimba-image-gallery figure { margin:0; min-width:0; }
 .chisimba-image-gallery img { display:block; max-width:100%; height:auto; }
 .chisimba-image-gallery figcaption { overflow-wrap:anywhere; }
+
+/* Native rounding for shared legacy icon-panel markup; no DOM strips needed. */
+.chisimba-icon-panel :is(.icon, ._icon),
+.chisimba-icon-panel :is(.icon, ._icon) > a {
+    border-radius: var(--chisimba-radius-md, .5rem);
+}

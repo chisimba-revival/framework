@@ -400,20 +400,6 @@ class jquery extends ChisimbaObject
     }
 
     /**
-     * Method to load the corner plugin
-     * This plugin creates round/beveled and just about any type of corner.
-	 *
-	 * View Demo : http://www.malsup.com/jquery/corner/
-     */
-    public function loadCornerPlugin($version = '1.7')
-    {
-        $basePath = 'plugins/corner/' . $version . '/';
-        $this->appendArrayVar('headerParams', 
-          $this->getJavascriptFile($basePath . 'jquery.corner.js',
-          'jquery'));
-    }
-    
-    /**
      * Method to load the tablesorter plugin, which allows sorting of tables
      * by their <thead> elements
      */

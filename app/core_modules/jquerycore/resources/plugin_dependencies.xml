@@ -33,18 +33,6 @@
         </version>
     </plugin>
     
-    <plugin name="corner">
-        <description>
-            It's important to understand that this corner plugin is pulling off
-            its magic by adding more elements to the page. Specifically, it adds
-            div "strips" to the item to be cornered and sets a solid background
-            color on these strips in order to hide the actual corners of the real item.
-        </description>
-        <version ver="2.1.2">
-            <file>jquery.corner.js</file>
-            <min_core_version>1.3.2</min_core_version>
-        </version>
-    </plugin>
 
     <plugin name="livequery">
         <description>
