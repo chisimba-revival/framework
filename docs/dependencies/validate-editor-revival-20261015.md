@@ -72,3 +72,56 @@ copy with no loader found in this trace. The jquerycore Validate catalogue entry
 and the older jquery copy must remain until those dependencies are resolved.
 
 This checkpoint does not retire a plugin, enable a module or change production.
+
+## Security checkpoint — later on 15 October
+
+Textblock 0.893 and Slate 0.016 now check the current administrator role, POST and
+login-bound CSRF before mutations. Slate dispatch has an explicit action allowlist;
+its management/read endpoints also require an administrator. The actual controller
+probe verifies rejected delete requests never reach persistence. Public Slate
+viewing remains available.
+
+Server validation rejects malformed IDs/arrays, invalid block slots, oversized or
+empty titles, unsafe CSS identifiers and invalid page numbers. Saved Slate page
+numbers cannot be changed through a forged edit. Textblock uses the maintained
+rich-text sanitiser; titles, descriptions and form values are escaped. Serialized
+save operations reject duplicate block slots/page numbers without overwriting
+existing records. Slate deletion is transactional and handles missing records.
+
+Slate block selection is limited to registered site blocks, site-scoped dynamic
+blocks and current Contentblocks rows. The chooser follows the same site scope;
+private user dynamic blocks are not offered on a public page. Removal/movement
+checks the placement against the requested page. Canvas 0.048 binds page-block
+reads and swaps adjacent positions transactionally; a failed second write rolls
+back the first. Slate's client sends POST and the matching CSRF token. Other
+Canvas owners retain their existing HTTP-method contracts and need separate review.
+
+Both principal editors now use native validation instead of loading Validate.
+Failed Ajax requests retain the draft and re-enable Save; only confirmed success
+updates Slate's ID/mode. Administrator Help explains immediate saves, duplicate
+identifiers, session recovery and deletion. Textarea 0.622 and explicit editor
+properties remove the PHP 8.5 warnings exposed by rendering these forms.
+
+Checks completed:
+
+- Standalone policy tests, including anonymous/member/revoked-admin, method,
+  token, malformed fields, unknown actions, unoffered blocks and cross-page IDs.
+- Actual controller dispatch probes: rejected deletes make zero repository writes;
+  valid administrator POST delegates once.
+- Full disposable PDO suite, including real editor saves, sanitisation, duplicate
+  rejection, stable page numbers, scoped deletion and block-move rollback.
+- Registered Help-provider content and administrator access tests.
+- PHP syntax, JavaScript syntax and diff checks.
+- Local Chrome tests on synthetic responses rendered with the actual form classes:
+  empty required fields, rejected-save draft retention in both editors, Slate
+  success and network-failure recovery. Normal local homepage smoke also passed.
+  Browser diagnostics were from Grammarly, not the application scripts.
+- Form regeneration after the property fixes emitted no PHP diagnostics.
+
+This is a tested security checkpoint, not a production release or completed
+module revival. No module has been installed/enabled and no site data was changed
+by the fixtures. Full catalogue fresh/update rehearsal, normal authenticated
+browser journeys (including Help interaction and responsive layout), stable Slate
+page URL/placement identity, concurrent editor revision protection and the stale
+Contentblocks classes inside Textblock still need review before activation.
+Switchboard and the remaining Validate copies/callers are unchanged.

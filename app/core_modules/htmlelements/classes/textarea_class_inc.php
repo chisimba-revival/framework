@@ -67,6 +67,7 @@ require_once("ifhtml_class_inc.php");
 */
  class textarea extends abhtmlbase implements ifhtml
  {
+    public $value, $css, $label;
      /**
     *
     * @var string $cols: The number of columns the textare will have

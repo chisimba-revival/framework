@@ -85,12 +85,20 @@
     }
 
 
+    // Slate's administrator editor now requires same-session POST requests.
+    function pageSecurityData() {
+        if (theModule !== 'slate') return '';
+        var token = document.querySelector('meta[name="slate-csrf"]');
+        return '&csrf_token=' + encodeURIComponent(token ? token.content : '') + '&pageId=' + encodeURIComponent(pageId);
+    }
+
     function moveBlock(blockId, direction)
     {
         jQuery.ajax({
-            type: "GET",
+            type: theModule === 'slate' ? "POST" : "GET",
             url: "index.php",
-            data: "module="+theModule+"&action=moveblock&blockid="+blockId+'&direction='+direction+'&pageId='+pageId,
+            data: "module="+theModule+"&action=moveblock&blockid="+blockId+'&direction='+direction+'&pageId='+pageId + pageSecurityData(),
+            error: function() { alert(unableMoveBlock); },
             success: function(msg){
                 if (msg == 'ok') {
                     if (direction == 'up') {
@@ -111,9 +119,10 @@
     function removeBlock(blockId)
     {
         jQuery.ajax({
-            type: "GET",
+            type: theModule === 'slate' ? "POST" : "GET",
             url: "index.php",
-            data: "module="+theModule+"&action=removeblock&blockid="+blockId,
+            data: "module="+theModule+"&action=removeblock&blockid="+blockId + pageSecurityData(),
+            error: function() { alert(unableDeleteBlock); },
             success: function(msg){
 
                 if (msg == 'ok') {
@@ -132,9 +141,10 @@
         if(typeof blockid!=="string" || !/^(block|dynamicblock)\|/.test(blockid))return;
         // DO Ajax
         jQuery.ajax({
-            type: "GET",
+            type: theModule === 'slate' ? "POST" : "GET",
             url: "index.php",
-            data: "module="+theModule+"&action=addblock&blockid="+blockid+"&side="+side+"&pageId="+pageId,
+            data: "module="+theModule+"&action=addblock&blockid="+blockid+"&side="+side+"&pageId="+pageId + pageSecurityData(),
+            error: function() { alert(unableAddBlock); },
             success: function(msg){
                 if (msg == '') {
                     alert(unableAddBlock);
@@ -171,10 +181,11 @@
 
             // DO Ajax
             jQuery.ajax({
-                type: "GET",
+                type: theModule === 'slate' ? "POST" : "GET",
                 url: "index.php",
-                data: "module="+theModule+"&action=renderblock&blockid="+blockid+"&side="+side+"&pageId="+pageId,
-                success: function(msg){
+                data: "module="+theModule+"&action=renderblock&blockid="+blockid+"&side="+side+"&pageId="+pageId + pageSecurityData(),
+                error: function() { alert(unableAddBlock); },
+            success: function(msg){
                     if(window[side+"PendingBlock"]!==blockid)return;
 
                     jQuery("#"+side+"previewcontent").show();

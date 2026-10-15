@@ -171,6 +171,10 @@ class buildcanvas extends ChisimbaObject {
         $this->wideDynamicBlocks = $this->objDynamicBlocks->getWideUserBlocks($this->userId);
         // Get any user small blocks that the user has.
         $this->smallDynamicBlocks = $this->objDynamicBlocks->getSmallUserBlocks($this->userId);
+        if ($this->getParam('module', '') === 'slate') {
+            $this->wideDynamicBlocks = $this->objDynamicBlocks->getWideSiteBlocks();
+            $this->smallDynamicBlocks = $this->objDynamicBlocks->getSmallSiteBlocks();
+        }
         // Create an instance of the module object
         $this->objModule = $this->getObject('modules', 'modulecatalogue');
         //Check if contentblocks is installed
@@ -489,7 +493,7 @@ class buildcanvas extends ChisimbaObject {
 
         // Add Small Blocks.
         $objBlocks = $this->getObject('dbmoduleblocks', 'modulecatalogue');
-        $smallBlocks = $objBlocks->getBlocks('normal', $this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'prelogin|site|user');
+        $smallBlocks = $objBlocks->getBlocks('normal', $this->getParam('module','prelogin')==='slate'?'site':($this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'prelogin|site|user'));
         foreach ($smallBlocks as $smallBlock) {
             if ($smallBlock['moduleid'] != "contentblocks") {
                 $block = $this->newObject('block_'
@@ -564,7 +568,7 @@ class buildcanvas extends ChisimbaObject {
         foreach ($this->wideDynamicBlocks as $wideBlock) {
             $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
         }
-        $wideBlocks = $this->objBlocks->getBlocks('wide', $this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'site|user|postlogin');
+        $wideBlocks = $this->objBlocks->getBlocks('wide', $this->getParam('module','prelogin')==='slate'?'site':($this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'site|user|postlogin'));
         foreach ($wideBlocks as $wideBlock) {
             if ($wideBlock["moduleid"] != "contentblocks") {
                 $block = $this->newObject('block_'
