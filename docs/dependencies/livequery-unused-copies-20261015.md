@@ -30,3 +30,7 @@ Next: replace the Grid/Boxy dynamic event binding and CMS Admin caller before
 removing the remaining runtime/loader; review associated legacy write endpoints
 before reviving those modules. The remaining jquerycore catalogue entries are
 Form and Validate. Global jQuery/UI and other wrapper families remain separate.
+
+The actual retained jquery loader was also exercised on local PHP 8.5 and
+confirmed to emit its existing LiveQuery 1.0.2 asset. See the
+[rollout report](../livequery-unused-rollout-20261015.md) for deployment evidence.
