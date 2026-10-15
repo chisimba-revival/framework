@@ -201,3 +201,45 @@ bundled in Textblock and complete the remaining Validate dependency decisions.
 Switchboard remains preserved pending a decision. Other owners of the legacy
 Canvas Ajax handler still require their own access review; this change does not
 claim to modernise every Canvas or jQuery caller.
+
+## Unused Textblock copies removed
+
+Textblock 0.895 removes `contentblockbase`, `contentblockui` and `dbcontentblocks`
+from its own classes directory (882 lines). A tracked-source trace across both
+repositories found no external caller of these Textblock copies. Its controller,
+templates and registered text/widetext blocks use `dbtextblock`, `textblockui`
+and `textblockbase`. Framework Blocks, Canvas, Context, Prelogin and Postlogin,
+and application Personal Space and Slate explicitly resolve the maintained
+`contentblocks` module. That module and all stored content remain unchanged.
+No aliases are added for these unreferenced copies. Textblock now has no Validate
+loader; this does not remove the shared Validate library.
+
+Focused Textblock policy/controller/Help/native-client tests and maintained
+Contentblocks edit/render and legacy-postlogin contracts passed. Git whitespace
+checks passed. This source-only deletion changes no browser workflow; the prior
+installed browser/PDO rehearsal remains the workflow evidence, not a new test run.
+
+The remaining exact asset loaders in tracked application source are:
+
+- OER: adaptation, products, sections, themes, groups, institutions/types,
+  downloader and user editors (ten loader locations across nine class files).
+- OERuserdata: user editor (one loader).
+- Switchboard: link editor (one loader); retirement/pause decision requested.
+- `pagenotes_DEPRECATED`: old editor (one loader), separate from maintained Pagenotes.
+- Formbuilder retains its bundled Validate file; no loader was found. A comment
+  in its template credits a copied email expression and is not a plugin load.
+
+Security follow-up takes precedence over replacing these client assets.
+OERuserdata's `requiresLogin()` permits `userdetailssave` anonymously; that action
+accepts `mode=edit` and its repository passes the submitted ID and account fields
+into the user-admin update service, with interpolated SQL for the extra-data
+lookup. End-to-end service enforcement and current site registration still need
+tracing before any exposure claim. Do not enable it for testing on a working site.
+Switchboard's link-save action lacks a local administrator/method/token boundary,
+and its delete checks cached administrator state without POST/CSRF. Its old
+module-block operations also delegate to the legacy Canvas handler. The earlier
+six-site trace found Switchboard unregistered; recheck before release.
+
+Next: resolve Switchboard's disposition, audit OER/OERuserdata use and full account
+write boundaries, then migrate or explicitly retire remaining callers. No library
+removal, production deployment, module activation or data deletion occurred here.
