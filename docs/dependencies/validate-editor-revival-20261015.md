@@ -1,8 +1,8 @@
 # Validate callers and editor revival — 15 October 2026
 
 Derek has requested preservation and modernisation of Textblock and Slate.
-Switchboard is a possible retirement, not an approved deletion. Keep all three
-available in source while resolving their future. Do not enable old editing
+Switchboard was subsequently approved for retirement and removed from source;
+see the final checkpoint below. Preserve Textblock and Slate. Do not enable old editing
 endpoints on a site merely to exercise the Validate plugin.
 
 ## Production evidence
@@ -243,3 +243,13 @@ six-site trace found Switchboard unregistered; recheck before release.
 Next: resolve Switchboard's disposition, audit OER/OERuserdata use and full account
 write boundaries, then migrate or explicitly retire remaining callers. No library
 removal, production deployment, module activation or data deletion occurred here.
+
+## Switchboard retirement approved and completed
+
+Derek explicitly chose retirement on 15 October. All 17 Switchboard source files
+were removed, including its Validate loader and legacy Canvas Ajax callers.
+A new tracked-source scan found no external runtime references or dependencies in
+framework/modules; only copied package comments and historical reports remain.
+See `modules/docs/legacy-module-revival.md` for scope. No database changes or
+production deployment occurred. Earlier pending-decision notes are superseded.
+OER/OERuserdata account-boundary tracing is now the next security priority.
