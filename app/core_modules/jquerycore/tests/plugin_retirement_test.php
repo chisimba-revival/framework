@@ -42,8 +42,8 @@ function render(array $selection): string
     check(ChisimbaObject::$session === $before, 'Skin must not clear or rewrite the session');
     return (string) $html;
 }
-$retired = ['tooltip', 'flexigrid', 'bgiframe', 'delegate', 'dimensions', 'pngfix', 'corner', 'oembed', 'livequery', 'form'];
-$retained = ['validate'];
+$retired = ['tooltip', 'flexigrid', 'bgiframe', 'delegate', 'dimensions', 'pngfix', 'corner', 'oembed', 'livequery', 'form', 'validate'];
+$retained = [];
 $baseline = render([]);
 check(str_contains($baseline, 'core/1.7.2/jquery.min.js'), 'Configured core missing');
 check(str_contains($baseline, 'ui/javascript/1.8.18/jquery-ui.min.js'), 'UI changed');
@@ -60,9 +60,9 @@ foreach ($retired as $plugin) $loader->setPlugin($plugin);
 check($loader->load() === $baseline, 'Single-plugin API must reject retired selections');
 $loader->setPlugin('validate'); $loader->setPlugins(['tooltip', 'form', 'validate']);
 $html = $loader->load();
-check(!str_contains($html, '/plugins/form/') && substr_count($html, '/plugins/validate/') === 1, 'Repeated API selections must preserve retained plugins once');
+check($html === $baseline, 'Repeated retired selections must preserve core/UI without plugin assets');
 preg_match_all('/(?:src|href)="([^"]+)"/', render(array_merge($retired, $retained)), $urls);
 foreach ($urls[1] as $url) check(is_file(APP_ROOT . ltrim($url, '/')), 'Emitted missing asset: ' . $url);
 ChisimbaObject::$suppress = true;
 check(render(array_merge($retired, $retained)) === '', 'Suppression must remain effective');
-echo "PASS stale/mixed sessions, retained plugins, duplicate selections, core/UI/theme, asset existence and unchanged session\n";
+echo "PASS empty catalogue, stale/mixed sessions, duplicate selections, core/UI/theme, asset existence and unchanged session\n";

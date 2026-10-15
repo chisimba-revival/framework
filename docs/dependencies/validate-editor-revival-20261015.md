@@ -253,3 +253,30 @@ framework/modules; only copied package comments and historical reports remain.
 See `modules/docs/legacy-module-revival.md` for scope. No database changes or
 production deployment occurred. Earlier pending-decision notes are superseded.
 OER/OERuserdata account-boundary tracing is now the next security priority.
+
+## OER pause and Validate asset removal
+
+OER and OERuserdata are preserved under __PAUSED names; all 195 original files
+are retained byte-for-byte. No external active dependency was found. Deprecated
+Pagenotes is already unregistrable and remains migration reference only. Its old
+loader and those in paused source require migration before any revival.
+Formbuilder's bundled Validate copy has no loader/API caller; its separate
+constructed-form validator remains unchanged.
+
+Removed the jquerycore Validate 1.9 asset/catalogue entry, both older jquery copies
+and Formbuilder's unused copy. The now-empty catalogue requires validPlugins to
+start as an empty array so stale session selections cannot cause PHP TypeErrors.
+The actual loader/skin regression covers empty catalogue, stale/mixed/duplicate
+selections, both setter APIs, unchanged sessions, core/UI/theme and suppression.
+It passes with PHP warnings treated as failures. Maintained Pagenotes contracts
+and Textblock controller-security tests also pass.
+
+Local browser acceptance remains pending: Docker had no running containers and
+browser automation failed twice loading its request-header policy. No deployment
+or database mutation occurred. Complete local smoke tests before release.
+
+The refreshed read-only six-site scan completed successfully: OER, OERuserdata
+and Formbuilder are unregistered on all six sites, with no stored Validate asset
+references in the scanned text/relevant varchar columns (125/174/124/244/237/237
+columns respectively). This is bounded scan evidence, not proof about encoded or
+external references. Receipts remain in work/validate-trace-20261015.
