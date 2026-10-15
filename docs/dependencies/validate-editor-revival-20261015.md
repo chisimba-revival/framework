@@ -125,3 +125,79 @@ browser journeys (including Help interaction and responsive layout), stable Slat
 page URL/placement identity, concurrent editor revision protection and the stale
 Contentblocks classes inside Textblock still need review before activation.
 Switchboard and the remaining Validate copies/callers are unchanged.
+
+## Installed rehearsal and concurrency checkpoint
+
+Textblock 0.894 and Slate 0.017 now capture row revisions with the displayed
+content and compare them inside the save/delete transaction. Stale saves return
+409 and retain the draft. Slate returns its new revision from inside the same
+transaction, so a subsequent save cannot silently adopt another editor's revision.
+Slate deletion additionally checks the placement snapshot: a new block added since
+the management list was opened prevents stale deletion. The repositories use
+savepoints and respect enclosing transaction ownership.
+
+The request boundaries now use persisted `lookupAdmin(userId)` membership. The
+legacy `isAdmin()` helper can return a cached session flag; it is insufficient
+for these editing decisions. Both standalone fixtures and actual authenticated
+HTTP tests cover revocation while an administrator session remains open.
+
+Slate uses `md5('slate:page:' + persisted ID)` and a separate `slate:default` key.
+Its page renderer, native client, placement repository and page deletion agree on
+that identity. Unknown page numbers return 404; forged/deleted page keys cannot
+receive placements. It now uses the maintained Context/Personal Space native
+block client and shared `blockplacementorder` service, including stale-layout
+rejection, uncertain-write lockout and keyboard movement. Rendering uses one
+placement snapshot and refuses to execute blocks no longer in the site catalogue.
+The shared Canvas renderer accepts an explicit page key/repository/editor settings;
+existing callers retain their defaults.
+
+A repeatable catalogue post-install hook migrates the known canonical legacy URL
+hashes (normal route and explicit `action=view`). It builds these from the
+configured site root, not the request URI: the populated catalogue rehearsal
+caught and fixed the CLI operator-script URL being used during upgrades. Arbitrary old query strings,
+previous hostnames, rewritten URLs and tracking parameters cannot be recovered
+from an MD5 hash. **Unknown hashes remain stored and are not rendered under the
+new keys.** Before enabling a site with historical placements, inspect them and
+map only URLs supported by evidence using `dbslatepages::migratePageKeys()`; do not
+invent mappings or delete unresolved rows. The previous six-site trace found no
+existing placement data, but recheck at release time.
+
+The disposable installed rehearsal used an isolated clone of local Chisimba,
+a temporary internal Docker network/database, a separate installation key,
+loopback port 8087 and no outbound connectivity or workers. The real local site
+and production data were not modified. Catalogue fresh/repeated registration
+passed; it exposed Slate's incompatible 2012 free-text release date, now ISO.
+The table-based Slate form overflowed at phone width; it now uses shared form
+primitives, registered labels and a wrapping description textarea. Textblock's
+checkbox now has an associated label and its fields use shared width rules.
+
+Completed verification:
+
+- Full disposable PDO suite on PHP 8.5, including stale saves/deletes, shared
+  placement ordering, failed-write rollback, known-hash migration/repeat,
+  unresolved-hash preservation and deleted-page rejection.
+- Actual HTTP GET/token/anonymous/member rejection for both modules, persisted
+  role revocation against an open admin session, unchanged data fingerprints,
+  public Slate viewing and missing-page 404. Valid scoped block removal and
+  both confirmed deletion endpoints also passed using only synthetic records.
+- Chrome: installed Textblock create/edit; Slate create/repeated save; separate
+  tab stale drafts retained in both editors; block preview/add/keyboard movement;
+  stale layout rejected; reordered URL parameters retain the same placements;
+  removal confirmation cancelled with Escape and focus returned.
+- Both compact Help entries and full guides; Escape closes guides and returns
+  focus. Real forms rendered inside 390px same-origin frames after the browser
+  viewport override proved ineffective. Form controls fit; the existing shared
+  navigation still extends about 8px beyond the scrollbar-adjusted viewport.
+- Shared native block-client tests for Context, Personal Space and Slate;
+  existing Context/Personal Space policy tests; editor script/policy/controller
+  and Help tests; changed PHP/JS syntax and Git whitespace checks.
+- No new application PHP warnings/deprecations in the completed installed
+  workflow. Initial fixture setup/invalid release-date failures were diagnosed
+  and corrected. Browser console messages were from Grammarly, not these scripts.
+
+This checkpoint does not enable Textblock/Slate on the working local site and
+has not been deployed. Before release, review the obsolete Contentblocks classes
+bundled in Textblock and complete the remaining Validate dependency decisions.
+Switchboard remains preserved pending a decision. Other owners of the legacy
+Canvas Ajax handler still require their own access review; this change does not
+claim to modernise every Canvas or jQuery caller.

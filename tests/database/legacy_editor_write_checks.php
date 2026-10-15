@@ -17,23 +17,32 @@ $saved=$writer->saveRecord('add','fixture');
 $row=$writer->getBlockById($saved)[0];
 ensureBaseline($row['blocktext']==='<p>Kept</p>' && $row['creatorid']==='fixture','Rich text cleaned and author supplied by server');
 try {$writer->saveRecord('add','fixture');throw new LogicException('Duplicate accepted');}catch(DomainException $expected){}
-$writer->input['id']=$saved;$writer->input['title']='Changed';$writer->saveRecord('edit','fixture');
+$writer->input['revision']=$writer->rowRevision($row);$writer->input['id']=$saved;$writer->input['title']='Changed';$writer->saveRecord('edit','fixture');
 ensureBaseline($writer->getBlockById($saved)[0]['title']==='Changed','Textblock edit persisted');
+try {$writer->saveRecord('edit','fixture');throw new LogicException('Stale text edit accepted');}catch(DomainException $expected){ensureBaseline($expected->getMessage()==='editor_stale','Stale text edit rejected');}
+try {$writer->deleteRecord($saved);throw new LogicException('Stale delete accepted');}catch(DomainException $expected){}
+$writer->input['revision']=$writer->rowRevision($writer->getBlockById($saved)[0]);
 $writer->input['blockid']='text1';
 try {$writer->saveRecord('edit','fixture');throw new LogicException('Duplicate edit accepted');}catch(DomainException $expected){}
 ensureBaseline($writer->getBlockById($saved)[0]['blockid']==='text2','Rejected block edit preserved original');
 $pages=new SlateWriteFixture();injectCallerTable($pages,'tbl_slate_pages');
 $pages->input=['page'=>'10','title'=>'New page','description'=>'Description'];$page=$pages->addPage();
 try {$pages->addPage();throw new LogicException('Duplicate page accepted');}catch(DomainException $expected){}
-$pages->input['id']=$page;$pages->input['title']='Changed page';$pages->savePage();
+$pages->input['revision']=$pages->rowRevision($pages->getPageById($page)[0]);$pages->input['id']=$page;$pages->input['title']='Changed page';$pages->savePage();
 ensureBaseline($pages->getPageById($page)[0]['title']==='Changed page','Slate save persisted');
+try {$pages->savePage();throw new LogicException('Stale Slate edit accepted');}catch(DomainException $expected){ensureBaseline($expected->getMessage()==='editor_stale','Stale Slate edit rejected');}
+$pages->input['revision']=$pages->rowRevision($pages->getPageById($page)[0]);
 $pages->input['page']='11';
 try {$pages->savePage();throw new LogicException('Page identity changed');}catch(DomainException $expected){}
 ensureBaseline($pages->getPageById($page)[0]['page']==='10','Page identity preserved');
 $table->executePrepared('CREATE TEMPORARY TABLE tbl_slate_pageblocks (id VARCHAR(64),pageid VARCHAR(32),side VARCHAR(6),position INT)');
 try {
- $hash=md5($pages->uri(['page'=>'10'],'slate'));
+ $hash=$pages->pageKey('10');
+ ensureBaseline($hash===md5('slate:page:'.$page),'Stable persisted page identity');
+ $pages->requirePageKey($hash);
+ try{$pages->requirePageKey(md5('unknown'));throw new LogicException('Unknown page allowed');}catch(DomainException $expected){}
  $table->executePrepared('INSERT INTO tbl_slate_pageblocks (id,pageid) VALUES (?,?),(?,?)',['owned',$hash,'other','other-page']);
+ $pages->input['revision']=$pages->deleteRevision($pages->getPageById($page)[0]);
  ensureBaseline($pages->deletePage($page),'Slate delete succeeds');
  ensureBaseline($pages->getPageById($page)===[] && $table->selectPrepared('SELECT id FROM tbl_slate_pageblocks')===[['id'=>'other']],'Delete removes only this page placements');
  ensureBaseline(!$pages->deletePage($page),'Missing page delete handled');
@@ -57,5 +66,6 @@ try {
  ensureBaseline(array_column($blocks->getPageBlocksList('page-a','left'),'id')===['b','a','c'],'Failed second write rolls back first move');
  echo "PASS: page block binding, page isolation, neighbour order and partial-write rollback\n";
 
+ require __DIR__.'/slate_placement_checks.php';
 } finally {$table->executePrepared('DROP TEMPORARY TABLE tbl_slate_pageblocks');}
 echo "PASS: real Textblock/Slate saves, sanitisation, duplicate rejection, stable page identity and scoped delete\n";

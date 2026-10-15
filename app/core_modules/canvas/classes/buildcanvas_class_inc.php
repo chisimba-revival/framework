@@ -211,7 +211,7 @@ class buildcanvas extends ChisimbaObject {
      * @access public
      *
      */
-    public function show($blockType = 'personal') {
+    public function show($blockType = 'personal', $pageId = null, $pageRepository = null, $editorSettings = '') {
         if ($blockType == 'user') {
             $blockType = 'personal';
         }
@@ -224,8 +224,8 @@ class buildcanvas extends ChisimbaObject {
                 break;
             case 'page':
                 $objBestGuess = $this->getObject('bestguess', 'utilities');
-                $pageId = $objBestGuess->guessPageId();
-                return $this->showPage($pageId);
+                $pageId = $pageId ?? $objBestGuess->guessPageId();
+                return $this->showPage($pageId, $pageRepository, $editorSettings);
                 break;
             default:
                 return NULL;
@@ -313,9 +313,9 @@ class buildcanvas extends ChisimbaObject {
      * @todo Implement this functionality
      *
      */
-    private function showPage($pageId) {
+    private function showPage($pageId, $pageRepository = null, $editorSettings = '') {
         // Get the module blocks
-        $this->objPageBlocks = $this->getObject('dbpageblocks', 'canvas');
+        $this->objPageBlocks = $pageRepository ?? $this->getObject('dbpageblocks', 'canvas');
         $this->middleBlocks = $this->objPageBlocks->getPageBlocks($pageId, 'middle');
         $this->rightBlocks = $this->objPageBlocks->getPageBlocks($pageId, 'right');
         $this->leftBlocks = $this->objPageBlocks->getPageBlocks($pageId, 'left');
@@ -362,7 +362,9 @@ class buildcanvas extends ChisimbaObject {
         $middleContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $this->getMiddleButton() . ' </div>';
         $middleContent .= '</div>';
         $objCssLayout->setMiddleColumnContent($middleContent);
-        return $this->getScriptValues() . $this->getContextBlocksJs() . $objCssLayout->show();
+        return $this->getScriptValues() . $editorSettings
+            . ($editorSettings !== '' ? $this->getJavaScriptFile('contextblocks.js', 'context') : $this->getContextBlocksJs())
+            . $objCssLayout->show();
     }
 
     /**
