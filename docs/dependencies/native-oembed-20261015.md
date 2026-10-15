@@ -50,3 +50,8 @@ Wall's other jQuery behaviour and its legacy write endpoints are not migrated or
 certified by this change. There was no live Wall mutation test. External provider
 playback was not triggered; descriptor conversion was tested with synthetic URLs.
 Three jquerycore plugins remain: Validate, Form and LiveQuery.
+
+Production-image rehearsal additionally exposed three existing PHP 8.5 switch-label
+deprecations in Wall. Replacing the semicolons with colons removed them without
+changing the branch behaviour. Full deployment evidence is in
+[the rollout report](../native-oembed-rollout-20261015.md).
