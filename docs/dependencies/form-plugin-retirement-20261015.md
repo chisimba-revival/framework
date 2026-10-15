@@ -33,3 +33,5 @@ Textblock, Slate, Switchboard, OER and OERuserdata, plus separate Formbuilder an
 deprecated Pagenotes copies. That is a separate behavioural migration; native
 required/email validation, custom rules, remote checks and error placement must
 be traced before changing it. Global jQuery/UI and legacy widget libraries remain.
+
+[Six-site deployment evidence](../form-plugin-rollout-20261015.md).
