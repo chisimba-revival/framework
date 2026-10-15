@@ -16,8 +16,9 @@ and file-writing services. Catalogue registration alone does not prevent this
 framework from loading a controller. The module is unregistered everywhere;
 its source exists on the first three sites. Its controller now returns HTTP 410
 for every action without initialising generator, analyser or storage services.
-The module source and any existing data are preserved pending Derek's decision
-between retirement and pausing. No production generation action was exercised.
+Derek approved retirement. The generator, analyser, database helpers, interface
+and schema definitions are removed. Existing data and generated user files are
+preserved; a small inert controller remains for old URLs. No production generation action was exercised.
 
 Local validation:
 
@@ -35,7 +36,7 @@ Local validation:
   userregistration passed locally. No dormant module was enabled.
 
 Versions: jquery 0.057, jquerycore 0.013, userregistration 0.046;
-CMSAdmin 1.649, Shorturl 1.008, phpunit 1.002.
+CMSAdmin 1.649, Shorturl 1.008, phpunit 1.003.
 
 Five plugins remain in jquerycore: Validate, Form, Corner, LiveQuery and oEmbed.
 This is a bounded dependency removal, not completion of the jQuery migration.
