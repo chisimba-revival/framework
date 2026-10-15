@@ -76,7 +76,6 @@ class jqboxy extends ChisimbaObject
         $theme = $this->getVar('jquery_boxy_theme', 'default');
         $jQuery = $this->newObject('jquery', 'jquery');
         $jQuery->loadBoxPlugin('0.1.3', $theme);
-        $jQuery->loadLiveQueryPlugin();
     }
         
     /**
@@ -131,18 +130,11 @@ class jqboxy extends ChisimbaObject
     * See http://docs.jquery.com/Events for an extensive list of events. * @return void
     */    
     function bindElement($id = '', $event = 'click'){
-
-        $innerHtml = '"'.addslashes($this->innerHtml).'"';
-
-$script = <<<BOXBIND
-    <script type="text/javascript" >
-        jQuery(document).ready(function(){
-            jQuery('#$id').livequery('click',function(){
-                var dialog = new Boxy({$innerHtml}, {title: "{$this->title}"});
-            });
-        });
-    </script>
-BOXBIND;
+        $flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR;
+        $html = json_encode((string) $this->innerHtml, $flags);
+        $options = json_encode(['title'=>(string) $this->title], $flags);
+        $script = $this->getObject('jquery', 'jquery')->dynamicEventScript($id, $event,
+            'new Boxy(' . $html . ',' . $options . ');');
         $this->appendArrayVar('headerParams', $script);
         return true;
     }
@@ -157,19 +149,12 @@ BOXBIND;
     * Allows to bind script inline (after the element is created, not in the <head> but in the <body>)
     */    
     function bindElementInline($id = '', $event = 'click'){
-
-        $innerHtml = '"'.addslashes($this->innerHtml).'"';
-
-$script = <<<BOXBIND
-    <script type="text/javascript" >
-        jQuery(document).ready(function(){
-            jQuery('#$id').livequery('$event',function(){
-                var dialog = new Boxy({$innerHtml}, {title: "{$this->title}", closeText: ''});
-            });
-        });
-    </script>
-BOXBIND;
-        echo $innerHtml;
+        $flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR;
+        $html = json_encode((string) $this->innerHtml, $flags);
+        $options = json_encode(['title'=>(string) $this->title, 'closeText'=>''], $flags);
+        $script = $this->getObject('jquery', 'jquery')->dynamicEventScript($id, $event,
+            'new Boxy(' . $html . ',' . $options . ');');
+        echo $script;
         return true;
     }
 

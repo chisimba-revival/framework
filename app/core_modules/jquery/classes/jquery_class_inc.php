@@ -98,16 +98,28 @@ class jquery extends ChisimbaObject
         return $returnStr;
     }
     
-    /**
-     * Method to load the liveQuery plugin script files to the header
+    /** Native event binding for existing and subsequently inserted elements.
+     * Callback source is trusted application JavaScript, never request data.
      */
-    public function loadLiveQueryPlugin()
+    public function dynamicEventScript($id, $event, $callback)
     {
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile('plugins/livequery/1.0.2/jquery.livequery.js',
-          'jquery'));
+        $encode = static fn($value) => json_encode((string) $value,
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
+        $idJson = $encode($id);
+        $events = preg_split('/\s+/', trim((string) $event), -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($events as $type) {
+            if (!preg_match('/^[a-zA-Z][a-zA-Z0-9:_-]*$/D', $type)) {
+                throw new InvalidArgumentException('Expected native DOM event names');
+            }
+        }
+        $eventsJson = json_encode($events, JSON_THROW_ON_ERROR);
+        return '<script>(function(){const id=' . $idJson . ';const callback=function(event){'
+            . $callback . '};' . $eventsJson . '.forEach(function(type){'
+            . 'document.addEventListener(type,function(event){const element=document.getElementById(id);'
+            . 'if(element && (event.target===element || (event.bubbles && event.target instanceof Node && element.contains(event.target)))){'
+            . 'callback.call(element,event);}},true);});})();</script>';
     }
-    
+
     /**
      * Method to load the form plugin script files to the header
      */
