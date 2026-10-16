@@ -18,6 +18,9 @@ class helpcontent extends ChisimbaObject
 
     public function mayViewTopic($topicId)
     {
+        if ($topicId === 'dashboard-editing') {
+            return $this->user->isLoggedIn() && $this->user->lookupAdmin($this->user->userId());
+        }
         if ($topicId === 'course-marketing') {
             $code=$this->getParam('contextcode','');
             return is_string($code) && $code!==''
@@ -32,6 +35,7 @@ class helpcontent extends ChisimbaObject
 
     public function getTopic($topicId)
     {
+        if ($topicId === 'dashboard-editing') return $this->dashboardTopic();
         if ($topicId === 'course-marketing') return $this->marketingTopic();
         if ($topicId !== 'managing-the-context-home') { return null; }
         $defaults = array(
@@ -73,6 +77,15 @@ class helpcontent extends ChisimbaObject
                 array('heading' => $text('permissions_heading'), 'body' => $text('permissions_body')),
             ),
         );
+    }
+    /** Shared account-dashboard layout guide; audience rules remain module-owned. */
+    private function dashboardTopic()
+    {
+        $text = fn($suffix) => $this->language->languageText('mod_context_help_dashboard_'.$suffix, 'context');
+        return ['title'=>$text('title'), 'summary'=>$text('summary'),
+            'steps'=>[$text('editing'), $text('add'), $text('arrange'), $text('review')],
+            'sections'=>[['heading'=>$text('access_heading'), 'body'=>$text('access')],
+                ['heading'=>$text('recovery_heading'), 'body'=>$text('recovery')]]];
     }
     /** Guide to the selected course marketing workflow. */
     private function marketingTopic()
