@@ -713,32 +713,25 @@ class buildcanvas extends ChisimbaObject {
      * @access private
      * 
      */
-    private function getScriptValues() {
-        // Guess the module we are in
-        $objGuess = $this->getObject('bestguess', 'utilities');
-        $curMod = $objGuess->identifyModule();
-        $ret = '
-<script type="text/javascript">
-// <![CDATA[
-    upIcon = ' . json_encode($this->upIcon) . ';
-    downIcon = ' . json_encode($this->downIcon) . ';
-    deleteIcon = ' . json_encode($this->deleteIcon) . ';
-    moveUpLabel = ' . json_encode($this->moveUpLabel) . ';
-    moveDownLabel = ' . json_encode($this->moveDownLabel) . ';
-    removeBlockLabel = ' . json_encode($this->removeBlockLabel) . ';
-    blockControlsLabel = ' . json_encode($this->blockControlsLabel) . ';
-    deleteConfirm = \'' . $this->objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block') . '\';
-    unableMoveBlock = \'' . $this->objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block') . '\';
-    unableDeleteBlock = \'' . $this->objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block') . '\';
-    unableAddBlock = \'' . $this->objLanguage->languageText('mod_context_unableaddblock', 'context', 'Error - Unable to add block') . '\';
-    turnEditingOn = \'' . $this->objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On') . '\';
-    turnEditingOff = \'' . $this->objLanguage->languageText('mod_context_turneditingoff', 'context', 'Turn Editing Off') . '\';
-    pageId = \'' . $objGuess->guessPageId() . '\';
-    theModule = \'' . $curMod . '\';
-// ]]>
-</script>
-        ';
-        return $ret;
+    /** Shared, script-safe labels for the native and remaining canvas editors. */
+    public function getScriptValues() {
+        $guess = $this->getObject('bestguess', 'utilities');
+        $values = [
+            'upIcon'=>$this->upIcon, 'downIcon'=>$this->downIcon, 'deleteIcon'=>$this->deleteIcon,
+            'moveUpLabel'=>$this->moveUpLabel, 'moveDownLabel'=>$this->moveDownLabel,
+            'removeBlockLabel'=>$this->removeBlockLabel, 'blockControlsLabel'=>$this->blockControlsLabel,
+            'pageId'=>$guess->guessPageId(), 'theModule'=>$guess->identifyModule()
+        ];
+        foreach (['deleteConfirm'=>'confirmremoveblock', 'unableMoveBlock'=>'unablemoveblock',
+            'unableDeleteBlock'=>'unabledeleteblock', 'unableAddBlock'=>'unableaddblock',
+            'turnEditingOn'=>'turneditingon', 'turnEditingOff'=>'turneditingoff'] as $name=>$key) {
+            $values[$name] = html_entity_decode($this->objLanguage->languageText('mod_context_'.$key, 'context'), ENT_QUOTES, 'UTF-8');
+        }
+        $script = '<script type="text/javascript">';
+        foreach ($values as $name=>$value) {
+            $script .= 'window.'.$name.'='.json_encode($value, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE).';';
+        }
+        return $script.'</script>';
     }
 
     /**

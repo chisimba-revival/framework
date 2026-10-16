@@ -24,7 +24,7 @@
         sides.forEach(function(side){var select=byId('dd'+side+'blocks');if(select)select.disabled=busy||uncertain;});
     }
     async function request(action,data,write){
-        var body=new URLSearchParams(Object.assign({module:['context','personalspace','slate'].includes(settings.module)?settings.module:'context',pageId:settings.pageid||'',action:action,contextcode:settings.contextcode,csrf_token:settings.csrf,revision:settings.revision},data));
+        var body=new URLSearchParams(Object.assign({module:['context','personalspace','slate','postlogin'].includes(settings.module)?settings.module:'context',pageId:settings.pageid||'',action:action,contextcode:settings.contextcode,csrf_token:settings.csrf,revision:settings.revision},data));
         try {
             var response=await fetch('index.php',{method:'POST',credentials:'same-origin',headers:{'Accept':'application/json'},body:body});
             var result=await response.json();

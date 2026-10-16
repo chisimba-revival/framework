@@ -1,38 +1,21 @@
 <?php
 $objIcon = $this->newObject('geticon', 'htmlelements');
-// Add JavaScript if User can update blocks
-if ($objUser->isAdmin()) {
-
-
-    $objIcon->setIcon('up');
-    $upIcon = $objIcon->show();
-
-
-    $objIcon->setIcon('down');
-    $downIcon = $objIcon->show();
-
-    $objIcon->setIcon('delete');
-    $deleteIcon = $objIcon->show();
-    ?>
-    <script type="text/javascript">
-        // <![CDATA[
-        upIcon = '<?php echo $upIcon; ?>';
-        downIcon = '<?php echo $downIcon; ?>';
-        deleteIcon = '<?php echo $deleteIcon; ?>';
-        deleteConfirm = '<?php echo $objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block'); ?>';
-        unableMoveBlock = '<?php echo $objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block'); ?>';
-        unableDeleteBlock = '<?php echo $objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block'); ?>';
-        unableAddBlock = '<?php echo $objLanguage->languageText('mod_context_unableaddblock', 'context', 'Error - Unable to add block'); ?>';
-        turnEditingOn = '<?php echo $objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On'); ?>';
-        turnEditingOff = '<?php echo $objLanguage->languageText('mod_context_turneditingoff', 'context', 'Turn Editing Off'); ?>';
-        theModule = 'postlogin';
-
-        // ]]>
-    </script>
-    <?php
-    echo $this->getJavaScriptFile('contextblocks.js', 'context');
-} // End Addition of JavaScript
-
+$editor = $this->getObject('postloginblockeditor', 'postlogin');
+$canEdit = $editor->canEdit();
+if ($canEdit) {
+    echo $this->getObject('buildcanvas', 'canvas')->getScriptValues();
+    $attributes=['module'=>'postlogin','contextcode'=>'root',
+        'csrf'=>$editor->csrf()->issue($editor->purpose('root')),
+        'revision'=>$this->objContextBlocks->editingRevision('root'),
+        'cancel'=>html_entity_decode($objLanguage->languageText('word_cancel'),ENT_QUOTES,'UTF-8')];
+    foreach(['saving','saved','failed','stale','uncertain','denied','method','csrf-error'] as $key) {
+        $attributes[$key]=html_entity_decode($objLanguage->languageText('mod_context_block_'.($key==='csrf-error'?'csrf':$key),'context'),ENT_QUOTES,'UTF-8');
+    }
+    echo '<div id="block-editor-settings"';
+    foreach($attributes as $key=>$value) echo ' data-'.$key.'="'.htmlspecialchars($value,ENT_QUOTES,'UTF-8').'"';
+    echo '><p id="block-editor-status" role="status" aria-live="polite"></p></div>';
+    echo $this->getJavaScriptFile('contextblocks.js?v=2059', 'context');
+}
 
 $this->loadClass('dropdown', 'htmlelements');
 $this->loadClass('button', 'htmlelements');
@@ -61,7 +44,7 @@ if (strtoupper($showAdminShortcutBlock) == "TRUE") {
             $this->objLanguage->languageText('mod_contextcontent_shortcuts', 'contextcontent', 'Shortcuts'), $content, $block, $hidden, $showToggle, $showTitle, $cssClass, '');
 }
 
-if ($objUser->isAdmin()) {
+if ($canEdit) {
 
     $rightBlocksDropDown = new dropdown('rightblocks');
     $rightBlocksDropDown->cssId = 'ddrightblocks';
@@ -171,8 +154,8 @@ if ($objUser->isAdmin()) {
 
 
     $value = $objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On');
-    $objEdBut = $this->getObject('buildcanvas', 'canvas');
-    $editBut = $objEdBut->getSwitchButton($value);
+    $editBut = '<div id="modeswitch_wrapper" class="editing_off"><button type="button" id="editmodeswitchbutton" aria-pressed="false" onclick="switchEditMode()">'.htmlspecialchars($value,ENT_QUOTES,'UTF-8').'</button></div>';
+    $editBut .= $this->getObject('contextualhelp','help')->show('postlogin','editing');
 }
 
 $header = new htmlheading();
@@ -197,7 +180,7 @@ switch (strtolower($postLoginSideMenu)) {
 
 $objCssLayout->leftColumnContent .= '<div id="leftblocks">' . $leftBlocksStr . '</div>';
 
-if ($objUser->isAdmin()) {
+if ($canEdit) {
     $objCssLayout->leftColumnContent .= '<div id="leftaddblock">' . $header->show() . $leftBlocks;
     $objCssLayout->leftColumnContent .= '<div id="leftpreview"><div id="leftpreviewcontent"></div> ' . $leftButton . ' </div>';
     $objCssLayout->leftColumnContent .= '</div>';
@@ -205,12 +188,12 @@ if ($objUser->isAdmin()) {
 
 $objCssLayout->rightColumnContent = '';
 
-if ($objUser->isAdmin()) {
+if ($canEdit) {
     $objCssLayout->rightColumnContent .= '<div id="editmode">' . $editBut . $utillink . '</div>';
 }
 $objCssLayout->rightColumnContent .= '<div id="rightblocks">' . $rightBlocksStr . '</div>';
 
-if ($objUser->isAdmin()) {
+if ($canEdit) {
     $objCssLayout->rightColumnContent .= '<div id="rightaddblock">' . $header->show() . $rightBlocks;
     $objCssLayout->rightColumnContent .= '<div id="rightpreview"><div id="rightpreviewcontent"></div> ' . $rightButton . ' </div>';
     $objCssLayout->rightColumnContent .= '</div>';
@@ -221,7 +204,7 @@ $button->cssId = 'middlebutton';
 
 $objCssLayout->middleColumnContent = '<div id="middleblocks">' . $middleBlocksStr . '</div>';
 
-if ($objUser->isAdmin()) {
+if ($canEdit) {
     $objCssLayout->middleColumnContent .= '<div id="middleaddblock">' . $header->show() . $wideBlocksDropDown->show();
     $objCssLayout->middleColumnContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $button->show() . ' </div>';
     $objCssLayout->middleColumnContent .= '</div>';

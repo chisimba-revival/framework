@@ -60,3 +60,40 @@ Knowledge Map edits, or image-picker workflows were certified by this sample.
    stale-state, draft, and failure contracts.
 4. Repeat and broaden this no-jQuery rehearsal before designing conditional
    loading. Include embedded blocks and editors, not only top-level module routes.
+
+## Follow-up: repaired baseline anomalies
+
+The homepage was loading the native context editor without `block-editor-settings`.
+It now supplies a fixed `root` scope, revision and purpose-specific CSRF token and
+uses the shared native editor. The old unchecked write handlers were replaced by
+an administrator-only policy over the existing request and dbTable ordering
+services. Current persisted administrator membership is checked on each request;
+Context still rejects `root`. Help explains shared-site impact and recovery.
+
+File Manager embedded JSON strings inside double-quoted HTML event attributes
+without HTML escaping. Missing-thumbnail `onerror` handlers were truncated; file
+and folder confirmation handlers had the same defect. All three attributes now
+escape JSON for HTML, and the image fallback uses textContent rather than innerHTML.
+Shared canvas labels are also emitted with script-safe JSON.
+
+Validation completed:
+
+* PHP lint and diff whitespace checks.
+* Context and Postlogin policy tests: methods, tokens, scopes, revoked membership,
+  unoffered/paused modules, preview and checked persistence.
+* Shared client tests for Context, Postlogin, Personal Space and Slate: preview
+  races, duplicate submissions, token renewal and uncertain-write lockout.
+* Personal Space service regression tests.
+* Rendered File Manager event attributes parsed as JavaScript, including translated
+  text containing quotes, HTML and Unicode.
+* Disposable HTTP/PDO preview/add/move/remove, stale revision, foreign placement,
+  wrong scope and GET/CSRF denials. Original placement identities/order restored.
+* Chrome with automatic loading enabled and suppressed: homepage switch on/off,
+  preview, quick/full Help and Escape, removal cancellation; File Manager image
+  fallback, Grid view and New folder. No new console errors during repaired flows.
+* No matching PHP warnings/deprecations/fatal errors in fixture container logs.
+
+Only the active local Postlogin catalogue registration was updated for Help;
+source mounts make the fixes available locally. No production deployment.
+Shared feature-box disclosure and the older canvas editor remain the next jQuery
+migration work. This follow-up does not certify every module or remove jQuery.

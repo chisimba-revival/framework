@@ -149,94 +149,20 @@ class postlogin extends controller {
         return 'main_tpl.php';
     }
 
-    /**
-     * Method to render a block
-     */
-    protected function __renderblock() {
-        if ($this->objUser->isAdmin()) {
-            $blockId = $this->getParam('blockid');
-            $side = $this->getParam('side');
+    /** All site-home layout actions use the administrator-only shared editor. */
+    protected function __renderblock() { $this->blockEditorResponse('renderblock'); }
+    protected function __addblock() { $this->blockEditorResponse('addblock'); }
+    protected function __removeblock() { $this->blockEditorResponse('removeblock'); }
+    protected function __moveblock() { $this->blockEditorResponse('moveblock'); }
 
-            $block = explode('|', $blockId);
-
-
-            $blockId = $side . '___' . str_replace('|', '___', $blockId);
-
-            if ($block[0] == 'block') {
-                $objBlocks = $this->getObject('blocks', 'blocks');
-                echo '<div id="' . $blockId . '" class="block highlightblock">' . $objBlocks->showBlock($block[1], $block[2], NULL, 20, TRUE, FALSE) . '</div>';
-            } if ($block[0] == 'dynamicblock') {
-                echo '<div id="' . $blockId . '" class="block highlightblock">' . $this->objDynamicBlocks->showBlock($block[1]) . '</div>';
-            } else {
-                echo '';
-            }
-        }
+    private function blockEditorResponse($action) {
+        $input=[];
+        foreach (['contextcode','blockid','side','direction','revision','csrf_token'] as $key) $input[$key]=$this->getParam($key);
+        $result=$this->getObject('postloginblockeditor')->handle($action,$input,$_SERVER['REQUEST_METHOD']??'');
+        http_response_code($result['status']);
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode($result);
+        exit;
     }
-
-    /**
-     * Method to add a block
-     */
-    protected function __addblock() {
-        if ($this->objUser->isAdmin()) {
-            $blockId = $this->getParam('blockid');
-            $side = $this->getParam('side');
-
-            $block = explode('|', $blockId);
-
-            if ($block[0] == 'block' || $block[0] == 'dynamicblock') {
-                // Add Block
-                $result = $this->objContextBlocks->addBlock($blockId, $side, $this->contextCode, $block[2]);
-
-                if ($result == FALSE) {
-                    echo '';
-                } else {
-                    echo $result;
-                }
-            } else {
-                echo '';
-            }
-        }
-    }
-
-    /**
-     * Method to remove a context block
-     */
-    protected function __removeblock() {
-        if ($this->objUser->isAdmin()) {
-            $blockId = $this->getParam('blockid');
-
-            $result = $this->objContextBlocks->removeBlock($blockId);
-
-            if ($result) {
-                echo 'ok';
-            } else {
-                echo 'notok';
-            }
-        }
-    }
-
-    /**
-     * Method to move a context block
-     */
-    protected function __moveblock() {
-        if ($this->objUser->isAdmin()) {
-            $blockId = $this->getParam('blockid');
-            $direction = $this->getParam('direction');
-
-            if ($direction == 'up') {
-                $result = $this->objContextBlocks->moveBlockUp($blockId, $this->contextCode);
-            } else {
-                $result = $this->objContextBlocks->moveBlockDown($blockId, $this->contextCode);
-            }
-
-            if ($result) {
-                echo 'ok';
-            } else {
-                echo 'notok';
-            }
-        }
-    }
-
 }
-
-?>

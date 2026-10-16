@@ -6,12 +6,25 @@ class contextblockeditor extends ChisimbaObject
     public function init() {}
     public function csrf(){return $this->getObject('nativeauthwebcomposition','security')->build()['csrf'];}
     public function purpose($code){return 'context_blocks_'.substr(hash('sha256',$code),0,32);}
+    protected function editingScope(array $input) {
+        $code=(string)$this->getObject('dbcontext','context')->getContextCode();
+        $user=$this->getObject('user','security');
+        if (!$user->isLoggedIn() || $code==='' || $code==='root' || ($input['contextcode']??null)!==$code
+            || (!$user->isAdmin() && !$this->getObject('managegroups','contextgroups')->isContextLecturer())) return null;
+        return $code;
+    }
+    protected function offeredDynamicBlocks($wide,$code) {
+        $dynamic=$this->getObject('dynamicblocks','blocks');
+        return $wide?$dynamic->getWideContextBlocks($code):$dynamic->getSmallContextBlocks($code);
+    }
+    protected function offeredModuleBlocks($wide) {
+        return $this->getObject('dbmoduleblocks','modulecatalogue')->getBlocks($wide?'wide':'normal','context|site');
+    }
     public function allowed($id,$side,$code): bool {
         $wide=$side==='middle';
-        $dynamic=$this->getObject('dynamicblocks','blocks');
-        $rows=$wide?$dynamic->getWideContextBlocks($code):$dynamic->getSmallContextBlocks($code);
+        $rows=$this->offeredDynamicBlocks($wide,$code);
         foreach($rows as $row) if($id==='dynamicblock|'.$row['id'].'|'.$row['module'] && $this->getObject('modules','modulecatalogue')->checkIfRegistered($row['module'])) return true;
-        foreach($this->getObject('dbmoduleblocks','modulecatalogue')->getBlocks($wide?'wide':'normal','context|site') as $row) {
+        foreach($this->offeredModuleBlocks($wide) as $row) {
             if($row['moduleid']!=='contentblocks' && $id==='block|'.$row['blockname'].'|'.$row['moduleid'])return true;
         }
         if($this->getObject('modules','modulecatalogue')->checkIfRegistered('contentblocks')) {
@@ -22,11 +35,9 @@ class contextblockeditor extends ChisimbaObject
         return false;
     }
     public function handle($action,array $input,$method): array {
-        $context=$this->getObject('dbcontext','context');$code=(string)$context->getContextCode();
-        $user=$this->getObject('user','security');
+        $code=$this->editingScope($input);
         $result=['ok'=>false,'status'=>403,'code'=>'block_denied'];
-        if(!$user->isLoggedIn() || $code==='' || $code==='root' || ($input['contextcode']??null)!==$code
-            || (!$user->isAdmin() && !$this->getObject('managegroups','contextgroups')->isContextLecturer())) return $result;
+        if ($code===null) return $result;
         try {
             if($method!=='POST')throw new RuntimeException('block_method');
             if(!is_string($input['csrf_token']??null)||!$this->csrf()->consume($this->purpose($code),$input['csrf_token']))throw new RuntimeException('block_csrf');

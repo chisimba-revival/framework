@@ -334,7 +334,7 @@ $archiveError = (string) $this->getParam('archiveerror');
                                   'action' => 'deletefolder',
                                   'id' => $subfolder['id'],
                               ))); ?>"
-                              onsubmit="return window.confirm(<?php echo json_encode($fmText('confirm_delete_folder'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>);">
+                              onsubmit="return window.confirm(<?php echo $escape(json_encode($fmText('confirm_delete_folder'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)); ?>);">
                             <button type="submit" class="fm-delete-button"><?php echo $escape($fmText('delete_folder')); ?></button>
                         </form>
                     <?php endif; ?>
@@ -387,7 +387,7 @@ $archiveError = (string) $this->getParam('archiveerror');
                                      alt=""
                                      loading="lazy"
                                      decoding="async"
-                                     onerror="this.parentNode.className='fm-item-icon'; this.parentNode.innerHTML=<?php echo json_encode($fmText('image'), JSON_UNESCAPED_UNICODE); ?>;" />
+                                     onerror="this.parentNode.className='fm-item-icon'; this.parentNode.textContent=<?php echo $escape(json_encode($fmText('image'), JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)); ?>;" />
                             </span>
                         <?php else: ?>
                             <span class="fm-item-icon" aria-hidden="true">
@@ -420,7 +420,7 @@ $archiveError = (string) $this->getParam('archiveerror');
                                   action="<?php echo $escape($fmUri(array(
                                       'action' => 'multideleteconfirm',
                                   ))); ?>"
-                                  onsubmit="return window.confirm(<?php echo json_encode($fmText('confirm_delete_file'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>);">
+                                  onsubmit="return window.confirm(<?php echo $escape(json_encode($fmText('confirm_delete_file'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE)); ?>);">
                                 <input type="hidden" name="folder"
                                        value="<?php echo $escape($folderId); ?>" />
                                 <input type="hidden" name="files[]"
