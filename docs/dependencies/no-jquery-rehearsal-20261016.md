@@ -97,3 +97,5 @@ Only the active local Postlogin catalogue registration was updated for Help;
 source mounts make the fixes available locally. No production deployment.
 Shared feature-box disclosure and the older canvas editor remain the next jQuery
 migration work. This follow-up does not certify every module or remove jQuery.
+
+The subsequent [featurebox/canvas migration](native-featurebox-canvas-20261016.md) resolves the two shared blockers listed above; global loading remains enabled pending broader caller checks.

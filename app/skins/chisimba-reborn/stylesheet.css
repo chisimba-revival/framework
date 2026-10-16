@@ -7624,3 +7624,19 @@ video.chisimba-native-media { height: auto; }
 .chisimba-media-preview__media { display: block; max-width: 100%; border: 0; }
 iframe.chisimba-media-preview__media, video.chisimba-media-preview__media { width: min(100%, 40rem); aspect-ratio: 16 / 9; }
 a[data-native-embed] { overflow-wrap: anywhere; }
+
+/* Native feature-box disclosures keep the shared header and browser keyboard behaviour. */
+.featurebox-disclosure > summary.featureboxheader {
+    display: list-item;
+    list-style-position: inside;
+    cursor: pointer;
+}
+.featurebox-disclosure-title {
+    display: inline;
+    font: inherit;
+    margin: 0;
+}
+.featurebox-disclosure > summary:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -3px;
+}
