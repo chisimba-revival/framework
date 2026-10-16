@@ -42,3 +42,34 @@ are collected separately in work/grid-dialog-trace-20261016.
 The completed six-site scan also found all four modules unregistered and zero
 matching stored references (125/174/124/244/237/237 columns). Local maintained
 Pagenotes contract tests passed as well. Browser acceptance still pending.
+
+## Decision and first security checkpoint
+
+Derek chose modernisation now for CMS/CMS Admin, Forms and ShortURL; the earlier
+pause question is resolved. Start with ShortURL's request boundary, then its
+native editor/repository before the other callers. No module has been paused.
+
+ShortURL 1.011 requires current persisted administrator membership for every
+management action, uses an explicit action allowlist, validates scalar IDs/URL
+and dynamic-key field formats, and requires POST plus the shared login-bound
+CSRF token for writes. Existing add/edit/delete forms carry tokens. The public
+redirect remains public and no longer constructs the administration UI.
+The list already renders as HTML; the jqGrid display was commented out but its
+row-deletion handler was active alongside normal form submission. Removed that
+duplicate handler and redundant grid loading. Boxy is still required.
+
+Standalone policy and actual controller subprocess tests pass in PHP 8.5 with
+warnings as failures. Rejected requests make zero repository calls; accepted
+administrator deletion delegates once. The probe exposed undeclared controller
+properties; those are declared. These tests do not certify legacy persistence
+or a complete working editor. Native UI/draft recovery, escaping, prepared and
+transactional repository writes, revision checks, Help and installed acceptance
+remain before enabling ShortURL. No production deployment or activation.
+
+Chrome reconnected: local homepage and Personal Space render; editing toggle
+opens/closes controls, compact/full Help works, Escape returns focus to its
+opener. Browser warnings/errors captured were empty; loaded scripts contain core
+jQuery/UI and maintained client code, not Validate or Flexigrid. Container logs
+for the smoke interval contain zero PHP warning/deprecation/fatal/parse messages.
+This closes the blocked basic smoke for retired assets, not full ShortURL browser
+acceptance. No placements/content were modified.
