@@ -16,6 +16,7 @@ class dbContext_learneroutcomes extends dbTable
      *
      * @var object $objUser
      */
+    public $objDBContext;
     public $objUser;
     /**
      * The user Id
@@ -29,8 +30,8 @@ class dbContext_learneroutcomes extends dbTable
     function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') 
     {
         parent::init('tbl_context_learneroutcomes');
-        $this->objUser = &$this->getObject('user', 'security');
-        $this->objDBContext = &$this->getObject('dbcontext', 'context');
+        $this->objUser = $this->getObject('user', 'security');
+        $this->objDBContext = $this->getObject('dbcontext', 'context');
         $this->objUserId = $this->objUser->userId();
     }
     /**

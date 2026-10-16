@@ -21,6 +21,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class stepmenu extends ChisimbaObject
 {
+    public $id;
     /**
     *
     * @var string $id: the ID tag from the CSS

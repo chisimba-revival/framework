@@ -8,7 +8,7 @@ $checks=array(
  'create remains positional-compatible'=>strpos($db,'$privateAdmissionMode=NULL, $useSections=FALSE')!==FALSE,
  'update remains positional-compatible'=>strpos($db,'$privateAdmissionMode=FALSE, $useSections=FALSE')!==FALSE,
  'create captures explicit opt in'=>strpos($admin,"'useSections' => \$this->getParam('use_sections') === '1'")!==FALSE,
- 'edit captures explicit opt in'=>strpos($admin,"\$this->getParam('use_sections') === '1')")!==FALSE
+ 'edit captures explicit opt in'=>strpos($admin,"\$this->getParam('use_sections') === '1' ? 1 : 0)")!==FALSE
 );
 foreach($checks as $name=>$ok){echo ($ok?'PASS':'FAIL').': '.$name.PHP_EOL;if(!$ok){exit(1);}}
 ?>

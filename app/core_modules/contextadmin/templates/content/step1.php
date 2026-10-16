@@ -1,4 +1,5 @@
 <?php
+$this->appendArrayVar('headerParams', $this->getJavaScriptFile('settings.js?v=2061', 'context'));
 $objSysConfig = $this->getObject ('dbsysconfig','sysconfig');
 
 $this->loadClass('htmlheading', 'htmlelements');
@@ -336,7 +337,6 @@ $formatDescriptions = array(
 $formatHelp = '<p id="delivery-format-help" class="contextadmin-field-help" data-format-descriptions="'
     . htmlspecialchars(json_encode($formatDescriptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
     . '">' . htmlspecialchars($formatDescriptions[$selectedFormat] ?? $formatDescriptions['standard'], ENT_QUOTES, 'UTF-8') . '</p>';
-$this->appendArrayVar('headerParams', '<script type="text/javascript">document.addEventListener("DOMContentLoaded",function(){var select=document.getElementById("input_delivery_format"),help=document.getElementById("delivery-format-help"),descriptions={};if(!select||!help){return;}try{descriptions=JSON.parse(help.dataset.formatDescriptions||"{}");}catch(error){descriptions={};}select.addEventListener("change",function(){help.textContent=descriptions[select.value]||"";});});</script>');
 $navigation = new dropdown('navigation_mode');
 $navigation->addOption('sequential', $this->objLanguage->languageText('mod_contextadmin_navigation_sequential', 'contextadmin', 'Sequential only'));
 $navigation->addOption('backward', $this->objLanguage->languageText('mod_contextadmin_navigation_backward', 'contextadmin', 'Backward allowed'));
@@ -435,7 +435,6 @@ $table->addCell('Admission policy');
 $table->addCell('<div id="context_private_admission">' . $privateAdmissionMode->show() . '</div>');
 $table->endRow();
 
-$this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}jQuery("input[name=access_policy]").on("change",admissionPolicy);admissionPolicy();});</script>');
 
 $button = new button('savecontext', $this->objLanguage->languageText('mod_contextadmin_gotonextstep', 'contextadmin', 'Go to Next Step'));
 $button->cssId = 'savebutton';

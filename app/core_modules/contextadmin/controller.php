@@ -56,6 +56,10 @@ if (!
  * @see       core
  */
 class contextadmin extends controller {
+    public $objCourseCreation;
+    public $objContextAuthors;
+    public $objModules;
+    public $csrf;
 
     const CSRF_CONTEXT = 'contextadmin_step1';
     const CSRF_AUTHORS = 'contextadmin_authors';
@@ -495,7 +499,7 @@ class contextadmin extends controller {
      * @param string $mode Add/Edit mode
      * @return array : The submitted learner outcomes
      */
-    private function getLearnerOutcomes($lodrops=Null, $mode="add", $contextCode) {
+    private function getLearnerOutcomes($lodrops, $mode, $contextCode) {
         $count = 1;
 
         //Get all context Learner Outcomes and for each, get updated value
@@ -716,7 +720,7 @@ class contextadmin extends controller {
                         $this->getParam('delivery_format', 'standard'),
                         $this->getParam('navigation_mode', 'free'),
                         $accessPolicy, $privateAdmissionMode,
-                        $this->getParam('use_sections') === '1');
+                        $this->getParam('use_sections') === '1' ? 1 : 0);
 
                 return $this->nextAction('step2', array('mode' => 'edit'));
             }
