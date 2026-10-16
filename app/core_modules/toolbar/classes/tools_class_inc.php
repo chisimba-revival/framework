@@ -135,18 +135,7 @@ class tools extends ChisimbaObject
      */
     public function addBookmark()
     {
-        if ($this->moduleCheck->checkIfRegistered('bookmarks')
-            && $this->securityContext->isAuthenticated())
-        {
-            if (!$this->moduleCheck->checkIfRegistered('statusbar'))
-            {                
-                $objBookmark = $this->getObject('bookmarksops', 'bookmarks');
-                $link = $objBookmark->showLink() . '&nbsp;';
-                $this->params[] = $objBookmark->bookmarkParams();
-                $link .= $objBookmark->showGotoLink();
-                return $link;
-            }
-        }
+        // Legacy Bookmarks and Statusbar are paused, including stale registrations.
         return FALSE;
     }
 
@@ -156,14 +145,7 @@ class tools extends ChisimbaObject
      */
     public function addStatusbar()
     {
-        if ($this->moduleCheck->checkIfRegistered('statusbar')
-            && $this->securityContext->isAuthenticated())
-        {
-            $objStatusbar = $this->getObject('statusbarops', 'statusbar');
-            $bar = $objStatusbar->showStatusbar() . '&nbsp;';
-            $this->params[] = $objStatusbar->statusbarParams();
-            return $bar;
-        }
+        // Legacy Bookmarks and Statusbar are paused, including stale registrations.
         return FALSE;
     }
 
