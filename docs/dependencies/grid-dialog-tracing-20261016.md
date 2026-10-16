@@ -100,3 +100,25 @@ a fresh page showed the unchanged mapping. 390px form/list/action inspection
 passed; console warnings/errors empty. Shared shell's known minor horizontal
 overflow remains, not introduced by this module. ShortURL acceptance complete;
 no production activation/deployment. Disposable clone removed after checks.
+
+## CMS Admin 1.652 permission security checkpoint (16 October 2026)
+
+The user wants CMS preserved and modernised before use. Its front-page permission
+save/delete routes relied on the broad CMSAuthors dispatch check, while only the
+list checked administrator access. Added persisted administrator checks before
+legacy init and at dispatch for list/form/save/delete, with shared CSRF and POST
+for mutations. Existing Boxy forms carry tokens. Fixed an edit form replacing the
+mapping ID with the user ID, and a mismatched repository signature that ignored
+the intended boolean/record identity. Current persisted admin checks also replace
+cached admin checks in the permission repository.
+
+Policy and actual-controller probes pass, including CMS-author/revoked denial and
+zero writes on rejected requests. PHP syntax and the full disposable PDO suite
+pass; the new repository test checks record identity, bound IDs and scoped deletion.
+This is not native UI completion: Boxy remains; stale edits/draft recovery and
+broader CMS security remain to migrate. The isolated catalogue rehearsal did not
+complete for CMS Admin. Source tracing finds absent declared dependencies feed
+and blockalicious; their callers need migration, not reinstatement of old code.
+Installed/browser acceptance remains outstanding. No working-site activation or
+production deployment; disposable clone removed. Next: resolve CMS installation
+and service dependencies, then complete native permissions/flags/notification UI.
