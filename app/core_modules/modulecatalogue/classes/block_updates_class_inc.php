@@ -41,6 +41,7 @@ if (!
 class block_updates extends ChisimbaObject {
     /** Dependencies and state initialised by this component. */
     public $configData;
+    public $blockType;
 
     /** Dependencies and state initialised by this component. */
     public $objLanguage;

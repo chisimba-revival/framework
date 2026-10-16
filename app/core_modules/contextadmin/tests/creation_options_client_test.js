@@ -1,0 +1,12 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const elements={};for(const id of ['cpd_enabled','cpd_creation_settings','cpd_scheme_id','cpd_category_id','cpd_points','cpd_reason','input_delivery_format','input_navigation_mode'])elements[id]={events:{},addEventListener(k,f){this.events[k]=f;}};
+const enabled=elements.cpd_enabled,panel=elements.cpd_creation_settings,scheme=elements.cpd_scheme_id,category=elements.cpd_category_id;
+enabled.checked=false;scheme.value='one';category.options=[{dataset:{},value:''},{dataset:{scheme:'one'},value:'a'},{dataset:{scheme:'two'},value:'b'}];category.selectedIndex=1;category.value='a';
+vm.runInNewContext(fs.readFileSync(__dirname+'/../resources/creation-options.js','utf8'),{document:{readyState:'complete',getElementById:id=>elements[id]}});
+assert.equal(panel.hidden,true);assert.equal(elements.cpd_points.required,false);assert.equal(category.options[2].hidden,true);assert.equal(category.value,'a');
+enabled.checked=true;enabled.events.change();assert.equal(panel.hidden,false);assert.equal(elements.cpd_points.required,true);
+scheme.value='two';scheme.events.change();assert.equal(category.value,'');assert.equal(category.options[1].hidden,true);assert.equal(category.options[2].hidden,false);
+enabled.checked=false;enabled.events.change();assert.equal(elements.cpd_reason.required,false);assert.equal(panel.hidden,true);
+elements.input_delivery_format.value='microlearning';elements.input_delivery_format.events.change();assert.equal(elements.input_navigation_mode.value,'backward');
+elements.input_delivery_format.value='masterclass';elements.input_delivery_format.events.change();assert.equal(elements.input_navigation_mode.value,'free');
+console.log('PASS native CPD visibility, required fields, category retention/filtering and format navigation defaults');

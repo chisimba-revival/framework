@@ -829,26 +829,19 @@ class contextadmin extends controller {
     private function __checkcode() {
         $this->setPageTemplate(NULL);
         $this->setLayoutTemplate(NULL);
-
+        header('Content-Type: text/plain; charset=UTF-8');
+        header('Cache-Control: no-store');
         if (!$this->canCreateContext()) {
+            http_response_code(403);
             echo 'forbidden';
             return;
         }
         $code = $this->getParam('code');
-
-        switch (strtolower($code)) {
-            case NULL:
-                break;
-            case 'root':
-                echo 'reserved';
-                break;
-            default:
-                if ($this->objContext->contextExists($code)) {
-                    echo 'exists';
-                } else {
-                    echo 'ok';
-                }
-        }
+        if (!is_string($code)) { http_response_code(400); echo 'invalid'; return; }
+        $code = strtolower(trim($code));
+        if ($code === 'root') { echo 'reserved'; return; }
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{0,254}$/', $code)) { echo 'invalid'; return; }
+        echo $this->objContext->contextExists($code) ? 'exists' : 'ok';
     }
 
     private function isPost() {
