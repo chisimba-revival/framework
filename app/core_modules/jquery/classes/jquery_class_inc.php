@@ -144,21 +144,7 @@ class jquery extends ChisimbaObject
         }
     }
 
-    /**
-     * Method to load the ddmenu plugin script files to the header
-     * TODO: This menu conflicts with prototype, resolve the conflict
-     */
-    public function loadDDMenuPlugin()
-    {
-        $basePath = 'plugins/ddmenu/0.3/';
-        $this->appendArrayVar('headerParams',
-                '<link rel="stylesheet" type="text/css" href="'
-                . $this->getResourceUri($basePath . 'ddmenu.css' . '">'));
-        $this->loadEasingPlugin('1.3');
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath.'jquery.bdc.ddmenu.pack.js',
-          'jquery'));
-    }
+
 
 
     /**
@@ -306,38 +292,7 @@ class jquery extends ChisimbaObject
           $this->getResourceUri($basePath.'stylesheets/'.$theme.'/boxy.css'.'">'));
     }
 
-    /**
-     * Method to load the facebox plugin
-     * Allows for the creation of facebook style notification windows/forms
-     */
-    public function loadFaceboxPlugin($version = '1.2', $theme = 'default')
-    {
-        $basePath = 'plugins/facebox/'.$version.'/';
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath.'facebox.js'));
-        $this->appendArrayVar('headerParams',
-          '<link rel="stylesheet" type="text/css" href="'
-         . $this->getResourceUri($basePath . 'themes/' . $theme
-         . '/facebox.css' .'">'));
-    }
 
-   /**
-     * Method to load the jframe plugin
-     *
-     * This plugin enables any div with a 'src' <div src=""> attribute
-     * to behave as if it where an <iframe src=""> loading the content 
-     * via ajax.
-     * 
-     * Simply load the plugin and viola, all div's with src become ajax frames
-     */
-    public function loadJFramePlugin($version = '1.131')
-    {
-        $basePath = 'plugins/jframe/' 
-          . $version . '/';
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath
-          . 'jquery.jframe.js'));
-    }
 
 	
    /**
