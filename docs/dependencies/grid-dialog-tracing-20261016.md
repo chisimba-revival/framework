@@ -73,3 +73,30 @@ jQuery/UI and maintained client code, not Validate or Flexigrid. Container logs
 for the smoke interval contain zero PHP warning/deprecation/fatal/parse messages.
 This closes the blocked basic smoke for retired assets, not full ShortURL browser
 acceptance. No placements/content were modified.
+
+## ShortURL 1.012 native editor (16 October 2026)
+
+Replaced Boxy forms and the remaining jqGrid callback with semantic forms and
+native JavaScript. Removed the obsolete UI class, templates and module CSS.
+The repository uses dbTable prepared queries, shared locking/savepoints and row
+revision guards. Exact redirects remain case-sensitive; only safe HTTP(S)
+destinations execute. Legacy dynamic mappings and keys remain read-only.
+
+Passed: PHP syntax, policy/controller and native-client tests; full disposable
+PDO suite (duplicate/stale protection and deletion rollback); fresh/repeat
+catalogue installation in an isolated clone; installed HTTP permission/token/
+method denials with unchanged data and create/edit/stale/delete workflows.
+Chrome add/edit and two-tab stale draft retention plus compact/full Help and
+Escape focus restoration passed. Disposable web logs contain zero PHP
+warning/deprecation/fatal entries. Delete cancellation and narrow layout checks
+are pending: Chrome's connection stalled at its native confirmation dialog;
+Derek has been asked to dismiss it. Source remains uncommitted until those checks.
+No production deployment or working-site registration. CMS/CMS Admin and Forms
+still require migration before shared jqGrid/Boxy removal; CMS revival also needs
+its own workflow/security acceptance before use.
+
+Final browser acceptance: after Derek dismissed the native delete confirmation,
+a fresh page showed the unchanged mapping. 390px form/list/action inspection
+passed; console warnings/errors empty. Shared shell's known minor horizontal
+overflow remains, not introduced by this module. ShortURL acceptance complete;
+no production activation/deployment. Disposable clone removed after checks.
