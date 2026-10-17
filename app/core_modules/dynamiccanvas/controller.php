@@ -66,6 +66,7 @@ class dynamiccanvas extends controller
     * 
     */
     public $objConfig;
+    public $objUser;
     
     /**
     * 
@@ -149,17 +150,15 @@ class dynamiccanvas extends controller
         return 'demo_tpl.php';
     }
 
+    /** The arbitrary server-side URL fetch endpoint has been retired. */
     private function __proxy()
     {
-        $this->setPageTemplate('page_template.php');
-        $url = $this->getParam('url', FALSE);
-        if ($url) {
-            $url = urldecode($url);
-            $oCh = $this->getObject("curl", "utilities");
-            $str = $oCh->exec($url);           
-            $this->setVarByRef('str', $str);
-            return 'dump_tpl.php';
-        }
+        http_response_code(410);
+        $this->setVar('str', '<p>' . htmlspecialchars(
+            $this->objLanguage->code2Txt('mod_dynamiccanvas_remote_retired', 'dynamiccanvas'),
+            ENT_QUOTES, 'UTF-8'
+        ) . '</p>');
+        return 'dump_tpl.php';
     }
 
     /**
@@ -175,7 +174,7 @@ class dynamiccanvas extends controller
     {
         $this->setVar('str', "<h3>"
           . $this->objLanguage->languageText("phrase_unrecognizedaction")
-          .": " . $action . "</h3>");
+          . "</h3>");
         return 'dump_tpl.php';
     }
     
@@ -193,7 +192,7 @@ class dynamiccanvas extends controller
     */
     function __validAction(& $action)
     {
-        if (method_exists($this, "__".$action)) {
+        if (is_string($action) && in_array($action, ['demo', 'proxy'], true)) {
             return TRUE;
         } else {
             return FALSE;

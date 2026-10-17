@@ -22,6 +22,7 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class dbtags extends dbTable
 {
+    public $objLanguage;
 
     /**
      * Standard init function - Class Constructor
@@ -289,12 +290,26 @@ class dbtags extends dbTable
         }
     }
 
-    public function getSimilarTags($tag)
+    /** Suggestions are private to their owner; no cross-module visibility is implied. */
+    public function getSimilarTags($tag, $userId = null)
     {
-        $tag = addslashes($tag);
-        $sql = "SELECT DISTINCT meta_value FROM tbl_tags WHERE meta_value LIKE '{$tag}%' ORDER BY meta_value";
+        if (!is_string($userId) || $userId === '' || !is_string($tag)
+            || trim($tag) === '' || mb_strlen($tag) > 100) return [];
+        $prefix = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($tag)) . '%';
+        return $this->selectPrepared(
+            "SELECT DISTINCT meta_value FROM tbl_tags WHERE userid = ? AND meta_key = ?"
+            . " AND meta_value LIKE ? ESCAPE '!' ORDER BY meta_value LIMIT 20",
+            [$userId, 'tag', $prefix]
+        );
+    }
 
-        return $this->getArray($sql);
+    public function getOwnTagCounts($userId)
+    {
+        if (!is_string($userId) || $userId === '') return [];
+        return $this->selectPrepared(
+            'SELECT meta_value, COUNT(*) AS tag_count FROM tbl_tags WHERE userid = ?'
+            . ' AND meta_key = ? GROUP BY meta_value ORDER BY meta_value LIMIT 200',
+            [$userId, 'tag']
+        );
     }
 }
-?>
