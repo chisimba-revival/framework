@@ -354,278 +354,54 @@ class contextadmin extends controller {
         return $this->nextAction('step3', array('mode' => $this->getParam('mode') === 'edit' ? 'edit' : 'add', 'contextCode' => $contextCode));
     }
 
-    /**
-     * Step 3 of Creating a Context - Adding Goals
-     */
-    private function __step3() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            //Get Mode
-            $mode = $this->getParam('mode');
-            //Fetch contextCode
-            $contextCode = $this->getSession('contextCode');
-            $context = $this->objContext->getContext($contextCode);
-            //Get context Learner Outcomes if its an edit
-            if ($mode == 'edit') {
-                $contextLO = $this->objDBLearnerOutcomes->getContextOutcomes($contextCode);
-            } else {
-                $contextLO = "";
-            }
-            if ($context == FALSE) {
-                return $this->nextAction(NULL);
-            }
-            $this->setVar('mode', $mode);
-            $this->setVar('contextCode', $contextCode);
-            $this->setVar('context', $context);
-            $this->setVar('contextLO', $contextLO);
-            $this->setVar('outcomesCount', $this->getParam("outcomesCount", Null));
-            return 'step3.php';
-        }
+    private function showWizardStep($step, $draft = null, $error = '', $revision = null) {
+        $code = $this->getSession('contextCode');
+        $service = $this->getObject('coursewizardservice', 'contextadmin');
+        if (!$service->canEdit($code)) { http_response_code(403); return $this->nextAction(NULL); }
+        try { $state = $this->getObject('coursewizardstore', 'contextadmin')->snapshot($code, $step); }
+        catch (Throwable $error) { http_response_code(404); return $this->nextAction(NULL); }
+        $this->setVar('wizardStep', $step);
+        $this->setVar('wizardState', $state);
+        $this->setVar('wizardDraft', $draft);
+        $this->setVar('wizardError', $error);
+        $this->setVar('wizardSaved', $this->getParam('saved') === '1');
+        $this->setVar('wizardRevision', is_string($revision) ? $revision : $state['revision']);
+        $this->setVar('wizardCsrf', $service->csrf()->issue($service->purpose($code, $step)));
+        $this->setVar('contextCode', $code);
+        $this->setVar('mode', $this->getParam('mode') === 'add' ? 'add' : 'edit');
+        $this->setVar('plugins', $step === 'plugins' ? $service->offeredPlugins() : []);
+        return 'wizard_final.php';
     }
 
-    /**
-     * Method to save step 3 of creating a context - goals
-     */
-    private function __savestep3() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            $actionDelete = $this->getParam('deleteoutcomes', Null);
-            $actionUpdate = $this->getParam('savecontext', Null);
-            $lodrops = $this->getParam('lodrops', Null);
-            $outCount = $this->getParam('outcount', Null);
-            $addFields = $this->getParam('addfields', Null);
-            $backPressed = $this->getParam('back', Null);
-            if ($backPressed == "Back") {
-                //Delete and go back to step 3
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                $outCount = $this->getParam('loAddCount', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step2', array('mode' => "edit", 'contextCode' => $contextCode));
-            }
-            //Update if not delete action and move to next step
-            if ($actionDelete != Null) {
-                //Delete and go back to step 3
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                $outCount = $this->getParam('loAddCount', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step3', array('mode' => $mode, 'contextCode' => $contextCode, 'outcomesCount' => $lodrops, 'messagesuccess' => 'success'));
-            } else if ($addFields != Null) {
-                //Delete and go back to step 3
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                //$lodrops = $this->getParam('lodrops', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step3', array('mode' => $mode, 'contextCode' => $contextCode, 'outcomesCount' => $lodrops, 'messagesuccess' => 'success'));
-            } else {
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                $outCount = $this->getParam('loAddCount', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
+    private function __step3() { return $this->showWizardStep('outcomes'); }
+    private function __step4() { return $this->showWizardStep('plugins'); }
+    private function __savestep3() { return $this->saveWizardStep('outcomes'); }
+    private function __savestep4() { return $this->saveWizardStep('plugins'); }
 
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step4', array('mode' => $mode, 'contextcode' => $contextCode));
-            }
+    private function saveWizardStep($step) {
+        $code = $this->getSession('contextCode');
+        $changes = $step === 'plugins' ? $this->getParam('plugins', []) : [
+            'existing' => $this->getParam('outcomes', []),
+            'remove' => $this->getParam('remove', []),
+            'new' => $this->getParam('newoutcomes', [])
+        ];
+        $input = ['contextCode' => $this->getParam('contextCode'), 'csrf_token' => $this->getParam('csrf_token'),
+            'revision' => $this->getParam('revision'), 'changes' => $changes,
+            'operation' => $this->getParam('operation', 'save')];
+        $result = $this->getObject('coursewizardservice', 'contextadmin')->submit($code, $step, $input, $_SERVER['REQUEST_METHOD'] ?? '');
+        if (in_array($result, ['denied','method'], true)) {
+            http_response_code($result === 'method' ? 405 : 403);
+            $this->setLayoutTemplate(NULL); $this->setPageTemplate(NULL); echo 'forbidden'; return;
         }
-    }
-
-    /**
-     * Method to get all the posted learner outcomes
-     *
-     * @param string $lodrops The number of outcomes added
-     * @param string $mode Add/Edit mode
-     * @return array : The submitted learner outcomes
-     */
-    private function getLearnerOutcomes($lodrops, $mode, $contextCode) {
-        $count = 1;
-
-        //Get all context Learner Outcomes and for each, get updated value
-        $contextLO = $this->objDBLearnerOutcomes->getContextOutcomes($contextCode);
-        $existingOutcomes = (is_countable($contextLO) ? count($contextLO) : 0);
-        if ($existingOutcomes > 0) {
-            $count = $existingOutcomes + 1;
-            $lodrops = $existingOutcomes + $lodrops;
+        if ($result === 'add') {
+            if (!is_array($changes['new'])) $changes['new'] = [];
+            if (count($changes['new']) < 20) $changes['new'][] = '';
+            return $this->showWizardStep($step, $changes, '', $input['revision']);
         }
-        //Array to store the outcomes
-        $loArray = array();
-        if ($mode != "edit") {
-            while ($count <= $lodrops) {
-                $learneroutcome = $this->getParam('learneroutcome_' . $count);
-                //Check to avoid storing empty record
-                if (!empty($learneroutcome)) {
-                    $loArray[] = $learneroutcome;
-                }
-                $count++;
-            }
-        } else if ($mode == "edit") {
-            foreach ($contextLO as $thisLO) {
-                //Get Textinput name on step 3 form for this outcome
-                $loTxtInput = $this->getParam($thisLO["id"]);
-                $learneroutcome = $this->getParam("update" . $loTxtInput);
-                $delLO = $this->getParam("delete" . $loTxtInput);
-                //If empty LO delete record, otherwise update with new value
-                if ($delLO == "on") {
-                    $id = $this->objDBLearnerOutcomes->deleteSingle($thisLO["id"]);
-                } elseif (!empty($learneroutcome)) {
-                    $id = $this->objDBLearnerOutcomes->updateSingle($thisLO["id"], $learneroutcome);
-                    $loArray[] = $learneroutcome;
-                }
-            }
-        }
-        return $loArray;
-    }
-
-    /**
-     * Method to get all the posted learner outcomes
-     *
-     * @param string $contextCode
-     * @param array $lodrops
-     * @return array : The id's of submitted learner outcomes
-     */
-    private function addLearnerOutcomes($contextcode, $loList) {
-        //Array to hold the Id's
-        $arrId = array();
-        if (!empty($loList)) {
-            //Insert each record to LO table
-            foreach ($loList as $lo) {
-                $id = $this->objDBLearnerOutcomes->insertSingle($contextcode, $lo);
-                $arrId[] = $id;
-            }
-        }
-        return $arrId;
-    }
-
-    /**
-     * Step 4 - Selecting modules to be used in context
-     */
-    private function __step4() {
-        $contextCode = $this->getSession('contextCode');
-        //Get Context Title
-        $contextTitle = $this->objContext->getTitle($contextCode);
-        if (empty($contextTitle))
-            $contextTitle = $this->objContext->getMenuText($contextCode);
-        if ($contextTitle == FALSE) {
-            return $this->nextAction(NULL);
-        }
-        $this->setVar('mode', $this->getParam('mode'));
-        $this->setVar('contextCode', $contextCode);
-        $this->setVar('contextTitle', $contextTitle);
-
-        $objContextModules = $this->getObject('dbcontextmodules', 'context');
-        $objModules = $this->getObject('modules', 'modulecatalogue');
-
-        $contextModules = $objContextModules->getContextModules($contextCode);
-        $plugins = $objModules->getListContextPlugins();
-
-        $this->setVarByRef('contextModules', $contextModules);
-        $this->setVarByRef('plugins', $plugins);
-
-        return 'step4.php';
-    }
-
-    /**
-     * Method to save step 3 of creating a context - module selection
-     */
-    private function __savestep4() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            $plugins = $this->getParam('plugins');
-            $contextCode = $this->getParam('contextCode');
-            $mode = $this->getParam('mode');
-
-            $objContextModules = $this->getObject('dbcontextmodules', 'context');
-            $objContextModules->deleteModulesForContext($contextCode);
-
-
-            if (is_array($plugins) && (is_countable($plugins) ? count($plugins) : 0) > 0) {
-                foreach ($plugins as $plugin) {
-                    $objContextModules->addModule($contextCode, $plugin);
-                }
-            }
-
-            if ($mode == 'add') {
-                return $this->nextAction(NULL, array('message' => 'contextsetup'), 'context');
-            } else {
-                $this->setSession('contextcode', NULL);
-                $this->setSession('displayconfirmationmessage', TRUE);
-                return $this->nextAction(NULL, array('message' => 'contextupdated', 'contextcode' => $contextCode));
-            }
-        }
+        if ($result !== '') return $this->showWizardStep($step, is_array($changes) ? $changes : [], $result, $input['revision']);
+        return $step === 'outcomes'
+            ? $this->nextAction('step4', ['mode' => $this->getParam('mode') === 'add' ? 'add' : 'edit'])
+            : $this->nextAction('step4', ['mode' => 'edit', 'saved' => '1']);
     }
 
     /**
