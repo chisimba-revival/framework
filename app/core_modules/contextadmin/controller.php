@@ -293,54 +293,65 @@ class contextadmin extends controller {
     /**
      * Step 2 of Creating a Context - Adding About Info and Image
      */
-    private function __step2() {
-        $contextCode = $this->getSession('contextCode');
+    private function informationPurpose($code) {
+        return 'context_information_' . substr(hash('sha256', $code), 0, 32);
+    }
 
-        $context = $this->objContext->getContext($contextCode);
-
-        if ($context == FALSE) {
-            return $this->nextAction(NULL);
-        }
-        $this->setSession('contextCode', $contextCode);
-        $this->setVar('mode', $this->getParam('mode'));
+    private function showInformation($contextCode, $context, $draft = array(), $error = '') {
+        $this->setVar('mode', $this->getParam('mode') === 'edit' ? 'edit' : 'add');
         $this->setVar('contextCode', $contextCode);
+        if (isset($draft['about'])) { $context['about'] = $draft['about']; }
         $this->setVar('context', $context);
-        $this->setVar(
-            'contextImageSaveError',
-            $this->getParam('imageerror', '') === '1'
-        );
-
+        $this->setVar('informationDraft', $draft);
+        $this->setVar('informationError', $error);
+        $this->setVar('informationCsrf', $this->csrf->issue($this->informationPurpose($contextCode)));
         return 'step2.php';
     }
 
-    /**
-     * Method to save step 2 of creating a context - about info and image
-     */
-    private function __savestep2() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            $contextCode = $this->getSession('contextCode');
-            $about = $this->getParam('about');
-            $image = $this->getParam('imageselect');
-            $mode = $this->getParam('mode');
-
-            if ($image != '') {
-                $objContextImage = $this->getObject('contextimage', 'context');
-                if (!$objContextImage->setContextImage($contextCode, $image)) {
-                    $this->objContext->updateAbout($contextCode, $about);
-                    $this->setSession('contextCode', $contextCode);
-                    return $this->nextAction(
-                        'step2',
-                        array('mode' => $mode, 'imageerror' => '1')
-                    );
-                }
-            }
-
-            $this->objContext->updateAbout($contextCode, $about);
-            $this->setSession('contextCode', $contextCode);
-            return $this->nextAction('step3', array('mode' => $mode, 'contextCode' => $contextCode));
+    private function __step2() {
+        $contextCode = $this->getSession('contextCode');
+        if (!$this->getObject('contextsettingsaccess', 'context')->canEdit($contextCode)) {
+            http_response_code(403); return $this->nextAction(NULL);
         }
+        $context = $this->objContext->getContext($contextCode);
+        if (!$context) { return $this->nextAction(NULL); }
+        return $this->showInformation($contextCode, $context);
+    }
+
+    /** Save the information form; failed/expired requests retain the draft. */
+    private function __savestep2() {
+        $contextCode = $this->getSession('contextCode');
+        if (!$this->getObject('contextsettingsaccess', 'context')->canEdit($contextCode)
+            || $this->getParam('contextCode') !== $contextCode) {
+            http_response_code(403); return $this->nextAction(NULL);
+        }
+        if (!$this->isPost()) { http_response_code(405); return $this->nextAction('step2'); }
+        $context = $this->objContext->getContext($contextCode);
+        if (!$context) { http_response_code(404); return $this->nextAction(NULL); }
+        $draft = array();
+        foreach (array('about', 'imageselect', 'removeimage') as $field) {
+            $value = $this->getParam($field, '');
+            $draft[$field] = is_string($value) ? $value : '';
+        }
+        $token = $this->getParam('csrf_token', '');
+        if (!is_string($token) || !$this->csrf->consume($this->informationPurpose($contextCode), $token)) {
+            return $this->showInformation($contextCode, $context, $draft, 'expired');
+        }
+        $image = $draft['imageselect'];
+        $objContextImage = $this->getObject('contextimage', 'context');
+        // A selected replacement takes precedence over removal. Never remove first.
+        if ($image !== '') {
+            if (!$objContextImage->setContextImage($contextCode, $image)) {
+                return $this->showInformation($contextCode, $context, $draft, 'image');
+            }
+        } elseif ($draft['removeimage'] === '1' && !$objContextImage->removeContextImage($contextCode)) {
+            return $this->showInformation($contextCode, $context, $draft, 'image');
+        }
+        $about = $this->getObject('richtextsanitizer', 'utilities')->cleanHtml($draft['about']);
+        if ($this->objContext->updateAbout($contextCode, $about) === false) {
+            return $this->showInformation($contextCode, $context, $draft, 'save');
+        }
+        return $this->nextAction('step3', array('mode' => $this->getParam('mode') === 'edit' ? 'edit' : 'add', 'contextCode' => $contextCode));
     }
 
     /**
@@ -890,18 +901,12 @@ class contextadmin extends controller {
      * Ajax function to remove a context image
      */
     private function __removeimage() {
-        $contextCode = $this->getParam('contextcode');
-
-        if ($contextCode != $this->getSession('contextCode')) {
-            echo 'notok';
-        } else {
-            $objContextImage = $this->getObject('contextimage', 'context');
-            if ($objContextImage->removeContextImage($contextCode)) {
-                echo 'ok';
-            } else {
-                echo 'notok';
-            }
-        }
+        // Retired unsafe GET mutation. Image changes belong to the protected form.
+        $this->setPageTemplate(NULL);
+        $this->setLayoutTemplate(NULL);
+        http_response_code(410);
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo 'gone';
     }
 
     /**
