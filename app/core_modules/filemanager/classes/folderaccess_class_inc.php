@@ -526,6 +526,8 @@ echo $destFilePathFull;
 
         // Send the file contents.
         readfile($file);
+        // A download is the whole response; do not append the application page.
+        exit;
     }
 
 }
