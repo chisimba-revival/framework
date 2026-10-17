@@ -49,7 +49,7 @@ if ($allowAdmin) {
         ))
         . '<span>' . $escape($addLabel) . '</span></a>';
 }
-$header .= '</div>';
+$header .= $this->getObject('contextualhelp','help')->show('stories','reading') . '</div>';
 
 $this->Table = $this->newObject('htmltable', 'htmlelements');
 $this->Table->cellspacing = '0';
@@ -164,20 +164,18 @@ if (isset($ar) && (is_countable($ar) ? count($ar) : 0) > 0) {
                 'confirm' => 'yes',
                 'id' => $line['id'],
             )));
-            $objConfirm = $this->newObject('confirm', 'utilities');
-            $objConfirm->setConfirm(
-                $objIconService->render('trash-2', array(
-                    'label' => $deleteLabel,
-                    'class' => 'story-admin-page__action-icon',
-                )),
-                $deleteLink,
-                $this->objLanguage->code2Txt('mod_stories_confirm', $textModule)
-            );
-            $actions[] = $objConfirm->show();
+            $token = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf']->issueForSession('stories_manage');
+            $actions[] = '<details class="chisimba-action-disclosure"><summary aria-label="' . $escape($deleteLabel) . '">'
+                . $objIconService->render('trash-2', ['decorative' => true]) . '</summary>'
+                . '<form method="post" action="' . $escape($deleteLink) . '">'
+                . '<input type="hidden" name="csrf_token" value="' . $escape($token) . '">'
+                . '<input type="hidden" name="confirm" value="yes">'
+                . '<p>' . $escape($this->objLanguage->code2Txt('mod_stories_confirm', $textModule)) . '</p>'
+                . '<button type="submit">' . $escape($deleteLabel) . '</button></form></details>';
         }
 
-        $tableRow[] = '<span class="story-admin-page__actions">'
-            . implode('', $actions) . '</span>';
+        $tableRow[] = '<div class="story-admin-page__actions chisimba-cluster">'
+            . implode('', $actions) . '</div>';
         $this->Table->addRow($tableRow, $oddOrEven);
         $rowcount = ($rowcount === 0) ? 1 : 0;
     }

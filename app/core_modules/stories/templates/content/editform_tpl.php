@@ -31,7 +31,8 @@ $filter = NULL;
 $car = $objCat->getAll($filter);
 
 //Set the form title depending on what we are doing
-$action=$this->getParam('action', Null);
+$action = isset($storyDraft) ? $mode : $this->getParam('action', null);
+$language = ''; $parentId = ''; $id = ''; $category = ''; $title = ''; $abstract = ''; $mainText = '';
 
 //The name of the site
 $site = $this->objConfig->getsiteName();
@@ -100,12 +101,12 @@ switch ($action) {
 }
 
 
-/****** Set up header parameters for javascript date picker ********/
-$headerParams=$this->getJavascriptFile('ts_picker.js','htmlelements');
-$headerParams.="\n\n<script>\n/*Script by Denis Gritcyuk: tspicker@yahoo.com
-Submitted to JavaScript Kit (http://javascriptkit.com)
-Visit http://javascriptkit.com for this script*/\n</script>\n\n";
-$this->appendArrayVar('headerParams',$headerParams);
+if (isset($storyDraft)) {
+    foreach (['id','category','language','parentId','title','abstract','mainText','isActive','isSticky','expirationDate'] as $field) {
+        if (isset($storyDraft[$field]) && is_string($storyDraft[$field])) $$field = $storyDraft[$field];
+    }
+    echo '<p role="alert">' . $this->objLanguage->languageText('mod_stories_native_retry', 'stories') . '</p>';
+}
 
 //Load the form elements that I need
 $this->loadClass('form','htmlelements');
@@ -117,6 +118,8 @@ $this->loadClass("dropdown", "htmlelements");
 //Create the form class
 $objForm = new form('storyinput');
 $objForm->setAction($formAction);
+$csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+$objForm->addToForm('<input type="hidden" name="csrf_token" value="' . htmlspecialchars($csrf->issue('stories_manage'), ENT_QUOTES, 'UTF-8') . '">');
 $objForm->displayType=3;  //Free form
 
 //Add the form title to the form
@@ -144,8 +147,8 @@ if ($action=='edit') {
     $objFmTable->addCell($objTextInput->show(), NULL, "top", "left");
 } else {
     $objFmTable->addCell($id, NULL, "top", "left");
-    $language="";
-    if ($action != 'translate') {
+    if (!isset($storyDraft)) $language='';
+    if ($action != 'translate' && !isset($storyDraft)) {
         $parentId="";
     }
 }
@@ -276,21 +279,9 @@ $objRadioElement->setSelected($act);
 
 $objFmTable2->addCell($objRadioElement->show(), NULL, "top", "center");
 $objFmTable2->addCell($this->formatDate($dateCreated), NULL, "top", "center");
-//Correct the date format for expirationDate for the popup cal
-if (strlen($expirationDate)==19) {
-    $expirationDate=substr($expirationDate, 0, 16); #this is a dirty hack
-}
-$objTextInput = new textinput('expirationDate', $expirationDate);
-$cell=$objTextInput->show();
-$objIcon=$this->newObject('geticon', 'htmlelements');
-$objIcon->setIcon('modules/calendar');
-$objIcon->alt=$this->objLanguage->code2Txt('mod_'.$textModule.'_dpick');
-
-$objLink=$this->newObject('link', 'htmlelements');
-$objLink->link("javascript:show_calendar('document.storyinput.expirationDate', document.storyinput.expirationDate.value);");
-$objLink->link=$objIcon->show();
-$cell .= $objLink->show();
-$objFmTable2->addCell($cell . NULL, "top", "center");
+$cell = '<input type="date" name="expirationDate" value="' . htmlspecialchars(substr((string)$expirationDate, 0, 10), ENT_QUOTES, 'UTF-8')
+    . '" aria-label="' . htmlspecialchars($this->objLanguage->languageText('phrase_expirationdate'), ENT_QUOTES, 'UTF-8') . '">';
+$objFmTable2->addCell($cell, null, 'top', 'center');
 $objFmTable2->endRow();
 
 //Add the output
@@ -328,6 +319,8 @@ $objForm->addToForm($objFieldset->show());
 
 
 $objForm->addToForm("<br /><br /></div>");
+
+echo $this->getObject('contextualhelp','help')->show('stories','reading');
 
 //Show the form
 echo $objForm->show();

@@ -51,6 +51,27 @@ class stories extends controller
      */
     function dispatch($action)
     {
+        if (in_array($action, [null, 'view', 'edit', 'add', 'translate', 'save', 'delete'], true)
+            && !$this->objUser->lookupAdmin($this->objUser->userId())) {
+            http_response_code(403);
+            $this->setVar('str', '');
+            return 'dump_tpl.php';
+        }
+        if (in_array($action, ['save', 'delete'], true)) {
+            $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+            if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST'
+                || !is_string($_POST['csrf_token'] ?? null)
+                || !$csrf->consume('stories_manage', $_POST['csrf_token'])) {
+                http_response_code(403);
+                if ($action === 'save' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+                    $this->setVar('storyDraft', $_POST);
+                    $this->setVar('mode', in_array($this->getParam('mode'), ['add','edit','translate'], true) ? $this->getParam('mode') : 'add');
+                    return 'editform_tpl.php';
+                }
+                $this->setVar('str', '');
+                return 'dump_tpl.php';
+            }
+        }
         // retrieve the mode from the querystring
         $mode = $this->getParam("mode", null);
         // retrieve the sort order from the querystring
@@ -65,6 +86,10 @@ class stories extends controller
                 return "main_tpl.php";
                 break;
             case "edit":
+                $editId = $this->getParam('id');
+                if (!is_string($editId) || !$this->objDbStories->getRow('id', $editId)) {
+                    http_response_code(404); $this->setVar('str', ''); return 'dump_tpl.php';
+                }
                 $this->setvar('mode', "edit");
                 return 'editform_tpl.php';
                 break;
@@ -78,7 +103,14 @@ class stories extends controller
                 break;
             case "save":
                 $mode = $this->getParam("mode", NULL);
-                $this->objDbStories->saveStories($mode);
+                try {
+                    if (!$this->objDbStories->saveStories($mode)) throw new RuntimeException('Story save failed');
+                } catch (Throwable $error) {
+                    http_response_code(422);
+                    $this->setVar('storyDraft', $_POST);
+                    $this->setVar('mode', in_array($mode, ['add','edit','translate'], true) ? $mode : 'add');
+                    return 'editform_tpl.php';
+                }
                 $this->setForShow();
                 //return "main_tpl.php";
                 return $this->nextAction(null);
@@ -105,47 +137,16 @@ class stories extends controller
             case "readmore":
                 return 'showstories_tpl.php';
             case "getfullstory":
-                $id = $this->getParam('id', null);
-                $objStories =  $this->getObject('sitestories');
-                $textRow = $objStories->getRow('id', $id, 'tbl_stories');
-                $mainText = $textRow['maintext'];
-                $curModule = $this->getParam('module', NULL);
-
-                $ret .= "<div id=\"$id\">".$mainText;
-                if ($this->objUser->isAdmin()) {
-                $editArray = array(
-                  'action' => 'edit',
-                  'id' => $id,
-                  'comefrom' => $curModule);
-                $objGetIcon = $this->newObject('geticon', 'htmlelements');
-                $ret .= "&nbsp;" . $objGetIcon->getEditIcon($this->uri($editArray, "stories"));
-                }
-                $ret .= "<a href=\"javascript:getTrimStory('$id');\">[Read Less]</a>";
-                $ret .= "</div>";
-                echo $ret;
-                break;
             case "gettrunctstory":
-                $id = $this->getParam('id', null);
-                $objStories =  $this->getObject('sitestories');
-                $textRow = $objStories->getRow('id', $id, 'tbl_stories');
-                $mainText = $textRow['maintext'];
-                $mainText = substr($mainText, 0, 150);
-                $mainText = $mainText."...";
-                $curModule = $this->getParam('module', NULL);
-
-                $ret .= "<div id=\"$id\">".$mainText;
-                if ($this->objUser->isAdmin()) {
-                $editArray = array(
-                  'action' => 'edit',
-                  'id' => $id,
-                  'comefrom' => $curModule);
-                $objGetIcon = $this->newObject('geticon', 'htmlelements');
-                $ret .= "&nbsp;" . $objGetIcon->getEditIcon($this->uri($editArray, "stories"));
-                }
-                $ret .= "<a href=\"javascript:getFullStory('$id');\">[Read More]</a>";
-                $ret .= "</div>";
-                echo $ret;
-                break;
+                $objStories = $this->getObject('sitestories');
+                $id = $this->getParam('id');
+                if (!$objStories->readableStory($id, true)) {
+                    http_response_code(404);
+                    $this->setVar('str', '');
+                } else $this->setVar('str', $objStories->fetchStory($id));
+                $this->setLayoutTemplate(null);
+                $this->setPageTemplate(null);
+                return 'dump_tpl.php';
             case "getallstories":
                 $objStories =  $this->getObject('sitestories');
                 $limit = $this->getParam('limit', null);
