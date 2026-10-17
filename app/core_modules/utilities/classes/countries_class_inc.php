@@ -327,7 +327,7 @@ class countries extends ChisimbaObject
 
     public function getCountryName($code)
     {
-        $code = strtoupper($code);
+        $code = strtoupper((string)$code);
         
         if (array_key_exists($code, $this->countries)) {
             return $this->countries[$code];
@@ -345,7 +345,7 @@ class countries extends ChisimbaObject
     public function getCountryFlag($code)
     {
         
-        $flagsrc = 'core_modules/utilities/resources/flags/'.strtolower($code).'.gif';
+        $flagsrc = 'core_modules/utilities/resources/flags/'.strtolower((string)$code).'.gif';
 
         if (!file_exists($this->objConfig->getsiterootPath().'/'.$flagsrc)) { 
            $flagsrc = 'core_modules/utilities/resources/flags/-.gif';

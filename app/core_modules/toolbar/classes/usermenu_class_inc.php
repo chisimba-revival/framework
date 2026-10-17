@@ -26,6 +26,7 @@ if (!$GLOBALS['kewl_entry_point_run']){
 */
 class usermenu extends ChisimbaObject
 {
+    public $objSideMenu;
     /**
     * Constructor method to instantiate objects and get variables
     */
