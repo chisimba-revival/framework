@@ -44,6 +44,11 @@
 $this->loadClass('filemanagerobject', 'filemanager');
 class selectfile extends filemanagerobject
 {
+    public $objIcon;
+    public $objModernIcon;
+    public $objLanguage;
+    public $objFile;
+
     /**
     * @var string $name Name of the File Selector Input
     */
