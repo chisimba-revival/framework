@@ -93,7 +93,7 @@ class previewfolder extends filemanagerobject {
      * @return unknown Return description (if any) ...
      * @access public
      */
-    function previewContent($subFolders, $files, $mode, $name, $symlinks = array(), $restriction = array(), $forceRestriction = FALSE) {
+    function previewContent($subFolders, $files, $mode = null, $name = null, $symlinks = array(), $restriction = array(), $forceRestriction = FALSE) {
         $this->viewType = & $this->getParam('view');
         return $this->previewLongView($subFolders, $files, $symlinks, $restriction, $mode, $name, $forceRestriction);
     }
@@ -114,7 +114,7 @@ class previewfolder extends filemanagerobject {
         $objFileSize = new formatfilesize();
         $objThumbnail = $this->getObject('thumbnails', 'filemanager');
         if ($this->viewType == strtolower('thumbnails')) {
-            $objTable->cssId = $this->objLanguage->languageText('mod_filemanager_filemanagertableclass', 'filemanager', 'filemanagerTable');
+            $objTable->cssId = 'filemanagerTable';
             $this->objFileIcons->size = 'large';
         }
         $objIcon = $this->newObject('geticon', 'htmlelements');
@@ -294,6 +294,7 @@ class previewfolder extends filemanagerobject {
                         $domElements['checkbox'] = $this->domDoc->createElement('input');
                         $domElements['checkbox']->setAttribute('type', 'checkbox');
                         $domElements['checkbox']->setAttribute('name', 'files[]');
+                        $domElements['checkbox']->setAttribute('aria-label', $this->objLanguage->languageText('word_select', 'system') . ': ' . $file['filename']);
                         //DOM link
                         $domElements['editLink'] = $this->domDoc->createElement('a');
                         $domElements['editLink']->setAttribute('title', $this->objLanguage->languageText('mod_filemanager_clicktoedit', 'filemanager'));
@@ -354,7 +355,7 @@ class previewfolder extends filemanagerobject {
                     //The DOM download link
                     $domElements['downloadLink'] = $this->domDoc->createElement('a');
                     $domElements['downloadLink']->setAttribute('title', $this->objLanguage->languageText('mod_filemanager_clicktodownload', 'filemanager'));
-                    $domElements['downloadLink']->setAttribute('href', $this->objCleanUrl->cleanUpUrl(($this->objAltConfig->getcontentPath() . $file['path'])));
+                    $domElements['downloadLink']->setAttribute('href', html_entity_decode($this->uri(array('action' => 'file', 'id' => $file['id'], 'filename' => $file['filename']), 'filemanager'), ENT_QUOTES, 'UTF-8'));
                     $domElements['downloadLink']->appendChild($this->domDoc->createTextNode($this->objLanguage->languageText("word_download", "system")));
                     $domElements['downloadLink']->setAttribute('class', $this->objLanguage->languageText("mod_filemanager_buttonlinkclass", "filemanager"));
                     $domElements['viewDiv']->appendChild($domElements['downloadLink']);
@@ -368,7 +369,7 @@ class previewfolder extends filemanagerobject {
                     $domElements['imgDiv'] = $this->domDoc->createElement('div');
                     $domElements['imgDiv']->setAttribute('class', 'imageDiv');
                     $domElements['imgParagraph']->appendChild($this->domDoc->createElement('br'));
-                    $domElements['imgParagraph']->appendChild($this->domDoc->createTextNode($this->objLanguage->languageText("word_filename", "system") . ": " . substr($file['filename'], 0, 10)));
+                    $domElements['imgParagraph']->appendChild($this->domDoc->createTextNode($this->objLanguage->languageText("word_filename", "system") . ": " . $file['filename']));
                     //new line
                     $domElements['imgParagraph']->appendChild($this->domDoc->createElement('br'));
                     $domElements['imgParagraph']->appendChild($this->domDoc->createtextNode($this->objLanguage->languageText("phrase_filesize", "system") . ": " . $objFileSize->formatsize($file['filesize'])));
@@ -383,7 +384,7 @@ class previewfolder extends filemanagerobject {
                     if ($access == 'private_all') {
                         $domElements['imgParagraph']->appendChild($this->domDoc->createElement('br'));
                         $domElements['imgParagraph']->appendChild($this->domDoc->createTextNode(ucfirst($this->objLanguage->languageText('word_access', 'system')) . ': '));
-                        $domElements['imgParagraph']->appendChild($this->domDoc->createTextNode($folder['access']));
+                        $domElements['imgParagraph']->appendChild($this->domDoc->createTextNode($file['access']));
                         $domElements['viewDiv']->setAttribute('id', $file['access']);
                         $objIcon->setIcon('info');
                         $linkTitle = basename($file['filename']) . $objIcon->show();
@@ -394,6 +395,7 @@ class previewfolder extends filemanagerobject {
                     // get image thumbnails
                     //The DOM image
                     $domElements['image'] = $this->domDoc->createElement('img');
+                    $domElements['image']->setAttribute('alt', '');
                     if (preg_match("~image~", $file['mimetype']) || preg_match("~video~", $file['mimetype'])) {
                         $domElements['image']->setAttribute('src', str_replace('amp;', '', $objThumbnail->getThumbnail($file['id'], $file['filename'], $this->objCleanUrl->cleanUpUrl(($this->objAltConfig->getcontentPath() . $file['path'])), 'large')));
                         $domElements['image']->setAttribute('class', 'imgThumbnail');
@@ -571,7 +573,7 @@ function turnOnFiles(value)
         } else {
             $str = '';
         }
-        return $str . $objTable->show() . $this->getJavascriptFile('thumbnails.js', 'filemanager');
+        return $str . $objTable->show();
     }
 
 }

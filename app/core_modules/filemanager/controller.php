@@ -1786,9 +1786,9 @@ class filemanager extends controller {
      *
      */
     private function __viewbytag() {
-        $tag = $this->getParam('tag');
+        $tag = $this->getParam('tag', '');
 
-        if (trim($tag) == '') {
+        if (!is_string($tag) || trim($tag) == '') {
             return $this->nextAction('tagcloud', array('error' => 'notag'));
         }
 

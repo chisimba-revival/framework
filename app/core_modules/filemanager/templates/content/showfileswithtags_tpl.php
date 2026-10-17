@@ -8,7 +8,9 @@ $objIcon = $this->newObject('geticon', 'htmlelements');
 
 $this->appendArrayVar('headerParams', $this->getJavascriptFile('selectall.js', 'htmlelements'));
 
-echo '<h1>'.$this->objLanguage->languageText('mod_filemanager_fileswithtag', 'filemanager', 'Files with tag').': '.$tag.'</h1>';
+echo '<h1>'.$this->objLanguage->languageText('mod_filemanager_fileswithtag', 'filemanager', 'Files with tag').': '.htmlspecialchars((string) $tag, ENT_QUOTES, 'UTF-8').'</h1>';
+
+echo $this->getObject('contextualhelp', 'help')->show('filemanager', 'taggedfiles');
 
 if ((is_countable($files) ? count($files) : 0) > 0) {
     $form = new form('deletefiles', $this->uri(array('action'=>'multidelete')));
@@ -23,7 +25,7 @@ if ((is_countable($files) ? count($files) : 0) > 0) {
     $deselectallbutton = new button ('deselectall', $this->objLanguage->languageText('phrase_deselectall', 'system', 'Deselect all'));
     $deselectallbutton->setOnClick("javascript:SetAllCheckBoxes('deletefiles', 'files[]', false);");
 
-    $form->addToForm($button->show().' &nbsp; &nbsp; '.$selectallbutton->show().' '.$deselectallbutton->show());
+    $form->addToForm('<div class="chisimba-form-actions">'.$button->show().' '.$selectallbutton->show().' '.$deselectallbutton->show().'</div>');
     
     echo $form->show();
 } else {

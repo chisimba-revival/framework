@@ -7655,3 +7655,13 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 }
 .chisimba-content-dialog::backdrop { background: rgb(0 0 0 / 45%); }
 .chisimba-content-dialog > button { margin-block-end: .75rem; }
+
+/* Legacy picker/tag thumbnails retain readable metadata without hover overlays. */
+#filemanagerTable tr td a img.iconThumbnail { padding: .75rem; }
+#filemanagerTable .fm_thumbnails { max-inline-size: 24rem; }
+#filemanagerTable .fm_thumbnails .imageDiv { text-align: center; }
+#filemanagerTable .fm_thumbnails img { max-inline-size: 100%; height: auto; }
+#filemanagerTable { margin: .75rem 0; max-inline-size: 100%; }
+#filemanagerTable tbody { display: flex; flex-wrap: wrap; gap: .75rem; }
+#filemanagerTable tr { margin: 0; min-inline-size: 0; max-inline-size: 100%; box-sizing: border-box; }
+#filemanagerTable tr td { min-inline-size: 0; min-block-size: 0; }
