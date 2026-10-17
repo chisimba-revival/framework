@@ -1,0 +1,10 @@
+const assert=require('assert'),vm=require('vm'),fs=require('fs');
+const rendered=JSON.parse(fs.readFileSync(0,'utf8'));
+const script=s=>s.replace(/<\/?script[^>]*>/g,'');
+let events=0;
+const fields={input_selectfile_attachment:{value:'report.pdf',dispatchEvent:()=>events++},hidden_attachment:{value:'123',dispatchEvent:()=>events++},hidden_other:{value:'keep'}};
+const c={document:{getElementById:id=>fields[id]},Event:class{}};
+vm.runInNewContext(script(rendered.clear),c);c.clearFileInputJS('attachment');c.clearFileInputJS('missing');
+assert.equal(fields.input_selectfile_attachment.value,'');assert.equal(fields.hidden_attachment.value,'');assert.equal(fields.hidden_other.value,'keep');assert.equal(events,2);
+rendered.views.forEach((s,i)=>{const rows=[{style:{}},{style:{}}];const c={document:{querySelectorAll:()=>rows}};vm.runInNewContext(script(s),c);c.turnOnFiles();assert.equal(rows[0].style.display,i===0?'inline-block':'table-row');c.turnOnFiles();assert.equal(rows[0].style.display,'none');});
+console.log('PASS scoped picker clearing/change events, missing fields, thumbnail/list toggles without legacy layout helper');

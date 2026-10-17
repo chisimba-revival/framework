@@ -525,16 +525,16 @@ var onOrOff = "off";
 function turnOnFiles(value)
 {
     if (onOrOff == \'off\') {
-        jQuery(\'#filemanagerTable tr.hidefile\').each(function (i) {
-            this.style.display = \'inline-block\';
+        document.querySelectorAll(\'#filemanagerTable tr.hidefile\').forEach(function (row) {
+            row.style.display = \'inline-block\';
         });
-        adjustLayout();
+        if (typeof adjustLayout === \'function\') { adjustLayout(); }
         onOrOff = "on";
     } else {
-        jQuery(\'#filemanagerTable tr.hidefile\').each(function (i) {
-            this.style.display = \'none\';
+        document.querySelectorAll(\'#filemanagerTable tr.hidefile\').forEach(function (row) {
+            row.style.display = \'none\';
         });
-        adjustLayout();
+        if (typeof adjustLayout === \'function\') { adjustLayout(); }
         onOrOff = "off";
     }
 }
@@ -545,16 +545,16 @@ var onOrOff = "off";
 function turnOnFiles(value)
 {
     if (onOrOff == \'off\') {
-        jQuery(\'tr.hidefile\').each(function (i) {
-            this.style.display = \'table-row\';
+        document.querySelectorAll(\'tr.hidefile\').forEach(function (row) {
+            row.style.display = \'table-row\';
         });
-        adjustLayout();
+        if (typeof adjustLayout === \'function\') { adjustLayout(); }
         onOrOff = "on";
     } else {
-        jQuery(\'tr.hidefile\').each(function (i) {
-            this.style.display = \'none\';
+        document.querySelectorAll(\'tr.hidefile\').forEach(function (row) {
+            row.style.display = \'none\';
         });
-        adjustLayout();
+        if (typeof adjustLayout === \'function\') { adjustLayout(); }
         onOrOff = "off";
     }
 }

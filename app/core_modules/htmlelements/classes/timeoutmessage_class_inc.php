@@ -146,25 +146,15 @@ class timeoutMessage extends ChisimbaObject {
          */
 
         public function _jscript() {
-                static $count = 0;
-                $jscript = '<script type="text/javascript">';
+                $id = json_encode((string) $this->cssId, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+                $delay = max(0, (int) $this->timeout);
+                $property = $this->typeHide === 'hidden' ? 'visibility' : 'display';
+                $value = $this->typeHide === 'hidden' ? 'hidden' : 'none';
+                return '<script>(function(){function start(){var el=document.getElementById(' . $id . ');'
+                    . 'if(el && ' . $delay . '>0){setTimeout(function(){el.style.' . $property . '="' . $value . '";},' . $delay . ');}}'
+                    . 'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",start,{once:true});}else{start();}})();</script>';
 
-                if ($this->typeHide == 'hidden') {
-                        $code = '.visibility = \'hidden\'';
-                } else {
-                        $code = '.display = \'none\'';
-                }
 
-                $jscript.= "function hidemydiv$count() {
-            var el = document.getElementById('$this->cssId');
-            if(el){
-                el.style$code;
-            }
-        }";
-                $jscript.= " setTimeout('hidemydiv$count()', $this->timeout );";
-                $jscript.="</script>";
-                $count++;
-                return $jscript;
         }
 
         /*
@@ -184,28 +174,29 @@ class timeoutMessage extends ChisimbaObject {
          */
 
         public function show() {
-                $objLink = $this->getObject('link', 'htmlelements');
-                $objLink->cssClass = 'floatingClose';
-                $objLink->link = '';
-                $objLink->href = "javascript:void(0);";
-                // Timeout script is Disable for invalid values
-                if ($this->timeout > 0) {
-                        $this->showJScript();
-                }
-                $str = sprintf("<%s id=\"%s\">", $this->htmlTag, $this->cssId);
-                $str.= $this->message;
-                $str.= " {$objLink->show()} </$this->htmlTag>
-                        <script type='text/javascript' >
-                        jQuery(document).ready(function(){
-                                jQuery(document).on('click','a.floatingClose',function(){
-                                        jQuery(this).closest('span#confirm').fadeOut('slow');
-                                });
-                                setTimeout(function(){
-                                        jQuery('span#confirm').fadeOut('slow');
-                                },{$this->timeout});
-                        });
-                        </script>";
-                return $str;
+                $tag = in_array(strtolower((string) $this->htmlTag), ['span', 'div', 'p'], true)
+                    ? strtolower($this->htmlTag) : 'span';
+                $escape = static function ($value) {
+                        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                };
+                $label = $this->getObject('language', 'language')->languageText('mod_htmlelements_dismissmessage', 'htmlelements');
+                $delay = max(0, (int) $this->timeout);
+                $property = $this->typeHide === 'hidden' ? 'visibility' : 'display';
+                $value = $this->typeHide === 'hidden' ? 'hidden' : 'none';
+                // Message is caller-supplied rich HTML, as in the existing helper contract.
+                $html = '<' . $tag . ' id="' . $escape($this->cssId) . '" class="'
+                    . $escape($this->cssClass) . '" role="status">' . $this->message
+                    . ' <button type="button" data-dismiss-message aria-label="' . $escape($label) . '">'
+                    . $escape($label) . '</button></' . $tag . '>';
+                // Bind this rendered instance, even when legacy callers reuse the same ID.
+                return $html . '<script>(function(){var el=document.currentScript.previousElementSibling;'
+                    . 'var button=el.querySelector("[data-dismiss-message]");var timer;'
+                    . 'function hide(){clearTimeout(timer);el.style.' . $property . '="' . $value . '";}'
+                    . 'button.addEventListener("click",hide);'
+                    . 'if(' . $delay . '>0){timer=setTimeout(function expire(){'
+                    . 'if(el.contains(document.activeElement)){timer=setTimeout(expire,1000);return;}hide();'
+                    . '},' . $delay . ');}})();</script>';
+
         }
 
 }

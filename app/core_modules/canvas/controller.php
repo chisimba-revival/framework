@@ -56,6 +56,12 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class canvas extends controller
 {
+    // State used by the installed rendering and service lifecycle.
+    public $cbExists;
+    public $objBlocksContent;
+    public $objMasterCanvas;
+    public $objModule;
+
     
     /**
     * 
@@ -96,7 +102,7 @@ class canvas extends controller
         // Create the configuration object
         $this->objConfig = $this->getObject('config', 'config');
         // Create an instance of the master canvas class
-        $this->objMasterCanvas = & $this->getObject('mastercanvas', 'canvas');
+        $this->objMasterCanvas = $this->getObject('mastercanvas', 'canvas');
         // Let the active skin resolve the current site/user canvas. The old
         // hard-coded "modcanvas" target does not exist in the modern skin and
         // prevented the chooser itself from rendering with a valid canvas.

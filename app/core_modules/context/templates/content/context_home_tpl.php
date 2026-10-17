@@ -1,8 +1,5 @@
 <?php
 $this->setVar('canvastype', 'context');
-//Language items
-$default = 'You are using an unsupported browser. Please switch to Mozilla FireFox available at ( http://getfirefox.com ). Currently the system functionality is limited. Thanks!';
-$browserError = $objLanguage->languageText('mod_poll_browserError', 'poll', $default);
 $objConfig = $this->getObject('altconfig', 'config');
 $objIconService = $this->getObject('iconservice', 'ui');
 // Add JavaScript if User can update blocks
@@ -386,28 +383,5 @@ if ($this->getParam('message') == 'contextsetup') {
       . '</p>'
       . '</div>'
       . '</section>';
-} else {
-    //Check if poll module is installed
-    $pollInstalled = $this->objModuleCatalogue->checkIfRegistered('poll');
-    //get the version number
-    $pollModuleVer = $this->objModuleCatalogue->getVersion('poll');
-    //Display polls if poll is installed & version is higher than 0.121
-    if ($pollModuleVer >= '0.121' && $pollInstalled == True) {
-        $alertBox = $this->getObject('alertbox', 'htmlelements');
-        $alertBox->putJs();
-        echo "<script type='text/javascript'>
-                 var browser=navigator.appName;
-                 var b_version=parseFloat(b_version);
-                 if(browser=='Microsoft Internet Explorer'){
-                    alert('" . $browserError . "');
-                 }else{
-                     jQuery.facebox(function() {
-                      jQuery.get('" . str_replace('&amp;', '&', $this->uri(array('action' => 'happyeval'), 'poll')) . "', function(data) {
-                        jQuery.facebox(data);
-                      })
-                    })
-                }
-            </script>";
-    }
 }
 ?>

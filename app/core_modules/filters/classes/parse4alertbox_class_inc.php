@@ -53,8 +53,8 @@ $GLOBALS['kewl_entry_point_run'])
 * It takes the form
 * [ALERT: url=http://somesite.com]The text of the alert[/ALERT]
 *
-* This causes the text to be placed in a facebox alert using the alertbox
-* class in HTML elements. It needs the jQuery resources in the jquery module.
+* Uses the shared alert helper: native previews for local fragments, ordinary
+* navigation for remote pages.
 *
 * @author Derek Keats
 *
@@ -69,7 +69,9 @@ class parse4alertbox extends ChisimbaObject
     * @access public
     *
     */
-    public $objALert;
+    public $objAlert;
+
+    public $objLanguage;
 
     /**
     *
@@ -164,8 +166,6 @@ class parse4alertbox extends ChisimbaObject
     private function getAlert($url, &$item)
     {
         if (isset($url) && $url !== NULL) {
-            $tmp = $this->objAlert->show($item, $url);
-            //die($tmp);
             return $this->objAlert->show($item, $url);
         } else {
             return "<span class=\"error\">"

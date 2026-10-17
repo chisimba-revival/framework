@@ -7640,3 +7640,18 @@ a[data-native-embed] { overflow-wrap: anywhere; }
     outline: 2px solid currentColor;
     outline-offset: -3px;
 }
+
+/* Shared native local-content preview, including alert-filter fragments. */
+.chisimba-content-dialog {
+    box-sizing: border-box;
+    width: min(42rem, calc(100% - 2rem));
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: .5rem;
+    background: var(--chisimba-surface);
+    color: var(--chisimba-text);
+}
+.chisimba-content-dialog::backdrop { background: rgb(0 0 0 / 45%); }
+.chisimba-content-dialog > button { margin-block-end: .75rem; }

@@ -40,8 +40,9 @@ $checks = array(
     ),
     'course save retains record-ID field' => str_contains(
         $contextController,
-        "getParam('imageselect')"
-    ),
+        "array('about', 'imageselect', 'removeimage')"
+    ) && str_contains($contextController, "\$image = \$draft['imageselect'];")
+      && str_contains($contextController, 'setContextImage($contextCode, $image)'),
 );
 
 foreach ($checks as $name => $ok) {

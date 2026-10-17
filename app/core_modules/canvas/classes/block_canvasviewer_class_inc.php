@@ -55,6 +55,9 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class block_canvasviewer extends ChisimbaObject
 {
+    // State used by the installed rendering and service lifecycle.
+    public $configData;
+
     /**
      * The title of the block
      *
