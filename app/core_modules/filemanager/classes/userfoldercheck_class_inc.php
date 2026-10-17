@@ -80,7 +80,7 @@ class userfoldercheck extends ChisimbaObject
     */
     public function checkUserFolder($userId)
     {
-        if (trim($userId) == '') {
+        if (!is_scalar($userId) || trim((string)$userId) === '') {
             return FALSE;
         } else {
             // Set Up Path

@@ -55,6 +55,7 @@ if (!
 class filemanager extends controller {
 
     // State used by authenticated editing and file selection.
+    public $objMkdir;
     public $contextCode;
     public $fckVersion;
     public $objCleanUrl;
@@ -283,6 +284,13 @@ class filemanager extends controller {
 
         // Check to ensure the user has access to the file manager.
         if (!$this->userHasAccess()) {
+            return 'access_denied_tpl.php';
+        }
+
+        // These routes expose site-wide quotas, not the caller's personal files.
+        if (in_array(strtolower($action), ['quotamanager', 'ajaxgetquotas', 'editquota', 'updatequota'], true)
+            && !$this->objUser->lookupAdmin($this->objUser->userId())) {
+            http_response_code(403);
             return 'access_denied_tpl.php';
         }
 
@@ -1955,7 +1963,7 @@ function checkWindowOpener()
         $searchField = $this->getParam('searchField', '');
         $searchFor = $this->getParam('searchFor', '');
         $orderBy = $this->getParam('orderBy', '');
-        $numItemsPerPage = (int) $this->getParam('numItemsPerPage', '0');
+        $numItemsPerPage = (int) $this->getParam('numItemsPerPage', '20');
         $page = (int) $this->getParam('page', '0');
 
         if ($searchType == 'context') {
@@ -1975,54 +1983,69 @@ function checkWindowOpener()
         return 'quotaslist_tpl.php';
     }
 
-    private function __editquota() {
-        $id = $this->getParam('id');
-
-        $quota = $this->objQuotas->getQuotaFromId($id);
-
-        if ($quota == FALSE) {
-            return $this->nextAction('quotamanager', array('error' => 'unknownquota'));
-        } else {
-            $this->setVarByRef('quota', $quota);
-            return 'editquota_tpl.php';
-        }
+    /** Render a fresh token and retain submitted work after rejected writes. */
+    private function quotaEditor($quota, $draft = null, $error = '')
+    {
+        $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+        $this->setVar('quota', $quota);
+        $this->setVar('quotaDraft', $draft);
+        $this->setVar('quotaError', $error);
+        $this->setVar('quotaRevision', hash('sha256', json_encode([$quota['usedefault'], $quota['quota'], $quota['datemodified']])));
+        $this->setVar('quotaToken', $csrf->issue('fm_quota_' . hash('sha256', $quota['id'])));
+        return 'editquota_tpl.php';
     }
 
-    private function __updatequota() {
-        // Get Values
+    private function __editquota()
+    {
         $id = $this->getParam('id');
-        $quotatype = $this->getParam('quotatype');
-        $customquota = $this->getParam('customquota');
+        $quota = is_string($id) ? $this->objQuotas->getQuotaFromId($id) : false;
+        if (!$quota) return $this->nextAction('quotamanager', ['error' => 'unknownquota']);
+        return $this->quotaEditor($quota);
+    }
 
-        // Are we setting default or custom value
-        if ($quotatype == 'Y') {
-            $this->objQuotas->setToUseDefaultQuota($id);
-        } else {
-            if ($customquota == '') {
-                return $this->nextAction('editquota', array('id' => $id, 'error' => 'novalue'));
-            }
-
-            if (!is_numeric($customquota)) {
-                return $this->nextAction('editquota', array('id' => $id, 'error' => 'nonumber'));
-            } else {
-                $this->objQuotas->setToUseCustomQuota($id, $customquota);
-            }
+    private function __updatequota()
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            header('Allow: POST');
+            return 'access_denied_tpl.php';
         }
-
-        // Get quota
-        $quota = $this->objQuotas->getQuotaFromId($id);
-
-        // If quota doesn't exist, redirect
-        if ($quota == FALSE) {
-            return $this->nextAction('quotamanager');
-        } else {
-            // Do an approximate search to quota that was update
-            if (substr($quota['path'], 0, 7) == 'context') {
-                return $this->nextAction('quotamanager', array('message' => 'quotatupdated', 'id' => $quota['id'], 'searchType' => 'context', 'searchField_context' => 'contextcode', 'searchfor' => substr($quota['path'], 8)));
-            } else {
-                return $this->nextAction('quotamanager', array('message' => 'quotatupdated', 'id' => $quota['id'], 'searchType' => 'users', 'searchField_user' => 'firstname', 'searchfor' => $this->objUser->getFirstname(substr($quota['path'], 6))));
-            }
+        $id = $_POST['id'] ?? '';
+        $quota = is_string($id) ? $this->objQuotas->getQuotaFromId($id) : false;
+        if (!$quota) {
+            http_response_code(404);
+            return 'access_denied_tpl.php';
         }
+        $type = is_string($_POST['quotatype'] ?? null) ? $_POST['quotatype'] : '';
+        $size = is_string($_POST['customquota'] ?? null) ? trim($_POST['customquota']) : '';
+        $draft = ['usedefault' => $type, 'quota' => $size];
+        $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+        $token = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
+        if (!$csrf->consume('fm_quota_' . hash('sha256', $id), $token)) {
+            http_response_code(403);
+            return $this->quotaEditor($quota, $draft, 'expired');
+        }
+        $revision = hash('sha256', json_encode([$quota['usedefault'], $quota['quota'], $quota['datemodified']]));
+        if (!is_string($_POST['quota_revision'] ?? null) || !hash_equals($revision, $_POST['quota_revision'])) {
+            http_response_code(409);
+            return $this->quotaEditor($quota, $draft, 'conflict');
+        }
+        if (!in_array($type, ['Y', 'N'], true)
+            || ($type === 'N' && (!preg_match('/^[0-9]{1,10}$/D', $size) || (float)$size > 2147483647))) {
+            http_response_code(422);
+            return $this->quotaEditor($quota, $draft, 'invalid');
+        }
+        try {
+            $saved = $this->objQuotas->saveQuotaChecked($quota, $type, (int)$size);
+            if (!$saved) {
+                http_response_code(409);
+                return $this->quotaEditor($this->objQuotas->getQuotaFromId($id) ?: $quota, $draft, 'conflict');
+            }
+        } catch (Throwable $error) {
+            http_response_code(500);
+            return $this->quotaEditor($quota, $draft, 'failed');
+        }
+        return $this->nextAction('quotamanager', ['message' => 'quotatupdated']);
     }
 
     private function __renamefolder() {
