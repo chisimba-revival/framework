@@ -62,75 +62,11 @@ $GLOBALS['kewl_entry_point_run'])
  *
  */
 
+/** Retired remote Blog loader. Preserve stored markup without scripts or requests.
+ * The old Blog publisher is paused; SimpleBlog is a separate supported module.
+ */
 class parse4blog extends ChisimbaObject
 {
-    
-    /**
-     * 
-     * 
-     * @return void  
-     * @access public
-     */
-    public function init()
-    {
-        
-    }
-    
-    /**
-    *
-    * Method to parse the string
-    *
-    * @param  String $str The string to parse
-    * @return string The parsed string
-    * @access public
-    *                
-    */
-    public function parse($str)
-    {
-            $regEx = "/\\[blog:(.*?)\\]/i";
-            preg_match_all($regEx, $str, $results, PREG_PATTERN_ORDER);
-        //Extract all the matches
-        $counter = 0;
-        foreach ($results[0] as $item)
-        {
-            $txt = $results[1][$counter];
-            $ar = explode(",", $txt);
-            if ((is_countable($ar) ? count($ar) : 0) > 0) {
-                foreach ($ar as $entry) {
-                    $ar2 = explode("=", $entry);
-                    $key = (string)$ar2[0];
-                    $value = $ar2[1];
-                    $this->$key = $value;
-                }
-            }
-            $uri = "http://" . $this->server
-              . "/index.php?module=blog&action=export&postid="
-              . $this->postid;
-            $replacement = $this->getReplacement($uri);
-            $str = str_replace($item, $replacement, $str);
-            //die($str);
-            $counter++;
-        }
-        // Return the string, parsed or not, depending on if oembed is isntalled
-        return $str;
-    }
-
-    /**
-    *
-    * Method to get the replacement for the filter.
-    *
-    * @access private
-    * @param string $oembedUrl The URL for a compatible object
-    * @return string The code and DIV tag for embedding
-    *
-    */
-    private function getReplacement($uri)
-    {
-        $hashVal = md5(microtime());
-        $retScript = "\n\n<script>\njQuery(document).ready(function() "
-          . "{\n jQuery('#$hashVal').load('$uri');})</script>\n";
-        $ret = "<div id='$hashVal'></div>\n\n";
-        return $retScript . $ret;
-    }
+    public function init() {}
+    public function parse($str) { return $str; }
 }
-?>
