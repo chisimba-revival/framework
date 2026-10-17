@@ -203,23 +203,8 @@ class skinjavascript extends ChisimbaObject
      */
     public function getChromeFrame()
     {
-        $enable              = $this->objSysConfig->getValue('chrome_frame', 'skin');
-        $suppressChromeFrame = $this->getVar('SUPPRESS_CHROME_FRAME', FALSE);
-        $suppressJQuery      = $this->getVar('SUPPRESS_JQUERY', FALSE);
-
-        if ($enable && !$suppressChromeFrame) {
-            $html = $this->objMiscHTML->httpEquiv('X-UA-Compatible', 'chrome=1');
-            if ($suppressJQuery) {
-                $html .= $this->objMiscHTML->importScript('http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js');
-                $this->appendArrayVar('bodyOnLoad', 'CFInstall.check({mode:"overlay"});');
-            } else {
-                $html .= $this->getJavascriptFile('chromeframe.js', 'skin');
-            }
-        } else {
-            $html = '';
-        }
-
-        return $html;
+        // Obsolete browser plug-in: retained method for external skin compatibility.
+        return '';
     }
 
     /**

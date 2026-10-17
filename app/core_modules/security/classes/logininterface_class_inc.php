@@ -177,7 +177,8 @@ class loginInterface extends ChisimbaObject {
 
             //--Create an element for the username
             $objInput = new textinput('username', $username, 'text', '15');
-            $objInput->extra = 'maxlength="255" placeholder="' . $this->objLanguage->languageText('word_username', 'system') . '"';
+            $fieldLabel = $escapeAuthValue($this->objLanguage->languageText('word_username', 'system'));
+            $objInput->extra = 'maxlength="255" autocomplete="username" aria-label="' . $fieldLabel . '" placeholder="' . $fieldLabel . '"';
             $objLabel = new label($this->objLanguage->languageText('word_username') . ': ', 'input_username');
             //Add validation for username
             $objForm->addRule('username', $this->objLanguage->languageText("mod_login_unrequired", 'security', 'Please enter a username. A username is required in order to login.'), 'required');
@@ -189,7 +190,8 @@ class loginInterface extends ChisimbaObject {
             //$objForm->addToForm();
             //--- Create an element for the password
             $objInput = new textinput('password', '', 'password', '15');
-            $objInput->extra = 'maxlength="255" placeholder="' . $this->objLanguage->languageText('word_password', 'system') . '"';
+            $fieldLabel = $escapeAuthValue($this->objLanguage->languageText('word_password', 'system'));
+            $objInput->extra = 'maxlength="255" autocomplete="current-password" aria-label="' . $fieldLabel . '" placeholder="' . $fieldLabel . '"';
             $objLabel = new label($this->objLanguage->languageText('word_password') . ': ', 'input_password');
             //Add the password box to the form
             //$objForm->addToForm();
