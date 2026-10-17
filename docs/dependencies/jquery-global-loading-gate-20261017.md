@@ -30,9 +30,9 @@ new browser acceptance claim is made. No production deployment.
 | --- | --- |
 | CMS/CMS Admin | Deferred revival. Both have explicit `SUPPRESS_JQUERY=false` opt-ins; plugin/menu/grid/tree paths still require review. Reusable CMS rendering also matters outside the CMS route. |
 | ePortfolio | On hold by request. Its IMS import form remains dependent on global jQuery; broader import security work is documented separately. |
-| Blogcomments | Old Blog companion, distinct from SimpleBlog. The noaction template calls its jQuery/JSONP demonstration; save/delete and JSONP routes need review. Pause choice pending. |
-| Stripe | Legacy messaging/status bar, unrelated to payment processing. Its controller loads polling/disclosure JavaScript against Blockalicious. Pause choice pending. |
-| Photostack | Local-album photo gallery, not a Flickr integration. Explicit HTTP jQuery 1.4.2 loader plus client album navigation; ownership/CSRF/file-access review needed. Pause choice pending. |
+| Blogcomments | Old Blog companion, distinct from SimpleBlog. The noaction template calls its jQuery/JSONP demonstration; save/delete and JSONP routes need review. Preserved as `__PAUSED` by request after the seven-installation usage audit. |
+| Stripe | Legacy messaging/status bar, unrelated to payment processing. Its controller loads polling/disclosure JavaScript against Blockalicious. Preserved as `__PAUSED` by request after the seven-installation usage audit. |
+| Photostack | Local-album photo gallery, not a Flickr integration. Explicit HTTP jQuery 1.4.2 loader plus client album navigation; ownership/CSRF/file-access review needed. Preserved as `__PAUSED` by request after the seven-installation usage audit. |
 
 Fresh read-only audits found Blogcomments, Stripe, Simplefeedback and Photostack
 unregistered locally and on all six production sites, with no corresponding tables.
@@ -49,9 +49,18 @@ as application consumers. Searches included case-insensitive jQuery/loaders and
 `$.get`, `$.fn`, `$.ajax`, common chained methods: the wider check exposed Photostack,
 which a literal `jQuery` search alone missed.
 
+## Pause validation
+
+All 37 original files across the three modules retain their original bytes.
+Registration files are renamed to `register.conf.paused`: a directory suffix alone
+does not prevent catalogue discovery. Installed local checks confirmed all three
+are unregistered, their original paths are absent, and neither original nor paused
+names appear in catalogue discovery. PHP warnings were treated as failures.
+No database mutations or production deployment were performed for these pauses.
+
 ## Next gate before changing the default
 
-1. Resolve the three pending dormant-module choices and trace any retained workflows.
+1. Completed: Blogcomments, Stripe and Photostack are preserved as `__PAUSED`; original source is retained for review before any revival. Stripe may be useful with future messaging.
 2. Preserve CMS's explicit component opt-ins; test that they do not cause jQuery to
    appear on unrelated pages. Do not revive CMS as a side effect of this cleanup.
 3. Decide an explicit, narrowly scoped compatibility boundary for deferred
