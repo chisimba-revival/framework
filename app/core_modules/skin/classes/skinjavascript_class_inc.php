@@ -167,7 +167,9 @@ class skinjavascript extends ChisimbaObject
     */
     public function getJQuery()
     {
-        $supressJQuery = $this->getVar('SUPPRESS_JQUERY', false);
+        // Native pages do not load jQuery. Deferred legacy components must opt in
+        // explicitly with SUPPRESS_JQUERY=false for the current render only.
+        $supressJQuery = $this->getVar('SUPPRESS_JQUERY', true);
         if (!$supressJQuery){
             if ($this->objModules->checkIfRegistered('jquerycore'))
             {

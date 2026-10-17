@@ -1,6 +1,7 @@
 # Global jQuery loading gate — 17 October 2026
 
-Global loading is still enabled. ePortfolio is unchanged and on hold. This audit
+Global loading is now disabled by default in Skin 0.215. ePortfolio revival remains
+on hold; its import form has an explicitly authorised compatibility opt-in in 4.414. This audit
 is source/dependency evidence, not permission to activate dormant modules or proof
 that every historic feature is safe.
 
@@ -29,7 +30,7 @@ new browser acceptance claim is made. No production deployment.
 | Consumer | Scope and disposition |
 | --- | --- |
 | CMS/CMS Admin | Deferred revival. Both have explicit `SUPPRESS_JQUERY=false` opt-ins; plugin/menu/grid/tree paths still require review. Reusable CMS rendering also matters outside the CMS route. |
-| ePortfolio | On hold by request. Its IMS import form remains dependent on global jQuery; broader import security work is documented separately. |
+| ePortfolio | On hold by request. Its IMS import form explicitly opts in to compatibility loading; broader import security work is documented separately. |
 | Blogcomments | Old Blog companion, distinct from SimpleBlog. The noaction template calls its jQuery/JSONP demonstration; save/delete and JSONP routes need review. Preserved as `__PAUSED` by request after the seven-installation usage audit. |
 | Stripe | Legacy messaging/status bar, unrelated to payment processing. Its controller loads polling/disclosure JavaScript against Blockalicious. Preserved as `__PAUSED` by request after the seven-installation usage audit. |
 | Photostack | Local-album photo gallery, not a Flickr integration. Explicit HTTP jQuery 1.4.2 loader plus client album navigation; ownership/CSRF/file-access review needed. Preserved as `__PAUSED` by request after the seven-installation usage audit. |
@@ -73,4 +74,44 @@ No database mutations or production deployment were performed for these pauses.
 
 Stopping global loading is separate from deleting every archived library. The
 compatibility library and paused source can remain while normal pages stop paying
-the runtime cost. No default or compatibility-loader change was made in this batch.
+the runtime cost. The initial audit made no loader change; the follow-up below completes that gate.
+
+
+## Default-off follow-up — 17 October 2026
+
+Skin defaults `SUPPRESS_JQUERY` to true. A component must explicitly set false
+for the current render to load the existing compatibility library. No session
+plugin list can override the default. Existing CMS layout and CMS Admin opt-ins
+are retained, including component composition outside the CMS route.
+ePortfolio's import template alone sets false when the variable is unset; an
+explicit true remains respected. Remove that opt-in during the planned native,
+security-reviewed importer revival. No import/security behaviour was repaired or
+certified by this compatibility change, and no dormant module was activated.
+
+Validation:
+- Loader tests cover default-off, explicit true/false, both registered jquerycore
+  and fallback wrapper paths, and stale session plugin settings.
+- The ePortfolio template test executes its declaration but stops before legacy
+  form dependencies, covering unset, explicit true and explicit false.
+- An isolated no-outbound database clone exercised the actual CMS layout opt-in
+  before its legacy dependencies and rendered the installed compatibility loader.
+  Chrome confirmed successful jQuery DOM-ready/text update in that synthetic fixture.
+  This is not a full CMS or ePortfolio functional acceptance test.
+- Chrome smoke checks: anonymous home, native sign-in, authenticated home with
+  composed blocks, homepage editing switch, File Manager selection/clear, course
+  home, quick/full Help, course wizard step-one save, TinyMCE at step two and the
+  native image-picker window. Inspected script elements contained no jQuery on
+  native pages, including after leaving the compatibility fixture. No console
+  errors were captured on the inspected pages. Clone PHP logs showed no warnings,
+  deprecations or fatal errors.
+- The copied home login block attempted HTTPS against the HTTP-only fixture;
+  native sign-in succeeded. No browser certificate warning was bypassed. This
+  fixture transport mismatch is separate from script loading.
+- Syntax/whitespace and both focused tests passed. Local registered Skin was
+  updated through Module Catalogue; dormant ePortfolio was skipped. Actual local
+  HTTPS home confirmed no jQuery scripts or console errors.
+
+No production deployment. Compatibility assets and archived source remain.
+Deploy the framework and module changes together. If a retained component needs
+compatibility, scope an explicit opt-in to its render and document its removal;
+do not restore global loading merely to hide an untraced dependency.
