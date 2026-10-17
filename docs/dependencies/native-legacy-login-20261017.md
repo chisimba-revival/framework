@@ -61,3 +61,10 @@ Textblock, Slate and Stripe are unregistered; that does not prove unused on othe
   Prototype dollar calls and TinyMCE's internal code are not global jQuery consumers.
 
 Do not switch the global loader based only on this text inventory.
+
+## Authorised backend follow-up
+
+Derek subsequently authorised backend retirement after separate checks. The nonce,
+dbnonce, CAPTCHA and credential-filter classes and obsolete source schema are now
+removed in Login 0.083. See [separate validation](retired-login-backend-20261017.md).
+This supersedes the retained-backend limitation above.
