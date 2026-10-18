@@ -83,7 +83,8 @@ class Mdb2NativeDatabaseAdapter implements NativeDatabaseAdapterInterface
     {
         $statement = $this->prepare(
             $sql,
-            $this->manipulationPrepareMode()
+            $this->manipulationPrepareMode(),
+            $parameters
         );
 
         try {
@@ -106,7 +107,8 @@ class Mdb2NativeDatabaseAdapter implements NativeDatabaseAdapterInterface
     {
         $statement = $this->prepare(
             $sql,
-            $this->resultPrepareMode()
+            $this->resultPrepareMode(),
+            $parameters
         );
 
         try {
@@ -119,14 +121,51 @@ class Mdb2NativeDatabaseAdapter implements NativeDatabaseAdapterInterface
         }
     }
 
-    private function prepare($sql, $mode)
+    /**
+     * Declare the bind types so MDB2 does not fall back to a null type.
+     *
+     * MDB2 records the types given to prepare() and looks each one up per
+     * placeholder when binding. A placeholder with no recorded type resolves to
+     * null, which reaches MDB2\Driver\Datatype::mapPrepareDatatype(null) and
+     * indexes $options['datatype_map'][null], raising a PHP 8.1 deprecation on
+     * every statement. Quoting already infers the type from the value, so
+     * declaring it here changes nothing except supplying the bind type
+     * character MDB2 was otherwise leaving out.
+     *
+     * @param array $parameters The bound values, in placeholder order
+     * @return array MDB2 type names, positionally matching $parameters
+     */
+    private function parameterTypes(array $parameters): array
+    {
+        $types = array();
+
+        foreach ($parameters as $value) {
+            // Only the names MDB2 recognises may be declared here. Passing an
+            // unknown one makes execute() fail with "not supported", so a null
+            // or any other value is declared as text, which is how MDB2 would
+            // have bound it anyway once quoting inferred the type.
+            if (is_int($value)) {
+                $types[] = 'integer';
+            } elseif (is_bool($value)) {
+                $types[] = 'boolean';
+            } elseif (is_float($value)) {
+                $types[] = 'float';
+            } else {
+                $types[] = 'text';
+            }
+        }
+
+        return $types;
+    }
+
+    private function prepare($sql, $mode, array $parameters = array())
     {
         $sql = trim((string) $sql);
         if ($sql === '') {
             throw new InvalidArgumentException('SQL must not be empty.');
         }
 
-        $statement = $this->connection->prepare($sql, null, $mode);
+        $statement = $this->connection->prepare($sql, $this->parameterTypes($parameters), $mode);
         $this->assertNotDatabaseError($statement, 'prepare');
 
         if (!is_object($statement)

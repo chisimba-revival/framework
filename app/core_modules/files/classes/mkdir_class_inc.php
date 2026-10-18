@@ -101,7 +101,24 @@ class mkdir extends ChisimbaObject
                 $this->errMsg = $this->objLanguage->languageText('mod_files_err_isfilenotdir')
                   . ": " . $this->fullFilePath;
             } else {
-                mkdir($this->fullFilePath);
+                // Check the parent directory is writable before calling mkdir().
+                // Without this, an unwritable target makes mkdir() emit a
+                // "Permission denied" warning and the failure escapes the
+                // err/errMsg contract the rest of this method uses. Reporting
+                // it here keeps the caller able to see what went wrong.
+                $parentDir = dirname($this->fullFilePath);
+                if (!is_dir($parentDir) || !is_writable($parentDir)) {
+                    $this->err = TRUE;
+                    $this->errMsg = $this->objLanguage->languageText('mod_files_err_dirnotwritable')
+                      . ": " . $parentDir;
+                    return FALSE;
+                }
+                if (!mkdir($this->fullFilePath) && !is_dir($this->fullFilePath)) {
+                    $this->err = TRUE;
+                    $this->errMsg = $this->objLanguage->languageText('mod_files_err_mkdirfailed')
+                      . ": " . $this->fullFilePath;
+                    return FALSE;
+                }
             }
         //If the file path is null
         } else {
@@ -118,17 +135,38 @@ class mkdir extends ChisimbaObject
     * @param  string $strPath Path to Check
     * @author Tohir Solomons
     */
-    function mkdirs($strPath)
+    function mkdirs($strPath, $mode = 0777)
     {
         if (is_dir($strPath)) {
             return true;
         }
-        
+
         $pStrPath = dirname($strPath);
-        if (!$this->mkdirs($pStrPath)) {
+        if (!$this->mkdirs($pStrPath, $mode)) {
             return false;
         }
-        return mkdir($strPath);
+        // The parent now exists, so check it is writable before creating the
+        // leaf. mkdir() on an unwritable path emits a warning and the failure
+        // would otherwise be indistinguishable from success.
+        if (!is_writable($pStrPath)) {
+            $this->err = TRUE;
+            $this->errMsg = $this->objLanguage->languageText('mod_files_err_dirnotwritable')
+              . ": " . $pStrPath;
+            return false;
+        }
+        // The mode is honoured rather than discarded. Callers already pass a
+        // mode (filemanager upload, fileapi, modulecatalogue, markimage) but
+        // this method previously declared only one parameter, so PHP silently
+        // dropped the second argument and the caller's intent was lost. The
+        // default matches PHP's own mkdir() default, so the callers that pass
+        // nothing keep the behaviour they already had.
+        if (!mkdir($strPath, $mode) && !is_dir($strPath)) {
+            $this->err = TRUE;
+            $this->errMsg = $this->objLanguage->languageText('mod_files_err_mkdirfailed')
+              . ": " . $strPath;
+            return false;
+        }
+        return true;
     }
     
 } // end of class

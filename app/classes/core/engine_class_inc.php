@@ -512,12 +512,19 @@ class engine {
         );
         
         // Configure garbage collection
-        ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
-        ini_set('session.gc_divisor', 100);
-        ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
+        if (!headers_sent()) {
+            ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
+            ini_set('session.gc_divisor', 100);
+            ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
+        }
         
         // Ensure the site is being accessed at the correct location.
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        // Keep REST and well-known JSON endpoints host-agnostic so Docker
+        // service names (web), reverse proxies and emulators can fetch manifests
+        // without being bounced to the configured public origin.
+        $uri = isset($_SERVER['REQUEST_URI']) ? explode('?', (string) $_SERVER['REQUEST_URI'], 2)[0] : '';
+        $isRestApi = (strpos($uri, '/api/v') === 0) || (strpos($uri, '/.well-known/') === 0);
+        if (!$isRestApi && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'GET') {
             $base = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
             //$base .= '://'.$_SERVER['HTTP_HOST'].strtok($_SERVER['REQUEST_URI'], '?');
             //$query = strtok('?');
@@ -2268,6 +2275,27 @@ class engine {
     private function _dispatch($action, $requestedModule) {
         $this->_action = $action;
         strtolower ( $this->getParam ( 'action', '' ) );
+
+        // REST API routing - intercept /api/v1/* routes before normal module dispatch
+        if (str_starts_with($requestedModule, 'api/v')) {
+            // For REST API, do not let POST body/cookies shadow the action from
+            // the request URL. The action contains the route path (e.g. 'users').
+            // The .htaccess rewrites api/v1/(.*) into module=api/v1&action=$1,
+            // so only $_GET carries the route; falling back to $_REQUEST opens
+            // a proxy-rewrite via a POST field/cookie (request_order-dependent).
+            // Read the route/action from $_GET only; if absent, fall back to
+            // the provided $action, else an empty string.
+            $restAction = $action;
+            if (isset($_GET['action'])) {
+                $restAction = (string) $_GET['action'];
+            }
+            $restModule = $requestedModule;
+            if (isset($_GET['module'])) {
+                $restModule = strtolower((string) $_GET['module']);
+            }
+            return $this->_dispatchRestApi($restModule, $restAction);
+        }
+
         if (! $this->_loadModule ( $requestedModule )) {
             $this->_loadModule ( '_default' );
             if (! $this->_objActiveController) {
@@ -2305,6 +2333,64 @@ class engine {
             $this->_moduleName = 'security';
             return array ($this->_dispatchToModule ( $this->_objActiveController, 'showlogin' ), $this->_moduleName );
         }
+    }
+
+    /**
+     * Dispatch REST API requests
+     *
+     * Handles /api/v1/* routes by loading the restapi module and passing
+     * the route path as the action parameter.
+     *
+     * @access private
+     * @param string $requestedModule The module parameter (e.g., 'api/v1')
+     * @param string $action The action parameter (route path)
+     * @return array Template name and module name (null for API since it exits)
+     */
+    private function _dispatchRestApi($requestedModule, $action) {
+        // Extract version from module (api/v1, api/v2, etc.)
+        $version = substr($requestedModule, 4); // 'v1', 'v2', etc.
+
+        // Only support v1 for now
+        if ($version !== 'v1') {
+            http_response_code(404);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode([
+                'error' => [
+                    'code' => 'VERSION_NOT_SUPPORTED',
+                    'message' => "API version '$version' not supported"
+                ],
+                'meta' => ['timestamp' => gmdate('c')]
+            ]);
+            exit;
+        }
+
+        // Ensure database connection is initialized
+        $this->getDbObj();
+
+        // Load restapi module
+        if (! $this->_loadModule('restapi')) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode([
+                'error' => [
+                    'code' => 'MODULE_NOT_FOUND',
+                    'message' => 'REST API module not available'
+                ],
+                'meta' => ['timestamp' => gmdate('c')]
+            ]);
+            exit;
+        }
+
+        // The action contains the route path (e.g., 'users/123/posts')
+        // Pass it directly to the restapi controller's dispatch method
+        $this->_moduleName = 'restapi';
+
+        // REST API controllers handle their own output via ApiResponse::success/error/exit
+        // So we just call dispatch and don't render a template
+        $this->_dispatchToModule($this->_objActiveController, $action);
+
+        // Should not reach here - API controllers exit
+        return [null, 'restapi'];
     }
 
     /**

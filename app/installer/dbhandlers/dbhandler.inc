@@ -28,6 +28,15 @@ ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $mepath.
 class DbHandler extends dbHandlermanager
 
 {
+	/**
+	* Database configuration captured at construction. Declared explicitly so
+	* PHP 8.2+ does not emit a deprecation for assigning it dynamically.
+	*
+	* @var array
+	*
+	*/
+
+	protected $_objDbConfig;
 
 	/**
 

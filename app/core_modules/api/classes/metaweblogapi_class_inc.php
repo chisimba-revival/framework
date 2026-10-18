@@ -154,8 +154,8 @@ class metaweblogapi extends ChisimbaObject
         $postarray = array(
                 'userid' => $userid,
                 'post_date' => date('r') ,
-                'post_content' => addslashes(nl2br($postcontent->string)) , 
-                'post_title' => addslashes($title->string),
+                'post_content' => nl2br($postcontent->string) ,
+                'post_title' => $title->string,
                 'post_category' => '0',
                 'post_excerpt' => $excerpt->string,
                 'post_status' => $published,
@@ -242,7 +242,7 @@ class metaweblogapi extends ChisimbaObject
         $postarray = array(
                 'userid' => $userid,
                 'post_date' => date('r') ,
-                'post_content' => addslashes($postcontent->string) , 
+                'post_content' => $postcontent->string ,
                 'post_title' => $title->string, //$this->objLanguage->languageText("mod_blog_word_apipost", "blog") ,
                 'post_category' => '0',
                 'post_excerpt' => $excerpt->string,

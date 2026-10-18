@@ -76,7 +76,7 @@ class CsrfTokenService
         $submittedHash = is_string($token)
             ? hash('sha256', $token)
             : '';
-        $matched = false;
+
         foreach ($records as $index => $record) {
             if ((int) $record['expires_at'] >= $this->now()
                 && $submittedHash !== ''
@@ -96,7 +96,7 @@ class CsrfTokenService
         } else {
             $this->backend->unsetSession(self::SESSION_KEY);
         }
-        return $matched;
+        return $matched ?? false;
     }
 
     private function load()

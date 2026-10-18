@@ -120,9 +120,9 @@ class aiservice extends dbTable
         $since = $this->objTimeAndDate->toStorage(
             $this->objTimeAndDate->nowUtc()->modify('-' . $days . ' days')
         );
-        $where = "WHERE date_created >= '" . addslashes($since) . "'";
-        if ($consumer !== '') { $where .= " AND consumer_module='" . addslashes($consumer) . "'"; }
-        if ($providerFilter !== '') { $where .= " AND provider='" . addslashes($providerFilter) . "'"; }
+        $where = 'WHERE date_created >= ' . $this->quoteValue($since);
+        if ($consumer !== '') { $where .= ' AND consumer_module=' . $this->quoteValue($consumer); }
+        if ($providerFilter !== '') { $where .= ' AND provider=' . $this->quoteValue($providerFilter); }
         $rows = $this->getAll($where . ' ORDER BY date_created ASC');
         if (!is_array($rows)) { $rows = array(); }
 
@@ -188,6 +188,38 @@ class aiservice extends dbTable
         $inputRate = max(0.0, (float) $this->objConfig->getValue($prefix . '_INPUT_COST_PER_MILLION', 'ai', 0));
         $outputRate = max(0.0, (float) $this->objConfig->getValue($prefix . '_OUTPUT_COST_PER_MILLION', 'ai', 0));
         return (($inputTokens / 1000000) * $inputRate) + (($outputTokens / 1000000) * $outputRate);
+    }
+
+    /**
+     * Quote one value for inclusion in a statement.
+     *
+     * getAll() takes a raw filter string and has no binding parameter, so the
+     * value is escaped by the driver instead. addslashes() was used previously,
+     * which is only safe while the connection charset cannot produce a
+     * backslash byte inside a multi-byte character: that holds under utf8mb3,
+     * but not under GBK, BIG5 or SJIS.
+     *
+     * The connection is taken from the engine rather than dbTable::$_db,
+     * which is private to the parent and not reachable from a subclass.
+     *
+     * @param mixed $value
+     * @return string Quoted literal, or the keyword NULL
+     */
+    private function quoteValue($value)
+    {
+        try {
+            $quoted = $this->objEngine->getDbObj()->quote($value);
+        } catch (Throwable $e) {
+            error_log('Analytics filter could not be quoted: ' . $e->getMessage());
+            return "''";
+        }
+
+        if (MDB2::isError($quoted)) {
+            error_log('Analytics filter could not be quoted: ' . $quoted->getMessage());
+            return "''";
+        }
+
+        return $quoted;
     }
 
     /** Normalise a dimension before including it in a query or aggregate. */

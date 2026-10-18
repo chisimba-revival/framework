@@ -39,9 +39,41 @@ final class Mdb2AbuseEventRepository implements AbuseEventRepositoryInterface
     {
         return (int) $this->prepared($sql, $args, MDB2_PREPARE_MANIP);
     }
+    /**
+     * Declare the bind types so MDB2 does not fall back to a null type.
+     *
+     * MDB2 resolves a type per placeholder when binding; a placeholder with no
+     * recorded type resolves to null and reaches
+     * MDB2\Driver\Datatype::mapPrepareDatatype(null), which indexes
+     * $options['datatype_map'][null] and raises a PHP 8.1 deprecation. Quoting
+     * already infers the type, so declaring it changes nothing else.
+     *
+     * Only names MDB2 recognises may be declared ('boolean', 'integer',
+     * 'float', 'blob'); an unknown name makes execute() fail with
+     * "not supported". Everything else is bound as text.
+     */
+    private function parameterTypes(array $args)
+    {
+        $types = array();
+
+        foreach ($args as $value) {
+            if (is_int($value)) {
+                $types[] = 'integer';
+            } elseif (is_bool($value)) {
+                $types[] = 'boolean';
+            } elseif (is_float($value)) {
+                $types[] = 'float';
+            } else {
+                $types[] = 'text';
+            }
+        }
+
+        return $types;
+    }
+
     private function prepared($sql, array $args, $mode)
     {
-        $statement = $this->db->prepare($sql, null, $mode);
+        $statement = $this->db->prepare($sql, $this->parameterTypes($args), $mode);
         if (PEAR::isError($statement)) {
             throw new RuntimeException($statement->getMessage());
         }

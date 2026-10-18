@@ -150,7 +150,7 @@ class dbHandlermanager
      * @param string $dumpfile
      * @return bool
      */
-    public function dumpDatabaseToFile($option = 'dump', $dumptype = 'all', $dumpfile)
+    public function dumpDatabaseToFile($dumpfile, $option = 'dump', $dumptype = 'all')
     {
         //lets set a time limit on this
         set_time_limit(0);

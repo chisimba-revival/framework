@@ -268,16 +268,21 @@ class CreateConfigsAction extends FiveStepAction
 
         $this->_createConfig ( $database_created );
 
-        // Check to see if the configs actually were created.
+        // Check if config files were created regardless of isRequired(),
+        // since _createConfig() may fail silently during initial install.
 
+        $configPath = $_SESSION ['sys_root'] . '/config/config.xml';
+        if ( ! file_exists ( $configPath ) || filesize ( $configPath ) === 0 ) {
 
-        if (! $this->isRequired () == true) {
-
-            $this->errors [] = 'Config files were NOT successfully created. The following output was given ' .
+            $this->errors [] = 'Config file config.xml was NOT successfully created. The following output was given ' .
 
             'by the config writing script';
 
             $this->errors [] = $this->init_output;
+
+            $this->success = false;
+
+            return false;
 
         }
 
@@ -470,15 +475,16 @@ class CreateConfigsAction extends FiveStepAction
             touch ( $path . 'config.xml' );
             chmod ( $path . 'config.xml', 0666 );
         }
+
         $write = $this->_root->writeConfig("{$path}config.xml", 'XML', $options);
 
-        /*
-         * PHP 8 compatibility: ensure config.xml has one document root.
-         *
-         * The legacy PEAR Config XML writer can emit the individual
-         * configuration directives as adjacent top-level XML elements.
-         * XML documents require exactly one root element.
-         */
+/*
+ * PHP 8 compatibility: ensure config.xml has one document root.
+ *
+ * The legacy PEAR Config XML writer can emit the individual
+ * configuration directives as adjacent top-level XML elements.
+ * XML documents require exactly one root element.
+ */
         $configFile = "{$path}config.xml";
         $configXml = @file_get_contents($configFile);
 
@@ -501,12 +507,19 @@ class CreateConfigsAction extends FiveStepAction
                 if (@file_put_contents($configFile, $configXml) === false) {
                     $this->errors[] = 'Could not write a valid config.xml file.';
                 }
+            } else {
+                // Even if XML is valid, ensure the file was actually written by checking it
+                if (! file_exists($configFile) || filesize($configFile) === 0) {
+                    $this->errors[] = 'Config.xml was not written properly.';
+                }
             }
 
             libxml_clear_errors();
+        } else {
+            $this->errors[] = 'Could not read config.xml after writing.';
         }
 
-	$GLOBALS['SQ_INSTALL'] = false;
+        $GLOBALS['SQ_INSTALL'] = false;
 
         $result = ob_get_contents ();
 

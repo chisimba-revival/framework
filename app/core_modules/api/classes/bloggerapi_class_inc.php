@@ -140,7 +140,7 @@ class bloggerapi extends ChisimbaObject
         $postarray = array(
                 'userid' => $userid,
                 'post_date' => date('r') ,
-                'post_content' => addslashes($content) , 
+                'post_content' => $content ,
                 'post_title' => $this->objLanguage->languageText('mod_blog_word_apipost', 'blog'),
                 'post_category' => '0',
                 'post_excerpt' => '',
@@ -216,7 +216,7 @@ class bloggerapi extends ChisimbaObject
         $postarray = array(
                 'userid' => $userid,
                 'post_date' => date('r') ,
-                'post_content' => addslashes($content) , 
+                'post_content' => $content ,
                 'post_title' => $this->objLanguage->languageText('mod_blog_word_apipost', 'blog'),
                 'post_category' => '0',
                 'post_excerpt' => '',

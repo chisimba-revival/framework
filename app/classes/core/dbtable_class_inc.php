@@ -353,11 +353,32 @@ class dbTable extends ChisimbaObject {
      * @param  mixed  $pkvalue the value of the primary key field for the record
      */
     public function getRow($pk_field, $pk_value, $table = NULL) {
-        $pk_value = addslashes($pk_value ?? '');
+        // A column name cannot be bound as a parameter, so it is checked for a
+        // plain identifier shape instead. Anything else is a caller bug or an
+        // attempt to select on an expression, and is refused rather than
+        // interpolated.
+        if (!is_string($pk_field)
+            || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $pk_field)) {
+            error_log('getRow refused a non-identifier field name');
+            return FALSE;
+        }
+
+        // MDB2's queryRow() accepts no bind parameter, so the value is escaped
+        // by the driver instead. escape() reaches mysqli_real_escape_string,
+        // which is aware of the connection charset; addslashes() was not, and
+        // under a charset such as GBK an attacker can choose bytes where the
+        // backslash addslashes inserts is consumed as part of a multi-byte
+        // character, closing the literal early.
+        $pk_value = $pk_value ?? '';
+        $quotedValue = $this->_db->quote($pk_value);
+        if (MDB2::isError($quotedValue)) {
+            error_log('getRow could not quote its value: ' . $quotedValue->getMessage());
+            return FALSE;
+        }
         if ($table != NULL) {
             $this->_tableName = $table;
         }
-        $stmt = "SELECT * FROM {$this->_tableName} WHERE {$pk_field}='{$pk_value}'";
+        $stmt = "SELECT * FROM {$this->_tableName} WHERE {$pk_field}={$quotedValue}";
         if ($this->objMemcache == TRUE) {
             if (chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt))) {
                 $cache = chisimbacache::getMem()->get(md5($this->cachePrefix . $stmt));
@@ -745,6 +766,18 @@ class dbTable extends ChisimbaObject {
         if (empty($tablename)) {
             $tablename = $this->_tableName;
         }
+        // A column name cannot be bound, so it is constrained to an identifier
+        // instead. Every caller in the framework passes a plain literal such as
+        // 'id', 'contextcode' or 'perm_user_id'.
+        if (!is_string($pkfield) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $pkfield)) {
+            error_log('update refused a non-identifier primary key field name');
+            return FALSE;
+        }
+        $quotedValue = $this->_db->quote($pkvalue);
+        if (MDB2::isError($quotedValue)) {
+            error_log('update could not quote its primary key value: ' . $quotedValue->getMessage());
+            return FALSE;
+        }
         $sql = "UPDATE {$tablename} SET ";
         $comma = "";
         $params = array();
@@ -757,7 +790,10 @@ class dbTable extends ChisimbaObject {
             }
             $comma = ',';
         }
-        $sql .= " WHERE {$pkfield}='{$pkvalue}'";
+        // The value is escaped by the driver. It used to be interpolated raw
+        // inside single quotes, which let a request-derived identifier close
+        // the literal and append its own condition.
+        $sql .= " WHERE {$pkfield}={$quotedValue}";
         if ($this->debug == TRUE) {
             log_debug($sql);
         }

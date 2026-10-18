@@ -73,10 +73,18 @@ final class GuardedLoginApplicationService
             throw new RuntimeException('Abuse-protection decision is invalid.');
         }
         if (!$decision->isAllowed()) {
+            // The abuse verdict is reached before any credential is examined, so
+            // passing its reason back cannot disclose whether the account exists
+            // or whether the password was correct. Callers need it because a
+            // rejected timing window and a wrong password are different client
+            // errors, and reporting both as "invalid credentials" tells a caller
+            // who waited too little nothing useful.
             return array(
                 'status' => self::STATUS_INVALID,
                 'retry_after' => method_exists($decision, 'getRetryAfter')
                     ? $decision->getRetryAfter() : 0,
+                'reason' => method_exists($decision, 'getReason')
+                    ? (string) $decision->getReason() : '',
             );
         }
 
@@ -117,6 +125,7 @@ final class GuardedLoginApplicationService
             array('required' => $required),
             $this->safeMetadata($metadata)
         );
+
         if (is_array($result)
             && ($result['status'] ?? self::STATUS_INVALID)
                 !== self::STATUS_INVALID) {

@@ -1076,7 +1076,10 @@ class getID3
 					if (file_exists(GETID3_HELPERAPPSDIR.'vorbiscomment.exe')) {
 
 						$commandline = '"'.GETID3_HELPERAPPSDIR.'vorbiscomment.exe" -w -c "'.$empty.'" "'.$file.'" "'.$temp.'"';
-						$VorbisCommentError = `$commandline`;
+						// shell_exec() replaces the backtick operator, which PHP 7.4
+						// deprecated and PHP 8 removed. Both return the command's
+						// standard output as a string, so behaviour is unchanged.
+						$VorbisCommentError = shell_exec($commandline);
 
 					} else {
 
@@ -1087,7 +1090,10 @@ class getID3
 				} else {
 
 					$commandline = 'vorbiscomment -w -c "'.$empty.'" "'.$file.'" "'.$temp.'" 2>&1';
-					$VorbisCommentError = `$commandline`;
+					// shell_exec() replaces the backtick operator, which PHP 7.4
+					// deprecated and PHP 8 removed. Both return the command's
+					// standard output as a string, so behaviour is unchanged.
+					$VorbisCommentError = shell_exec($commandline);
 
 				}
 

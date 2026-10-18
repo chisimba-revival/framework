@@ -77,10 +77,6 @@ class dbcontext extends dbTable {
         parent::init('tbl_context');
         $this->table = 'tbl_context';
         $this->objUser = $this->getObject('user', 'security');
-        $existing = $this->query("SHOW COLUMNS FROM tbl_context LIKE 'use_sections'");
-        if (!is_array($existing) || count($existing) === 0) {
-            $this->query('ALTER TABLE tbl_context ADD COLUMN use_sections TINYINT(1) NOT NULL DEFAULT 0');
-        }
     }
 
     /**
@@ -140,13 +136,13 @@ class dbcontext extends dbTable {
      * @param string $status Status of the Context
      * @param string access Access Settings for the Context
      * @param string $about About the Context
-     * @param string $showcomment Enable or Disable Comments on course pages
+     * @param int $showcomment Enable (1) or Disable (0) Comments on course pages
      * @param string $alerts Enable or Disable alerts
      *
      * @return boolean Result of adding a context
      */
     public function createContext(
-    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment='Y', $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL, $useSections=FALSE) {
+    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment=1, $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL, $useSections=FALSE) {
 
         $contextCode = preg_replace('/\W*/', '', $contextCode);
         $contextCode = strtolower($contextCode);

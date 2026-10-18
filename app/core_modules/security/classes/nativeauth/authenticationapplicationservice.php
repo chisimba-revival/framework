@@ -42,7 +42,14 @@ class AuthenticationApplicationService
         array $metadata = array()
     ) {
         if (!$this->csrf->consume(self::CSRF_BEGIN, $csrfToken)) {
-            return array('status' => 'invalid_request');
+            // The evidence token is bound to the session that asked for it. If
+            // the session cookie did not survive the round trip the password is
+            // never reached, so name that distinctly rather than letting it read
+            // as a rejected password.
+            return array(
+                'status' => 'invalid_request',
+                'reason' => 'session_expired',
+            );
         }
 
         $result = $this->transactions->begin(
