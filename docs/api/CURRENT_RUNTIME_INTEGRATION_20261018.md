@@ -83,7 +83,20 @@ An existing `mfa_challenge_contract_test.php` fails because its MemoryMfaReposit
 omits five interface methods. The identical failure is reproduced on the unchanged
 release checkout; it is not repaired as part of this integration.
 
-Still required before merge/release acceptance: an installed local HTTP journey
-covering login/session cookies and uploads, and Prince's real field-client/service
-end-to-end check with its Redis/PostGIS environment. The source and database checks
-do not establish those results. No production rollout is authorised here.
+The existing local PHP 8.5 installation subsequently passed an HTTPS journey:
+login evidence/cookies, password login, bearer-only identity, anonymous and
+cookie-only API refusal, unprivileged resource/upload refusal, refresh rotation
+and replay-family revocation, granted file listing and PNG upload, immediate
+permission removal, and deactivated-account refusal. Temporary accounts, grants,
+token records and uploaded files were removed. The existing database was backed
+up before additive schema changes; the normal home page still returned 200.
+
+Installed testing found a missing MODULE_DESCRIPTION in REST registration and
+PHP 8.5 deprecations in the shared upload path. Registration now supplies its
+description; upload uses date() for numeric timestamps, allows finfo objects to
+be released normally, and declares the quota/file collaborators. The repeated
+HTTP journey passed without new PHP diagnostics.
+
+Still required before merge/release acceptance: Prince's real field-client/service
+end-to-end check with its Redis/PostGIS environment. Local Redis and upload checks
+do not establish that result. No production rollout is authorised here.

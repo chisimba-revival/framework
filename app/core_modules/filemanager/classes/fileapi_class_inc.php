@@ -329,7 +329,7 @@ class fileapi extends ChisimbaObject
             return $this->error('invalid_extension', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
         }
         if ($tmp==='' || !is_uploaded_file($tmp)) { return $this->error('invalid_upload', $this->objLanguage->languageText('mod_filemanager_native_invalid_upload', 'filemanager')); }
-        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); finfo_close($fi); } }
+        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); unset($fi); } }
         if (!in_array(strtolower($mime), $policy['mimetypes'], true)) {
             return $this->error('invalid_mimetype', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
         }

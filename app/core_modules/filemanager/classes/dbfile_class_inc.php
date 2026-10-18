@@ -55,6 +55,7 @@ class dbfile extends dbTable {
     public $objFileFolder;
     public $objMimetypes;
     public $objLanguage;
+    public $objQuota;
 
 
     /**
@@ -257,8 +258,8 @@ class dbfile extends dbTable {
             'moduleuploaded' => $this->getParam('module'),
             'creatorid' => $userId,
             'modifierid' => $userId,
-            'datecreated' => strftime('%Y-%m-%d', time()),
-            'timecreated' => strftime('%H:%M:%S', time())
+            'datecreated' => date('Y-m-d'),
+            'timecreated' => date('H:i:s')
         );
         $id = $this->insert($file);
 
