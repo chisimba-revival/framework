@@ -7665,3 +7665,12 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 #filemanagerTable tbody { display: flex; flex-wrap: wrap; gap: .75rem; }
 #filemanagerTable tr { margin: 0; min-inline-size: 0; max-inline-size: 100%; box-sizing: border-box; }
 #filemanagerTable tr td { min-inline-size: 0; min-block-size: 0; }
+
+/* Conversation history: shared, canvas-token-based chat presentation. */
+.chisimba-chat { display:flex; flex-direction:column; gap:.75rem; max-height:32rem; overflow:auto; padding:1rem; margin-block:1rem; background:var(--chisimba-surface-subtle); border:1px solid var(--chisimba-border); border-radius:var(--chisimba-region-radius); }
+.chisimba-chat__message { align-self:flex-start; max-width:85%; min-width:0; padding:.75rem 1rem; border:1px solid var(--chisimba-border); border-radius:1rem 1rem 1rem .25rem; background:var(--chisimba-surface); color:var(--chisimba-text); overflow-wrap:anywhere; }
+.chisimba-chat__message--own { align-self:flex-end; border-radius:1rem 1rem .25rem 1rem; background:var(--chisimba-primary-soft); }
+.chisimba-chat__meta { display:flex; flex-wrap:wrap; align-items:baseline; gap:.35rem 1rem; font-size:.85rem; }
+.chisimba-chat__meta time { color:var(--chisimba-text-muted); font-size:.8rem; }
+.chisimba-chat__message p { margin:.5rem 0 0; white-space:normal; }
+@media(max-width:40rem) { .chisimba-chat { padding:.5rem; } .chisimba-chat__message { max-width:95%; padding:.65rem .8rem; } }

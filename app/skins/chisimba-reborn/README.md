@@ -93,3 +93,11 @@ The shared radio helper emits `.chisimba-choice` wrappers: each input and associ
 label align on their first baseline, and wrapped labels stay in the text column.
 Keep native inputs, label associations and keyboard behaviour; avoid module-specific
 position offsets to compensate for stretched controls.
+
+## Chat history
+
+Use `chisimba-chat` for a bounded, vertically scrolling conversation transcript,
+`chisimba-chat__message` for each message, and `chisimba-chat__message--own`
+for the current user’s messages. `chisimba-chat__meta` groups the sender and time.
+Keep chronological DOM order and place the composer after history. The caller
+controls initial scroll position; the skin owns bubbles, alignment and tokens.
