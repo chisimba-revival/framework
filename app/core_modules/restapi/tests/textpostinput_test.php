@@ -13,3 +13,9 @@ foreach ([['multipart/form-data',false], ['application/json',true]] as [$type,$f
  try { TextPostInput::normalise(['title'=>'t','content'=>'x'],$type,$files); throw new RuntimeException('Media request accepted'); }
  catch (DomainException $e) { echo "PASS media request rejected\n"; }
 }
+$categorised=TextPostInput::normalise(['title'=>'t','content'=>'x','categories'=>['abc','abc','def']],'application/json',false);
+check($categorised['categories']===['abc','def'],'category IDs survive text translation without duplicates');
+foreach ([null,'abc',[2],[''],['bad/id'],array_fill(0,101,'abc'),['key'=>'abc']] as $ids) {
+ try {TextPostInput::normalise(['title'=>'t','content'=>'x','categories'=>$ids],'application/json',false);throw new RuntimeException('Invalid categories accepted');}
+ catch(DomainException $e){echo "PASS invalid categories rejected\n";}
+}

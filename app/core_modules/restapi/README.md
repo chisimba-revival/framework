@@ -500,6 +500,17 @@ including image tags, is displayed literally. Images, files, media URLs, content
 blocks, tags, ownership fields and other additional fields are rejected.
 Multipart and form submissions are not supported.
 
+Optional `categories` is an array of at most 100 category ID strings. Omission
+means no categories, preserving existing clients. `GET /api/v1/simpleblog/categories`
+requires the same bearer authentication and personal-publishing permission and
+returns `data.categories` containing `id`, `name`, and `parentId`. It always reads
+the authenticated user's personal vocabulary; caller-supplied ownership cannot
+change that scope. Use these existing IDs; create categories in the web editor.
+Lists can be cached per server/account for offline authoring. The server revalidates
+IDs atomically on submission: unknown, removed, other-scope or tag IDs return 422
+without creating a post. SimpleBlog 0.078 supplies the shared category assignment
+for plain-text callers; deploy this API update with that module version.
+
 Status defaults to `draft`. Use `posted` explicitly to publish immediately.
 A successful response is HTTP 201 with `data.id` and `data.status`. A draft can
 be opened by its authorised owner in the normal SimpleBlog management interface;

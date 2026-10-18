@@ -202,8 +202,8 @@ abstract class RestController extends controller
 
         // The text-post collection is a fixed route, not a client-selected ID.
         if ($resource === 'simpleblog') {
-            $handler = strtolower($method) . '_simpleblog_posts';
-            return $id === 'posts' && $sub === null && method_exists($this, $handler)
+            $handler = strtolower($method) . '_simpleblog_' . $id;
+            return in_array($id, ['posts', 'categories'], true) && $sub === null && method_exists($this, $handler)
                 ? $handler : null;
         }
 

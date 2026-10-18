@@ -9,7 +9,7 @@ class TextPostInput
     public static function normalise(array $data, string $contentType, bool $hasFiles): array
     {
         if (strtolower(trim(explode(';', $contentType, 2)[0])) !== 'application/json'
-            || $hasFiles || array_diff(array_keys($data), ['title', 'content', 'status'])) {
+            || $hasFiles || array_diff(array_keys($data), ['title', 'content', 'status', 'categories'])) {
             throw new DomainException('invalid');
         }
         foreach (['title', 'content'] as $field) {
@@ -26,9 +26,17 @@ class TextPostInput
             || strlen($text) > 50000 || !in_array($status, ['draft', 'posted'], true)) {
             throw new DomainException('invalid');
         }
+        $categories = array_key_exists('categories', $data) ? $data['categories'] : [];
+        if (!is_array($categories) || !array_is_list($categories) || count($categories) > 100) {
+            throw new DomainException('invalid');
+        }
+        foreach ($categories as $id) {
+            if (!is_string($id) || $id === '' || strlen($id) > 64
+                || !preg_match('/^[a-zA-Z0-9_-]+$/D', $id)) throw new DomainException('invalid');
+        }
         // Escape before entering SimpleBlog's HTML boundary. Newlines remain
         // visible; markup, image tags and embeds can never become active content.
         $html = '<p>' . nl2br(htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), false) . '</p>';
-        return ['title' => $title, 'content' => $html, 'tags' => '', 'status' => $status];
+        return ['title' => $title, 'content' => $html, 'tags' => '', 'status' => $status, 'categories' => array_values(array_unique($categories))];
     }
 }

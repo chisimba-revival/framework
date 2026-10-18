@@ -21,6 +21,25 @@ class restapi extends RestController
         $this->respond($this->getObject('sitebranding', 'canvas')->getBranding());
     }
 
+    /** Existing personal-blog categories; the shared service enforces scope access. */
+    public function GET_simpleblog_categories(): void
+    {
+        $this->requireAuth();
+        if (!$this->getObject('modules', 'modulecatalogue')->checkIfRegistered('simpleblog')) {
+            throw new NotFoundException('SimpleBlog is not installed');
+        }
+        $owner = (string) $this->currentUser['id'];
+        if (!$this->getObject('publishingpolicy', 'simpleblog')->canCreate('personal', $owner)) {
+            throw new AuthorizationException('Personal publishing permission is required');
+        }
+        $terms = $this->getObject('publishingservice', 'simpleblog')->classification()
+            ->creationChoices('simpleblog', 'personal', $owner, 'category');
+        $this->respond(['categories' => array_map(static fn($term) => [
+            'id' => (string) $term['id'], 'name' => (string) $term['name'],
+            'parentId' => (string) ($term['parent_id'] ?? '')
+        ], $terms)]);
+    }
+
     /**
      * POST /api/v1/simpleblog/posts: plain text in the caller's personal blog.
      * The API translates input; SimpleBlog retains all publishing decisions.
@@ -51,7 +70,7 @@ class restapi extends RestController
             if ($error->getMessage() === 'forbidden') {
                 throw new AuthorizationException('Personal publishing permission is required');
             }
-            throw new ValidationException(['post' => 'Provide a title, plain-text content and draft or posted status; media and other fields are not supported.']);
+            throw new ValidationException(['post' => 'Provide a title, plain-text content, draft or posted status, and valid categories from your personal blog; media is not supported.']);
         }
         $this->respondCreated(['id' => $id, 'status' => $input['status']]);
     }
