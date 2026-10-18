@@ -475,3 +475,50 @@ unresolved. Rotate the log first, exercise the endpoints, then read it:
 ```
 docker-compose exec -T web sh -c 'mv /tmp/chisimba-php85-error.log /tmp/old.log; : > /tmp/chisimba-php85-error.log; chown www-data:www-data /tmp/chisimba-php85-error.log'
 ```
+## Initial text-only SimpleBlog posting
+
+`POST /api/v1/simpleblog/posts` accepts an access token in the standard
+`Authorization: Bearer` header. SimpleBlog must be installed. Its existing
+personal-publishing policy applies: signing in alone does not grant publishing.
+The endpoint creates a post in the authenticated user's personal blog; it does
+not accept a user ID, site/course scope or an existing post ID. API keys are not
+supported for this initial endpoint.
+
+Send `Content-Type: application/json` with:
+
+```json
+{
+  "title": "Notes from the field",
+  "content": "First observation.\nSecond observation.",
+  "status": "draft"
+}
+```
+
+`title` is required (1–250 characters after trimming). `content` is required,
+nonblank UTF-8 plain text (at most 50,000 bytes). Newlines are preserved. HTML,
+including image tags, is displayed literally. Images, files, media URLs, content
+blocks, tags, ownership fields and other additional fields are rejected.
+Multipart and form submissions are not supported.
+
+Status defaults to `draft`. Use `posted` explicitly to publish immediately.
+A successful response is HTTP 201 with `data.id` and `data.status`. A draft can
+be opened by its authorised owner in the normal SimpleBlog management interface;
+it is not publicly readable. A published personal post uses SimpleBlog's normal
+public reading policy. Editing and deleting remain in the web interface for now.
+
+HTTP 401 means authentication is missing or no longer valid; retain the typed
+text and sign in again. HTTP 403 means the user cannot publish; retain the text
+and ask the site administrator about publishing access. HTTP 422 means the
+request content is invalid or contains unsupported fields. A missing SimpleBlog
+installation returns 404. No rejected request should create a post.
+
+This first endpoint is create-only and has no idempotency contract. If a network
+connection fails after submission, the outcome may be uncertain: retain the
+local draft and check SimpleBlog before submitting again. An offline mobile
+queue must not automatically retry this write until duplicate-safe submission
+is added. No mobile app or automatic offline sync is introduced by this endpoint.
+
+Installed local HTTPS tests cover bearer login, missing/revoked permission,
+wrong method/route, rejected media/ownership fields, draft and published saves,
+actual persisted owner/scope, escaped markup and anonymous draft/public access.
+`tests/textpostinput_test.php` covers the text boundary and size/type limits.

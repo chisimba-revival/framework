@@ -10,8 +10,8 @@ installation or deployment is performed by this change.
 The `/api/v1` routes, legacy login aliases, JWKS alias, response envelopes,
 access/refresh lifetimes, device identifiers, RSA signing and field-service
 proxy payloads remain. Field role names and scope vocabulary are unchanged.
-The field service and Redis denylist integration are retained. SimpleBlog
-endpoints and the mobile client are separate subsequent work.
+The field service and Redis denylist integration are retained. A first text-only SimpleBlog create endpoint has subsequently been added; the
+mobile client remains subsequent work. Existing routes retain their contracts.
 
 ## Runtime and security changes
 
@@ -100,3 +100,21 @@ HTTP journey passed without new PHP diagnostics.
 Still required before merge/release acceptance: Prince's real field-client/service
 end-to-end check with its Redis/PostGIS environment. Local Redis and upload checks
 do not establish that result. No production rollout is authorised here.
+
+
+## Text-only SimpleBlog prototype
+
+`POST /api/v1/simpleblog/posts` uses SimpleBlog's existing publishing policy and
+service. It accepts only title, plain-text content and draft/posted status;
+owner and personal scope come from the authenticated user. It introduces no
+SimpleBlog storage or permission changes. The API README specifies input limits,
+responses and recovery. Media and unknown fields are rejected; HTML is escaped
+before the shared rich-text storage boundary. Invalid scalar JSON now reaches
+request validation rather than failing a typed-property assignment.
+
+Installed HTTP checks passed for denied and revoked publishers, exact routing,
+invalid ownership/media/status/body, draft and published creation, stored scope,
+literal markup, and anonymous draft/public visibility. Synthetic posts and test
+identities were removed. Text input checks plus existing routing/token contracts
+pass. This is a create-only test endpoint; idempotent offline retry and a mobile
+client are not included. No production deployment occurred.

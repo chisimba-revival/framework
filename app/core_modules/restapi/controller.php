@@ -15,6 +15,41 @@ class restapi extends RestController
         return parent::dispatch($action);
     }
 
+    /**
+     * POST /api/v1/simpleblog/posts: plain text in the caller's personal blog.
+     * The API translates input; SimpleBlog retains all publishing decisions.
+     * @author Derek Keats
+     */
+    public function POST_simpleblog_posts(): void
+    {
+        $this->requireAuth();
+        if (!$this->getObject('modules', 'modulecatalogue')->checkIfRegistered('simpleblog')) {
+            throw new NotFoundException('SimpleBlog is not installed');
+        }
+        $owner = (string) $this->currentUser['id'];
+        $policy = $this->getObject('publishingpolicy', 'simpleblog');
+        if (!$policy->canCreate('personal', $owner)) {
+            throw new AuthorizationException('Personal publishing permission is required');
+        }
+        require_once __DIR__ . '/classes/textpostinput_class_inc.php';
+        try {
+            $input = TextPostInput::normalise(
+                $this->getRequestData(),
+                (string) ($_SERVER['CONTENT_TYPE'] ?? ''),
+                !empty($_FILES)
+            );
+            $id = $this->getObject('publishingservice', 'simpleblog')->save(
+                null, 'personal', $owner, $input
+            );
+        } catch (DomainException $error) {
+            if ($error->getMessage() === 'forbidden') {
+                throw new AuthorizationException('Personal publishing permission is required');
+            }
+            throw new ValidationException(['post' => 'Provide a title, plain-text content and draft or posted status; media and other fields are not supported.']);
+        }
+        $this->respondCreated(['id' => $id, 'status' => $input['status']]);
+    }
+
     // ============================================================
     // AUTHENTICATION ENDPOINTS
     // ============================================================

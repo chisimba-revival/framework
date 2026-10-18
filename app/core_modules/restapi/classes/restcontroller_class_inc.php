@@ -193,6 +193,13 @@ abstract class RestController extends controller
 
         if (!$resource) return null;
 
+        // The text-post collection is a fixed route, not a client-selected ID.
+        if ($resource === 'simpleblog') {
+            $handler = strtolower($method) . '_simpleblog_posts';
+            return $id === 'posts' && $sub === null && method_exists($this, $handler)
+                ? $handler : null;
+        }
+
         // Special handling for auth resource - actions like login, refresh, logout, me
         // are direct actions, not resource IDs
         if ($resource === 'auth' && $id) {
@@ -274,7 +281,8 @@ abstract class RestController extends controller
         
         if (str_starts_with($contentType, 'application/json')) {
             $raw = file_get_contents('php://input');
-            $this->requestData = json_decode($raw, true) ?? [];
+            $decoded = json_decode($raw, true);
+            $this->requestData = is_array($decoded) ? $decoded : [];
         } elseif (str_starts_with($contentType, 'application/x-www-form-urlencoded')) {
             $this->requestData = $_POST;
         } elseif (str_starts_with($contentType, 'multipart/form-data')) {
