@@ -35,7 +35,7 @@ trait MessagingEndpoints
             try{$channel=$service->forContext($code);}catch(DomainException $e){continue;}
             if($channel)$rows[]=['id'=>$code,'title'=>$contexts->getContextDetails($code)['title']];
         }
-        $this->respond(['contexts'=>$rows]);
+        $this->respond(['contexts'=>$rows,'contextLabel'=>$this->getObject('conversationview','messaging')->text('context')]);
     }
     public function GET_messaging_history(): void {
         $service=$this->messagingService();
