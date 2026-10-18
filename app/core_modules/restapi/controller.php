@@ -5,9 +5,11 @@
  * Handles all /api/v1/* routes with RESTful conventions
  */
 require_once __DIR__ . '/classes/restcontroller_class_inc.php';
+require_once __DIR__ . '/classes/messagingendpoints_trait.php';
 
 class restapi extends RestController
 {
+    use MessagingEndpoints;
     public function dispatch($action)
     {
         // The action from engine will be the full route path

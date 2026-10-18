@@ -207,6 +207,11 @@ abstract class RestController extends controller
                 ? $handler : null;
         }
 
+        if ($resource === 'messaging') {
+            $handler = strtolower($method) . '_messaging_' . $id;
+            return in_array($id, ['contexts','history','messages','read'], true) && $sub === null && method_exists($this, $handler) ? $handler : null;
+        }
+
         // Special handling for auth resource - actions like login, refresh, logout, me
         // are direct actions, not resource IDs
         if ($resource === 'auth' && $id) {
