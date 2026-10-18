@@ -15,6 +15,12 @@ class restapi extends RestController
         return parent::dispatch($action);
     }
 
+    /** Public site identity, available before sign-in and safe to cache offline. */
+    public function GET_site_branding(): void
+    {
+        $this->respond($this->getObject('sitebranding', 'canvas')->getBranding());
+    }
+
     /**
      * POST /api/v1/simpleblog/posts: plain text in the caller's personal blog.
      * The API translates input; SimpleBlog retains all publishing decisions.

@@ -193,6 +193,13 @@ abstract class RestController extends controller
 
         if (!$resource) return null;
 
+        // Public site branding is a fixed endpoint, never a supplied resource ID.
+        if ($resource === 'site') {
+            $handler = strtolower($method) . '_site_branding';
+            return $id === 'branding' && $sub === null && method_exists($this, $handler)
+                ? $handler : null;
+        }
+
         // The text-post collection is a fixed route, not a client-selected ID.
         if ($resource === 'simpleblog') {
             $handler = strtolower($method) . '_simpleblog_posts';

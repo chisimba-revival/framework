@@ -522,3 +522,20 @@ Installed local HTTPS tests cover bearer login, missing/revoked permission,
 wrong method/route, rejected media/ownership fields, draft and published saves,
 actual persisted owner/scope, escaped markup and anonymous draft/public access.
 `tests/textpostinput_test.php` covers the text boundary and size/type limits.
+
+### Public site branding
+
+`GET /api/v1/site/branding` is available before authentication. It returns
+`data.version` (1), the configured `siteName`, site-wide `canvas`, `colours`
+(`primary`/`accent`, validated six-digit hex or null) and optional `logo`
+(`mime` and `base64`). The shared canvas `sitebranding` service reads the
+canonical configuration and canvas.json; user/context overrides do not apply.
+Only a declared raster logo inside the selected skin is returned: PNG, JPEG or
+WebP, at most 192 KiB and 2048 pixels on either axis. Remote URLs, escaping
+symlinks, SVG and filesystem paths are never exposed. Missing/unsupported
+assets yield null; clients retain their normal layout and accessible defaults.
+
+Clients may cache this public identity separately per canonical HTTPS site URL.
+Render the name as text, accept only the documented colour/image formats, and
+show the actual connected server address alongside branding. A logo is not proof
+of server identity. This endpoint neither authenticates nor grants permissions.
