@@ -62,6 +62,30 @@ source and assembly configuration. Do not blindly reset, rebuild or reinstall.
   suppression. Preserve encoding and data contracts; a warning fix is not permission
   for an unrelated data-format migration. Identify vendor changes explicitly.
 
+## Database access is a project rule
+
+**All module persistence must use `dbTable`, directly or through a shared
+Chisimba service backed by `dbTable`.** This applies to core and application
+modules, including new repositories, background jobs and installation hooks.
+
+- Use dbTable CRUD methods or its prepared-query APIs; bind data values rather
+  than interpolating or manually quoting them. Custom SQL belongs behind dbTable.
+- Do not obtain a raw connection with `getDbObj()`, instantiate PDO/MDB2/mysqli,
+  or call driver query, quoting, result or transaction APIs from module code.
+  Driver access belongs only inside the shared framework database implementation.
+- Use shared checked transaction and locking APIs. Preserve the enclosing
+  transaction's ownership; a module must not commit or roll back another caller's
+  work. Use the shared savepoint API when composition requires it.
+- Schema changes use the shared framework schema/catalogue services through
+  guarded, repeatable installation or upgrade paths, never a module-owned driver
+  connection or opportunistic DDL during normal requests.
+- If the abstraction lacks a needed capability, extend the shared framework
+  boundary with appropriate tests instead of bypassing it in a module.
+- Review new and changed persistence for direct driver calls. Existing legacy
+  callers are migration debt, not examples or exceptions for new code. PDO MySQL
+  is the sole supported backend. Verify changed persistence with
+  disposable PDO fixtures, including failure and rollback behaviour.
+
 ## Skin primitives are a project rule
 
 **The skin renders the canvas. Modules supply semantic content and behaviour.**
@@ -83,6 +107,11 @@ Read [the skin overview](app/skins/chisimba-reborn/README.md) and
 - Keep adjacent controls the same height, use the shared action gap, and align
   search, Help and actions coherently. Use horizontal space without breaking
   narrow layouts. Reuse the established wide-main/narrow-sidebar layout when suitable.
+- Place related primary and secondary actions on one row when they fit; use
+  shared wrapping layouts and a visible gap in both directions so neighbouring
+  targets are easy to distinguish and activate. Avoid unnecessary stacked rows,
+  empty panels or oversized spacing. Compact layouts must retain readable content,
+  usable targets and breathing room when actions wrap on narrow screens.
 - Respect semantic headings, labels, keyboard use, visible shared focus states,
   contrast, status messages and reduced motion. Dialogs and Help must support
   Escape and sensible focus return. Drag-and-drop needs a keyboard alternative.
@@ -165,3 +194,8 @@ limitations, coordinated repository/schema changes and the branch/commit. Keep
 commits scoped. A local update is not authorisation to deploy to production;
 use the user's authorised target and scope. Do not merge unrelated development
 work just to publish a small fix or documentation change.
+
+Sites share one versioned codebase; site differences belong in configuration,
+branding and content. Audit deployed source drift before release, reconcile
+newer shared fixes into source, and verify a common manifest. Do not preserve
+site-only framework/module variants or overwrite newer deployed fixes blindly.

@@ -1,29 +1,12 @@
 <?php
 
-// Check for older PHP versions - added 15 Dec 2006 by jsc
-if (substr(PHP_VERSION,0,1) < '5'){
-    print "Chisimba requires PHP 5 or better. We see this computer is currently running PHP".PHP_VERSION."<br />\n";
-    print "To run Chisimba, you will need to run PHP5.<br />\n";
-    die;
+// Check before loading code that requires modern PHP syntax.
+if (version_compare(PHP_VERSION, '8.2.0', '<')) {
+    http_response_code(500);
+    exit('Chisimba requires PHP 8.2 or later with PDO MySQL.');
 }
 $mepath = $_SERVER["SCRIPT_FILENAME"];
 $mepath = str_replace('installer/index.php', '', $mepath);
-ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $mepath.'lib/pear/');
-
-//if (substr(PHP_VERSION,0,2) > '5.1'){
-//    print "We see this computer is currently running PHP".PHP_VERSION."<br />\n";
-//    print "Chisimba currently has problems with PHP 5.2 or above.<br />\n";
-//    die;
-//}
-
-
-/*$path=substr(str_replace('\\','/',$_SERVER['SCRIPT_FILENAME']),0,-20)."/config/";
-if (file_exists($path."installdone.txt") && file_exists($path."config.xml")&&file_exists($path."dbdetails_inc.php")){
-    print "The installation has been done already.<br />Click <a href='";
-    print "../index.php'>here</a> to enter the site.<br />\n";
-    die;
-}*/
-
 
 require_once dirname(__FILE__).'/installwizard.inc';
 
@@ -44,26 +27,6 @@ $_POST = install_gpc_stripslashes($_POST);
 $_GET = install_gpc_stripslashes($_GET);
 
 $_REQUEST = install_gpc_stripslashes($_REQUEST);
-
-// Prefer Chisimba's bundled PEAR library. If it is not present, use the
-// system PEAR installation already resolvable through PHP's include path.
-// An explicitly submitted path always takes precedence.
-if (!isset($_POST['pear_path']) || trim((string) $_POST['pear_path']) === '') {
-    $bundledPearPath = rtrim(str_replace('\\', '/', $mepath), '/') . '/lib/pear';
-    $resolvedPearFile = stream_resolve_include_path('PEAR.php');
-
-    if (is_file($bundledPearPath . '/PEAR.php')) {
-        $pearPath = $bundledPearPath;
-    } elseif ($resolvedPearFile !== false) {
-        $pearPath = dirname($resolvedPearFile);
-    } else {
-        $pearPath = $bundledPearPath;
-    }
-
-    $_POST['pear_path'] = $pearPath;
-    $_REQUEST['pear_path'] = $pearPath;
-}
-
 
 $wizard = new InstallWizard();
 

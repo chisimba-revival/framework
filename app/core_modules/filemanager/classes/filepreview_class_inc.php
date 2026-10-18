@@ -44,6 +44,8 @@ class filepreview extends ChisimbaObject {
 
     // Services and state populated during initialisation.
     public $objFileParts;
+    public $objConfig;
+    public $file;
     public $objFiles;
     public $objCleanurl;
     public $objThumbnails;
@@ -211,10 +213,10 @@ class filepreview extends ChisimbaObject {
      */
     function show3dObject() {
         switch ($this->file['datatype']) {
-            // An exception is made for the obj 3d because of the way the applet works
-            case 'obj': return $this->objFileEmbed->embed($this->file['path'], 'obj3d');
+            // Original files use the same authorised route as other previews.
+            case 'obj': return $this->objFileEmbed->embed($this->file['linkname'], 'obj3d');
             case 'wrl': return $this->objFileEmbed->embed($this->file['linkname'], 'vrml');
-            default: return $this->objFileEmbed->embed($this->file['path'], 'unknown');
+            default: return $this->objFileEmbed->embed($this->file['linkname'], 'unknown');
         }
     }
 
@@ -229,7 +231,7 @@ class filepreview extends ChisimbaObject {
      * Method to preview an Audio File
      */
     function showAudio() {
-        return $this->objFileEmbed->embed($this->file['path'], 'audio');
+        return $this->objFileEmbed->embed($this->file['linkname'], 'audio');
     }
 
     /**
@@ -258,15 +260,15 @@ class filepreview extends ChisimbaObject {
             case 'avi':
                 return $this->objFileEmbed->embed($this->file['linkname'], 'avi', $width, $height);
             case 'flv':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'flv', $width, $height + 26);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'flv', $width, $height + 26);
             case 'ogg':
             case 'ogv':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'ogg', $width, $height + 12);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'ogg', $width, $height + 12);
             case 'mpg':
             case 'mpeg':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'mpg', $width, $height + 12);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'mpg', $width, $height + 12);
             case 'mp4':
-                return $this->objFileEmbed->embed($this->file['fullurl'], 'mp4', $width, $height + 12);
+                return $this->objFileEmbed->embed($this->file['linkname'], 'mp4', $width, $height + 12);
             case 'm4v' :
                 return $this->objFileEmbed->embed($this->file['fullurl'], 'm4v', $width, $height + 12);
             case 'webm':
@@ -415,103 +417,38 @@ class filepreview extends ChisimbaObject {
             case 'htm':
                 return '<iframe src="' . $this->file['linkname'] . '" width="99%" height="300"></iframe>';
             case 'pdf':
-                // Check if registered
-                //Instantiate the modules class to check if simplemap is registered
-                $objModule = $this->getObject('modules', 'modulecatalogue');
-                //See if the simple map module is registered and set a param
-                $isRegistered = $objModule->checkIfRegistered('swftools');
-                if ($isRegistered) {
-                    $objPDF2Flash = $this->getObject('pdf2flash', 'swftools');
-
-                    $fullFlashPath = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-                    $finalFlash = $contentPath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-                    $htmlFileDestination = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.htm';
-
-                    if (file_exists($htmlFileDestination) && file_exists($fullFlashPath)) {
-                        //$destination = $this->objConfig->getcontentBasePath().'filemanager_thumbnails/'.$this->file['id'].'.htm';
-                        return file_get_contents($htmlFileDestination);
-                    } else {
-
-                        if ($objPDF2Flash->convert2SWF($this->file['path'], $fullFlashPath)) {
-                            $objPDF2Flash->generateHTMLWrapper($fullFlashPath, $finalFlash, $htmlFileDestination);
-                            return file_get_contents($htmlFileDestination);
-                        } else {
-
-                            return NULL;
-                        }
-                    }
-                } else {
-                    return NULL;
-                }
+                // The canonical endpoint rechecks current access before serving bytes.
+                $url = htmlspecialchars($this->file['linkname'], ENT_QUOTES, 'UTF-8');
+                $name = htmlspecialchars($this->file['filename'], ENT_QUOTES, 'UTF-8');
+                return '<div class="chisimba-document"><iframe class="chisimba-document-preview" src="' . $url
+                    . '" title="' . $name . '"></iframe>' . $this->documentDownload() . '</div>';
             case 'odt':
             case 'sxw':
             case 'rtf':
             case 'doc':
+            case 'docx':
             case 'wpd':
             case 'ods':
             case 'sxc':
             case 'xls':
+            case 'xlsx':
             case 'odp':
             case 'sxi':
             case 'ppt':
-
-                // Local path to file
-                $finalFlash = $contentPath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-
-                // Full path to flash preview thumbnail file
-                $fullFlashPath = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.swf';
-
-                $htmlFileDestination = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.htm';
-
-                // Check if preview exists already
-                if (file_exists($htmlFileDestination) && file_exists($fullFlashPath)) {
-                    return file_get_contents($htmlFileDestination);
-                } else {
-
-                    // Preview needs to be generated
-                    // First step is to convert document to PDF
-                    // Then we use swftools to convert PDF to Flash
-                    // Check if registered
-                    //Instantiate the modules class to check if documentconverter is registered
-                    $objModule = $this->getObject('modules', 'modulecatalogue');
-
-                    //See if the documentconverter module is registered and set a param
-                    $isDocumentConverterRegistered = $objModule->checkIfRegistered('documentconverter');
-                    $isSWFToolsRegistered = $objModule->checkIfRegistered('documentconverter');
-
-                    if ($isDocumentConverterRegistered && $isSWFToolsRegistered) {
-
-                        $objConvertDoc = $this->getObject('convertdoc', 'documentconverter');
-
-                        $pdfFile = $contentBasePath . 'filemanager_thumbnails/' . $this->file['id'] . '.pdf';
-
-                        // If PDF does not already exist
-                        if (!file_exists($pdfFile)) {
-                            $objConvertDoc->convert($this->file['fullpath'], $pdfFile);
-                        }
-                        // Break if PDF is not generated
-                        if (!file_exists($pdfFile)) {
-                            return '';
-                        }
-                        $objPDF2Flash = $this->getObject('pdf2flash', 'swftools');
-                        if (file_exists($fullFlashPath)) {
-                            return $this->objFileEmbed->embed($finalFlash, 'flash', '100%', 700);
-                        } else {
-                            //echo $pdfFile.' - '.$fullFlashPath.' - '.$finalFlash;
-                            if ($objPDF2Flash->convert2SWF($pdfFile, $fullFlashPath)) {
-                                $objPDF2Flash->generateHTMLWrapper($fullFlashPath, $finalFlash, $htmlFileDestination);
-                                return file_get_contents($htmlFileDestination);
-                            } else {
-                                return NULL;
-                            }
-                        }
-                    } else {
-                        return NULL;
-                    }
-                }
+            case 'pptx':
+                // Office documents remain available in their original format.
+                return $this->documentDownload();
             default:
                 return NULL;
         }
+    }
+
+    /** Render an original-file link without consulting obsolete Flash derivatives. */
+    private function documentDownload() {
+        $label = $this->getObject('language', 'language')->languageText('word_download');
+        return '<p><a href="' . htmlspecialchars($this->file['linkname'], ENT_QUOTES, 'UTF-8')
+            . '">' . htmlspecialchars($label . ': ' . $this->file['filename'], ENT_QUOTES, 'UTF-8')
+            . '</a></p>';
     }
 
     /**

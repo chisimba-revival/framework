@@ -39,6 +39,14 @@ if (!
 }
 
 class block_updates extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $configData;
+    public $blockType;
+
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+    public $objUser;
+
 
     /**
      *
@@ -93,7 +101,7 @@ class block_updates extends ChisimbaObject {
                 . '</p></div>';
         }
 
-        $objIcon = $this->getObject('geticon', 'htmlelements');
+        $moduleIcons = $this->getObject('moduleiconresolver', 'modulecatalogue');
         $updateUrl = html_entity_decode(
             $this->uri(array('action' => 'update'), 'modulecatalogue'),
             ENT_QUOTES,
@@ -112,10 +120,10 @@ class block_updates extends ChisimbaObject {
             . '<div class="module-updates__list">';
         foreach ($modules as $module) {
             $moduleId = (string) $module['module_id'];
-            $objIcon->setModuleIcon($module['module_id']);
             $html .= '<article class="module-updates__item" data-update-item>'
-                . '<div class="module-updates__heading"><img class="module-updates__icon" src="'
-                . $escape($objIcon->getSrc()) . '" alt=""><strong>' . $escape(ucwords(str_replace('-', ' ', $moduleId))) . '</strong></div>'
+                . '<div class="module-updates__heading">'
+                . $moduleIcons->render($moduleId, '', 'module-updates__icon')
+                . ' <strong>' . $escape(ucwords(str_replace('-', ' ', $moduleId))) . '</strong></div>'
                 . '<p class="module-updates__description">' . $escape($module['desc']) . '</p>'
                 . '<button type="button" class="button chisimba-button-secondary module-updates__action" data-update-module'
                 . ' data-url="' . $escape($updateUrl) . '" data-module="' . $escape($moduleId)

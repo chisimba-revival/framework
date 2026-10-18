@@ -32,7 +32,7 @@ class security extends controller
 
     public function requiresLogin($action)
     {
-        return in_array($action, array('authenticated', 'logout'), true);
+        return in_array($action, array('authenticated', 'logout', 'formtoken'), true);
     }
 
     public function dispatch($action)
@@ -51,6 +51,8 @@ class security extends controller
                 return $this->nativeMfa($action);
             case 'authenticated':
                 return $this->nativeLanding();
+            case 'formtoken':
+                return $this->nativeLogoutToken();
             case 'logout':
                 return $this->nativeLogout();
             case 'needpassword':
@@ -80,6 +82,15 @@ class security extends controller
             return $this->nativeLanding();
         }
 
+        $failure=$this->getSession('native_auth_login_failure',array());
+        $this->unsetSession('native_auth_login_failure');
+        if(!is_array($failure))$failure=array();
+        if($messageKey===null && in_array($failure['message_key']??'',array('mod_security_pendingverification','mod_security_authenticationfailed'),true))$messageKey=$failure['message_key'];
+        $username=$failure['username']??'';
+        $this->setVar('nativeLoginUsername',is_string($username)?substr($username,0,255):'');
+        $this->setVar('nativeLoginNotice', $this->getObject('dbsysconfig', 'sysconfig')->getValue('LOGIN_PAGE_NOTICE', 'security'));
+        $this->setVar('nativeReturnTo', $this->validatedReturnTo($this->getParam('return_to', $failure['return_to'] ?? '')) ?? '');
+
         $this->setVar(
             'nativeAuthBeginToken',
             $stack['csrf']->issue(self::LOGIN_CSRF_CONTEXT)
@@ -94,6 +105,10 @@ class security extends controller
             'password' => $this->text('word_password', 'system'),
             'remember' => $this->text('mod_security_rememberme'),
             'submit' => $this->text('word_login', 'system'),
+            'forgot_password' => $this->text(
+                'mod_registration_service_forgot_password',
+                'registration-service'
+            ),
             'failure' => $messageKey === null
                 ? ''
                 : $this->text($messageKey),
@@ -261,7 +276,7 @@ class security extends controller
         $this->unsetSession('native_auth_return_to');
         $returnTo = $this->validatedReturnTo($returnTo);
         if ($returnTo === null) {
-            return $this->nativeLanding();
+            $returnTo = $this->frontPagePath();
         }
 
         header('Location: ' . $returnTo, true, 303);
@@ -278,7 +293,8 @@ class security extends controller
         }
         $candidate = trim((string) $candidate);
         if ($candidate === '' || strlen($candidate) > 2048
-            || preg_match('/[\x00-\x1F\x7F\\]/', $candidate)
+            || preg_match('/[\x00-\x1F\x7F]/', $candidate)
+            || strpos($candidate, chr(92)) !== false
             || strncmp($candidate, '//', 2) === 0) {
             return null;
         }
@@ -334,6 +350,22 @@ class security extends controller
         return 'native_authenticated_tpl.php';
     }
 
+    /** Fresh logout protection for a still-open page after remembered restoration. */
+    private function nativeLogoutToken()
+    {
+        $stack = $this->nativeAuthStack();
+        $actor = $this->getParam('actor', '');
+        $valid = $this->isPost()
+            && ($_SERVER['HTTP_X_CHISIMBA_FORM'] ?? '') === 'security'
+            && ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '') === 'same-origin'
+            && is_string($actor) && $actor === $stack['sessions']->getUserId();
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: private, no-store');
+        http_response_code($valid ? 200 : 403);
+        echo json_encode($valid ? array('token'=>$stack['csrf']->issueForSession(self::LOGOUT_CSRF_CONTEXT)) : array('error'=>'invalid_request'));
+        exit;
+    }
+
     private function nativeLogout()
     {
         if (!$this->isPost()) {
@@ -341,7 +373,8 @@ class security extends controller
         }
 
         $stack = $this->nativeAuthStack();
-        if (!$stack['csrf']->consume(
+        $actor = $this->getParam('native_auth_actor', '');
+        if (!is_string($actor) || ($actor !== '' && $actor !== $stack['sessions']->getUserId()) || !$stack['csrf']->consume(
             self::LOGOUT_CSRF_CONTEXT,
             $this->getParam('native_auth_logout', '')
         )) {
@@ -459,24 +492,10 @@ class security extends controller
         return $front . 'index.php?module=security';
     }
 
-    /**
-     * Return ordinary failures to the branded front page. During maintenance
-     * that page is intentionally unavailable, so retain the public Security
-     * boundary and its usable login form instead.
-     */
+    /** The public home need not contain a login form or failure-message renderer. */
     private function failedLoginPath()
     {
-        $modules = $this->getObject('modules', 'modulecatalogue');
-        if ($modules->checkIfRegistered('systemmanagement')) {
-            $maintenance = $this->getObject(
-                'systemmanagementservice',
-                'systemmanagement'
-            )->maintenance();
-            if (!empty($maintenance['active'])) {
-                return $this->securityLoginPath();
-            }
-        }
-        return $this->frontPagePath();
+        return $this->securityLoginPath().'&action=showlogin';
     }
 
     private function nativeFailure($key)

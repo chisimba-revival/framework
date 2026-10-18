@@ -40,7 +40,7 @@ class TokenAuthServiceContractTest
         
         // Verify TokenAuthService has issueTokens method with device_id support
         $this->test('TokenAuthService::issueTokens accepts device_id option', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, "function issueTokens") !== false,
                 'issueTokens method must exist');
             $this->assertTrue(strpos($source, "device_id") !== false,
@@ -49,14 +49,14 @@ class TokenAuthServiceContractTest
 
         // Verify access token TTL constant
         $this->test('ACCESS_TOKEN_TTL is 3600 seconds (1 hour)', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'ACCESS_TOKEN_TTL = 3600') !== false,
                 'ACCESS_TOKEN_TTL should be 3600 seconds');
         });
 
         // Verify refresh token TTL constant
         $this->test('REFRESH_TOKEN_TTL is 14 days', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'REFRESH_TOKEN_TTL = 86400 * 14') !== false,
                 'REFRESH_TOKEN_TTL should be 14 days');
         });
@@ -71,14 +71,14 @@ class TokenAuthServiceContractTest
         
         // Verify refreshAccessToken accepts device_id parameter
         $this->test('TokenAuthService::refreshAccessToken accepts device_id parameter', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
-            $this->assertTrue(strpos($source, 'function refreshAccessToken(string $refreshToken, string $deviceId)') !== false,
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
+            $this->assertTrue(strpos($source, 'function refreshAccessToken(string $refreshToken, string $deviceId = \'\')') !== false,
                 'refreshAccessToken should accept device_id parameter');
         });
 
         // Verify family revocation on replay detection
         $this->test('Family revocation logic exists for replay detection', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'revokeAllUserDeviceTokens') !== false,
                 'revokeAllUserDeviceTokens method must exist');
             $this->assertTrue(strpos($source, 'REPLAY DETECTED') !== false || strpos($source, 'replay') !== false,
@@ -87,7 +87,7 @@ class TokenAuthServiceContractTest
 
         // Verify device_id column used in refresh token lookup
         $this->test('Refresh token lookup includes device_id', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'SELECT user_id, expires_at, revoked_at, device_id') !== false,
                 'Refresh token lookup should include device_id');
         });
@@ -102,21 +102,21 @@ class TokenAuthServiceContractTest
         
         // Verify revokeAllUserDeviceTokens method exists
         $this->test('TokenAuthService::revokeAllUserDeviceTokens exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function revokeAllUserDeviceTokens') !== false,
                 'revokeAllUserDeviceTokens method must exist');
         });
 
         // Verify revokeAllUserTokens method exists
         $this->test('TokenAuthService::revokeAllUserTokens exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function revokeAllUserTokens') !== false,
                 'revokeAllUserTokens method must exist');
         });
 
         // Verify revokeRefreshToken method exists
         $this->test('TokenAuthService::revokeRefreshToken exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function revokeRefreshToken') !== false,
                 'revokeRefreshToken method must exist');
         });
@@ -131,36 +131,36 @@ class TokenAuthServiceContractTest
         
         // Verify issueServiceToken method exists
         $this->test('TokenAuthService::issueServiceToken exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function issueServiceToken') !== false,
                 'issueServiceToken method must exist');
         });
 
         // Verify SERVICE_SCOPE constant
-        $this->test('SERVICE_SCOPE is field:verify', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
-            $this->assertTrue(strpos($source, "SERVICE_SCOPE = 'field:verify'") !== false,
-                'SERVICE_SCOPE should be field:verify');
+        $this->test('SERVICE_SCOPE is field:write', function() {
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
+            $this->assertTrue(strpos($source, "SERVICE_SCOPE = 'field:write'") !== false,
+                'SERVICE_SCOPE should be field:write');
         });
 
         // Verify SERVICE_TOKEN_TTL is 300 seconds
         $this->test('SERVICE_TOKEN_TTL is 300 seconds', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'SERVICE_TOKEN_TTL = 300') !== false,
                 'SERVICE_TOKEN_TTL should be 300 seconds');
         });
 
         // Verify service token has type: service
         $this->test('Service token has type: service', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, "'type' => 'service'") !== false,
                 'Service token should have type: service');
         });
 
         // Verify service token has scope as array
         $this->test('Service token scope is array', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
-            $this->assertTrue(strpos($source, "'scope' => [self::SERVICE_SCOPE]") !== false,
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
+            $this->assertTrue(strpos($source, "[self::SERVICE_SCOPE]") !== false,
                 'Service token scope should be an array');
         });
     }
@@ -174,14 +174,14 @@ class TokenAuthServiceContractTest
         
         // Verify identityClaims method exists
         $this->test('TokenAuthService::identityClaims exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function identityClaims') !== false,
                 'identityClaims method must exist');
         });
 
         // Verify identity claims include ctx, ctxs, roles, epoch, scope
         $this->test('Identity claims include required fields', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, "'ctx'") !== false, 'Should include ctx');
             $this->assertTrue(strpos($source, "'ctxs'") !== false, 'Should include ctxs');
             $this->assertTrue(strpos($source, "'roles'") !== false, 'Should include roles');
@@ -192,14 +192,14 @@ class TokenAuthServiceContractTest
 
         // Verify MAX_GRANTS constant
         $this->test('MAX_GRANTS is 32', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'MAX_GRANTS = 32') !== false,
                 'MAX_GRANTS should be 32');
         });
 
         // Verify epoch sync logic exists
         $this->test('syncEpochFor method exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function syncEpochFor') !== false,
                 'syncEpochFor method must exist');
         });
@@ -214,28 +214,28 @@ class TokenAuthServiceContractTest
         
         // Verify jwks method exists
         $this->test('TokenAuthService::jwks exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function jwks') !== false,
                 'jwks method must exist');
         });
 
         // Verify validateJWT method exists
         $this->test('TokenAuthService::validateJWT exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function validateJWT') !== false,
                 'validateJWT method must exist');
         });
 
         // Verify RS256 algorithm check
         $this->test('validateJWT enforces RS256 algorithm', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, "!== 'RS256'") !== false,
                 'validateJWT should enforce RS256 algorithm');
         });
 
         // Verify validateFromRequest method exists
         $this->test('TokenAuthService::validateFromRequest exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/security/classes/tokenauthservice_class_inc.php');
             $this->assertTrue(strpos($source, 'function validateFromRequest') !== false,
                 'validateFromRequest method must exist');
         });

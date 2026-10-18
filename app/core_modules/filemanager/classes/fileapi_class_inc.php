@@ -530,6 +530,15 @@ class fileapi extends ChisimbaObject
                 'titleKey' => 'select_zip', 'uploadKey' => 'upload_zip', 'icon' => 'zip'
             )
         );
+        // Reuse the established document/media allowlists for downloadable products.
+        if ($name === 'download') {
+            $extensions=[]; $mimetypes=[];
+            foreach ($policies as $policy) { $extensions=array_merge($extensions,$policy['extensions']); $mimetypes=array_merge($mimetypes,$policy['mimetypes']); }
+            $extensions=array_values(array_unique($extensions));
+            return ['extensions'=>$extensions,'mimetypes'=>array_values(array_unique($mimetypes)),
+                'accept'=>implode(',',array_map(static fn($ext)=>'.'.$ext,$extensions)),
+                'titleKey'=>'select_download','uploadKey'=>'upload_download','icon'=>'zip'];
+        }
         return isset($policies[$name]) ? $policies[$name] : null;
     }
     private function fileMatchesPolicy($file,$policy)

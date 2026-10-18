@@ -28,6 +28,10 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
  */
 class block_contextmodules extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $configData;
+    public $title;
+
     /** @var object Course repository. */
     public $objContext;
 

@@ -1,0 +1,15 @@
+[
+  "app/core_modules/jquery/classes/jqdialogue_class_inc.php",
+  "app/core_modules/jquery/classes/jqexpanding_class_inc.php",
+  "app/core_modules/jquery/classes/jqtruncate_class_inc.php",
+  "app/core_modules/jquerycore/classes/dialog_class_inc.php",
+  "app/core_modules/jquery/resources/plugins/textareagrow/jquery.jgrow-0.2.js",
+  "app/core_modules/jquery/resources/plugins/truncate/jquery.truncate-2.3-pack.js",
+  "app/core_modules/jquery/resources/plugins/truncate/styles.css",
+  "app/core_modules/jquery/resources/plugins/truncate/index.html",
+  "app/core_modules/jquery/resources/plugins/truncate/jquery.truncate-2.3.js",
+  "app/core_modules/htmlelements/resources/truncate/jquery.truncate-2.3-pack.js",
+  "app/core_modules/htmlelements/resources/truncate/styles.css",
+  "app/core_modules/htmlelements/resources/truncate/index.html",
+  "app/core_modules/htmlelements/resources/truncate/jquery.truncate-2.3.js"
+]

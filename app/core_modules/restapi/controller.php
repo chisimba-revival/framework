@@ -1059,28 +1059,10 @@ public function POST_auth_token(): void
 
         // Count
         $countSql = "SELECT COUNT(*) as cnt FROM tbl_modules $whereSql";
-        // MDB2 needs the bound types declared: an undeclared placeholder makes
-        // execute() look up options['datatype_map'][null] and fail.
-        $stmt = $this->getDb()->prepare(
-            $countSql,
-            array_fill(0, max(count($params), 1), 'text')
-        );
-        if (PEAR::isError($stmt)) {
-            error_log("GET_modules count prepare error: " . $stmt->getMessage());
-            // A failed prepare/execute is a server fault, not a client
-            // conflict. Reporting 409 invites a retry that cannot succeed and
-            // mislabels the fault as something the caller could resolve.
-            ApiResponse::serverError('Module list could not be read');
-        }
-        $result = $stmt->execute($params);
-        if (PEAR::isError($result)) {
-            error_log("GET_modules count execute error: " . $result->getMessage());
-            ApiResponse::serverError('Module list could not be read');
-        }
-        $totalRow = $result->fetchRow();
+        $totalRow = $this->getDb()->selectPrepared($countSql, $params)[0] ?? [];
         $total = (int)($totalRow['cnt'] ?? 0);
 
-// List
+        // List
         $sql = "
             SELECT id as module_id, module_id as module_key, module_version, module_path,
                    isVisible as module_isvisible, hasAdminPage as module_hasadminpage,
@@ -1093,24 +1075,7 @@ public function POST_auth_token(): void
         $params[] = $p['pageSize'];
         $params[] = $p['offset'];
 
-        $stmt = $this->getDb()->prepare($sql, array_merge(
-            array_fill(0, count($params) - 2, 'text'),
-            ['integer', 'integer']
-        ));
-        if (PEAR::isError($stmt)) {
-            error_log("GET_modules list prepare error: " . $stmt->getMessage());
-            ApiResponse::serverError('Module list could not be read');
-        }
-        $result = $stmt->execute($params);
-        if (PEAR::isError($result)) {
-            error_log("GET_modules list execute error: " . $result->getMessage());
-            ApiResponse::serverError('Module list could not be read');
-        }
-
-        $modules = [];
-        while ($row = $result->fetchRow()) {
-            $modules[] = $row;
-        }
+        $modules = $this->getDb()->selectPrepared($sql, $params);
 
         $this->respondPaginated($modules, $p['page'], $p['pageSize'], $total);
     }

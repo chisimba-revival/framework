@@ -140,7 +140,10 @@ class storyinterface extends ChisimbaObject {
                 $deleteArray = array('action' => 'delete',
                     'id' => $id);
                 $str .= $objGetIcon->getEditIcon($this->uri($editArray, "stories"));
-                $str .= " ".$objGetIcon->getDeleteIcon($this->uri($deleteArray, "stories"));
+                $token = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf']->issueForSession('stories_manage');
+                $str .= '<details><summary>' . $this->objLanguage->languageText('word_delete') . '</summary><form method="post" action="' . htmlspecialchars($this->uri($deleteArray, 'stories'), ENT_QUOTES, 'UTF-8') . '">'
+                    . '<input type="hidden" name="confirm" value="yes"><input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">'
+                    . '<button type="submit">' . $this->objLanguage->languageText('word_delete') . '</button></form></details>';
                 $str .= "</nobr></td>\n";
             }
             // Set rowcount for bitwise determination of odd or even

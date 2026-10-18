@@ -132,7 +132,7 @@ abstract class RestController extends controller
         } catch (RateLimitException $e) {
             ApiResponse::rateLimited($e->getRetryAfter());
         } catch (\Throwable $e) {
-            error_log("REST API Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            error_log("REST API request failed: " . get_class($e));
             ApiResponse::serverError();
         }
     }
@@ -804,15 +804,11 @@ abstract class RestController extends controller
     }
 
     /**
-     * Get database connection (MDB2 or PDO)
+     * Get the catalogue repository through the shared dbTable boundary
      */
     protected function getDb()
     {
-        global $_globalObjDb;
-        if ($_globalObjDb === null) {
-            $_globalObjDb = $this->objEngine->getDbObj();
-        }
-        return $_globalObjDb;
+        return $this->getObject('modules', 'modulecatalogue');
     }
 }
 

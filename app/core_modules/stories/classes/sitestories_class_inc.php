@@ -44,10 +44,11 @@ class sitestories extends dbTable {
     *
     */
     function fetchStory($id) {
-        $ar=$this->objDbStories->getRow('id', $id, 'tbl_stories');
+        $ar = $this->readableStory($id);
+        if (!$ar) return '';
         $creatorId = $ar['creatorid'];
         $isActive = stripslashes($ar['isactive']);
-        $title =stripslashes($ar['title']);
+        $title = htmlspecialchars(stripslashes($ar['title']), ENT_QUOTES, 'UTF-8');
         $abstract = $this->objWashout->parseText(stripslashes($ar['abstract']));
         $mainText = $this->objWashout->parseText(
                 stripslashes($ar['maintext'])
@@ -125,20 +126,13 @@ class sitestories extends dbTable {
         if (!$language) {
             $language = 'en';
         }
-        $where = " WHERE category='" . $category
-          . "' AND isActive='1' AND language='" . $language
-          . "' ORDER BY isSticky DESC, dateCreated DESC ";
-
-        if (!$summaries && $limit !== NULL) {
-            $stories = $this->getMostRecent($where, $limit);
-        } else {
-            $stories = $this->objDbStories->getAll($where);
-        }
-        $hasMore = $summaries && $limit !== NULL
-          && (is_countable($stories) ? count($stories) : 0) > $limit;
-        if ($hasMore) {
-            $stories = array_slice($stories, 0, $limit);
-        }
+        $limit = $limit === null ? null : max(1, min(100, (int)$limit));
+        $stories = $this->objDbStories->selectPrepared(
+            'SELECT * FROM tbl_stories WHERE category = ? AND isActive = ? AND language = ? ORDER BY isSticky DESC, dateCreated DESC, id ASC',
+            [(string)$category, '1', (string)$language]);
+        if (!$summaries && $limit !== null) $stories = array_slice($stories, 0, $limit);
+        $hasMore = $summaries && $limit !== null && count($stories) > $limit;
+        $position = 0;
 
         $objExp = $this->getObject('dateandtime', 'utilities');
         $objLcode = $this->getObject('languagecode', 'language');
@@ -155,9 +149,14 @@ class sitestories extends dbTable {
         $ret .= '<section class="allstories reading-list">';
 
         foreach ($stories as $line) {
+            if ($hasMore && $position++ === $limit) {
+                $ret .= '</section><details class="chisimba-form-disclosure"><summary>'
+                    . $this->objLanguage->languageText('mod_stories_native_archives', 'stories')
+                    . '</summary><section class="allstories reading-list">';
+            }
             $id = $line['id'];
             $creatorId = $line['creatorid'];
-            $title = stripslashes($line['title']);
+            $title = htmlspecialchars(stripslashes($line['title']), ENT_QUOTES, 'UTF-8');
             $abstract = $this->objWashout->parseText(stripslashes($line['abstract']));
             $mainText = $this->objWashout->parseText(stripslashes($line['maintext']));
             $dateCreated = stripslashes($line['datecreated']);
@@ -187,15 +186,15 @@ class sitestories extends dbTable {
             $ret .= '<div class="abstract">' . $abstract . '</div>';
 
             if ($summaries) {
-                $summary = substr(strip_tags($mainText), 0, 150);
-                if (strlen(strip_tags($mainText)) > 150) {
-                    $summary .= '...';
+                $plain = html_entity_decode(strip_tags($mainText), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $summary = mb_substr($plain, 0, 150, 'UTF-8');
+                if (mb_strlen($plain, 'UTF-8') > 150) $summary .= '...';
+                $ret .= '<div class="storycontent"><p>' . htmlspecialchars($summary, ENT_QUOTES, 'UTF-8') . '</p>';
+                if (mb_strlen($plain, 'UTF-8') > 150) {
+                    $ret .= '<details><summary>' . $this->objLanguage->languageText('mod_stories_native_more', 'stories')
+                        . '</summary>' . $mainText . '</details>';
                 }
-                $ret .= '<div class="storycontent" id="' . htmlspecialchars(
-                    $id, ENT_QUOTES, 'UTF-8'
-                ) . '">' . htmlspecialchars($summary, ENT_QUOTES, 'UTF-8')
-                  . " <a href=\"javascript:getFullStory('" . addslashes($id)
-                  . "');\">[Read More]</a></div>";
+                $ret .= '</div>';
             } else {
                 $ret .= '<div class="storycontent">' . $mainText . '</div>';
             }
@@ -256,65 +255,29 @@ class sitestories extends dbTable {
         }
         $ret .= '</section>';
 
-        if ($summaries && $hasMore) {
-            $ret .= "<a href=\"javascript:getAllStories('" . $limit
-              . "');\">View Archives</a>";
-        } elseif ($summaries && $archiveExpanded) {
-            $ret .= "<a href=\"javascript:getLessStories('" . $archiveLimit
-              . "');\">View Less Archives</a>";
-        }
-        if ($summaries) {
-            $ret .= '</div>';
-        }
+        if ($hasMore) $ret .= '</details>';
+        if ($summaries) $ret .= '</div>';
         return $ret;
     }
 
-    /** Keep the existing archive/summary endpoints operational until jQuery cleanup. */
-    private function registerSummaryScripts()
+    /** Public fragments may only expose active prelogin stories. */
+    public function readableStory($id, $publicOnly = false)
     {
-        $js = <<<'JS'
-<script type="text/javascript">
-function getFullStory(id) {
-    jQuery.get('index.php', 'module=stories&action=getfullstory&id=' + id, function(data) {
-        jQuery('#' + id).html(data);
-        if (typeof window.adjustLayout === 'function') { window.adjustLayout(); }
-    });
-}
-function getTrimStory(id) {
-    jQuery.get('index.php', 'module=stories&action=gettrunctstory&id=' + id, function(data) {
-        jQuery('#' + id).html(data);
-        if (typeof window.adjustLayout === 'function') { window.adjustLayout(); }
-    });
-}
-function getAllStories(limit) {
-    jQuery.get('index.php', 'module=stories&action=getallstories&limit=' + limit, function(data) {
-        jQuery('#stories').html(data);
-        if (typeof window.adjustLayout === 'function') { window.adjustLayout(); }
-    });
-}
-function getLessStories(limit) {
-    jQuery.get('index.php', 'module=stories&action=getlessstories&limit=' + limit, function(data) {
-        jQuery('#stories').html(data);
-        if (typeof window.adjustLayout === 'function') { window.adjustLayout(); }
-    });
-}
-</script>
-JS;
-        $this->appendArrayVar('headerParams', $js);
+        if (!is_string($id) || $id === '') return false;
+        $row = $this->objDbStories->getRow('id', $id, 'tbl_stories');
+        if (!$row) return false;
+        if (!$publicOnly && $this->objUser->lookupAdmin($this->objUser->userId())) return $row;
+        return (int)$row['isactive'] === 1 && ($row['category'] === 'prelogin' || (!$publicOnly && $this->objUser->isLoggedIn())) ? $row : false;
     }
-
 
     function getTranslations($id)
     {
-        $sql = "SELECT id, parentId, language FROM tbl_stories WHERE parentId='" . $id . "'";
-        return $this->objDbStories->getArray($sql);
+        return $this->objDbStories->selectPrepared('SELECT id, parentId, language FROM tbl_stories WHERE parentId = ? AND isActive = ?', [$id, '1']);
     }
 
     function getTranslatedText($id, $language)
     {
-        $sql = "SELECT title, abstract, maintext FROM tbl_stories WHERE parentId='"
-          . $id . "' AND language='" . $language . "'";
-        return $this->objDbStories->getArray($sql);
+        return $this->objDbStories->selectPrepared('SELECT title, abstract, maintext FROM tbl_stories WHERE parentId = ? AND language = ? AND isActive = ?', [$id, $language, '1']);
     }
 
     /**
@@ -379,7 +342,6 @@ JS;
     */
     function fetchPreLoginCategory($category, $limit=NULL, $showAuthor=TRUE, $language=NULL)
     {
-        $this->registerSummaryScripts();
         return $this->renderCategoryStories(
             $category, $limit, $showAuthor, $language, TRUE, FALSE
         );

@@ -27,8 +27,9 @@
  * different key and invalidates every token already issued. That is a deliberate
  * event, not something to do to fix a path.
  *
- * Point it at a mounted secret. The default path is inside the framework
- * directory, which a web server usually cannot write.
+ * Point it at a mounted secret outside the web root, in an existing private
+ * directory. There is no source-tree fallback. When upgrading, retain the
+ * existing key bytes so issued tokens remain valid.
  *
  * Neither source is a fallback for the other: a path that is right in the
  * environment and wrong here silently publishes a *different* key on every

@@ -58,6 +58,9 @@ $this->loadClass( 'decisiontablebase', 'decisiontable' );
  */
 class decisionTableAggregate extends decisionTableBase
 {
+    /** Child factory and foreign key supplied by action/rule aggregates. */
+    public $_objCreated;
+    public $_dbFK;
     /**
      * Object reference to the 'Whole' object.
      *

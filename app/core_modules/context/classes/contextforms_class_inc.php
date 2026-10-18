@@ -58,6 +58,8 @@ $GLOBALS['kewl_entry_point_run']) {
  * @see       core
  */
 class contextforms extends ChisimbaObject {
+    public $objSysConfig;
+    public $objLanguage;
     /**
      * @var string $formAction : Action URL to point forms to
      */
@@ -94,7 +96,7 @@ class contextforms extends ChisimbaObject {
     public function editContextForm($context) {
         $header = new htmlheading();
         $header->type = 1;
-        $header->str = $this->objLanguage->languageText('word_edit', 'system', 'Edit').': '.$context['title'];
+        $header->str = $this->objLanguage->languageText('word_edit', 'system', 'Edit').': '.htmlspecialchars($context['title'], ENT_QUOTES, 'UTF-8');
 
         $str = $header->show();
 
@@ -325,6 +327,9 @@ class contextforms extends ChisimbaObject {
 
         $objSelectImage = $this->getObject('selectimage', 'filemanager');
         $objSelectImage->context = TRUE;
+        if (!empty($context['imageselect']) && is_string($context['imageselect'])) {
+            $objSelectImage->setDefaultFile($context['imageselect']);
+        }
         if ($context != NULL && !empty($context['contextcode'])) {
             $objContextImage = $this->getObject('contextimage', 'context');
             $currentImage = $objContextImage->getContextImage(
@@ -369,6 +374,9 @@ class contextforms extends ChisimbaObject {
 
         $form = new form ('createcontext', $this->uri(array('action'=>$this->formAction), $this->formModule));
 
+        $settingsAccess = $this->getObject('contextsettingsaccess', 'context');
+        $token = new hiddeninput('csrf_token', $settingsAccess->csrf()->issue($settingsAccess->purpose($context['contextcode'])));
+        $form->addToForm($token->show());
         $form->addToForm('<div class="contextadmin-course-form-wrap context-settings-form">' . $settingsContent . '</div>');
 
         if ($this->objSysConfig->getValue('context_access_private_only', 'context', 'false') == 'true') {
@@ -382,7 +390,7 @@ class contextforms extends ChisimbaObject {
 
         $form->addRule('title', $this->objLanguage->code2Txt('mod_context_entertitleofcontext', 'context', NULL, 'Please enter the title of your [-context-]'),'required');
 
-        $this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}function formatHelp(){var select=jQuery("#input_delivery_format"),help=jQuery("#context-delivery-format-help"),descriptions={};if(!select.length||!help.length){return;}try{descriptions=JSON.parse(help.attr("data-format-descriptions")||"{}");}catch(error){descriptions={};}help.text(descriptions[select.val()]||"");}jQuery("input[name=access_policy]").on("change",admissionPolicy);jQuery("#input_delivery_format").on("change",formatHelp);admissionPolicy();formatHelp();});</script>');
+        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('settings.js?v=2061', 'context'));
         $str .= $form->show();
 
         return $str;

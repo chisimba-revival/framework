@@ -44,6 +44,11 @@
 $this->loadClass('filemanagerobject', 'filemanager');
 class selectfile extends filemanagerobject
 {
+    public $objIcon;
+    public $objModernIcon;
+    public $objLanguage;
+    public $objFile;
+
     /**
     * @var string $name Name of the File Selector Input
     */
@@ -134,11 +139,13 @@ class selectfile extends filemanagerobject
 
 function clearFileInputJS(name)
 {
-    //jQuery(\'#input_selectfile_\'+name).value = \'\';
-    //jQuery(\'#hidden_\'+name).value = \'\';
-
-    jQuery(\'#input_selectfile_\'+name).attr(\'value\', \'\');
-    jQuery(\'#hidden_\'+name).attr(\'value\', \'\');
+    [\'input_selectfile_\', \'hidden_\'].forEach(function (prefix) {
+        var input = document.getElementById(prefix + name);
+        if (input) {
+            input.value = \'\';
+            input.dispatchEvent(new Event(\'change\', {bubbles: true}));
+        }
+    });
 }
 </script>';
 

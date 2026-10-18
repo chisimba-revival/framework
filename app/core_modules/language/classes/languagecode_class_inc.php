@@ -44,265 +44,52 @@
 * The original list of code was taken from a class written by Florian Breit (florian at phpws dot org):
 *  http://www.phpclasses.org/browse/file/8143.html
 */
-require_once 'I18Nv2/Country.php';
-
-/**
- * Description for require_once
- */
-require_once 'I18Nv2/Negotiator.php';
-
-/**
- * Description for require_once
- */
-require_once 'I18Nv2/DecoratedList/HtmlSelect.php';
-
-/**
- * Description for require_once
- */
-require_once 'I18Nv2/DecoratedList/HtmlEntities.php';
-
-/**
- * Short description for class
- *
- * Long description (if any) ...
- *
- * @category  Chisimba
- * @package   language
- * @author    Prince Mbekwa <pmbekwa@uwc.ac.za>
- * @copyright 2007 Prince Mbekwa
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
- * @version   Release: @package_version@
- * @link      http://avoir.uwc.ac.za
- * @see       References to other sections (if any)...
- */
+/** Native UTF-8 locale lists. Author: Derek Keats <derek@dkeats.com>. */
 class languagecode extends ChisimbaObject
 {
-    /**
-     * Config object
-     *
-     * @var objConfig
-     */
-    public $objConfig =  null;
-    /**
-    * @var array $iso_639_2_tags contains an associative array of all the alpha2 languages
-    */
-    public $iso_639_2_tags = array();
-    /**
-     * country object
-     *
-     * @var objcountry
-     */
-    public $objcountry;
-    /**
-     * Pear decorator object
-     *
-     * @var objentity
-     */
-    public $objentity;
-    /**
-     * Pear dropdown select
-     *
-     * @var objselect
-     */
-    public $objselect;
-    /**
-     * Default language locale
-     *
-     * @var unknown_type
-     */
+    public $objConfig;
+    public $iso_639_2_tags;
     public $lan;
-    /**
-     * The global error callback for altconfig errors
-     *
-     * @access public
-     * @var    string
-    */
-    private $_errorCallback;
-
-    /**
-    * Standard constructor method
-    */
-    function init()
+    private $countries=[];
+    public function init()
     {
-        try {
-             $this->objConfig = $this->getObject('altconfig','config');
-             $this->lan = $this->objConfig->getdefaultLanguageAbbrev();
-             $neg = new I18Nv2_Negotiator;
-             $this->objcountry = new I18Nv2_Country("{$this->lan}", 'iso-8859-1');
-             $this->objentity = new I18Nv2_DecoratedList_HtmlEntities($this->objcountry);
-             $this->objselect = new I18Nv2_DecoratedList_HtmlSelect($this->objentity);
-             $this->iso_639_2_tags = $neg->singleI18NLanguage();
-        }
-        catch(customException $e)
-        {
-            customException::cleanUp();
-            die();
-        }
+        $this->objConfig=$this->getObject('altconfig','config');
+        $this->lan=strtolower($this->objConfig->getdefaultLanguageAbbrev());
+        $data=json_decode(file_get_contents(__DIR__.'/../resources/locale/names.json'),true,512,JSON_THROW_ON_ERROR);
+        $this->countries=$data['countries'][$this->lan]??$data['countries']['en'];
+        // Callers historically edit this public codes list; retain its object shape.
+        $this->iso_639_2_tags=(object)['codes'=>$data['languages']['en']];
     }
-
-    /**
-    * Method to get the name of a language by providing the ISO Code
-    *
-    * This method first lowercases the code (to match the array) and then checks if it exists in the array.
-    * If it does, return the language, else NULL
-    * @param  string $isoKey The two letter ISO code
-    * @return string |NULL The Name of the Language
-    */
-    public function getLanguage($isoKey)
-    {
-        if (array_key_exists(strtolower($isoKey), $this->iso_639_2_tags->codes)) {
-            return $this->iso_639_2_tags->codes[strtolower($isoKey)];
-        } else {
-            return NULL;
-        }
-    }
-
-    /**
-    * Method to get the name of a ISO Code of a language by providing the ISO Code
-    *
-    * @param  string $language The language to check
-    * @return string |NULL The ISO code of the Language
-    */
+    public function getLanguage($code) { return $this->iso_639_2_tags->codes[strtolower($code)]??null; }
     public function getISO($language)
     {
-
-        // Flip Array - makes key the values, and values the key
-        $tempArray = $this->iso_639_2_tags->codes;
-        // Upper Case the first letter of the Word
-        $language = strtolower($language);
-        if (array_key_exists($language, $tempArray)) {
-            //$tempArray = array_flip($tempArray);
-            return $language;
-        } else {
-
-            return NULL;
-        }
+        $language=strtolower($language);
+        if(isset($this->iso_639_2_tags->codes[$language]))return $language;
+        foreach($this->iso_639_2_tags->codes as $code=>$name)if(strtolower($name)===$language)return $code;
+        return null;
     }
-    /**
-     *  This method utilizes ob_iconv_handler(), so you should call it at the beginning of your script (prior to any output).
-     * Automatically transform output between character sets
-     *
-     * @param string $ocs desired output character set
-     * @param string $ics current intput character set
-     * @return Returns TRUE on success, PEAR_Error on failure.
-     */
-    public function autoConv($ocs,$ics)
+    public function getName($code) { return $this->countries[strtoupper($code)]??''; }
+    private function escape($value) { return htmlspecialchars((string)$value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'); }
+    public function countryListArr($country=null)
     {
-        try{
-            I18Nv2::autoConv($ocs, $ics);
-        }catch (Exception $e){
-            $this->errorCallback ('Caught exception: '.$e->getMessage());
-             exit();
-        }
-
-    }//end function
-    /**
-     *  Function provides country and language lists.
-     *
-     * @return dropdown of countrues
-     */
-    public function country($country=NULL)
+        return array_map(fn($name)=>htmlentities($name,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'),$this->countries);
+    }
+    private function select($selected,$alphabetical=false,$submit=false)
     {
-        $this->objselect->attributes['select']['name'] = 'country';
-        // set a selected entry
-        if ($country) {
-            $language = $country;
-        }else{
-            $language = strtoupper($this->objConfig->getCountry());
-        }
-        $this->objselect->selected["{$language}"] = true;
-        // print a HTML safe select box
-        return  $this->objselect->getAllCodes();
+        $selected=strtoupper($selected?:$this->objConfig->getCountry());$countries=$this->countries;
+        if($alphabetical)asort($countries);
+        $html='<select name="country"'.($alphabetical?' id="input_country" class="WCHhider"':'').($submit?' onchange="this.form.submit()"':'').'>';
+        foreach($countries as $code=>$name)$html.='<option value="'.$this->escape($code).'"'.($code===$selected?' selected="selected"':'').'>'.$this->escape($name).'</option>';
+        return $html.'</select>';
     }
-
-    /**
-    *
-    * Method to return an alphabetical select box
-    * of countries
-    *
-    * @param string $tongue the two letter code for the language to be
-    *    selected in the select box
-    * @return string The select box for countries
-    * @access Public
-    */
-    public function countryAlpha($tongue=NULL)
+    public function country($country=null) { return $this->select($country); }
+    public function countryAlpha($country=null) { return $this->select($country,true); }
+    public function dec_country() { return $this->select(null,false,true); }
+    /** Explicit output conversion only; request parameters are never rewritten. */
+    public function autoConv($output,$input)
     {
-        $ar = $this->countryListArr();
-        asort($ar);
-        $this->loadClass('dropdown','htmlelements');
-        $objSelect = new dropdown('country');
-        // set a selected entry
-        if ($tongue) {
-            $language = $tongue;
-        }else{
-            $language = strtoupper($this->objConfig->getCountry());
-        }
-        foreach ($ar as $code=>$country) {
-            $objSelect->addOption($code, $country);
-        }
-        $objSelect->setSelected($language);
-        return $objSelect->show();
+        if(strcasecmp($output,$input)===0)return true;
+        if(!in_array(strtoupper($output),['UTF-8','ISO-8859-1','WINDOWS-1252'],true)||!in_array(strtoupper($input),['UTF-8','ISO-8859-1','WINDOWS-1252'],true))throw new InvalidArgumentException('Unsupported output encoding.');
+        return ob_start(static function($buffer)use($output,$input){$value=iconv($input,$output,$buffer);if($value===false)throw new RuntimeException('Output conversion failed.');return $value;});
     }
-
-     /**
-     *  Function provides country and language lists.
-     *
-     * @return array of countrues
-     */
-    public function countryListArr($country=NULL)
-    {
-        $this->objselect->attributes['select']['name'] = 'country';
-        // set a selected entry
-        if ($country) {
-            $language = $country;
-        }else{
-          $language = strtoupper($this->objConfig->getCountry());
-        }
-        $this->objselect->selected["{$language}"] = true;
-
-        // print a HTML safe select box
-        return  $this->objentity->getAllCodes();
-    }
-
-    /**
-     *  Function provides decorated classes for country and language lists.
-     *
-     * @return dropdown of countrues
-     */
-    public function dec_country()
-    {
-        // set some attributes
-        $this->objselect->attributes['select']['name'] = 'country';
-        $this->objselect->attributes['select']['onchange'] = 'this.form.submit()';
-
-        // set a selected entry
-        $language = strtoupper($this->objConfig->getCountry());
-        $this->objselect->selected["{$language}"] = true;
-
-        // print a HTML safe select box
-        return  $this->objselect->getAllCodes();
-    }
-
-    /**
-     * Get the corresponding country name of the supplied two letter country code.
-     *
-     * @param  string      $code
-     * @return countryname
-     */
-    public function getName ($code){
-
-        return $this->objcountry->getName($code);
-    }
-    /**
-    * The error callback function, defers to configured error handler
-    *
-    * @param  string $error
-    * @return void
-    * @access public
-    */
-    public function errorCallback($exception)
-    {
-        echo customException::cleanUp($exception);
-    }
-} // End of Class
-?>
+}

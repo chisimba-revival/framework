@@ -57,6 +57,13 @@ $GLOBALS['kewl_entry_point_run']) {
 
 class modulesadmin extends dbTableManager
 {
+    /** Services used when installing or updating a module. */
+    public $objLanguage;
+    public $objModFile;
+    public $objModuleBlocks;
+    public $objSystext;
+    public $objSysConfig;
+
     /**
      * Current module ID
      *
@@ -99,6 +106,7 @@ class modulesadmin extends dbTableManager
      * @access public
      */
     public $output;
+    public $errorText = '';
 
     /**
      * object to manipulate the modules table
@@ -731,30 +739,21 @@ class modulesadmin extends dbTableManager
                 $this->objModules->removeTags($moduleId);
 
                 //$this->objModules->commitTransaction();//End the transaction;
-                // clean up the permissions system
-                // remove the module as an area from the Chisimba application
-                $params = array('filters' => array('area_define_name' => $moduleId));
-                $areas = $this->objLuAdmin->perm->getAreas($params);
-                // var_dump($areas); die();
-                if(is_array($areas) && !empty($areas)) {
-                    $filters = array('area_id' => $areas[0]['area_id']);
-                    $rmArea = $this->objLuAdmin->perm->removeArea($filters);
-                    // get the group ID that we want to remove
-                    $groupId = $objGroups->getId($moduleId);
-                    // remove the group as well
-                    $filters = array('group_id' => $groupId);
-                    $rmGrp = $this->objLuAdmin->perm->removeGroup($filters);
-                }
-                else {
-                    $rmArea = false;
-                    $rmGrp = false;
-                }
+                // Canonical services own the module area and registration
+                // group.  LiveUser administration is no longer loaded.
+                $objPermissionService = $this->getObject(
+                    'permissionservice',
+                    'security'
+                );
+                $rmArea = $objPermissionService->deleteArea('chisimba', $moduleId);
+                $groupId = $objGroups->getId($moduleId);
+                $rmGrp = !is_numeric($groupId) || (int) $groupId < 1
+                    ? true
+                    : !empty($objGroups->deleteGroup((int) $groupId));
 
-                if ($rmArea === false || $rmGrp == false) {
-                    log_debug("Couldn't uninstall $moduleId");
-                    $this->objLuAdmin->getErrors();
-                }
-                else {
+                if ($rmArea === false || $rmGrp === false) {
+                    log_debug("Couldn't completely uninstall $moduleId");
+                } else {
                     log_debug("Uninstalling $moduleId");
                 }
                 return TRUE;
@@ -800,8 +799,10 @@ class modulesadmin extends dbTableManager
                 }
             }
             if (isset($indexes)) {
-                $name = array_keys($indexes['fields']);
-                $name = $name[0];
+                // Honour the schema's declared name; a long field name plus _idx can exceed MySQL's limit.
+                if (!isset($name)) {
+                    $name = array_key_first($indexes['fields']);
+                }
                 $this->createTableIndex($tablename, $name, $indexes);
             }
             return TRUE;
@@ -849,7 +850,7 @@ class modulesadmin extends dbTableManager
             foreach ($objXml as $table=>$dummy) {
                 $sqlArray = array();
                 foreach ($dummy as $field=>$value) {
-                    $sqlArray[$field]= $value;
+                    $sqlArray[$field] = (string) $value;
                 }
 
                 // check that the record does not already exist
@@ -1131,6 +1132,15 @@ class modulesadmin extends dbTableManager
             $filepath = $this->objModFile->findRegisterFile($modname);
             $rdata = $this->objModFile->readRegisterFile($filepath,FALSE);
             $text = $this->listTexts($rdata,'TEXT');
+            $text = is_array($text) ? $text : array();
+            // Module labels are translations too; repair partial registrations
+            // without reinstalling modules or resetting navigation/configuration.
+            foreach (array('MODULE_NAME' => 'name', 'MODULE_DESCRIPTION' => 'desc') as $field => $suffix) {
+                if (!empty($rdata[$field])) {
+                    $code = 'mod_' . $modname . '_' . $suffix;
+                    if (!isset($text[$code])) $text[$code] = array('content' => $rdata[$field], 'desc' => $rdata[$field]);
+                }
+            }
             $uses = $this->listTexts($rdata,'USES');
             if ($uses) {
                 //$text = array_merge($texts,$uses);
@@ -1138,7 +1148,7 @@ class modulesadmin extends dbTableManager
                     $isreg=$this->checkText($code); // this gets an array with 3 elements - flag, content, and desc
                     $text_desc=$data['desc'];
                     $text_val=$data['content'];
-                    if (($action=='fix')&&($isreg['flag']==0)) {
+                    if (($action=='fix')&&in_array((int)$isreg['flag'], array(0, 10), true)) {
                         $this->addText($code,$text_desc,$text_val,'system');
                     }
                     if ($action=='replace') {
@@ -1156,7 +1166,7 @@ class modulesadmin extends dbTableManager
                     $isreg=$this->checkText($code); // this gets an array with 3 elements - flag, content, and desc
                     $text_desc=$data['desc'];
                     $text_val=$data['content'];
-                    if (($action=='fix')&&($isreg['flag']==0)) {
+                    if (($action=='fix')&&in_array((int)$isreg['flag'], array(0, 10), true)) {
                         $this->addText($code,$text_desc,$text_val,$modname);
                     }
                     if ($action=='replace') {

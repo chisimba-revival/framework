@@ -64,6 +64,9 @@ require_once "lib/logging.php";
  * @see       core
  */
 class dbTableManager extends ChisimbaObject {
+    /** Database server name loaded during schema-manager initialisation. */
+    public $_serverName;
+
 
     /**
      * The current table name that we are working with
@@ -111,6 +114,24 @@ class dbTableManager extends ChisimbaObject {
      */
     private $_db = NULL;
     public $appid;
+    private ?ChisimbaDatabaseSchema $sharedSchema = null;
+
+    /** Framework/installer composition; never store live connections in a session. */
+    protected function useConnection($connection): void
+    {
+        $this->_db=$connection;
+        $this->sharedSchema=null;
+    }
+
+    /** Catalogue installation hooks only: SQL comes from tracked migration files. */
+    public function executeSchemaStatement($sql) { return $this->schema()->executeMigration($sql); }
+
+    private function schema(): ChisimbaDatabaseSchema
+    {
+        require_once __DIR__.'/chisimbadatabaseschema.php';
+        return $this->sharedSchema ??= new ChisimbaDatabaseSchema(dbTable::forFrameworkConnection($this->_db));
+    }
+
 
     /**
      * Method to initialise the dbTableManager object.
@@ -123,24 +144,14 @@ class dbTableManager extends ChisimbaObject {
      * @return void
      */
     public function init($dbName = NULL, $pearDbManager = NULL, $errorCallback = "globalPearErrorCallback") {
+
         $this->_errorCallback = $errorCallback;
         if ($pearDbManager == NULL) {
             $this->_dbmanager = $this->objEngine->getDbManagementObj();
             $this->_db = $this->objEngine->getDbObj();
         } else {
             $this->_dbmanager = $pearDbManager;
-            $this->_db = $pearDb;
-        }
-
-        // check for PEAR Var_dump and initialise it,
-        // otherwise just use regular PHP var_dump();
-        if (class_exists('Var_Dump')) {
-            $var_dump = array(
-                'Var_Dump',
-                'display',
-            );
-        } else {
-            $var_dump = 'var_dump';
+            throw new LogicException('External legacy schema managers are retired.');
         }
 
         // Load up the config object and get the servername
@@ -148,9 +159,6 @@ class dbTableManager extends ChisimbaObject {
         $this->_serverName = $this->objDBConfig->serverName();
         $this->appid = $this->objEngine->appid;
 
-        // instantiate the MDB2 Management module
-        //$this->_db = $this->_db->loadModule('Manager');
-        // call_user_func($var_dump, $this->_dbmanager);
     }
 
     /**
@@ -167,8 +175,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function parseDbDefFile($input_file, $variables = array(), $fail_on_invalid_names = TRUE) {
-        return $this->_dbmanager->parseDatabaseDefinitionFile($input_file, $variables,
-                $fail_on_invalid_names, $structure = FALSE);
+        throw new LogicException('Legacy XML database definitions are retired. Use registered native table definitions.');
     }
 
     /**
@@ -180,7 +187,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function getDefFromDb() {
-        return $this->_dbmanager->getDefinitionFromDatabase();
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -197,37 +204,7 @@ class dbTableManager extends ChisimbaObject {
      * @return bool
      */
     public function dumpDatabaseToFile($option, $dumptype, $dumpfile) {
-        // lets set a time limit on this
-        set_time_limit(0);
-
-        if ($option == 'dump') {
-            switch ($dumptype) {
-                case 'structure':
-                    $dump_what = MDB2_SCHEMA_DUMP_STRUCTURE;
-                    break;
-
-                case 'content':
-                    $dump_what = MDB2_SCHEMA_DUMP_CONTENT;
-                    break;
-
-                default:
-                    $dump_what = MDB2_SCHEMA_DUMP_ALL;
-                    break;
-            }
-
-            $dump_config = array(
-                'output_mode' => 'file',
-                'output' => $dumpfile,
-            );
-            $definition = $this->_dbmanager->getDefinitionFromDatabase();
-            $operation = $this->_dbmanager->dumpDatabase($definition, $dump_config, $dump_what);
-            if (PEAR::isError($operation)) {
-                die($operation->getMessage() . ' ' . $operation->getUserInfo());
-            }
-            return TRUE;
-        }//if
-
-        return FALSE;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
 //func
@@ -252,9 +229,7 @@ class dbTableManager extends ChisimbaObject {
      *
      * @param $table string Required
      */
-    public function listTblFields($table) {
-        return $this->_db->mgListTableFields($table);
-    }
+    public function listTblFields($table) { return $this->schema()->columns($table); }
 
     /**
      * Method to get the debug strings from queries if neccessary
@@ -266,10 +241,7 @@ class dbTableManager extends ChisimbaObject {
      * @return string    message
      */
     private function printQueries($db, $scope, $message) {
-        if ($scope == 'query') {
-            return $message . $db->getOption('log_line_break');
-        }
-        MDB2_defaultDebugOutput($db, $scope, $message);
+        return $scope === 'query' ? $message : null;
     }
 
     /**
@@ -300,44 +272,7 @@ class dbTableManager extends ChisimbaObject {
      * @param string $tableName
      * @param array  $fields
      */
-    public function createTable($tableName, $fields, $options) {
-        $puid = array(
-            'puid' => array(
-                'type' => 'integer',
-                'length' => 50,
-                'autoincrement' => TRUE,
-            ),
-        );
-        $fields = array_merge($fields, $puid);
-        if ($this->_db->phptype == 'mysql' || $this->_db->phptype == 'mysqli') {
-            $this->_db->setOption('default_table_type', 'INNODB');
-            $toptions = array('charset' => 'utf8', 'collate' => 'utf8_unicode_ci',);
-            $options = array_merge($toptions, $options);
-            // do the table create.
-            // we call on the actual MDB object, NOT the MDB::Schema object to do this.
-            //try {
-            $test = $this->_db->mgCreateTable($tableName, $fields, $options);
-            //if($test === true)
-            //{
-            // create the "primary" index
-            $this->createPK($tableName);
-            // return a TRUE, simply because MDB::CreateTable returns void (wtf?)
-            return TRUE;
-            //}
-            //else {
-            //	echo $test; die();
-            //}
-            //}
-            //catch(customException $e) {
-            //	customException::cleanUp();
-            //}
-        } else {
-            $this->_db->mgCreateTable($tableName, $fields, $options);
-            // create the "primary" index
-            $this->createPK($tableName);
-            return TRUE;
-        }
-    }
+    public function createTable($tableName,$fields,$options) { return $this->schema()->createTable($tableName,$fields,$options); }
 
     /**
      * drop an existing table
@@ -346,10 +281,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    public function dropTable($name) {
-        $ret = $this->_db->mgDropTable($name);
-        return $ret;
-    }
+    public function dropTable($name) { $this->schema()->dropTable($name); return true; }
 
     /**
      * Method to create an index on the table
@@ -360,16 +292,7 @@ class dbTableManager extends ChisimbaObject {
      * @param  array  $index
      * @return bool   TRUE on success | FALSE on failure
      */
-    public function createTableIndex($tableName, $keyname, $index, $trunc = FALSE) {
-        if ($trunc != FALSE) {
-            $this->_db->mgCreateIndex($tableName, $keyname, $index);
-            return TRUE;
-        } else {
-            $keyname = substr($keyname, 1, 3) . rand(0, 999);
-            $this->_db->mgCreateIndex($tableName, $keyname, $index);
-            return TRUE;
-        }
-    }
+    public function createTableIndex($tableName,$keyname,$index,$trunc=false) { return $this->schema()->createIndex($tableName,$keyname.'_idx',$index); }
 
     /**
      * Method to describe a pseudo PK id
@@ -379,19 +302,7 @@ class dbTableManager extends ChisimbaObject {
      * @param  mixed  $tableName
      * @return bool   TRUE
      */
-    public function createPK($tableName) {
-        $primindex = array(
-            'fields' => array(
-                'id' => array('sorting' => 'ascending'),
-            ),
-            'primary' => TRUE,
-        );
-
-        $pname = 'pk' . rand(0, 99999);
-
-        $this->createTableIndex($tableName, $pname, $primindex, TRUE);
-        return TRUE;
-    }
+    public function createPK($tableName) { return $this->schema()->createIndex($tableName,'chisimba_id_idx',['fields'=>['id'=>[]]]); }
 
     /**
      * create a new database
@@ -400,10 +311,7 @@ class dbTableManager extends ChisimbaObject {
      * @return bool   TRUE on success
      * @access public
      */
-    public function createDb($db) {
-        $ret = $this->_db->mgCreateDatabase($db);
-        return $ret;
-    }
+    public function createDb($db) { $this->schema(); dbTable::forFrameworkConnection($this->_db)->executeExactPrepared('CREATE DATABASE '.ChisimbaDatabaseSchema::identifier($db).' CHARACTER SET utf8 COLLATE utf8_unicode_ci'); return true; }
 
     /**
      * drop an existing database
@@ -412,10 +320,7 @@ class dbTableManager extends ChisimbaObject {
      * @return bool   TRUE on success
      * @access public
      */
-    public function dropDb($db) {
-        $ret = $this->_db->mgDropDatabase($db);
-        return $ret;
-    }
+    public function dropDb($db) { dbTable::forFrameworkConnection($this->_db)->executeExactPrepared('DROP DATABASE '.ChisimbaDatabaseSchema::identifier($db)); return true; }
 
     /**
      * list all databases
@@ -423,10 +328,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  data array on success
      * @access public
      */
-    public function listDatabases() {
-        $ret = $this->_db->mgListDatabases();
-        return $ret;
-    }
+    public function listDatabases() { return array_column(dbTable::forFrameworkConnection($this->_db)->selectExactPrepared('SHOW DATABASES'),'Database'); }
 
     /**
      * list all db users
@@ -435,8 +337,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listDbUsers() {
-        $ret = $this->_db->mgListUsers();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -446,8 +347,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listDbViews() {
-        $ret = $this->_db->mgListViews();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -457,8 +357,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listDbFunctions() {
-        $ret = $this->_db->mgListFunctions();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -467,10 +366,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  data array on success, a MDB2 error on failure
      * @access public
      */
-    public function listDbTables() {
-        $ret = $this->_db->mgListTables();
-        return $ret;
-    }
+    public function listDbTables() { return $this->schema()->tables(); }
 
     /**
      * list all fields in a tables in the current database
@@ -479,10 +375,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  data array on success, a MDB2 error on failure
      * @access public
      */
-    public function listTableFields($table) {
-        $ret = $this->_db->mgListTableFields($table);
-        return $ret;
-    }
+    public function listTableFields($table) { return $this->schema()->columns($table); }
 
     /**
      * get the stucture of a field into an array
@@ -516,10 +409,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    public function createIndex($table, $name, $definition) {
-        $ret = $this->_db->mgCreateIndex($table, $name, $definition);
-        return $ret;
-    }
+    public function createIndex($table,$name,$definition) { return $this->schema()->createIndex($table,$name.'_idx',$definition); }
 
     /**
      * drop existing index
@@ -529,10 +419,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    public function dropIndex($table, $name) {
-        $ret = $this->_db->mgDropIndex($table, $name);
-        return $ret;
-    }
+    public function dropIndex($table,$name) { return $this->schema()->dropIndex($table,strtoupper($name)==='PRIMARY'?'PRIMARY':$name.'_idx'); }
 
     /**
      * list all indexes in a table
@@ -541,10 +428,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  data array on success, a MDB2 error on failure
      * @access public
      */
-    public function listTableIndexes($table) {
-        $ret = $this->_db->mgListTableIndexes($table);
-        return $ret;
-    }
+    public function listTableIndexes($table) { return array_values(array_unique(array_map(fn($name)=>preg_replace('/_idx$/','',$name), array_column(array_filter($this->schema()->indexes($table),fn($row)=>$row['Key_name']!=='PRIMARY'),'Key_name')))); }
 
     /**
      * create a constraint on a table
@@ -568,10 +452,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    public function createConstraint($table, $name, $definition) {
-        $ret = $this->_db->mgCreateConstraint($table, $name, $definition);
-        return $ret;
-    }
+    public function createConstraint($table,$name,$definition) { return $this->schema()->createIndex($table,$name.'_idx',$definition,true); }
 
     /**
      * drop existing constraint
@@ -581,10 +462,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  MDB2_OK on success, a MDB2 error on failure
      * @access public
      */
-    public function dropConstraint($table, $name) {
-        $ret = $this->_db->mgDropConstraint($table, $name);
-        return $ret;
-    }
+    public function dropConstraint($table,$name) { return $this->schema()->dropIndex($table,strtoupper($name)==='PRIMARY'?'PRIMARY':$name.'_idx'); }
 
     /**
      * list all constraints in a table
@@ -593,10 +471,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  data array on success, a MDB2 error on failure
      * @access public
      */
-    public function listTableConstraints($table) {
-        $ret = $this->_db->mgListTableConstraints($table);
-        return $ret;
-    }
+    public function listTableConstraints($table) { return array_values(array_unique(array_map(fn($name)=>preg_replace('/_idx$/','',$name), array_column(array_filter($this->schema()->indexes($table),fn($row)=>(int)$row['Non_unique']===0),'Key_name')))); }
 
     /**
      * create sequence
@@ -607,8 +482,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function createSequence($seq_name, $start = 1) {
-        $ret = $this->_db->mgCreateSequence($seq_name, $start);
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -619,8 +493,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function dropSequence($name) {
-        $ret = $this->_db->mgDropSequence($name);
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -630,8 +503,7 @@ class dbTableManager extends ChisimbaObject {
      * @access public
      */
     public function listSequences() {
-        $ret = $this->_db->mgListSequences();
-        return $ret;
+        throw new LogicException('This legacy database operator API is retired. Use native schema operations.');
     }
 
     /**
@@ -652,9 +524,7 @@ class dbTableManager extends ChisimbaObject {
      * @return string name of the database previously connected to
      * @access public
      */
-    public function setDatabase($name) {
-        return $this->_db->setDatabase($name);
-    }
+    public function setDatabase($name) { $this->schema(); dbTable::forFrameworkConnection($this->_db)->executeExactPrepared('USE '.ChisimbaDatabaseSchema::identifier($name)); return true; }
 
     /**
      * get the current database
@@ -662,9 +532,7 @@ class dbTableManager extends ChisimbaObject {
      * @return string name of the database
      * @access public
      */
-    public function getDatabase() {
-        return $this->_db->getDatabase();
-    }
+    public function getDatabase() { return dbTable::forFrameworkConnection($this->_db)->selectExactPrepared('SELECT DATABASE() AS name')[0]['name']; }
 
     /**
      * return version information about the server
@@ -673,9 +541,7 @@ class dbTableManager extends ChisimbaObject {
      * @return mixed  array with versoin information or row string
      * @access public
      */
-    public function getServerVersion($native = FALSE) {
-        return $this->_db->getServerVersion($native);
-    }
+    public function getServerVersion($native=false) { $version=dbTable::forFrameworkConnection($this->_db)->selectExactPrepared('SELECT VERSION() AS version')[0]['version']; return $native?$version:['native'=>$version,0=>$version]; }
 
     /**
      * this function helps in checking if a key exists before adding it to the
@@ -787,44 +653,13 @@ class dbTableManager extends ChisimbaObject {
      *
      * @return mixed   MDB2_OK on success, a MDB2 error on failure
      */
-    function alterTable($name, $changes, $check) {
-        /**
-         * check if there is already field with same name
-         * If true, simply return
-         */
-
-        /*
-        $fields = $this->listTableFields($name);
-
-        foreach ($changes as $change) {
-            if ($this->returnIfExistingKey($change, $fields, $changes)) {
-                return TRUE;
-            }
-        }
-        */
-        // If the change is an insert - insert the data, otherwise alter the table
+    public function alterTable($name,$changes,$check) {
         if (isset($changes['insert'])) {
-            // insert data through db table
-            if ($check) {
-                return TRUE;
-            } else {
-                dbtable::init($name, $this->_db);
-                $fields = $changes['insert'];
-                $ret_ = dbtable::insert($fields, $name);
-                return $ret_ !== FALSE ? TRUE : FALSE;
-            }
-        } else {
-            $ret = $this->_db->mgAlterTable($name, $changes, $check);
+            if ($check) return true;
+            $table=dbTable::forFrameworkConnection($this->_db);
+            return $table->insert($changes['insert'],$name)!==false;
         }
-        //log_debug('alterTable::$ret=='.var_export($ret, TRUE));
-        if (PEAR::isError($ret)) {
-            //log_debug('alterTable::PEAR::isError($ret)::$ret=='.var_export($ret, TRUE).';$ret->getMessage()=='.$ret->getMessage());
-            return $ret->getMessage();
-        } else {
-            // var_dump($ret);
-            //log_debug('alterTable::else::$ret=='.var_export($ret, TRUE));
-            return $ret;
-        }
+        return $this->schema()->alterTable($name,$changes,(bool)$check);
     }
 
 }

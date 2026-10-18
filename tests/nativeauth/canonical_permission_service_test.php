@@ -35,6 +35,13 @@ class permissionservicefixture extends permissionservice
     public $inserted = array();
     public $permissionUserId = 7;
 
+    public function selectPrepared($sql, array $parameters = [])
+    {
+        // This fixture matches query shapes; bound-value behaviour is exercised
+        // against the real PDO boundary in the database suite.
+        return $this->getArray($sql);
+    }
+
     public function getArray($sql)
     {
         $this->queries[] = $sql;

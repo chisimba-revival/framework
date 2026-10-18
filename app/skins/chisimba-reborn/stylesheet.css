@@ -180,6 +180,7 @@ img {
     height: 5.55rem;
     content: "";
     background: var(--chisimba-brand-logo) center / contain no-repeat;
+    filter: var(--chisimba-brand-logo-filter, none);
 }
 
 #Canvas_Content_Head_Header,
@@ -970,6 +971,13 @@ ul#menuList li li ul {
 .registration-health__pending { display: grid; gap: 0.65rem; }
 .registration-health__pending article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem; border: 1px solid var(--chisimba-border); border-radius: 0.55rem; }
 .registration-health__pending form { margin: 0; }
+.registration-health__pending article > div, .registration-health__recent li > span { min-width: 0; overflow-wrap: anywhere; }
+.registration-health__pending .chisimba-form-actions { flex-shrink: 0; flex-wrap: nowrap; align-items: stretch; max-width: 100%; gap: 0.5rem; }
+.registration-health__pending .chisimba-form-actions form { display: flex; align-items: stretch; min-width: 0; }
+.registration-health__pending .chisimba-form-actions .button { min-height: 2.875rem; margin-block: 0; }
+.registration-health__pending .chisimba-form-actions .chisimba-icon-button { flex-shrink: 0; width: 2.875rem; height: auto; }
+.registration-health__recent time { flex: 0 0 7rem; }
+.chisimba-wrap-anywhere { overflow-wrap: anywhere; }
 .registration-health__reminded { color: var(--chisimba-success, #2f855a) !important; font-weight: 700; }
 
 /* Discussion dashboard blocks can appear outside the Discussion module layout. */
@@ -2875,15 +2883,17 @@ h5.featureboxheader,
 }
 
 .chisimba-site-banner__identity {
-    background: var(--chisimba-brand-logo) center / contain no-repeat;
+    background: var(--chisimba-brand-logo-surface, transparent) var(--chisimba-brand-logo) center / contain no-repeat;
+    filter: var(--chisimba-brand-logo-filter, none);
     display: block;
     flex: 0 0 auto;
-    height: clamp(4.25rem, 8vw, 5.5rem);
-    width: clamp(4.9rem, 9vw, 6.4rem);
+    height: var(--chisimba-brand-logo-height, clamp(4.25rem, 8vw, 5.5rem));
+    width: var(--chisimba-brand-logo-width, clamp(4.9rem, 9vw, 6.4rem));
 }
 
 .chisimba-site-banner__name,
 #sitename.chisimba-site-banner__name {
+    display: var(--chisimba-brand-name-display, block);
     color: inherit;
     font-family: var(--chisimba-font-family-heading);
     font-size: var(--chisimba-font-size-2xl);
@@ -3017,8 +3027,8 @@ h5.featureboxheader,
     }
 
     .chisimba-site-banner__identity {
-        height: 4.25rem;
-        width: 4.9rem;
+        height: var(--chisimba-brand-logo-height-mobile, 4.25rem);
+        width: var(--chisimba-brand-logo-width-mobile, 4.9rem);
     }
 
     .chisimba-site-banner__name,
@@ -3120,6 +3130,9 @@ h5.featureboxheader,
 
 /* BEGIN CHISIMBA-REBORN NOTIFICATION COMPONENT */
 
+/* Component display must respect the native hidden state. */
+.chisimba-notification[hidden] { display: none; }
+
 .chisimba-notification {
     --chisimba-notification-accent: var(--chisimba-info);
     --chisimba-notification-background: var(--chisimba-primary-soft);
@@ -3199,12 +3212,16 @@ h5.featureboxheader,
 /* BEGIN CHISIMBA-REBORN SITE-BANNER TOP SPACING
  *
  * Preserve the canvas gutter on the sides and below the page while reducing
- * the unused space above the site banner to a deliberate 10px.
+ * the unused space above the site banner to zero.
  *
  * @author Derek Keats
  */
 .ChisimbaCanvas {
-    padding-top: 10px;
+    padding-top: 0;
+}
+.ChisimbaCanvas #container {
+    margin-top: 0;
+    padding-top: 0;
 }
 /* END CHISIMBA-REBORN SITE-BANNER TOP SPACING */
 
@@ -5985,6 +6002,8 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-form-field input[type="text"],
 .chisimba-form-field input[type="number"],
 .chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="datetime-local"],
+.chisimba-form-field input[type="url"],
 .chisimba-form-field select,
 .chisimba-form-field textarea { width:100%; padding:.58rem .65rem; }
 .chisimba-form-field textarea { min-height:8rem; resize:vertical; }
@@ -6379,6 +6398,8 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
 .chisimba-form-field input[type="text"],
 .chisimba-form-field input[type="number"],
 .chisimba-form-field input[type="date"],
+.chisimba-form-field input[type="datetime-local"],
+.chisimba-form-field input[type="url"],
 .chisimba-form-field input[type="email"],
 .chisimba-form-field input[type="password"],
 .chisimba-form-field select,
@@ -7120,11 +7141,33 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 /* Shared composition and publishing layout: the skin owns presentation. */
 .chisimba-publishing-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(16rem,22rem);gap:1.5rem;align-items:start; }
 .chisimba-publishing-layout > * { min-width:0; }
-.chisimba-publishing-sidebar { display:grid;gap:1rem; }
+.chisimba-publishing-sidebar { display:grid;grid-template-columns:minmax(0,1fr);gap:1rem; }
+.chisimba-publishing-layout fieldset { min-inline-size:0; }
 .chisimba-composition-editor { display:grid;gap:1.25rem; }
 .chisimba-composition-instance { padding:1.25rem; }
 .chisimba-composition-instance header { margin-bottom:1rem; }
 .chisimba-content-block { margin-block:1.5rem;overflow-wrap:anywhere; }
+/* Optional quiet cards for a page made from independent content sections. */
+.chisimba-composition-page > h1,
+.chisimba-composition-page > .chisimba-page-heading {
+    margin:0 0 1.25rem;
+    padding:1rem clamp(1rem, 3vw, 2rem);
+    border:1px solid var(--chisimba-border);
+    border-radius:.75rem;
+    background:var(--chisimba-surface);
+    overflow-wrap:anywhere;
+}
+.chisimba-content-cards { display:grid;gap:1.25rem; }
+.chisimba-content-cards > .chisimba-content-block {
+    min-width:0;
+    margin:0;
+    padding:clamp(1rem, 3vw, 2rem);
+    border:1px solid var(--chisimba-border);
+    border-radius:.75rem;
+    background:var(--chisimba-surface);
+}
+.chisimba-content-cards > .chisimba-content-block > div > :first-child { margin-top:0; }
+.chisimba-content-cards > .chisimba-content-block > div > :last-child { margin-bottom:0; }
 .chisimba-content-block figure { margin:0;min-width:0; }
 .chisimba-content-block img { display:block;width:100%;height:auto;object-fit:contain; }
 .chisimba-content-block video,.chisimba-content-block iframe { display:block;width:100%;max-width:100%;aspect-ratio:16/9;border:0; }
@@ -7207,3 +7250,418 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 
 /* Reserve feedback space so Ajax status changes do not shift the editor. */
 [data-composition-status] { min-height: 1.5em; }
+
+/* Reusable in-form summary: keep totals and save actions visible in long editors. */
+.chisimba-sticky-summary {
+    position: sticky;
+    top: var(--chisimba-space-2, .5rem);
+    z-index: 5;
+    padding: var(--chisimba-space-3, .75rem);
+    margin-block: var(--chisimba-space-3, .75rem);
+    border: 1px solid var(--chisimba-border);
+    border-radius: var(--chisimba-space-2, .5rem);
+    background: var(--chisimba-surface);
+}
+.chisimba-sticky-summary > p { margin-block: 0 .35rem; }
+.chisimba-sticky-summary > .chisimba-form-actions { margin-top: .5rem; flex-wrap: wrap; }
+@media print { .chisimba-sticky-summary { position: static; } }
+
+/* Compact cards and aligned numeric controls with trailing actions. */
+.chisimba-form-card--compact { padding: var(--chisimba-space-5, 1.25rem); }
+.chisimba-form-card--muted { background: var(--chisimba-surface-muted); box-shadow: none; }
+.chisimba-control-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(5rem, 7rem)) minmax(0, 1fr);
+    gap: var(--chisimba-space-4, 1rem);
+    align-items: end;
+    margin-block-start: var(--chisimba-space-4, 1rem);
+}
+.chisimba-control-row .chisimba-form-field { margin: 0; min-width: 0; }
+.chisimba-control-row input[type="number"] { width: 100%; box-sizing: border-box; }
+.chisimba-control-row__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--chisimba-space-3, .75rem); }
+.chisimba-control-row [hidden] { display: none !important; }
+@media (max-width: 600px) {
+    .chisimba-control-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .chisimba-control-row__actions { grid-column: 1 / -1; justify-content: flex-start; }
+}
+
+/* Equal-height actions, including compact Help and nested submit forms. */
+.chisimba-form-actions--equal { align-items: stretch; flex-wrap: wrap; }
+.chisimba-form-actions--equal > form { display: flex; align-items: stretch; margin-block: 0; }
+.chisimba-form-actions--equal > .button,
+.chisimba-form-actions--equal > form > .button { min-height: 2.875rem; height: auto; margin-block: 0; }
+
+/* A focused workspace fills the viewport without replacing its editable forms. */
+.chisimba-focus-open { overflow: hidden; }
+.chisimba-focus-surface--active {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border-radius: 0;
+    padding: var(--chisimba-space-4);
+    overflow: auto;
+    background: var(--chisimba-surface);
+}
+
+@media (max-width: 600px) {
+    .registration-health__columns > section { padding: 0.6rem; }
+    .registration-health__pending article { padding: 0.5rem; gap: 0.5rem; }
+    .registration-health__pending .chisimba-form-actions { width: 100%; flex-direction: row; align-items: stretch; }
+    .registration-health__pending .chisimba-form-actions form { flex: 1; }
+    .registration-health__pending .chisimba-form-actions form .button { width: 100%; }
+}
+
+/* Publication date badge: a shared card primitive for dated content. */
+.chisimba-publication-card__media { position: relative; }
+.chisimba-publication-card__calendar {
+    position: absolute; inset-block-start: 1rem; inset-inline-start: 1rem;
+    display: grid; justify-items: center; gap: .1rem; padding: .5rem .8rem;
+    border-radius: .3rem; background: var(--chisimba-surface, #fff);
+    color: var(--chisimba-text, #18333b); box-shadow: 0 .15rem .6rem rgb(0 0 0 / .15);
+    font-size: .75rem; line-height: 1.2; text-transform: uppercase;
+}
+.chisimba-publication-card__calendar strong { font-size: 1.35rem; }
+.chisimba-publication-card__byline { font-size: .9rem; }
+.chisimba-publication-card__byline .chisimba-icon { vertical-align: middle; }
+
+/* Site navigation shares the skin's surfaces, focus treatment and spacing. */
+.chisimba-site-navigation { background: var(--surface, #fff); border-radius: 0 0 .65rem .65rem; padding: .45rem 1rem; position: relative; z-index: 30; }
+.chisimba-site-navigation__body, .chisimba-site-navigation__links, .chisimba-site-navigation__account { display: flex; align-items: center; gap: .4rem; }
+.chisimba-site-navigation__body { justify-content: space-between; }
+.chisimba-site-navigation ul { list-style: none; margin: 0; padding: 0; }
+.chisimba-site-navigation__links { flex-wrap: wrap; }
+.chisimba-site-navigation a, .chisimba-site-navigation summary { display: flex; align-items: center; gap: .45rem; padding: .65rem .8rem; border-radius: .4rem; color: inherit; cursor: pointer; text-decoration: none; }
+.chisimba-site-navigation a:hover, .chisimba-site-navigation summary:hover, .chisimba-site-navigation a[aria-current] { background: var(--color-primary-light, #e4f2f8); }
+.chisimba-site-navigation a[aria-current] { font-weight: 700; }
+.chisimba-site-navigation__shell > summary { display: none; }
+.chisimba-site-navigation__group { position: relative; }
+.chisimba-site-navigation__group > summary::after { content: '⌄'; margin-left: .35rem; }
+.chisimba-site-navigation__group > ul { position: absolute; top: 100%; min-width: 14rem; max-width: 90vw; background: var(--surface, #fff); border: 1px solid var(--border-color, #d5dce2); border-radius: .5rem; padding: .35rem; box-shadow: 0 .4rem 1rem #0002; }
+.chisimba-site-navigation__account .chisimba-site-navigation__group > ul { right: 0; }
+.chisimba-site-navigation form { margin: .25rem .5rem; }
+.chisimba-site-navigation svg { width: 1.1em; height: 1.1em; flex-shrink: 0; }
+@media (max-width: 760px) {
+  .chisimba-site-navigation__shell > summary { display: flex; }
+  .chisimba-site-navigation__body, .chisimba-site-navigation__links, .chisimba-site-navigation__account { flex-direction: column; align-items: stretch; }
+  .chisimba-site-navigation__account { border-top: 1px solid var(--border-color, #d5dce2); padding-top: .4rem; }
+  .chisimba-site-navigation__group > ul { position: static; min-width: 0; box-shadow: none; margin-left: .7rem; }
+}
+
+/* Shared portrait-video primitive; consumer modules only supply semantic content. */
+.chisimba-content-block--portrait-video iframe { aspect-ratio: 9 / 16; width: min(100%, 24rem); height: auto; justify-self: center; }
+
+/* Social links remain ordinary editable links; trusted icons are added at render. */
+.chisimba-social-links { display:flex;flex-wrap:wrap;gap:.65rem;list-style:none;padding:0;margin:1.25rem 0 0; }
+.chisimba-social-links > li { margin:0;padding:0; }
+.chisimba-social-links .chisimba-icon-button { width:2.75rem;height:2.75rem;color:var(--chisimba-primary); }
+.chisimba-social-links .chisimba-icon { width:1.2rem;height:1.2rem; }
+
+/* Responsive portrait collections use the content width, including in sidebars. */
+.chisimba-content-block--video-gallery { container-type:inline-size; }
+.chisimba-video-collection__toolbar { display:flex;justify-content:flex-end;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem; }
+.chisimba-video-collection__toolbar[hidden] { display:none; }
+.chisimba-video-collection__toolbar [aria-pressed="true"] { background:var(--chisimba-primary);border-color:var(--chisimba-primary);color:var(--chisimba-on-primary,#fff); }
+.chisimba-video-collection__grid { display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem;align-items:start; }
+.chisimba-video-collection__grid > article { min-width:0; }
+.chisimba-video-collection__media { display:block;position:relative;aspect-ratio:9/16;overflow:hidden;background:var(--chisimba-primary); }
+.chisimba-video-collection__media img { width:100%;height:100%;object-fit:cover; }
+.chisimba-video-collection__play { position:absolute;inset:0;display:grid;place-content:center;color:#111; }
+.chisimba-video-collection__play .chisimba-icon { width:3.5rem;height:3.5rem;padding:1rem;border-radius:50%;background:rgba(255,255,255,.94);box-sizing:border-box; }
+.chisimba-video-collection__topic { position:absolute;top:.65rem;left:.65rem;max-width:calc(100% - 1.3rem);padding:.3rem .65rem;background:var(--chisimba-surface);color:var(--chisimba-text);border-radius:1rem;font-size:.75rem; }
+.chisimba-video-collection__grid h3 { font-size:1rem;line-height:1.4;margin:0 0 .65rem; }
+[data-video-collection] .chisimba-ui-window { width:min(430px,calc((100dvh - 9rem) * .5625),calc(100vw - 2rem));max-width:calc(100vw - 2rem);max-height:calc(100dvh - 2rem);padding:0;border:0;border-radius:.75rem;background:#000;color:#fff; }
+[data-video-collection] .chisimba-ui-window::backdrop { background:rgba(0,0,0,.9); }
+[data-video-collection] .chisimba-ui-window__header { padding:.6rem .75rem;background:#111;color:#fff; }
+[data-video-collection] .chisimba-ui-window__title { color:#fff;font-size:.9rem;line-height:1.3; }
+[data-video-collection] .chisimba-ui-window__content { padding:0; }
+.chisimba-video-collection__player { aspect-ratio:9/16; }
+.chisimba-content-block .chisimba-video-collection__player iframe { display:block;width:100%;height:100%;aspect-ratio:auto;border:0; }
+@container (min-width:480px) { .chisimba-video-collection__grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@container (min-width:640px) { .chisimba-video-collection__grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@container (min-width:880px) { .chisimba-video-collection__grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+
+/* Reusable native disclosure card: answers and other expandable rich content. */
+.chisimba-disclosure > summary { cursor: pointer; font-weight: 600; padding-block: .35rem; }
+.chisimba-disclosure[open] > summary { margin-bottom: var(--space-md, 1rem); }
+.chisimba-disclosure img { max-width: 100%; height: auto; }
+.chisimba-disclosure { overflow-wrap: anywhere; }
+
+/* Shared labelled filter row, with equal-height controls and natural wrapping. */
+.chisimba-filter-form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: .75rem; margin-block: 1.25rem; }
+.chisimba-filter-form .chisimba-form-field { margin: 0; min-width: 0; }
+.chisimba-filter-form input[type="search"],
+.chisimba-filter-form select,
+.chisimba-filter-form > .button { box-sizing: border-box; height: 2.75rem; min-height: 2.75rem; margin: 0; }
+.chisimba-filter-form input[type="search"] { max-width: 100%; padding: .58rem .65rem; }
+@media (max-width: 40rem) {
+    .chisimba-filter-form .chisimba-form-field { flex: 1 1 12rem; }
+    .chisimba-filter-form input[type="search"], .chisimba-filter-form select { width: 100%; }
+}
+
+/* Shared credited photo collections. */
+.chisimba-photo-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1.25rem;margin:1.25rem 0; }
+.chisimba-photo-card { margin:0;padding:0;min-width:0;overflow:hidden; }
+.chisimba-photo-card img { display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover; }
+.chisimba-photo-card figcaption { padding:.75rem 1rem;overflow-wrap:anywhere; }
+.chisimba-photo-card figcaption p { margin:.65rem 0; }
+
+.chisimba-site-footer__links { display:flex;flex-wrap:wrap;gap:.8rem 1.25rem;margin-bottom:1rem; }
+.chisimba-site-footer__links a { display:inline-flex;align-items:center;gap:.4rem; }
+
+
+/* Audio controls fit narrow content cards. */
+.chisimba-content-block audio { display:block; width:100%; max-width:100%; }
+
+/* Brief answers should respect their semantic row count, not the long-answer minimum. */
+.chisimba-form-field--brief textarea { min-height:0; }
+.chisimba-form-disclosure { margin-block:1.25rem; }
+.chisimba-form-disclosure > summary,
+.chisimba-form-card > summary { cursor:pointer; font-size:1.05rem; font-weight:650; }
+.chisimba-form-disclosure[open] > summary,
+.chisimba-form-card[open] > summary { margin-bottom:1rem; }
+.chisimba-form-card__header { margin-bottom:1.25rem; }
+.chisimba-form-card__header h2 { margin-top:0; }
+
+/* Keep missing-image placeholders legible in reusable publication cards. */
+.chisimba-publication-card__placeholder > .chisimba-icon { width:3rem; height:3rem; opacity:.6; }
+
+/* An expanded editor occupies its action row; adjacent actions wrap underneath. */
+.chisimba-cluster > .chisimba-action-disclosure { min-width:0; max-width:100%; }
+.chisimba-cluster > .chisimba-action-disclosure[open] { flex-basis:100%; }
+.chisimba-action-disclosure > summary { width:fit-content; cursor:pointer; }
+.chisimba-action-disclosure > form { box-sizing:border-box; width:100%; max-width:none; }
+.chisimba-flow > * + .chisimba-notice { margin-block-start:var(--chisimba-flow-space, var(--chisimba-space-4)); }
+/* Layout display rules must not reveal controls explicitly hidden by their owner. */
+[hidden]:not([hidden="until-found"]) { display:none !important; }
+.chisimba-workspace:fullscreen { box-sizing:border-box; padding:var(--chisimba-space-4); background:var(--chisimba-surface, #fff); color:var(--chisimba-text, #172033); overflow:auto; }
+.chisimba-workspace::backdrop { background:var(--chisimba-surface, #fff); }
+.security-native-auth .auth-field { margin-block-end:1rem; }
+
+/* Natural-ratio media variant for banners whose complete contents must remain visible. */
+.chisimba-publication-card__media--natural { aspect-ratio: auto; }
+.chisimba-publication-card__media--natural img { display: block; inline-size: 100%; block-size: auto; object-fit: contain; }
+
+/* Shared on-demand video cards: reserve media space and inherit skin tokens. */
+.chisimba-video-card__play { display: block; }
+.chisimba-video-card__overlay {
+    position: absolute; inset-block-start: 50%; inset-inline-start: 50%;
+    transform: translate(-50%, -50%); display: grid; place-items: center;
+    inline-size: 3.5rem; block-size: 3.5rem; border-radius: 50%;
+    background: var(--chisimba-primary, #0b78c5); color: var(--chisimba-on-primary, #fff);
+    box-shadow: var(--chisimba-shadow, 0 0.25rem 1rem rgb(15 23 42 / 15%));
+}
+.chisimba-video-card__overlay svg { inline-size: 1.7rem; block-size: 1.7rem; }
+.chisimba-video-card__play:focus-visible { outline-offset: -4px; }
+.chisimba-video-player { aspect-ratio: 16 / 9; min-block-size: 200px; }
+.chisimba-video-player iframe { display: block; inline-size: 100%; block-size: 100%; min-block-size: 200px; border: 0; }
+[data-video-more][aria-disabled="true"] { opacity: .65; cursor: progress; }
+[data-video-more][hidden] { display: none; }
+
+/* Bounded multi-choice groups share form spacing without stretching the page. */
+.chisimba-choice-list { display: grid; gap: .45rem; max-block-size: 16rem; overflow: auto; padding: .5rem; }
+.chisimba-choice-list > label { display: flex; align-items: baseline; gap: .45rem; margin: 0; }
+.chisimba-choice-list input[type="checkbox"] { flex: 0 0 auto; }
+[data-webinar-preview][hidden], [data-webinar-image][hidden] { display: none; }
+
+/* Selectable cards keep native radio controls and inherit the active skin. */
+.chisimba-form .chisimba-choice-cards {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem;
+}
+.chisimba-form .chisimba-choice-cards > label {
+  display: flex; flex-direction: column; gap: .65rem; margin: 0; padding: 1.25rem;
+  min-width: 0; border: 1px solid var(--chisimba-border); border-radius: var(--chisimba-radius-md, .5rem);
+  background: var(--chisimba-surface); font-weight: 400; cursor: pointer; overflow-wrap: anywhere;
+}
+.chisimba-form .chisimba-choice-cards > label:has(input:checked) {
+  border-color: var(--chisimba-primary); background: var(--chisimba-info-surface);
+}
+.chisimba-form .chisimba-choice-cards > label:focus-within { outline: 2px solid var(--chisimba-primary); outline-offset: 3px; }
+.chisimba-form .chisimba-choice-cards > label > span:first-child { display:flex; gap:.6rem; align-items:baseline; }
+.chisimba-form .chisimba-choice-cards input[type=radio] { flex:0 0 auto; width:auto; }
+.chisimba-form .chisimba-choice-cards .chisimba-choice-card-price { font-size:1.6rem; font-weight:700; }
+
+/* Imported heading fragments share the following content card. */
+.chisimba-content-cards > .chisimba-content-card { min-width: 0; padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--chisimba-border); border-radius: .75rem; background: var(--chisimba-surface); }
+.chisimba-content-card > .chisimba-content-block:first-child { margin-top: 0; }
+.chisimba-content-card > .chisimba-content-block:last-child { margin-bottom: 0; }
+
+/* Compact, text-labelled status for management cards. */
+.chisimba-status-badge { display: inline-flex; align-items: center; padding: .25rem .65rem; border: 1px solid var(--chisimba-border); border-radius: 999px; background: var(--chisimba-surface); color: var(--chisimba-text); font-weight: 600; }
+.chisimba-content-block--hero:not(:has(figure)),
+.chisimba-content-block--reverse-hero:not(:has(figure)) { grid-template-columns: minmax(0, 1fr); }
+
+/* Bounded optional offers use native, light-dismiss popovers. */
+.chisimba-offer-popover {
+    box-sizing: border-box;
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+}
+.chisimba-offer-popover img { max-height: 9rem; width: auto; object-fit: contain; }
+.chisimba-offer-popover:not(:popover-open) { display: none; }
+
+.chisimba-offer-popover { gap: var(--chisimba-space-2); }
+.chisimba-offer-popover :is(p, h2, h3, ul, dl) { margin-block: 0; }
+.chisimba-offer-popover .chisimba-details { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--chisimba-space-2); }
+.chisimba-offer-popover .chisimba-details dd { margin: 0; }
+
+/* Reusable compact record card with a preview beside its details. */
+.chisimba-media-summary { display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.5rem;align-items:center; }
+.chisimba-media-summary > div { min-width:0; }
+.chisimba-media-summary__preview { width:7rem;text-align:center;color:var(--chisimba-text-muted,#52616b); }
+.chisimba-media-summary__preview img { display:block;width:100%;height:9rem;object-fit:contain; }
+@media(max-width:600px) {
+    .chisimba-media-summary { gap:1rem; }
+    .chisimba-media-summary__preview { width:4.5rem; }
+    .chisimba-media-summary__preview img { height:6rem; }
+}
+
+/* Image labels stay attached to the media, mirrored towards the outer card edge. */
+.chisimba-media-badged { position: relative; }
+.chisimba-media-badged__labels { position: absolute; inset-block-start: .75rem; inset-inline-start: .75rem; display: flex; flex-wrap: wrap; gap: .5rem; max-width: calc(100% - 1.5rem); }
+.chisimba-media-badged__labels .chisimba-status-badge { background: var(--chisimba-text); color: var(--chisimba-surface); border-color: var(--chisimba-surface); }
+.chisimba-content-block--image-right .chisimba-media-badged__labels,
+.chisimba-content-block--reverse-hero .chisimba-media-badged__labels { inset-inline-start: auto; inset-inline-end: .75rem; }
+
+/* Shared native tag clouds: content owns weights, the skin owns presentation. */
+.chisimba-tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--chisimba-space-1) var(--chisimba-space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+}
+.chisimba-tag-cloud > li {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    min-width: 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.chisimba-tag-cloud > li > a,
+.chisimba-tag-cloud > li > span {
+    display: inline-block;
+    max-width: 100%;
+    padding-block: var(--chisimba-space-1);
+}
+.chisimba-tag-cloud > li > a {
+    color: var(--chisimba-link-on-surface);
+    text-decoration: underline;
+    text-underline-offset: .15em;
+}
+.chisimba-tag-cloud__weight-1 { font-size: .875rem; }
+.chisimba-tag-cloud__weight-2 { font-size: 1rem; }
+.chisimba-tag-cloud__weight-3 { font-size: 1.125rem; }
+.chisimba-tag-cloud__weight-4 { font-size: 1.25rem; }
+.chisimba-tag-cloud__weight-5 { font-size: 1.375rem; }
+
+/* Native choices align with text instead of inheriting text-field dimensions. */
+input[type="checkbox"],
+input[type="radio"] {
+    min-height: 0;
+    height: 1em;
+    padding: 0;
+    vertical-align: middle;
+}
+.chisimba-choice {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .45em;
+    max-width: calc(100% - .65em);
+    margin-block: .2em;
+    margin-inline-end: .65em;
+    vertical-align: top;
+}
+.chisimba-choice > input {
+    flex: 0 0 auto;
+    margin: 0;
+}
+.chisimba-choice > label {
+    min-width: 0;
+    margin: 0;
+}
+
+/* Shared insertion marker for ordered drag-and-drop lists. */
+.chisimba-drop-marker {
+    border-block-start: 3px solid var(--chisimba-focus);
+    color: var(--chisimba-text);
+    background: var(--chisimba-surface);
+    border-radius: var(--chisimba-radius-sm);
+    padding: var(--chisimba-space-1) var(--chisimba-space-2);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+/* Shared browser media players fit their content column on every canvas. */
+.chisimba-native-media { display: block; max-width: 100%; }
+video.chisimba-native-media { height: auto; }
+
+/* Native document viewing retains the browser toolbar and a download fallback. */
+.chisimba-document { width:100%; min-width:0; }
+.chisimba-document-preview { display:block; width:100%; height:70vh; border:0; }
+
+/* Shared responsive image collections, usable without scripts or plug-ins. */
+.chisimba-image-gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr)); gap:1rem; }
+.chisimba-image-gallery figure { margin:0; min-width:0; }
+.chisimba-image-gallery img { display:block; max-width:100%; height:auto; }
+.chisimba-image-gallery figcaption { overflow-wrap:anywhere; }
+
+/* Native rounding for shared legacy icon-panel markup; no DOM strips needed. */
+.chisimba-icon-panel :is(.icon, ._icon),
+.chisimba-icon-panel :is(.icon, ._icon) > a {
+    border-radius: var(--chisimba-radius-md, .5rem);
+}
+
+/* Opt-in external media previews preserve the source link. */
+.chisimba-media-preview { display: block; margin-block: .5rem; max-width: 100%; }
+.chisimba-media-preview__media { display: block; max-width: 100%; border: 0; }
+iframe.chisimba-media-preview__media, video.chisimba-media-preview__media { width: min(100%, 40rem); aspect-ratio: 16 / 9; }
+a[data-native-embed] { overflow-wrap: anywhere; }
+
+/* Native feature-box disclosures keep the shared header and browser keyboard behaviour. */
+.featurebox-disclosure > summary.featureboxheader {
+    display: list-item;
+    list-style-position: inside;
+    cursor: pointer;
+}
+.featurebox-disclosure-title {
+    display: inline;
+    font: inherit;
+    margin: 0;
+}
+.featurebox-disclosure > summary:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -3px;
+}
+
+/* Shared native local-content preview, including alert-filter fragments. */
+.chisimba-content-dialog {
+    box-sizing: border-box;
+    width: min(42rem, calc(100% - 2rem));
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid var(--chisimba-border);
+    border-radius: .5rem;
+    background: var(--chisimba-surface);
+    color: var(--chisimba-text);
+}
+.chisimba-content-dialog::backdrop { background: rgb(0 0 0 / 45%); }
+.chisimba-content-dialog > button { margin-block-end: .75rem; }
+
+/* Legacy picker/tag thumbnails retain readable metadata without hover overlays. */
+#filemanagerTable tr td a img.iconThumbnail { padding: .75rem; }
+#filemanagerTable .fm_thumbnails { max-inline-size: 24rem; }
+#filemanagerTable .fm_thumbnails .imageDiv { text-align: center; }
+#filemanagerTable .fm_thumbnails img { max-inline-size: 100%; height: auto; }
+#filemanagerTable { margin: .75rem 0; max-inline-size: 100%; }
+#filemanagerTable tbody { display: flex; flex-wrap: wrap; gap: .75rem; }
+#filemanagerTable tr { margin: 0; min-inline-size: 0; max-inline-size: 100%; box-sizing: border-box; }
+#filemanagerTable tr td { min-inline-size: 0; min-block-size: 0; }

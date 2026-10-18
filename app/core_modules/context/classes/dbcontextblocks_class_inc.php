@@ -73,6 +73,20 @@ class dbcontextblocks extends dbTable {
         $this->objUser = $this->getObject ( 'user', 'security' );
     }
 
+    /** Snapshot used to reject stale tabs and preserve deterministic ordering. */
+    public function editingRows($code) {
+        return $this->selectPrepared('SELECT * FROM tbl_context_blocks WHERE contextcode=? ORDER BY side, position, id', [$code]);
+    }
+    public function editingRevision($code) {
+        return hash('sha256', json_encode($this->editingRows($code)));
+    }
+    public function editPlacement($code, $revision, $action, $id, $side, $direction) {
+        return $this->getObject('blockplacementorder', 'blocks')->edit(
+            $this, $code, $revision, $action, $id, $side, $direction,
+            ['contextcode'=>$code, 'updatedby'=>$this->objUser->userId()]
+        );
+    }
+
     /**
      * Method to get a list of blocks used in a context, and have them rendered one time
      *
@@ -119,7 +133,7 @@ class dbcontextblocks extends dbTable {
      * @param return array
      */
     public function getContextBlocksList($contextCode, $side) {
-        return $this->getAll ( ' WHERE side=\'' . $side . '\' AND contextcode=\'' . $contextCode . '\' ORDER BY position' );
+        return $this->selectPrepared('SELECT * FROM tbl_context_blocks WHERE side=? AND contextcode=? ORDER BY position, id', [$side,$contextCode]);
     }
 
     /**
@@ -150,7 +164,7 @@ class dbcontextblocks extends dbTable {
      *
      */
     public function addBlock($block, $side, $contextCode, $module) {
-        return $this->insert ( array ('contextcode' => $contextCode, 'block' => $block, 'side' => $side, 'module' => $module, 'position' => $this->getLastOrder ( $side, $contextCode ) + 1, 'updatedby' => $this->objUser->userId (), 'datelastupdated' => strftime ( '%Y-%m-%d %H:%M:%S', time() ) ) );
+        return $this->insert ( array ('contextcode' => $contextCode, 'block' => $block, 'side' => $side, 'module' => $module, 'position' => $this->getLastOrder ( $side, $contextCode ) + 1, 'updatedby' => $this->objUser->userId (), 'datelastupdated' => date('Y-m-d H:i:s') ) );
     }
 
     /**

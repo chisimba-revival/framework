@@ -25,6 +25,10 @@ if (!$GLOBALS['kewl_entry_point_run']){
 */
 class postloginmenu extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objHcard;
+    public $objSideMenu;
+
     /**
     * Method to construct the class.
     */

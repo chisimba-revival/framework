@@ -190,14 +190,9 @@ class user extends dbTable {
                 return false;
             }
             if ($line['pass'] == sha1('--LDAP--')) {
-                $objldap = $this->newObject('ldaplogin', 'security');
-                $info = $objldap->tryLogin($username, $password);
-                if (is_array($info)) {
-                    $this->_record = $line;
-                    return TRUE;
-                } else {
-                    return FALSE;
-                }
+                // LDAP authentication was intentionally retired.  Accounts
+                // carrying this historical marker fail closed.
+                return false;
             } else {
                 $password = sha1(trim($password));
                 // if the login was successful
@@ -295,43 +290,12 @@ class user extends dbTable {
     }
 
     /**
-     * Method to do the LDAP login against an LDAP database
-     * Depreciated 2007-10-11
+     * Deprecated compatibility endpoint. LDAP authentication is retired.
      * @param string $username The username supplied in the login
      * @param string $password The password supplied in the login
      */
     public function loginViaLdap($username, $password) {
-        $objldap = $this->newObject('ldaplogin', 'security');
-        $info = $objldap->tryLogin($username, $password);
-        if (is_array($info)) { // if LDAP has confirmed login
-            $data = $this->lookupData($username);
-            if (is_array($data) || $this->valueExists('userid', $info['userid'])) {// if we already have this user
-                $this->_record = $data;
-            } else { // new user
-                // Build up an array of the user's info
-                if ($info['userid'] == FALSE) {
-                    $info['userid'] = mt_rand(1000, 9999) . date('ymd');
-                    $info['sex'] = '';
-                    $info['accessLevel'] = 'guests';
-                    $info['howCreated'] = 'LDAP';
-                    $info['isactive'] = '1';
-                    $info['country'] = $this->objConfig->getCountry();
-                    // Instantiate the sqlusers class and call the adduser() function
-                    // To create the new user on the KNG system.
-                    $tbl = $this->newObject('sqlusers', 'security');
-                    $id = $tbl->addUser($info);
-                    // If LDAP confirms the user is an Academic,
-                    // add as a site-lecturer in KNG groups.
-                    if ($objldap->isAcademic($username)) {
-                        $this->addLecturer($id);
-                    }
-                }
-                $this->_record = $info;
-            }
-            return TRUE;
-        } else {
-            return FALSE;
-        }
+        return false;
     }
 
     /**

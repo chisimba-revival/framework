@@ -63,6 +63,20 @@ if (!
  *
  */
 class buildcanvas extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $cbExists;
+    private $objPageBlocks;
+    private $leftBlocks = '';
+    private $middleBlocks = '';
+    private $rightBlocks = '';
+    public $objBlocks;
+    public $objBlocksContent;
+    public $objContextBlocks;
+    public $objDynamicBlocks;
+    public $objModule;
+    public $smallDynamicBlocks;
+    public $wideDynamicBlocks;
+
 
     /**
      *
@@ -161,6 +175,10 @@ class buildcanvas extends ChisimbaObject {
         $this->wideDynamicBlocks = $this->objDynamicBlocks->getWideUserBlocks($this->userId);
         // Get any user small blocks that the user has.
         $this->smallDynamicBlocks = $this->objDynamicBlocks->getSmallUserBlocks($this->userId);
+        if ($this->getParam('module', '') === 'slate') {
+            $this->wideDynamicBlocks = $this->objDynamicBlocks->getWideSiteBlocks();
+            $this->smallDynamicBlocks = $this->objDynamicBlocks->getSmallSiteBlocks();
+        }
         // Create an instance of the module object
         $this->objModule = $this->getObject('modules', 'modulecatalogue');
         //Check if contentblocks is installed
@@ -197,7 +215,7 @@ class buildcanvas extends ChisimbaObject {
      * @access public
      *
      */
-    public function show($blockType = 'personal') {
+    public function show($blockType = 'personal', $pageId = null, $pageRepository = null, $editorSettings = '') {
         if ($blockType == 'user') {
             $blockType = 'personal';
         }
@@ -210,10 +228,10 @@ class buildcanvas extends ChisimbaObject {
                 break;
             case 'page':
                 $objBestGuess = $this->getObject('bestguess', 'utilities');
-                $pageId = $objBestGuess->guessPageId();
-                return $this->showPage($pageId);
+                $pageId = $pageId ?? $objBestGuess->guessPageId();
+                return $this->showPage($pageId, $pageRepository, $editorSettings);
                 break;
-            default;
+            default:
                 return NULL;
         }
     }
@@ -231,58 +249,23 @@ class buildcanvas extends ChisimbaObject {
      *
      */
     private function showPersonal() {
-        // Set a property to indicate if we are the profile owner or not.
-        if ($this->userId !== $this->objUser->userId()) {
-            $this->isOwner = FALSE;
-        } else {
-            $this->isOwner = TRUE;
-        }
-        // Show the user menu if they are logged in.
-        if ($this->objUser->isLoggedIn()) {
-            $userMenu = $this->newObject('usermenu', 'toolbar');
-            $userMenu = $userMenu->show();
-        } else {
-            $userMenu = "";
-        }
-        // Get the userblocks
-        $this->objUserBlocks = $this->getObject('dbuserblocks', 'canvas');
-        $this->middleBlocks = $this->objUserBlocks->getUserBlocks($this->userId, 'middle');
-        $this->rightBlocks = $this->objUserBlocks->getUserBlocks($this->userId, 'right');
-        $this->leftBlocks = $this->objUserBlocks->getUserBlocks($this->userId, 'left');
-        // Initialise the return string with two blank lines.
-        $ret = "\n\n";
-        // Add the script values to the return string.
-        $ret .= $this->getScriptValues();
-        $ret .= "\n\n" . $this->getContextBlocksJs() . "\n\n";
-        // Set a 3-column layout.
-        $objCssLayout = $this->getObject('csslayout', 'htmlelements');
-        $objCssLayout->setNumColumns(3);
-        // Get the left and right blocks
-        $rightBlocks = $this->getSmallBlocks('right');
-        $leftBlocks = $this->getSmallBlocks('left');
-        // Make the content of the left column.
-        $leftContent = $userMenu;
-        $leftContent .= '<div id="leftblocks">' . $this->leftBlocks . '</div>';
-        $leftContent .= '<div id="leftaddblock">' . $this->getHeader() . $leftBlocks;
-        $leftContent .= '<div id="lefttpreview"><div id="leftpreviewcontent"></div> '
-                . $this->getLeftButton() . ' </div></div>';
-        $objCssLayout->setLeftColumnContent($leftContent);
-        unset($leftContent);
-        // Make the content of the right column.
-        $rightContent = $this->getEditOnButton();
-        $rightContent .= '<div id="rightblocks">' . $this->rightBlocks . '</div>';
-        $rightContent .= '<div id="rightaddblock">' . $this->getHeader() . $rightBlocks;
-        $rightContent .= '<div id="rightpreview"><div id="rightpreviewcontent"></div> '
-                . $this->getRightButton() . ' </div></div>';
-        $objCssLayout->setRightColumnContent($rightContent);
-        unset($rightContent);
-        // Make the content of the middle column.
-        $middleContent = '<div id="middleblocks">' . $this->middleBlocks . '</div>';
-        $middleContent .= '<div id="middleaddblock">' . $this->getHeader() . $this->getWideBlocks();
-        $middleContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $this->getMiddleButton() . ' </div>';
-        $middleContent .= '</div>';
-        $objCssLayout->setMiddleColumnContent($middleContent);
-        return $this->getScriptValues() . $this->getContextBlocksJs() . $objCssLayout->show();
+        $blocks = $this->getObject('dbuserblocks', 'canvas');
+        $menu = $this->objUser->isLoggedIn() ? $this->newObject('usermenu', 'toolbar')->show() : '';
+        return $this->readOnlyColumns(
+            $menu.$blocks->getUserBlocks($this->userId, 'left'),
+            $blocks->getUserBlocks($this->userId, 'middle'),
+            $blocks->getUserBlocks($this->userId, 'right')
+        );
+    }
+
+    /** Legacy owners retain rendering, but must supply a protected editor to enable writes. */
+    private function readOnlyColumns($left, $middle, $right) {
+        $layout = $this->getObject('csslayout', 'htmlelements');
+        $layout->setNumColumns(3);
+        $layout->setLeftColumnContent('<div id="leftblocks">'.$left.'</div>');
+        $layout->setMiddleColumnContent('<div id="middleblocks">'.$middle.'</div>');
+        $layout->setRightColumnContent('<div id="rightblocks">'.$right.'</div>');
+        return $layout->show();
     }
 
     /**
@@ -299,17 +282,15 @@ class buildcanvas extends ChisimbaObject {
      * @todo Implement this functionality
      *
      */
-    private function showPage($pageId) {
+    private function showPage($pageId, $pageRepository = null, $editorSettings = '') {
         // Get the module blocks
-        $this->objPageBlocks = $this->getObject('dbpageblocks', 'canvas');
+        $this->objPageBlocks = $pageRepository ?? $this->getObject('dbpageblocks', 'canvas');
         $this->middleBlocks = $this->objPageBlocks->getPageBlocks($pageId, 'middle');
         $this->rightBlocks = $this->objPageBlocks->getPageBlocks($pageId, 'right');
         $this->leftBlocks = $this->objPageBlocks->getPageBlocks($pageId, 'left');
-        // Initialise the return string with two blank lines.
-        $ret = "\n\n";
-        // Add the script values to the return string.
-        $ret .= $this->getScriptValues();
-        $ret .= "\n\n" . $this->getContextBlocksJs() . "\n\n";
+        if ($editorSettings === '') {
+            return $this->readOnlyColumns($this->leftBlocks, $this->middleBlocks, $this->rightBlocks);
+        }
         // Set a 3-column layout.
         $objCssLayout = $this->getObject('csslayout', 'htmlelements');
         $objCssLayout->setNumColumns(3);
@@ -328,11 +309,8 @@ class buildcanvas extends ChisimbaObject {
 
         // Make the content of the right column.
 
-        if ($this->objUser->isAdmin()) {
-            $this->isOwner = TRUE; /////////// TEMPORARY ////////////////////////////////////////////////////
-        }
-
-
+        // The owning module supplies settings only after its persisted permission check.
+        $this->isOwner = TRUE;
         $rightContent = $this->getEditOnButton();
         $rightContent .= '<div id="rightblocks">' . $this->rightBlocks . '</div>';
         $rightContent .= '<div id="rightaddblock">' . $this->getHeader() . $rightBlocks;
@@ -348,7 +326,9 @@ class buildcanvas extends ChisimbaObject {
         $middleContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $this->getMiddleButton() . ' </div>';
         $middleContent .= '</div>';
         $objCssLayout->setMiddleColumnContent($middleContent);
-        return $this->getScriptValues() . $this->getContextBlocksJs() . $objCssLayout->show();
+        return $this->getScriptValues() . $editorSettings
+            . $this->getJavaScriptFile('contextblocks.js', 'context')
+            . $objCssLayout->show();
     }
 
     /**
@@ -365,55 +345,9 @@ class buildcanvas extends ChisimbaObject {
      *
      */
     private function showModule() {
-        // Get the module blocks
-        $this->objModBlocks = $this->getObject('dbmodblocks', 'canvas');
-        $this->middleBlocks = $this->objModBlocks->getModuleBlocks('middle');
-        $this->rightBlocks = $this->objModBlocks->getModuleBlocks('right');
-        $this->leftBlocks = $this->objModBlocks->getModuleBlocks('left');
-        // Initialise the return string with two blank lines.
-        $ret = "\n\n";
-        // Add the script values to the return string.
-        $ret .= $this->getScriptValues();
-        $ret .= "\n\n" . $this->getContextBlocksJs() . "\n\n";
-        // Set a 3-column layout.
-        $objCssLayout = $this->getObject('csslayout', 'htmlelements');
-        $objCssLayout->setNumColumns(3);
-        // Get the left and right blocks
-        $rightBlocks = $this->getSmallBlocks('right');
-        $leftBlocks = $this->getSmallBlocks('left');
-
-        // Make the content of the left column.
-        $leftContent = "";
-        $leftContent .= '<div id="leftblocks">' . $this->leftBlocks . '</div>';
-        $leftContent .= '<div id="leftaddblock">' . $this->getHeader() . $leftBlocks;
-        $leftContent .= '<div id="lefttpreview"><div id="leftpreviewcontent"></div> '
-                . $this->getLeftButton() . ' </div></div>';
-        $objCssLayout->setLeftColumnContent($leftContent);
-        unset($leftContent);
-
-        // Make the content of the right column.
-
-        if ($this->objUser->isAdmin()) {
-            $this->isOwner = TRUE; /////////// TEMPORARY ////////////////////////////////////////////////////
-        }
-
-
-        $rightContent = $this->getEditOnButton();
-        $rightContent .= '<div id="rightblocks">' . $this->rightBlocks . '</div>';
-        $rightContent .= '<div id="rightaddblock">' . $this->getHeader() . $rightBlocks;
-        $rightContent .= '<div id="rightpreview"><div id="rightpreviewcontent"></div> '
-                . $this->getRightButton() . ' </div></div>';
-        $objCssLayout->setRightColumnContent($rightContent);
-        unset($rightContent);
-
-
-        // Make the content of the middle column.
-        $middleContent = '<div id="middleblocks">' . $this->middleBlocks . '</div>';
-        $middleContent .= '<div id="middleaddblock">' . $this->getHeader() . $this->getWideBlocks();
-        $middleContent .= '<div id="middlepreview"><div id="middlepreviewcontent"></div> ' . $this->getMiddleButton() . ' </div>';
-        $middleContent .= '</div>';
-        $objCssLayout->setMiddleColumnContent($middleContent);
-        return $this->getScriptValues() . $this->getContextBlocksJs() . $objCssLayout->show();
+        $blocks = $this->getObject('dbmodblocks', 'canvas');
+        return $this->readOnlyColumns($blocks->getModuleBlocks('left'),
+            $blocks->getModuleBlocks('middle'), $blocks->getModuleBlocks('right'));
     }
 
     /**
@@ -479,7 +413,7 @@ class buildcanvas extends ChisimbaObject {
 
         // Add Small Blocks.
         $objBlocks = $this->getObject('dbmoduleblocks', 'modulecatalogue');
-        $smallBlocks = $objBlocks->getBlocks('normal', $this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'prelogin|site|user');
+        $smallBlocks = $objBlocks->getBlocks('normal', $this->getParam('module','prelogin')==='slate'?'site':($this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'prelogin|site|user'));
         foreach ($smallBlocks as $smallBlock) {
             if ($smallBlock['moduleid'] != "contentblocks") {
                 $block = $this->newObject('block_'
@@ -554,7 +488,7 @@ class buildcanvas extends ChisimbaObject {
         foreach ($this->wideDynamicBlocks as $wideBlock) {
             $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
         }
-        $wideBlocks = $this->objBlocks->getBlocks('wide', $this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'site|user|postlogin');
+        $wideBlocks = $this->objBlocks->getBlocks('wide', $this->getParam('module','prelogin')==='slate'?'site':($this->getParam('module','prelogin')==='prelogin'?'prelogin|site':'site|user|postlogin'));
         foreach ($wideBlocks as $wideBlock) {
             if ($wideBlock["moduleid"] != "contentblocks") {
                 $block = $this->newObject('block_'
@@ -697,46 +631,25 @@ class buildcanvas extends ChisimbaObject {
      * @access private
      * 
      */
-    private function getScriptValues() {
-        // Guess the module we are in
-        $objGuess = $this->getObject('bestguess', 'utilities');
-        $curMod = $objGuess->identifyModule();
-        $ret = '
-<script type="text/javascript">
-// <![CDATA[
-    upIcon = ' . json_encode($this->upIcon) . ';
-    downIcon = ' . json_encode($this->downIcon) . ';
-    deleteIcon = ' . json_encode($this->deleteIcon) . ';
-    moveUpLabel = ' . json_encode($this->moveUpLabel) . ';
-    moveDownLabel = ' . json_encode($this->moveDownLabel) . ';
-    removeBlockLabel = ' . json_encode($this->removeBlockLabel) . ';
-    blockControlsLabel = ' . json_encode($this->blockControlsLabel) . ';
-    deleteConfirm = \'' . $this->objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block') . '\';
-    unableMoveBlock = \'' . $this->objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block') . '\';
-    unableDeleteBlock = \'' . $this->objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block') . '\';
-    unableAddBlock = \'' . $this->objLanguage->languageText('mod_context_unableaddblock', 'context', 'Error - Unable to add block') . '\';
-    turnEditingOn = \'' . $this->objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On') . '\';
-    turnEditingOff = \'' . $this->objLanguage->languageText('mod_context_turneditingoff', 'context', 'Turn Editing Off') . '\';
-    pageId = \'' . $objGuess->guessPageId() . '\';
-    theModule = \'' . $curMod . '\';
-// ]]>
-</script>
-        ';
-        return $ret;
-    }
-
-    /**
-     *
-     * Render the javascript file that does the block handling.
-     *
-     * @return string The rendered javascript file for inclusion.
-     * @access private
-     *
-     */
-    private function getContextBlocksJs() {
-        return $this->getJavaScriptFile('canvasblocks.js', 'canvas');
+    /** Shared, script-safe labels for the native and remaining canvas editors. */
+    public function getScriptValues() {
+        $guess = $this->getObject('bestguess', 'utilities');
+        $values = [
+            'upIcon'=>$this->upIcon, 'downIcon'=>$this->downIcon, 'deleteIcon'=>$this->deleteIcon,
+            'moveUpLabel'=>$this->moveUpLabel, 'moveDownLabel'=>$this->moveDownLabel,
+            'removeBlockLabel'=>$this->removeBlockLabel, 'blockControlsLabel'=>$this->blockControlsLabel,
+            'pageId'=>$guess->guessPageId(), 'theModule'=>$guess->identifyModule()
+        ];
+        foreach (['deleteConfirm'=>'confirmremoveblock', 'unableMoveBlock'=>'unablemoveblock',
+            'unableDeleteBlock'=>'unabledeleteblock', 'unableAddBlock'=>'unableaddblock',
+            'turnEditingOn'=>'turneditingon', 'turnEditingOff'=>'turneditingoff'] as $name=>$key) {
+            $values[$name] = html_entity_decode($this->objLanguage->languageText('mod_context_'.$key, 'context'), ENT_QUOTES, 'UTF-8');
+        }
+        $script = '<script type="text/javascript">';
+        foreach ($values as $name=>$value) {
+            $script .= 'window.'.$name.'='.json_encode($value, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_INVALID_UTF8_SUBSTITUTE).';';
+        }
+        return $script.'</script>';
     }
 
 }
-
-?>

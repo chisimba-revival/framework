@@ -88,62 +88,32 @@ class pagination extends ChisimbaObject
     */
     public function show()
     {
-        $this->addJS();
-        
-        $str = '<div id="paginationresults_'.$this->id.'">...</div>';
-        $str .= '<div id="pagination_' . $this->id.'" class="pagination"></div><br style="clear:both;" />';
-        
-        // Cater for extra parameters
-        $params = "module={$this->module}&action={$this->action}";
-        if (is_array($this->extra) && count($this->extra) > 0) {
-            foreach ($this->extra as $extraParam=>$extraValue)
-            {
-                $params .= "&{$extraParam}={$extraValue}";
-            }
+        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('pagination.js', 'navigation'));
+        $escape = fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+        $language = $this->getObject('language', 'language');
+        $text = fn($key) => $language->languageText('mod_navigation_pagination_' . $key, 'navigation');
+        $count = max(1, (int)$this->numPageLinks);
+        $page = max(0, min($count - 1, (int)$this->currentPage));
+        $params = is_array($this->extra) ? $this->extra : [];
+        $params['action'] = $this->action;
+        $params['page'] = $page;
+        $url = html_entity_decode($this->uri($params, $this->module), ENT_QUOTES, 'UTF-8');
+        $id = 'paginationresults_' . $this->id;
+        $html = '<section data-pagination data-pages="' . $count . '" data-page="' . $page
+            . '" data-url="' . $escape($url) . '" data-loading="' . $escape($text('loading'))
+            . '" data-error="' . $escape($text('error')) . '">';
+        $html .= '<div id="' . $escape($id) . '" data-pagination-results></div>';
+        $html .= '<p data-pagination-status role="status" aria-live="polite"></p>';
+        $html .= '<nav class="chisimba-cluster" data-pagination-links aria-label="' . $escape($text('label')) . '">';
+        // A bounded set of ordinary links remains usable without JavaScript.
+        $pages = array_unique(array_merge([0, $count - 1], range(max(0, $page - 4), min($count - 1, $page + 4))));
+        sort($pages);
+        foreach ($pages as $number) {
+            $params['page'] = $number;
+            $html .= '<a class="button" href="' . $escape(html_entity_decode($this->uri($params, $this->module), ENT_QUOTES, 'UTF-8'))
+                . '" data-page="' . $number . '" aria-controls="' . $escape($id) . '"'
+                . ($number === $page ? ' aria-current="page"' : '') . '>' . ($number + 1) . '</a>';
         }
-        
-        
-        $str .= '
-<script language="JavaScript" type="text/javascript" >
-
-    // Method to load pagination results
-    function loadPaginationResults_'.$this->id.'(page_id, jq){
-        jQuery.ajax({
-            type: "GET", 
-            url: "index.php", 
-            data: "'.$params.'&page="+page_id,
-            success: function(msg){
-                jQuery("#paginationresults_'.$this->id.'").html(msg);
-            }
-        });
-    }
-    
-    // Create pagination element
-    jQuery("#pagination_'.$this->id.'").pagination('.$this->numPageLinks.', {
-        items_per_page: 1,
-        num_edge_entries: 0,
-        num_display_entries: 10,
-        current_page: '.$this->currentPage.',
-        callback: loadPaginationResults_'.$this->id.'
-    });
-    
-    // Load First Page
-    loadPaginationResults_'.$this->id.'('.$this->currentPage.');
-        //alert("' . $this->currentPage . '");
-
-</script>
-';
-        
-        return $str;
-    }
-    
-    /**
-    * Method to load the JavaScript and CSS
-    */
-    private function addJS()
-    {
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery_pagination/jquery.pagination.js'));
-        $this->appendArrayVar('headerParams', '<link rel="stylesheet" href="'.$this->getResourceUri('jquery_pagination/pagination.css').'" />');
+        return $html . '</nav></section>';
     }
 }
-?>

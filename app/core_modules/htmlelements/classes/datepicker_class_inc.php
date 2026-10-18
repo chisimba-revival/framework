@@ -46,6 +46,11 @@
  */
 class datepicker extends ChisimbaObject
 {
+    // State used by the installed rendering and service lifecycle.
+    public $dateFormat;
+    public $defaultDate;
+    public $name;
+
 
     /**
     * Constructor

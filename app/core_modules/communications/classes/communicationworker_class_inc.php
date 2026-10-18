@@ -72,6 +72,11 @@ class communicationworker extends dbTable
 
     private function deliverOne(array $row)
     {
+        // Fail closed on subscriber policy or staging recipient restrictions.
+        if (!$this->getObject('communicationdeliverygate','communications')->allows($row)) {
+            $this->update('id',$row['id'],array('status'=>'cancelled','last_error'=>'delivery_policy_denied','date_updated'=>date('Y-m-d H:i:s')));
+            return 'failed';
+        }
         $transportName = strtolower(trim((string) $this->objConfig->getValue('COMMUNICATION_TRANSPORT', 'communications')));
         if (!in_array($transportName, array('null', 'sendgrid'), true)) { $transportName = 'null'; }
         $transport = $this->getObject($transportName . 'transport', 'communications');

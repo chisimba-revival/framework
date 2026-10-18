@@ -185,9 +185,9 @@ class dbquotas extends dbTable {
                 'quota' => 0,
                 'quotausage' => $usage,
                 'creatorid' => $creatorid,
-                'datecreated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'datecreated' => date('Y-m-d H:i:s'),
                 'modifierid' => $creatorid,
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'datemodified' => date('Y-m-d H:i:s'),
         ));
     }
 
@@ -204,7 +204,7 @@ class dbquotas extends dbTable {
         $result = $this->update('path', $path, array(
                 'quotausage'=>$usage,
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datemodified' => date('Y-m-d H:i:s')
         ));
     }
 
@@ -301,107 +301,62 @@ class dbquotas extends dbTable {
         return '<div class="outerquota"><div class="'.$cssClass.'" style="width: '.$width.'%">'.$width.'%</div></div>';
     }
 
-    /**
-     * Method to get the list of quotas based on search criteria
-     * @param string $searchType - Searching user or contextquotas
-     * @param string $searchField Further field to restrict search, like firstname, surname
-     * @param string $searchFor Value in search field to search for
-     * @param string $orderBy How results should be ordered
-     * @return array
-     */
-    public function getResults($searchType, $searchField, $searchFor, $orderBy='', $numItemsPerPage=0, $page=0) {
-        if ($searchType == 'context') {
-            $substring = $this->getSubstring('tbl_files_quotas.path', 9);
-
-            $sql = 'SELECT tbl_files_quotas.*, title, contextcode FROM tbl_files_quotas JOIN tbl_context ON (contextcode ='.$substring.')';
-
-            $sql .= " WHERE (path LIKE 'context/%'";
-        } else {
-            // users
-            $substring = $this->getSubstring('tbl_files_quotas.path', 7);
-
-            $sql = 'SELECT tbl_files_quotas.*, firstName as firstname, surname FROM tbl_files_quotas JOIN tbl_users ON (userId ='.$substring.')';
-
-            $sql .= " WHERE (path LIKE 'users/%'";
+    /** Build only allowlisted identifiers; all search text remains bound data. */
+    private function quotaSearch($searchType, $searchField, $searchFor, $orderBy)
+    {
+        $context = $searchType === 'context';
+        $fields = $context ? ['title', 'contextcode'] : ['firstname', 'surname'];
+        $searchField = is_string($searchField) && in_array($searchField, $fields, true) ? $searchField : $fields[0];
+        $orders = ['quotausage_desc' => 'tbl_files_quotas.quotausage DESC', 'quotausage' => 'tbl_files_quotas.quotausage ASC'];
+        foreach ($fields as $field) $orders[$field] = $field . ' ASC';
+        $order = is_string($orderBy) && isset($orders[$orderBy]) ? $orders[$orderBy] : $orders['quotausage_desc'];
+        $substring = $this->getSubstring('tbl_files_quotas.path', $context ? 9 : 7);
+        $from = $context
+            ? ' FROM tbl_files_quotas JOIN tbl_context ON contextcode = ' . $substring
+            : ' FROM tbl_files_quotas JOIN tbl_users ON userId = ' . $substring;
+        $from .= ' WHERE tbl_files_quotas.path LIKE ?';
+        $params = [$context ? 'context/%' : 'users/%'];
+        $searchFor = is_scalar($searchFor) ? trim((string)$searchFor) : '';
+        if ($searchFor !== '') {
+            $from .= ' AND ' . $searchField . ' LIKE ?';
+            $params[] = $searchFor . '%';
         }
-
-
-
-        if (trim($searchFor) != '') {
-            $sql .= " AND {$searchField} LIKE '{$searchFor}%'";
-        }
-
-        $sql .= ')';
-
-        if (trim($orderBy) != '') {
-            $sql .= ' ORDER BY '.str_replace('_', ' ', $orderBy);
-        }
-
-        //$numItemsPerPage $page
-        $offset = $page * $numItemsPerPage;
-        $row_count = $numItemsPerPage;
-
-        return $this->getArrayWithLimit($sql, (string)$offset, (string)$row_count);
+        return [$from, $params, $order];
     }
 
-    /**
-     * Method to get the number of results to be returned for quotas based on search criteria
-     * @param string $searchType - Searching user or contextquotas
-     * @param string $searchField Further field to restrict search, like firstname, surname
-     * @param string $searchFor Value in search field to search for
-     * @param string $orderBy How results should be ordered
-     * @return int
-     */
-    public function getNumResults($searchType, $searchField, $searchFor, $orderBy) {
-        if ($searchType == 'context') {
-            $substring = $this->getSubstring('tbl_files_quotas.path', 9);
-
-            $sql = 'SELECT COUNT(tbl_files_quotas.id) AS thecount FROM tbl_files_quotas JOIN tbl_context ON (contextcode ='.$substring.')';
-
-            $sql .= " WHERE (path LIKE 'context/%'";
-        } else {
-            $substring = $this->getSubstring('tbl_files_quotas.path', 7);
-
-            $sql = 'SELECT COUNT(tbl_files_quotas.id) AS thecount FROM tbl_files_quotas JOIN tbl_users ON (userId ='.$substring.')';
-
-            $sql .= " WHERE (path LIKE 'users/%'";
-        }
-
-
-
-        if (trim($searchFor) != '') {
-            $sql .= " AND {$searchField} LIKE '{$searchFor}%'";
-        }
-
-        $sql .= ')';
-
-        $sql .= ' ORDER BY '.str_replace('_', ' ', $orderBy);
-
-        $results = $this->getArray($sql);
-
-        return $results[0]['thecount'];
+    /** Fetch a stable, bounded page of allocations for the quota administrator. */
+    public function getResults($searchType, $searchField, $searchFor, $orderBy='', $numItemsPerPage=20, $page=0)
+    {
+        [$from, $params, $order] = $this->quotaSearch($searchType, $searchField, $searchFor, $orderBy);
+        $limit = max(1, min(100, (int)$numItemsPerPage));
+        $offset = max(0, min(1000000, (int)$page)) * $limit;
+        $fields = $searchType === 'context' ? 'title, contextcode' : 'firstName AS firstname, surname';
+        return $this->selectPrepared('SELECT tbl_files_quotas.*, ' . $fields . $from
+            . ' ORDER BY ' . $order . ', tbl_files_quotas.id ASC LIMIT ' . $limit . ' OFFSET ' . $offset, $params);
     }
 
-    /**
-     * Method to get the number of pagination to be returned for quotas based on search criteria
-     * @param string $searchType - Searching user or contextquotas
-     * @param string $searchField Further field to restrict search, like firstname, surname
-     * @param string $searchFor Value in search field to search for
-     * @param string $orderBy How results should be ordered
-     * @param int $numItemsPerPage Number of items per page
-     * @return int
-     */
-    public function getNumPages($searchType, $searchField, $searchFor, $orderBy, $numItemsPerPage) {
-        $numResults = $this->getNumResults($searchType, $searchField, $searchFor, $orderBy);
-        if ($numResults == 0) {
-            $numPages = 1;
-        } else {
-            $numPages = (int)floor($numResults / $numItemsPerPage);
-            if ($numResults % $numItemsPerPage > 0) {
-                $numPages++;
-            }
-        }
-        return $numPages;
+    public function getNumResults($searchType, $searchField, $searchFor, $orderBy='')
+    {
+        [$from, $params] = $this->quotaSearch($searchType, $searchField, $searchFor, $orderBy);
+        $results = $this->selectPrepared('SELECT COUNT(tbl_files_quotas.id) AS thecount' . $from, $params);
+        return (int)($results[0]['thecount'] ?? 0);
+    }
+
+    public function getNumPages($searchType, $searchField, $searchFor, $orderBy, $numItemsPerPage)
+    {
+        $limit = max(1, min(100, (int)$numItemsPerPage));
+        return max(1, (int)ceil($this->getNumResults($searchType, $searchField, $searchFor, $orderBy) / $limit));
+    }
+
+    /** Compare the loaded allocation atomically so a concurrent edit is not overwritten. */
+    public function saveQuotaChecked(array $original, $type, $size)
+    {
+        $size = $type === 'Y' ? (int)$original['quota'] : $size;
+        if ($type === $original['usedefault'] && $size === (int)$original['quota']) return true;
+        return $this->executePrepared('UPDATE tbl_files_quotas SET usedefault = ?, quota = ?, modifierid = ?, datemodified = ?'
+            . ' WHERE id = ? AND usedefault = ? AND quota = ? AND datemodified <=> ?',
+            [$type, $size, $this->objUser->userId(), date('Y-m-d H:i:s'), $original['id'],
+                $original['usedefault'], $original['quota'], $original['datemodified']]) === 1;
     }
 
     /**
@@ -413,7 +368,7 @@ class dbquotas extends dbTable {
         return $this->update('id', $id, array(
                 'usedefault'=> 'Y',
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datemodified' => date('Y-m-d H:i:s')
         ));
     }
 
@@ -428,7 +383,7 @@ class dbquotas extends dbTable {
                 'usedefault'=> 'N',
                 'quota'=> $size,
                 'modifierid' => $this->objUser->userId(),
-                'datemodified' => strftime('%Y-%m-%d %H:%M:%S', time())
+                'datemodified' => date('Y-m-d H:i:s')
         ));
     }
 

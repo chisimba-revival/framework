@@ -12,10 +12,14 @@ class helpcontent extends ChisimbaObject
     }
     public function mayViewTopic($topicId)
     {
-        return $topicId==='author-biography' && $this->user->isLoggedIn();
+        return in_array($topicId,['author-biography','profile'],true) && $this->user->isLoggedIn();
     }
     public function getTopic($topicId)
     {
+        if ($topicId === 'profile') {
+            $text = fn($key) => html_entity_decode($this->language->languageText('mod_userdetails_help_profile_'.$key,'userdetails'), ENT_QUOTES, 'UTF-8');
+            return ['title'=>$text('title'),'summary'=>$text('summary'),'steps'=>[$text('details'),$text('photo'),$text('school'),$text('recovery')],'sections'=>[]];
+        }
         if ($topicId!=='author-biography') return null;
         $text = fn($suffix) => ucfirst($this->language->code2Txt('mod_userdetails_help_bio_' . $suffix, 'userdetails'));
         return array(

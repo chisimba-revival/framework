@@ -47,8 +47,7 @@
  * language items which are then converted to any translated language .
  *
  */
-require_once 'I18Nv2.php';
-require_once 'I18Nv2/Negotiator.php';
+
 
 class language extends dbTable {
 
@@ -81,7 +80,7 @@ class language extends dbTable {
     public $objConfig = null;
 
     /**
-     * Language Translation2 object
+     * Native translation lookup object
      *
      * @var lang object
      */
@@ -128,9 +127,7 @@ class language extends dbTable {
             $this->lang = $this->lang->setup();
             $this->langAdmin = $this->objLangConfig->getLangAdmin();
             $ab = strtolower($this->objConfig->getdefaultLanguageAbbrev());
-            $country = $this->objConfig->getCountry();
-            $country = $ab . "_" . $country . ".1252";
-            @$this->locale = &I18Nv2::createLocale("{$country}");
+            $this->locale = (object)['language'=>$ab,'country'=>$this->objConfig->getCountry()];
             $this->loadClass('form', 'htmlelements');
             $this->loadClass('dropdown', 'htmlelements');
             $this->loadClass('button', 'htmlelements');
@@ -158,7 +155,7 @@ class language extends dbTable {
      * Preserve the historical translation lookup unchanged, but ensure
      * that PHP 8.2 cannot turn a supplied fallback label into blank text.
      * Missing translations may be returned as NULL, FALSE, or an empty
-     * string by the retained Translation2 stack.
+     * string by historical translation implementations.
      */
     public function languageText($itemName, $modulename='system', $default = false)
     {
@@ -371,33 +368,12 @@ class language extends dbTable {
      * @return default site language
      */
     public function currentLanguage() {
-        try {
-            $this->objConfig = $this->getObject('altconfig', 'config');
-            $ab = strtolower($this->objConfig->getdefaultLanguageAbbrev());
-            $country = $this->objConfig->getCountry();
-            $country = $ab . "_" . $country . ".1252";
-            if (isset($_POST['Languages'])) {
-                $_SESSION["language"] = $_POST['Languages'];
-                $var = $_POST['Languages'];
-                @$this->locale = &I18Nv2::createLocale("{$country}");
-                $this->lang->setLang("{$var}");
-            } else {
-                if (isset($_SESSION["language"])) {
-                    $var = strtolower($_SESSION["language"]);
-                    $country = $this->objConfig->getCountry();
-                    $country = $var . "_" . $country . ".1252";
-                    @$this->locale = &I18Nv2::createLocale("{$country}");
-                    $this->lang->setLang("{$var}");
-                } else {
-                    $var = strtolower($this->objConfig->getdefaultLanguageAbbrev());
-                    $this->lang->setLang("{$var}");
-                }
-            }
-            return $var;
-        } catch (Exception $e) {
-            $this->errorCallback($this->languageText('word_caught_exception') . $e->getMessage());
-            exit();
-        }
+        $preferred=$_POST['Languages']??($_SESSION['language']??$this->objConfig->getdefaultLanguageAbbrev());
+        $this->lang->setLang(is_string($preferred)?strtolower($preferred):'en');
+        $language=$this->lang->getLang(null,'array')['id'];
+        if(isset($_POST['Languages']))$_SESSION['language']=$language;
+        $this->locale=(object)['language'=>$language,'country'=>$this->objConfig->getCountry()];
+        return $language;
     }
 
     /**
@@ -428,8 +404,7 @@ class language extends dbTable {
     }
 
     public function addLangItem($code, $module, $data) {
-        $this->langAdmin->remove($code, $module);
-        $this->langAdmin->add($code, $module, $data);
+        return $this->langAdmin->save($code, $module, $data);
     }
 
     public function addLanguage($langData) {
@@ -447,7 +422,7 @@ class language extends dbTable {
 
     public function updateLanguage($langData) {
         // data array should be the same as above...
-        $this->langAdmin->updateLang($langData);
+        return $this->langAdmin->updateLang($langData);
     }
 
     public function removeLanguage($langId, $destroy = FALSE) {

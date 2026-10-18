@@ -30,22 +30,28 @@ echo $objStepMenu->show();
 
 $header = new htmlheading();
 $header->type = 1;
-$header->str = ucwords($headerTitle);
+$header->str = htmlspecialchars(ucwords($headerTitle), ENT_QUOTES, 'UTF-8');
 
 echo '<div class="chisimba-wizard-heading">'.$header->show().'</div>';
 
-if (!empty($contextImageSaveError)) {
-    echo '<p class="error">'
-        . $this->objLanguage->languageText(
-            'mod_contextadmin_contextimagenotsaved',
-            'contextadmin'
-        ) . '</p>';
+$e = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); };
+if (!empty($informationError)) {
+    $notice = $informationError === 'expired' ? 'mod_contextadmin_informationexpired'
+        : ($informationError === 'image' ? 'mod_contextadmin_contextimagenotsaved' : 'mod_contextadmin_informationfailed');
+    echo '<p class="error" role="alert">'.$e($this->objLanguage->languageText($notice, 'contextadmin')).'</p>';
 }
-
-
-
+echo '<p>'.$e($this->objLanguage->languageText('mod_contextadmin_informationhelp', 'contextadmin')).'</p>';
 
 $objSelectImage = $this->getObject('selectimage', 'filemanager');
+$selectedImage = $informationDraft['imageselect'] ?? '';
+if ($selectedImage !== '' && $this->getObject('filereadpolicy', 'filemanager')->mayRead(
+    $this->getObject('dbfile', 'filemanager')->getFile($selectedImage))) {
+    $objSelectImage->setDefaultFile($selectedImage);
+}
+if ($this->getObject('modules', 'modulecatalogue')->checkIfRegistered('help')) {
+    echo $this->getObject('contextualhelp', 'help')->show('contextadmin', 'information', true);
+}
+
 
 $htmlEditor = $this->newObject('htmlarea', 'htmlelements');
 $htmlEditor->name = 'about';
@@ -61,43 +67,12 @@ $hasContextImage = $objContextImage->getContextImage($contextCode);
 $leftCol = '';
 
 if ($hasContextImage != FALSE) {
-    
-    echo '
-<script type="text/javascript">
-function removeContextImage()
-{
-    jQuery.ajax({
-        type: "GET", 
-        url: "index.php", 
-        data: "module=contextadmin&action=removeimage&contextcode='.$contextCode.'", 
-        success: function(msg){
-            if (msg == "ok") {
-                jQuery("#contextexistingimage").remove();
-            } else {
-                alert("'.$this->objLanguage->languageText('mod_contextadmin_couldnotremoveimage', 'contextadmin', 'Could not remove image').'");
-            }
-        }
-    });
-}
-</script>
-    ';
-    
     $leftCol .= '<div id="contextexistingimage"><p>'.$this->objLanguage->code2Txt('mod_contextadmin_existingcontextimage', 'contextadmin', NULL, 'Existing [-context-] Image').':</p>';
-    
-    $leftCol .= '<img src="'.$hasContextImage.'" width="100" height="100"><br />';
-    
-    $removeButton = new button('removeimage', $this->objLanguage->languageText('mod_contextadmin_removeimage', 'contextadmin', 'Remove Image'));
-    $removeButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-danger';
-    $removeButton->sexyButtons = FALSE;
-    $removeButton->setOnClick('removeContextImage();');
-    
-    $leftCol .= $removeButton->show();
-    $leftCol .= '<br />&nbsp;';
-    $leftCol .= '</div>';
-    
+    $leftCol .= '<img src="'.$e($hasContextImage).'" width="100" height="100" alt="">';
+    $leftCol .= '<label><input type="checkbox" name="removeimage" value="1"'
+        . (($informationDraft['removeimage'] ?? '') === '1' ? ' checked' : '') . '> '
+        . $e($this->objLanguage->languageText('mod_contextadmin_removeimageonsave', 'contextadmin')).'</label></div>';
 }
-
-
 
 $leftCol .= '<p>'.$this->objLanguage->code2Txt('mod_contextadmin_selectcontextimage', 'contextadmin', NULL, 'Select a [-context-] image').':</p>';
 
@@ -126,6 +101,7 @@ $backButton = new button('back', $this->objLanguage->languageText('word_back'),"
 $backButton->cssClass = 'contextadmin-wizard-button contextadmin-wizard-button-secondary';
 $backButton->sexyButtons = FALSE;
 
+$form->addToForm((new hiddeninput('csrf_token', $informationCsrf))->show());
 $form->addToForm($table->show());
 $form->addToForm($backButton->show()." ".$button->show());
 

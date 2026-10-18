@@ -11,6 +11,9 @@ if (!$GLOBALS['kewl_entry_point_run']) {
 
 class block_learningjourney extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $configData;
+
     public $title;
     public $showTitle = FALSE;
     public $cssClass = 'chisimba-learning-journey-block-shell';

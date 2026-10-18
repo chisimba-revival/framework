@@ -57,12 +57,16 @@ $registrations = array(
     'prelogin' => array(
         'PAGE: admin_common|||mod_prelogin_admin_managepage',
         'TEXT: mod_prelogin_addblock|add block heading|Add Block',
-        'MODULE_VERSION: 1.070',
     ),
 );
 
 foreach ($registrations as $module => $needles) {
     $register = file_get_contents($root . '/' . $module . '/register.conf');
+    if ($module === 'prelogin' && (!preg_match('/^MODULE_VERSION:\s*(\S+)/m', $register, $version)
+        || version_compare($version[1], '1.070', '<'))) {
+        fwrite(STDERR, "FAIL: prelogin must include the administration entry release\n");
+        exit(1);
+    }
     foreach ($needles as $needle) {
         if (!str_contains($register, $needle)) {
             fwrite(STDERR, "FAIL: {$module} lacks {$needle}\n");

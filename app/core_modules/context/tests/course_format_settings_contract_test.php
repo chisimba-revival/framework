@@ -24,7 +24,7 @@ $checks = array(
     ) && str_contains($controller, '$learningDesign !== FALSE'),
     'existing navigation mode is preserved' => str_contains(
         $controller,
-        "getField('navigation_mode', \$contextCode)"
+        "getParam('navigation_mode', '')"
     ) && str_contains($controller, "\$learningDesign['navigation_mode']"),
 );
 

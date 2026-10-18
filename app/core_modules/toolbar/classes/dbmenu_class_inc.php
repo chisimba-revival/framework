@@ -1,6 +1,7 @@
 <?php
 /**
  * Canonical toolbar menu storage.
+ * Rendered menus include registered modules only; editor lookups retain stored links.
  *
  * @category  Chisimba
  * @package   toolbar
@@ -16,7 +17,6 @@ class dbmenu extends dbtable
 {
 
     // Explicit state used by this component.
-    public $_db;
     public $table;
 
     public function init(
@@ -25,14 +25,14 @@ class dbmenu extends dbtable
         $errorCallback = 'globalPearErrorCallback'
     ) {
         parent::init('tbl_menu_category');
-        $this->_db = $this->objEngine->getDbObj();
         $this->table = 'tbl_menu_category';
     }
 
     public function getModules($access = 2, $context = true)
     {
         $filter = "category NOT LIKE 'menu_%'"
-            . " AND category NOT LIKE 'page_%'";
+            . " AND category NOT LIKE 'page_%'"
+            . " AND category NOT LIKE 'site_%'";
         if ($access == 2) {
             $filter .= ' AND adminonly != 1';
         }
@@ -46,6 +46,7 @@ class dbmenu extends dbtable
             'SELECT category, module, permissions, dependscontext'
             . ' FROM ' . $this->table
             . ' WHERE ' . $filter
+            . ' AND module IN (SELECT module_id FROM tbl_modules)'
             . ' ORDER BY category, module'
         );
     }
@@ -53,7 +54,8 @@ class dbmenu extends dbtable
     public function getFlatModules($access = 2, $context = true)
     {
         $sql = 'SELECT * FROM ' . $this->table
-            . " WHERE category LIKE 'flat_%'";
+            . " WHERE category LIKE 'flat_%'"
+            . ' AND module IN (SELECT module_id FROM tbl_modules)';
         if ($access == 2) {
             $sql .= ' AND adminonly != 1';
         }
@@ -80,6 +82,7 @@ class dbmenu extends dbtable
             'SELECT category, module, permissions, dependscontext'
             . ' FROM ' . $this->table
             . ' WHERE ' . $filter
+            . ' AND module IN (SELECT module_id FROM tbl_modules)'
             . ' ORDER BY category, module'
         );
     }
@@ -95,17 +98,26 @@ class dbmenu extends dbtable
             'SELECT category, module, permissions, dependscontext'
             . ' FROM ' . $this->table
             . ' WHERE ' . $filter
+            . ' AND module IN (SELECT module_id FROM tbl_modules)'
             . ' ORDER BY category, module'
         );
+    }
+
+    /** Site links share the canonical menu table and permission fields. */
+    public function siteLinks()
+    {
+        $rows = $this->getArray('SELECT * FROM ' . $this->table
+            . " WHERE category LIKE 'site_%'"
+            . " AND module IN (SELECT module_id FROM tbl_modules) ORDER BY category, module, id");
+        return is_array($rows) ? $rows : array();
     }
 
     public function linksForModule($module)
     {
         $module = $this->moduleName($module);
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . $this->table
-            . ' WHERE module = ' . $this->quoteValue($module)
-            . ' ORDER BY category, id'
+            . ' WHERE module = ? ORDER BY category, id', [$module]
         );
         return is_array($rows) ? $rows : array();
     }
@@ -113,10 +125,9 @@ class dbmenu extends dbtable
     public function getLinkById($id)
     {
         $id = $this->recordId($id);
-        $rows = $this->getArray(
+        $rows = $this->selectPrepared(
             'SELECT * FROM ' . $this->table
-            . ' WHERE id = ' . $this->quoteValue($id)
-            . ' LIMIT 2'
+            . ' WHERE id = ? LIMIT 2', [$id]
         );
         return is_array($rows) && count($rows) === 1
             ? $rows[0]
@@ -143,19 +154,19 @@ class dbmenu extends dbtable
         return $this->delete('id', $this->recordId($id)) !== false;
     }
 
-    public function deleteLinksForModule($module)
+    public function deleteLinksForModule($module, $preserveSiteLinks = false)
     {
+        if ($preserveSiteLinks) {
+            return $this->executePrepared(
+                'DELETE FROM tbl_menu_category WHERE module = ?'
+                . ' AND (category IS NULL OR SUBSTR(category, 1, 5) <> ?)',
+                [$this->moduleName($module), 'site_']
+            ) !== false;
+        }
         return $this->delete(
             'module',
             $this->moduleName($module)
         ) !== false;
-    }
-
-    private function quoteValue($value)
-    {
-        return method_exists($this->_db, 'quote')
-            ? $this->_db->quote($value)
-            : "'" . addslashes($value) . "'";
     }
 
     private function moduleName($value)

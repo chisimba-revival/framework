@@ -1,113 +1,70 @@
 <?php
-/* ----------- controller class extends controller for tbl_userparamsadmin------------*/
-// security check - must be included in all scripts
-if (!$GLOBALS['kewl_entry_point_run']) {
-    die("You cannot view this page directly");
-}
-
-
-/**
-*
-* Controller class for the userparams
-* 
-* @version $Id: controller.php 17950 2010-06-04 21:23:51Z dkeats $
-* @copyright 2005 GNU GPL
-*
-*/
+/** User preference editing through the native document service. */
+if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly'); }
 class userparamsadmin extends controller
 {
-
-    /**
-    * @var string $action The action parameter from the querystring 
-    */
-    var $action;
-
-    /**
-    * Standard constructor method 
-    */
-    function init()
+    public $objDbUserparamsadmin;
+    public $objLanguage;
+    public $objUser;
+    private $csrf;
+    public function init()
     {
-        $this->action = $this->getParam('action', Null);
-        $this->objDbUserparamsadmin = & $this->getObject("dbuserparamsadmin");
-        $this->objLanguage = & $this->getObject("language", "language");
-        $this->objUser = & $this->getObject("user", "security");
+        $this->objDbUserparamsadmin=$this->getObject('dbuserparamsadmin');
+        $this->objLanguage=$this->getObject('language','language');
+        $this->objUser=$this->getObject('user','security');
     }
-
-    /**
-    * Standard dispatch method 
-    */
-    function dispatch()
+    private function tokens()
     {
-        switch ($this->action) {
-            case null:
-            case "view":
-                  $ar = $this->objDbUserparamsadmin->readConfig();
-                  $this->setVarByRef('ar',$ar->toArray());
-                  return "main_tpl.php";
-                  break;
-
-            case 'edit':
-                 $this->getForEdit('edit');
-                 $this->setVar('mode', 'edit');
-                 if ($this->getParam('suppressall', FALSE)) {
-                     $this->setPageTemplate('page_template.php');
-                 }
-                 return "edit_tpl.php";
-                 break;
-
-            case 'delete':
-                 // retrieve the confirmation code from the querystring
-                 $confirm=$this->getParam("confirm", "no");
-                 if ($confirm=="yes") {
-                 	$key = $this->getParam('key');
-                 	$ret = $this->objDbUserparamsadmin->delete($key);
-                 	
-                 	//$ar = $this->objDbUserparamsadmin->readConfig();
-                    //$this->objDbUserparamsadmin->delete($ar->toArray(), $this->getParam('key', Null));
-                    $this->nextAction(null,null,'userparamsadmin');
-                     }
-                  break;
-
-            case 'add':
-                $this->setVar('mode', 'add');
-                return "edit_tpl.php";
-                break;
-
-            case 'save':
-            	$pname = $this->getParam('pname');
-            	$ptag = $this->getParam('ptag');
-                $this->objDbUserparamsadmin->writeProperties($this->getParam('mode', Null), $this->objUser->userId(), $pname, $ptag);
-	            $this->nextAction(null,null,'userparamsadmin');
-                
-                break;
-
-            default:
-             die("Action unknown");
-             break;
-
-        }#switch
-    } # dispatch
-
-
-    /**
-    * Method to retrieve the data for edit and prepare 
-    * the vars for the edit template.
-    *    @param string $mode The edit or add mode @values edit | add
-    */
-    function getForEdit($mode)
+        if ($this->csrf === null) { $this->csrf=$this->getObject('nativeauthwebcomposition','security')->build()['csrf']; }
+        return $this->csrf;
+    }
+    public function dispatch()
     {
-        $this->setvar('mode', $mode);
-        // retrieve the PK value from the querystring
-        $key=$this->getParam("key", NULL);
-        $value =$this->getParam("value", NULL);
-        if (!$key) {
-            die($this->objLanguage->languageText("modules_badkey").": ".$key);
+        if (!$this->objUser->isLoggedIn()) { return $this->nextAction(null,array(),'security'); }
+        $this->setLayoutTemplate('preferences_layout_tpl.php');
+        $action=$this->getParam('action','view');
+        $this->setVar('preferencesError',null);
+        $this->setVar('preferencesCsrf',$this->tokens()->issue('userparams_save'));
+        if (in_array($action,array('save','delete'),true)) {
+            $token=$this->getParam('preferences_csrf','');
+            $revision=$this->getParam('preferences_revision','');
+            $valid=($_SERVER['REQUEST_METHOD'] ?? '')==='POST' && is_string($token)
+                && $this->tokens()->consume('userparams_save',$token)
+                && is_string($revision) && preg_match('/^[a-f0-9]{64}$/D',$revision);
+            $key=$this->getParam($action==='delete'?'key':'pname','');
+            $value=$this->getParam('ptag','');
+            $valid=$valid && is_string($key) && is_string($value);
+            $saved=$valid && ($action==='delete'
+                ? $this->objDbUserparamsadmin->delete($key,$revision)
+                : $this->objDbUserparamsadmin->writeProperties($this->getParam('mode','edit'),$this->objUser->userId(),$key,$value,$revision));
+            if ($saved) { return $this->nextAction('view',array(),'userparamsadmin'); }
+            $this->setVar('preferencesError',$this->objLanguage->languageText('mod_userparamsadmin_savefailed','userparamsadmin',
+                'The change could not be saved. Copy your entered value before reloading to check for newer settings, then try again.'));
+            if ($action==='save') {
+                $this->setVar('mode',$this->getParam('mode','edit')==='add'?'add':'edit');
+                $this->setVar('keyEdit',is_string($key)?$key:'');
+                $this->setVar('valueEdit',is_string($value)?$value:'');
+                $this->setVar('preferencesRevision',is_string($revision)?$revision:'');
+                return 'edit_tpl.php';
+            }
         }
-        $this->setVar('keyEdit', $key);
-        $this->setVar('valueEdit', $value);
-    }#getForedit
-    
-    
-
-} #end of class
-?>
+        $root=$this->objDbUserparamsadmin->readConfig();
+        $this->setVar('ar',$root ? $root->toArray() : array('root'=>array('Settings'=>array())));
+        $this->setVar('preferencesRevision',$root ? $this->objDbUserparamsadmin->getRevision() : '');
+        if (!$root) {
+            $this->setVar('preferencesError',$this->objLanguage->languageText('mod_userparamsadmin_cannotreadfile','userparamsadmin'));
+            return 'main_tpl.php';
+        }
+        if ($action==='edit' || $action==='add') {
+            $key=$this->getParam('key','');
+            $key=is_string($key)?$key:'';
+            $this->setVar('mode',$action);
+            $this->setVar('keyEdit',$key);
+            $current=$action==='edit' ? $this->objDbUserparamsadmin->getValue($key) : '';
+            $suggested=$this->getParam('suggested_value',$current);
+            $this->setVar('valueEdit',is_string($suggested)?$suggested:$current);
+            return 'edit_tpl.php';
+        }
+        return 'main_tpl.php';
+    }
+}

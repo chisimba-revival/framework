@@ -58,6 +58,10 @@ $this->loadClass( 'condition', 'decisiontable');
  */
 class contextCondition extends condition
 {
+    /** Dependencies and state initialised by this component. */
+    public $_class;
+    public $_moduleName;
+
     // --- ATTRIBUTES ---
     /**
      * Object reference to the Group Admin module via its facet interface.

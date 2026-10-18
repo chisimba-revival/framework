@@ -120,7 +120,7 @@ class coreloader extends ChisimbaObject
      * @access protected 
      * @var array
      */
-    protected $validPlugins;
+    protected $validPlugins = [];
 
     /**
      *

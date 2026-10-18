@@ -56,6 +56,7 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class contextadminnav extends ChisimbaObject
 {
+    public $objLanguage;
     
     /**
      * Constructor

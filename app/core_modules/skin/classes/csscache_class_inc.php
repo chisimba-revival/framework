@@ -232,7 +232,6 @@ class csscache extends ChisimbaObject
             "switchmenu.css",
             "colorboxes.css",
             "manageblocks.css",
-            "facebox.css",
             "modernbrickmenu.css",
             "jquerytags.css",
             "overlappingtabs.css",

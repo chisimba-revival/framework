@@ -1,0 +1,7 @@
+[
+  "app/core_modules/ext",
+  "app/core_modules/htmlelements/resources/ext-3.0-rc2",
+  "app/skins/_common/css/extjs",
+  "app/core_modules/htmlelements/classes/extjs_class_inc.php",
+  "app/core_modules/htmlelements/classes/sysconfig_extjs_theme_class_inc.php"
+]

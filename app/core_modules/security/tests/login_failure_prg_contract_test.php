@@ -14,8 +14,7 @@ $controllerGates = array(
     "'username' => substr(trim((string) \$username), 0, 255)",
     "header('Location: ' . \$this->failedLoginPath(), true, 303)",
     "return \$front . 'index.php?module=security'",
-    "checkIfRegistered('systemmanagement')",
-    "return \$this->frontPagePath()",
+    "return \$this->securityLoginPath().'&action=showlogin'",
 );
 $blockGates = array(
     "getSession(\n                'native_auth_login_failure'",

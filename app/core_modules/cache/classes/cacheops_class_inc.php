@@ -3,7 +3,7 @@
 /**
  * Cache Helper Class
  * 
- * Uses Memcache or APC for caching key/value pairs. Memcache is preferred and APC is used as fallback.
+ * Uses APC or a per-request cache for key/value pairs.
  * 
  * PHP version 5
  * 
@@ -27,7 +27,6 @@
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
- * @see       http://memcached.org/
  * @see       http://php.net/apc
  */
 
@@ -46,7 +45,7 @@ $GLOBALS['kewl_entry_point_run']) {
 /**
  * Cache Helper Class
  * 
- * Uses Memcache or APC for caching key/value pairs. Memcache is preferred and APC is used as fallback.
+ * Uses APC or a per-request cache for key/value pairs.
  * 
  * @category  Chisimba
  * @package   cache
@@ -55,7 +54,6 @@ $GLOBALS['kewl_entry_point_run']) {
  * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General Public License
  * @version   $Id$
  * @link      http://avoir.uwc.ac.za/
- * @see       http://memcached.org/
  * @see       http://php.net/apc
  */
 class cacheops extends ChisimbaObject
@@ -75,14 +73,6 @@ class cacheops extends ChisimbaObject
      * @var    array
      */
     protected $cache;
-
-    /**
-     * Is Memcache enabled?
-     *
-     * @access protected
-     * @var    boolean
-     */
-    protected $memcache;
 
     /**
      * The system configuration.
@@ -105,7 +95,6 @@ class cacheops extends ChisimbaObject
 
         // Set boolean flags.
         $this->apc      = extension_loaded('apc') && $this->objAltConfig->getenable_apc() == 'TRUE';
-        $this->memcache = extension_loaded('memcache') && $this->objAltConfig->getenable_memcache() == 'TRUE';
     }
 
     /**
@@ -123,11 +112,6 @@ class cacheops extends ChisimbaObject
         // First check local cache then fall back to external cache.
         if (array_key_exists($key, $this->cache)) {
             $value = $this->cache[$key];
-        } elseif ($this->memcache) {
-            $value = chisimbacache::getMem()->get($key);
-            if (is_string($value)) {
-                $value = unserialize($value);
-            }
         } elseif ($this->apc) {
             $value = apc_fetch($key);
         } else {
@@ -153,10 +137,7 @@ class cacheops extends ChisimbaObject
         $this->cache[$key] = $value;
 
         // Update the external cache.
-        if ($this->memcache) {
-            $value = serialize($value);
-            chisimbacache::getMem()->set($key, $value);
-        } elseif ($this->apc) {
+        if ($this->apc) {
             apc_store($key, $value);
         }
     }

@@ -47,6 +47,7 @@
             <module>useradmin</module>
             <module>userdetails</module>
             <module>userregistration</module>
+            <module>registration-service</module>
             <module>blocks</module>
             <module>mail</module>
             <module>utilities</module>

@@ -97,7 +97,7 @@ include ('lucene.php');
 /**
  * HTML Purifier
  */
-require_once 'lib/HTMLPurifier.auto.php';
+require_once __DIR__ . '/chisimbahtmlsanitizer.php';
 
 /**
  * The parseDSN function
@@ -371,11 +371,8 @@ class engine {
      */
     public $coremods;
 
-    /**
-     * MemcacheD object
-     *
-     * @var boolean
-     */
+    // Legacy compatibility flag. The Memcache client and configuration path
+    // have been removed, so this remains false.
     public $objMemcache = FALSE;
 
     /**
@@ -447,13 +444,13 @@ class engine {
      * @var string
      */
     public $purifier;
-    
+
     // The current user agent
     public static $user_agent;
-    
+
     // Protected key names (cannot be set by the user)
     protected $sessprotect = array('session_id', 'user_agent', 'last_activity', 'ip_address', 'total_hits');
-    
+
     // Configuration and driver
     protected $sessconfig;
 
@@ -466,23 +463,6 @@ class engine {
      * @access public
      */
     public function __construct() {
-        /*
-         * Resume an application session only from Chisimba's cookie.
-         *
-         * sessionStart() owns the PHPSESSION name. Testing session_name()
-         * before calling it observes PHP's PHPSESSID default instead, while
-         * ordinary cookies are not guaranteed to appear in $_REQUEST. That
-         * split discarded a newly authenticated identity on the first
-         * redirected request. Session identifiers are never accepted from
-         * query-string or form input.
-         */
-        if (isset($_COOKIE['PHPSESSION'])
-            && is_string($_COOKIE['PHPSESSION'])
-            && $_COOKIE['PHPSESSION'] !== ''
-        ) {
-            $this->sessionStart();
-        }
-
         // Populate the core modules array with the contents of the core_modules directory.
         $this->coremods = array_map('basename', glob('core_modules/*', GLOB_ONLYDIR));
 
@@ -510,14 +490,31 @@ class engine {
         		'cookiedomain' => $this->_objConfig->getValue ( 'auth_cookiedomain', 'security', NULL ),
         		'cookiesecure' => $this->_objConfig->getValue ( 'auth_cookiesecure', 'security', true )
         );
-        
-        // Configure garbage collection
-        if (!headers_sent()) {
+
+        // PHP session settings must be configured before starting the session.
+        if (session_status() !== PHP_SESSION_ACTIVE) {
             ini_set('session.gc_probability', (int) $this->sessconfig['gc_probability']);
             ini_set('session.gc_divisor', 100);
             ini_set('session.gc_maxlifetime', ($this->sessconfig['expiration'] == 0) ? 86400 : $this->sessconfig['expiration']);
         }
-        
+
+        /*
+         * Resume an application session only from Chisimba's cookie.
+         *
+         * sessionStart() owns the PHPSESSION name. Testing session_name()
+         * before calling it observes PHP's PHPSESSID default instead, while
+         * ordinary cookies are not guaranteed to appear in $_REQUEST. That
+         * split discarded a newly authenticated identity on the first
+         * redirected request. Session identifiers are never accepted from
+         * query-string or form input.
+         */
+        if (isset($_COOKIE['PHPSESSION'])
+            && is_string($_COOKIE['PHPSESSION'])
+            && $_COOKIE['PHPSESSION'] !== ''
+        ) {
+            $this->sessionStart();
+        }
+
         // Ensure the site is being accessed at the correct location.
         // Keep REST and well-known JSON endpoints host-agnostic so Docker
         // service names (web), reverse proxies and emulators can fetch manifests
@@ -540,17 +537,6 @@ class engine {
             }
         }
 
-        // check for memcache
-        if (extension_loaded ( 'memcache' )) {
-            require_once 'classes/core/chisimbacache_class_inc.php';
-            if ($this->_objDbConfig->getenable_memcache () == 'TRUE') {
-                $this->objMemcache = TRUE;
-            } else {
-                $this->objMemcache = FALSE;
-            }
-            $this->cacheTTL = $this->_objDbConfig->getcache_ttl ();
-        }
-
         // check for APC
         if (extension_loaded ( 'apc' )) {
             if ($this->_objDbConfig->getenable_apc () == 'TRUE') {
@@ -564,33 +550,21 @@ class engine {
 
         //and we need a general system config too
         $this->_objConfig = clone $this->_objDbConfig;
-        ini_set ( 'include_path', ini_get ( 'include_path' ) . PATH_SEPARATOR . $this->_objConfig->getsiteRootPath () . 'lib/pear/' );
-        // Grab the LiveUser code now
-        require_once ($this->getPearResource ( 'LiveUser.php' ));
-        // Grab the LiveUser Admin code
-        require_once ($this->getPearResource ( 'LiveUser/Admin.php' ));
-        // init LiveUser
-        $this->getLU ();
-        //initialise the event messages framework
-        $this->eventDispatcher =& Event_Dispatcher::getInstance();
+        // PEAR runtime and include-path bootstrap retired.
+        // One native dispatcher belongs to this engine/request. All framework
+        // objects receive it through their existing eventDispatcher property.
+        require_once __DIR__ . '/nativeeventdispatcher.php';
+        $this->eventDispatcher = new ChisimbaEventDispatcher();
         //initialise the db factory method of MDB2
         $this->getDbObj ();
         //initialise the db factory method of MDB2_Schema
         $this->getDbManagementObj ();
 
-        /* -- Remove this once all users are upgraded to 3.x series framework --*/ 
-        // check that the application is registered 
-        $this->_servername = $this->_objDbConfig->serverName(); 
-        // find all available applications 
-        $applications = $this->luAdmin->perm->getApplications(); 
-        if(empty($applications) || $applications[0]['application_define_name'] != $this->_servername ) { 
-            $data = array('application_define_name' => $this->_servername); 
-            $appid = $this->luAdmin->perm->addApplication($data); 
-            $this->appid = $data['application_define_name']; 
-        } 
-        else { 
-            $this->appid = $applications[0]['application_define_name']; 
-        } 
+        // Canonical permissions use this stable application namespace.  It is
+        // deliberately not a LiveUser application record and startup performs
+        // no permission-table writes.
+        $this->_servername = $this->_objDbConfig->serverName();
+        $this->appid = 'chisimba';
         /*
          * Baseline permission groups are owned by GroupService and are
          * established transactionally during first-time registration.
@@ -600,8 +574,6 @@ class engine {
          * Initial administrator identity and membership are provisioned once
          * after first-time registration by initialadminprovisioningservice.
          */
-        /* -- End remove for 2.x -> 3.x series -- */ 
-
         // Set the user agent
         self::$user_agent = ( ! empty($_SERVER['HTTP_USER_AGENT']) ? trim($_SERVER['HTTP_USER_AGENT']) : '');
         $this->sessprotect = array_combine($this->sessprotect, $this->sessprotect);
@@ -611,11 +583,7 @@ class engine {
         //the language elements module
         $this->_objLanguage = $this->getObject ( 'language', 'language' );
 
-        // HTMLPURIFIER_BOOTSTRAP_PHP82: load the bundled library before use.
-        if (!class_exists('HTMLPurifier', false)) {
-            require_once dirname(dirname(dirname(__FILE__))) . '/lib/HTMLPurifier.auto.php';
-        }
-        $this->purifier = new HTMLPurifier();
+        $this->purifier = ChisimbaHtmlSanitizer::purifier();
 
         // other fields
         //set the messages array
@@ -647,6 +615,11 @@ class engine {
      * @return void
      */
     public function run($presetModuleName = NULL, $presetAction = NULL) {
+        // Resume remembered identity before any maintenance or module access decision.
+        // Form tokens remain session-bound; consumers must renew stale forms safely.
+        if (!$this->_objUser->isLoggedIn() && !empty($_COOKIE['chisimba_remember'])) {
+            $this->getObject('nativeauthwebcomposition', 'security')->resumeRememberedLogin();
+        }
         if (empty ( $presetModuleName )) {
             $requestedModule = strtolower ( $this->getParam ( 'module', '_default' ) );
         } else {
@@ -714,101 +687,19 @@ class engine {
      * @return kngConfig The config object
      */
     public function getDbObj() {
-
-        global $_globalObjDb;
-        /*
-		* do the checks that the db object gets instantiated once, then let MDB2 take over for the on-demand * *construction
-		*/
-        if ($this->_objDb == NULL || $_globalObjDb == NULL) {
-            $this->_objDbConfig = $this->getObject ( 'altconfig', 'config' );
-            /*
-			 * set up the DSN. Some RDBM's do not operate with the string style DSN (most noticeably Oracle)
-			 * so we parse the DSN to an array and then send that to the object instantiation to be safe
-			 */
-            $dsn = KEWL_DB_DSN;
-            $this->dsn = $this->parseDSN ( $dsn );
-            $this->pdsn = $this->dsn;
-
-            // now check whether to use PDO or MDB2
-            if ($this->_dbabs === 'MDB2') {
-                // Connect to the database
-                require_once ('MDB2.php');
-                //trigger_error(var_export($this->dsn, TRUE));
-                $_globalObjDb = MDB2::singleton ( $this->dsn );
-                //Check for errors on the factory method
-                if (PEAR::isError ( $_globalObjDb )) {
-                    $this->_pearErrorCallback ( $_globalObjDb );
-                    //return the db object for use globally
-                    return $_globalObjDb;
-                }
-                // a much nicer mode than the default MDB2_FETCHMODE_ORDERED
-                $_globalObjDb->setFetchMode ( MDB2_FETCHMODE_ASSOC );
-                //set the options for portability!
-                $_globalObjDb->setOption ( 'portability', MDB2_PORTABILITY_FIX_CASE | MDB2_PORTABILITY_ALL );
-                $_globalObjDb->setOption ('quote_identifier', true);
-                $_globalObjDb->setCharset('utf8');
-
-                //Check for errors
-                if (PEAR::isError ( $_globalObjDb )) {
-                    /*
-					* manually call the callback function here, as we haven't had a chance to install it as
-					* the error handler
-					*/
-                    $this->_pearErrorCallback ( $_globalObjDb );
-                    //return the db object for use globally
-                    return $_globalObjDb;
-                }
-                // Load the MDB2 Functions module
-                $_globalObjDb->loadModule ( 'Function' );
-                // keep a copy as a field as well
-                $this->_objDb = $_globalObjDb;
-
-                //Load up some of the extra MDB2 modules:
-                MDB2::loadFile ( 'Date' );
-                MDB2::loadFile ( 'Iterator' );
-
-                // install the error handler with our custom callback on error
-                $this->_objDb->setErrorHandling ( PEAR_ERROR_CALLBACK, array ($this, '_pearErrorCallback' ) );
-                /* set the default fetch mode for the DB to assoc, as that's a much nicer mode than the default  * MDB2_FETCHMODE_ORDERED
-				 */
-                $this->_objDb->setFetchMode ( MDB2_FETCHMODE_ASSOC );
-                if ($this->_objDb->phptype == 'oci8') {
-                    $this->_objDb->setOption ( 'field_case', CASE_LOWER );
-                    //oracle numRows() hack plus some extras
-                    $this->_objDb->setOption ( 'portability', MDB2_PORTABILITY_NUMROWS | MDB2_PORTABILITY_FIX_CASE | MDB2_PORTABILITY_RTRIM | MDB2_PORTABILITY_ALL );
-                    $this->_objDb->setCharset('utf8');
-                } else {
-                    $this->_objDb->setOption ( 'portability', MDB2_PORTABILITY_FIX_CASE | MDB2_PORTABILITY_ALL );
-                    $this->_objDb->setCharset('utf8');
-                }
-                // include the dbtable base class for future use
-            } elseif ($this->_dbabs === 'PDO') {
-                // PDO stuff
-                if (! extension_loaded ( 'PDO' )) {
-                    die ( "You must install the PDO extension before trying to use it!" );
-                }
-                // dsn is in the form of 'mysql:host=localhost;dbname=test', $user, $pass
-                if ($this->_objDb === NULL) {
-                    try {
-                        $this->_objDb = new PDO ( $this->dsn ['phptype'] . ":" . "host=" . $this->dsn ['hostspec'] . ";dbname=" . $this->dsn ['database'], $this->dsn ['username'], $this->dsn ['password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8") );
-                        $this->_objDb->setAttribute ( PDO::ATTR_EMULATE_PREPARES, true );
-                        $this->_objDb->setAttribute ( PDO::ATTR_CASE, PDO::CASE_LOWER );
-                        $this->_objDb->setAttribute ( PDO::ATTR_PERSISTENT, true );
-
-
-                        if ($this->dsn ['phptype'] == 'pgsql') {
-                            $this->_objDb->setAttribute ( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-                        }
-                    } catch ( PDOException $e ) {
-                        echo $e->getMessage ();
-                        exit ();
-                    }
-                }
-            }
-            //return the local copy
-            return $this->_objDb;
+        if ($this->_dbabs !== 'PDO') {
+            throw new RuntimeException('Unsupported database backend. MDB2 is retired; configure PDO and install pdo_mysql.');
         }
-        // Return the existing cached database object on subsequent calls.
+        global $_globalObjDb;
+        require_once __DIR__ . '/chisimbadatabaseconnection.php';
+        if (!$this->_objDb instanceof ChisimbaDatabaseConnection) {
+            $this->dsn = $this->parseDSN(KEWL_DB_DSN);
+            $this->pdsn = $this->dsn;
+            if (!$_globalObjDb instanceof ChisimbaDatabaseConnection) {
+                $_globalObjDb = ChisimbaDatabaseConnection::fromLegacyDsn($this->dsn);
+            }
+            $this->_objDb = $_globalObjDb;
+        }
         return $this->_objDb;
     }
 
@@ -822,69 +713,19 @@ class engine {
      * @return kngConfig The config object
      */
     public function getDbManagementObj() {
-        //global for the management object
-        global $_globalObjDbManager;
-        /*
-		*do the checks that the db object gets instantiated once, then
-		*let MDB2 take over for the on-demand construction
-		*/
-        if ($this->_objDbManager == NULL || $_globalObjDbManager == NULL) {
-            //load the config object (same as the db Object)
-            $this->_objDbConfig = $this->getObject ( 'altconfig', 'config' );
-            $mdsn = KEWL_DB_DSN; //$this->_objDbConfig->getDsn();
-            $this->mdsn = $this->parseDSN ( $mdsn );
-            // Connect to the database
-            //require_once $this->getPearResource ( 'MDB2/Schema.php' );
-            //MDB2 has a factory method, so lets use it now...
-            //$_globalObjDbManager = &MDB2::connect ( $this->dsn );
-
-            //Check for errors
-            if (PEAR::isError ( $_globalObjDbManager )) {
-                /*
-				 * manually call the callback function here,
-				 * as we haven't had a chance to install it as
-				 * the error handler
-				 */
-                $this->_pearErrorCallback ( $_globalObjDbManager );
-                //return the db object for use globally
-                return $_globalObjDbManager;
-            }
-            // keep a copy as a field as well
-            $this->_objDbManager = $_globalObjDbManager;
-            // install the error handler with our custom callback on error
-            //$this->_objDbManager->setErrorHandling ( PEAR_ERROR_CALLBACK, array ($this, '_pearErrorCallback' ) );
-
-        }
-        //return the local copy
-        return $this->_objDbManager;
+        return null; // Schema operations use the shared native schema service.
     }
 
     /**
-     * Method to return the LiveUser management object. Evaluates lazily,
-     * so class file is not included nor object instantiated
-     * until needed.
+     * Compatibility endpoint retained for older extensions.
      *
-     * @param  void
-     * @access public
-     * @return void
+     * LiveUser is retired and cannot be initialised by a request. Extensions
+     * must use nativeauth, groupservice or permissionservice.
+     *
+     * @return null
      */
     public function getLU() {
-        if ($this->lu == NULL || $this->luAdmin == NULL) {
-            $this->configLu();
-            $_lu = LiveUser::singleton ( $this->luConfig );
-            $_lu->dispatcher->addObserver ( array (&$this, 'authNotification' ) );
-            $this->lu = $_lu;
-            if (! $_lu->init ()) {
-                var_dump ( $_lu->getErrors () );
-                die ();
-            }
-            // and then the admin part
-            $_luAdmin = LiveUser_Admin::factory ( $this->luConfig );
-            $_luAdmin->init ();
-            $this->luAdmin = $_luAdmin;
-
-        }
-        return;
+        return null;
     }
 
     /**
@@ -908,22 +749,12 @@ class engine {
     }
 
     /**
-     * Method to return the LiveUser Admin management object. Evaluates lazily,
-     * so class file is not included nor object instantiated
-     * until needed.
+     * Compatibility endpoint for the retired LiveUser administration API.
      *
-     * @param  void
-     * @access public
-     * @return object
+     * @return null
      */
     public function getLuAdmin() {
-        if ($this->luAdmin === null) {
-            // and then the admin part
-            $_luAdmin = LiveUser_Admin::factory ( $this->luConfig );
-            $_luAdmin->init ();
-            $this->luAdmin = $_luAdmin;
-        }
-        return $this->luAdmin;
+        return null;
     }
 
     /**
@@ -970,13 +801,14 @@ class engine {
 
             $cookiesecret = $this->objSysConfig->getValue ( 'auth_cookiesecret', 'security', 'test' );
             $cookiesavedir = $this->objSysConfig->getValue ( 'auth_cookiesavedir', 'security', '.' );
-            $cookiesecure = $this->objSysConfig->getValue ( 'auth_cookiesecure', 'security', false );
-            if( $cookiesecure == 'true' || $cookiesecure == 'TRUE' || $cookiesecure == 'True') {
-                $cookiesecure = true;
-            }
-            else {
-                $cookiesecure = false;
-            }
+            /*
+             * LiveUser calls session_set_cookie_params() with its own legacy
+             * configuration. It must not weaken the PHP image's HTTPS-only
+             * session policy. Supported deployments terminate TLS before this
+             * process and redirect HTTP at the proxy, so application and
+             * persistent-login cookies are always Secure and HttpOnly.
+             */
+            $cookiesecure = true;
 
             // Auth container(s)
             $authcontype = $this->objSysConfig->getValue ( 'auth_containertype', 'security', 'MDB2' );
@@ -1014,6 +846,7 @@ class engine {
                     'secret' => $cookiesecret,
                     'savedir' => $cookiesavedir,
                     'secure' => $cookiesecure,
+                    'httponly' => true,
                 ),
                 'authContainers' => array (
                     'database_local' => array (
@@ -1142,26 +975,14 @@ class engine {
     }
 
     /**
-     * Method to parse the DSN from a string style DSN to an array for portability reasons. This simply manages memcache handling of the return value of the 'real' function, which is a  static method called parseDSN_().
+     * Method to parse the DSN from a string style DSN to an array for portability reasons.
      *
      * @access public
      * @param  string $dsn DSN as a string
      * @return array Parsed DSN as an array
      */
     public function parseDSN($dsn) {
-        $parsed = self::parseDSN_($dsn);
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem ()->get ( 'dsn' )) {
-                $parsed = chisimbacache::getMem ()->get ( 'dsn' );
-                $parsed = unserialize ( $parsed );
-                return $parsed;
-            } else {
-                chisimbacache::getMem ()->set ( 'dsn', serialize ( $parsed ), FALSE, $this->cacheTTL );
-                return $parsed;
-            }
-        } else {
-            return $parsed;
-        }
+        return self::parseDSN_($dsn);
     }
 
     /**
@@ -1172,63 +993,8 @@ class engine {
      * @return array Parsed DSN as an array
      */
     public static function parseDSN_($dsn) {
-        //$parsed = NULL;
-        $parsed = array();
-        //$arr = NULL;
-        if (is_array ( $dsn )) {
-            //$dsn = array_merge ( $parsed, $dsn );
-            return $dsn;
-        }
-
-        // Find the 'phptype(dbsyntax)'
-        if (($pos = strpos ( $dsn, '://' )) !== false) {
-            $str = substr ( $dsn, 0, $pos );
-            $dsn = substr ( $dsn, $pos + 3 );
-        } else {
-            //return array();
-            $str = $dsn;
-            $dsn = '';
-        }
-        // Split 'phptype'/'dbsyntax'
-        if (preg_match ( '|^(.+?)\((.*?)\)$|', $str, $arr )) {
-            $parsed ['phptype'] = rawurldecode($arr[1]);
-            if (!empty($arr[2])) {
-                $parsed ['dbsyntax'] = rawurldecode($arr[2]);
-            }
-        } else {
-            $parsed ['phptype'] = rawurldecode($str);
-        }
-        if ($dsn == '') {
-            return $parsed;
-        }
-
-        // Find the 'username:password'
-        if (($pos = strrpos ( $dsn, '@' )) !== false) {
-            $str = substr ( $dsn, 0, $pos );
-            $dsn = substr ( $dsn, $pos + 1 );
-            if (($pos_inner = strpos ( $str, ':' )) !== false) {
-                $str_username = substr ( $str, 0, $pos_inner );
-                $str_password = substr ( $str, $pos_inner + 1 );
-                $parsed ['username'] = rawurldecode ( $str_username );
-                $parsed ['password'] = rawurldecode ( $str_password );
-            } else {
-                $parsed ['username'] = rawurldecode ( $str );
-            }
-        }
-
-        // Find the 'hostspec'('hostname[:port]')
-        if (($pos = strrpos ( $dsn, '/' )) !== false) {
-            $str_hostspec = substr ( $dsn, 0, $pos );
-            $str_database = substr ( $dsn, $pos + 1 );
-            $parsed ['hostspec'] = rawurldecode ( $str_hostspec );
-            $parsed ['database'] = rawurldecode($str_database);
-        } else {
-            $parsed ['hostspec'] = rawurldecode($dsn);
-        }
-        $parsed ['hostspec'] = str_replace ( "+", "/", $parsed ['hostspec'] );
-        //trigger_error($parsed ['hostspec']);
-
-        return $parsed;
+        require_once __DIR__.'/chisimbadatabasedsn.php';
+        return ChisimbaDatabaseDsn::parse($dsn);
     }
 
     /**
@@ -1519,17 +1285,7 @@ class engine {
             if (! ($this->_objConfig instanceof altconfig)) {
                 require_once ($filename);
                 $this->_objConfig = new altconfig ( );
-                if ($this->objMemcache == TRUE) {
-                    if (chisimbacache::getMem ()->get ( 'altconfig' )) {
-                        $this->_objConfig = chisimbacache::getMem ()->get ( 'altconfig' );
-                        return $this->_objConfig;
-                    } else {
-                        require_once ($filename);
-                        $this->_objConfig = new altconfig ( );
-                        chisimbacache::getMem ()->set ( 'altconfig', $this->_objConfig, MEMCACHE_COMPRESSED, $this->cacheTTL );
-                        return $this->_objConfig;
-                    }
-                } elseif ($this->objAPC == TRUE) {
+                if ($this->objAPC == TRUE) {
                     $this->_objConfig = apc_fetch ( 'altconfig' );
                     if ($this->_objConfig == FALSE) {
                         $this->_objConfig = new altconfig ( );
@@ -1587,24 +1343,11 @@ class engine {
      * @return mixed       The object asked for
      */
     public function newObject($name, $moduleName) {
+        // Historical service name, not the global PEAR Config class. Resolve at
+        // the factory so both names share the native configuration contract.
+        if ($moduleName === 'config' && strtolower($name) === 'config') { $name = 'altconfig'; }
         $this->loadClass ( $name, $moduleName );
-        if ($this->objMemcache == TRUE) {
-            if (chisimbacache::getMem ()->get ( md5 ( $name ) )) {
-                //log_debug("retrieve $name from cache...new object");
-                $objNew = chisimbacache::getMem ()->get ( md5 ( $name ) );
-
-                return $objNew;
-            } else {
-                if (is_subclass_of ( $name, 'ChisimbaObject' )) {
-                    $objNew = new $name ( $this, $moduleName );
-                    return $objNew;
-                } else {
-                    $objNew = new $name ( );
-                    //log_debug("setting newObject $name from cache...");
-                    chisimbacache::getMem ()->set ( md5 ( $name ), $objNew, MEMCACHE_COMPRESSED, $this->cacheTTL );
-                }
-            }
-        } elseif ($this->objAPC == TRUE) {
+        if ($this->objAPC == TRUE) {
             $objNew = apc_fetch ( $name );
             if ($objNew == FALSE) {
                 if (is_subclass_of ( $name, 'ChisimbaObject' )) {
@@ -1649,6 +1392,9 @@ class engine {
      * @return mixed       The object asked for
      */
     public function getObject($name, $moduleName) {
+        // Historical service name, not the global PEAR Config class. Resolve at
+        // the factory so both names share the native configuration contract.
+        if ($moduleName === 'config' && strtolower($name) === 'config') { $name = 'altconfig'; }
         $instance = NULL;
         if (isset ( $this->_cachedObjects [$moduleName] [$name] )) {
             $instance = $this->_cachedObjects [$moduleName] [$name];
@@ -1764,7 +1510,7 @@ class engine {
         }
         else {
             //if(!is_object($this->purifier)) {
-            //    $this->purifier = new HTMLPurifier();
+            //    $this->purifier = ChisimbaHtmlSanitizer::purifier();
             //}
             //$result = $this->purifier->purify( $result );
             //$result = filter_var($result, FILTER_SANITIZE_ENCODED); //FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
@@ -1815,7 +1561,7 @@ class engine {
      * @return string $strip_keys Whether or not to strip array keys
      */
     public function purifyArray($array, $strip_keys = false) {
-        $this->purifier = new HTMLPurifier();
+        $this->purifier = ChisimbaHtmlSanitizer::purifier();
         if (is_string ( $array ))
             return $this->purifier->purify ( $array );
         $keys_to_replace = Array ();
@@ -1823,9 +1569,9 @@ class engine {
             if (is_string ( $value )) {
                 $array [$key] = $this->purifier->purify ( $value );
             } elseif (is_array ( $value )) {
-                $this->purifyArray ( $array [$key], $strip_keys );
+                $array [$key] = $this->purifyArray ( $array [$key], $strip_keys );
             }
-            if ($strip_keys && $key != ($stripped_key = $this->purifier->purify ( $key ))) {
+            if ($strip_keys && is_string($key) && $key != ($stripped_key = $this->purifier->purify ( $key ))) {
                 $keys_to_replace [$key] = $stripped_key;
             }
         }
@@ -2135,11 +1881,7 @@ class engine {
      * @return string Path to the Resource in a module
      */
     public function getPearResource($resourceFile) {
-        if (@include_once ($resourceFile)) {
-            return $resourceFile;
-        } else {
-            return $this->_objConfig->getsiteRootPath () . "lib/pear/" . $resourceFile;
-        }
+        throw new LogicException('PEAR resources are retired. Use maintained native services.');
 
     }
 
@@ -2217,8 +1959,31 @@ class engine {
      * @return set    property to true
      */
     public function sessionStart() {
-        //session_start();
-        $this->_sessionStarted = TRUE;
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $this->_sessionStarted = TRUE;
+            return true;
+        }
+
+        if (headers_sent()) {
+            return false;
+        }
+
+        /*
+         * This is the only session name accepted by the engine constructor.
+         * PHP's default PHPSESSID name would leave a newly created session
+         * unreadable on the next request.
+        */
+        session_name('PHPSESSION');
+        session_set_cookie_params(array(
+            'lifetime' => 0,
+            'path' => '/',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ));
+        $this->_sessionStarted = session_start();
+
+        return $this->_sessionStarted;
     }
 
     /**

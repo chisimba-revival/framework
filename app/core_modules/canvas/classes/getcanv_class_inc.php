@@ -60,6 +60,9 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class getcanv extends ChisimbaObject
 {
+    // State used by the installed rendering and service lifecycle.
+    public $curSkin;
+
     /**
     * Holds the user object
     *
@@ -101,39 +104,12 @@ class getcanv extends ChisimbaObject
     public function init()
     {
         try {
-            $this->objLanguage = &$this->getObject('language', 'language');
+            $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             $this->objConfig=$this->newObject('altconfig','config');
             $this->canvasDir = FALSE;
             // Load the link class
             $this->loadClass('link', 'htmlelements');
-        } catch(Exception $e) {
-            throw customException($e->message());
-            exit();
-        }
-    }
-
-    /**
-     *
-     * Load the greybox modal window script into the page and add the jQuery to
-     * activate those links with rel=gb_image[].
-     *
-     * @return boolean TRUE
-     * @access private
-     *
-     */
-    private function loadHeaderScript()
-    {
-        try {
-            $this->appendArrayVar('headerParams', $this->getJavaScriptFile('alertbox/facebox.js', 'htmlelements'));
-            $this->appendArrayVar('headerParams', '<script type="text/javascript">
- jQuery(document).ready(function($) {
-  $(\'a[rel*=facebox]\').facebox()
-})
-</script>');
-            /*$objGreyboxLoader = & $this->getObject('greyboxloader', 'greybox');
-            $objGreyboxLoader->loadAll();
-            return TRUE;*/
         } catch(Exception $e) {
             throw customException($e->message());
             exit();
@@ -349,7 +325,7 @@ class getcanv extends ChisimbaObject
             $canvasName = $jsonObj->name . "<br />";
             $canvasName = $this->getSkinChooserLink($canvas);
             $anchor = "<a href='" . $dirToOpen
-              . $canvas . "/" . $jsonObj->preview->fullview . "' rel='facebox'>"; //gb_imageset[personal_canvases]
+              . $canvas . "/" . $jsonObj->preview->fullview . "'>"; //gb_imageset[personal_canvases]
             $anchorClose = "</a>";
             $imageLink = "<img src='" . $dirToOpen
               . $canvas ."/" . $jsonObj->preview->thumb . "' />";
@@ -488,7 +464,6 @@ class getcanv extends ChisimbaObject
             'canvas');
         $objLink = new link($ln);
         $objLink->link = $canvas;
-        $objLink->rel='facebox'; //gb_page_center[640, 480]
         return $objLink->show();
     }
 }

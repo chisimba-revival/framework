@@ -2,6 +2,11 @@
 
 Versioned JSON API exposed under `/api/v1`.
 
+For the current PDO-only runtime, upgrade prerequisites and validation limits,
+read [the 18 October integration record](../../../docs/api/CURRENT_RUNTIME_INTEGRATION_20261018.md).
+Signing keys now require an explicit private path outside the web root; preserve
+the existing key when upgrading.
+
 This module is a thin translation layer. It owns HTTP concerns only:
 routing, authentication hand-off, request validation, pagination and the
 JSON envelope. Every domain rule belongs to the canonical Chisimba services,

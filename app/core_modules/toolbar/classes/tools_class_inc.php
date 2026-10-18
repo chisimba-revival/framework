@@ -135,18 +135,7 @@ class tools extends ChisimbaObject
      */
     public function addBookmark()
     {
-        if ($this->moduleCheck->checkIfRegistered('bookmarks')
-            && $this->securityContext->isAuthenticated())
-        {
-            if (!$this->moduleCheck->checkIfRegistered('statusbar'))
-            {                
-                $objBookmark = $this->getObject('bookmarksops', 'bookmarks');
-                $link = $objBookmark->showLink() . '&nbsp;';
-                $this->params[] = $objBookmark->bookmarkParams();
-                $link .= $objBookmark->showGotoLink();
-                return $link;
-            }
-        }
+        // Legacy Bookmarks and Statusbar are paused, including stale registrations.
         return FALSE;
     }
 
@@ -156,14 +145,7 @@ class tools extends ChisimbaObject
      */
     public function addStatusbar()
     {
-        if ($this->moduleCheck->checkIfRegistered('statusbar')
-            && $this->securityContext->isAuthenticated())
-        {
-            $objStatusbar = $this->getObject('statusbarops', 'statusbar');
-            $bar = $objStatusbar->showStatusbar() . '&nbsp;';
-            $this->params[] = $objStatusbar->statusbarParams();
-            return $bar;
-        }
+        // Legacy Bookmarks and Statusbar are paused, including stale registrations.
         return FALSE;
     }
 
@@ -370,7 +352,7 @@ class tools extends ChisimbaObject
         $moduleInfo = $this->moduleCheck->getRow ( 'module_id', $module );
         if (empty ( $moduleInfo ) && ! ($module == '_default' || $module == 'postlogin' || $module == '')) {
             $noModule = $this->objLanguage->code2Txt ( 'mod_toolbar_modnotfound', 'toolbar', array ('module' => "<b>$module</b>" ) );
-            return $noModule;
+            return $this->renderBreadcrumbNavigation('<span>' . $noModule . '</span>');
         }
         // If the module is the default module
         if ($module == '_default' || $module == 'postlogin' || $module == '') {

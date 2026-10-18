@@ -1,7 +1,6 @@
 <?php
 
 require_once INSTALL_DIR.'/step.inc';
-require_once 'xml2array_class_inc.php';
 require_once INSTALL_DIR.'/stepaction.inc';
 require_once INSTALL_DIR.'/html_form/html_form.inc';
 require_once INSTALL_DIR.'/dbhandlers/dbhandler.inc';
@@ -176,6 +175,9 @@ class DbCreateAction extends StepAction
     $this->_installDb32('core_modules/security/sql/tbl_perms_rights.sql');
     $this->_installDb32('core_modules/security/sql/tbl_perms_userrights.sql');
 
+    // Controller and catalogue dependencies need these before first registration.
+    $this->_installDb32('core_modules/context/sql/tbl_context.sql');
+    $this->_installDb32('core_modules/modulecatalogue/sql/tbl_module_blocks.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules_dependencies.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules_owned_tables.sql');
@@ -232,29 +234,19 @@ class DbCreateAction extends StepAction
 		//echo $xmlfile;
 		if(is_file($xmlfile))
 		{
-			$x = new xml2array();
-			$arr = $x->xmlFileToArray($xmlfile, FALSE, TRUE);
-
-			//get the table name
-			$toplevel = array_keys($arr);
-			$table = $toplevel[0];
-			//now get the data
-			$data = $arr[$table];
-			//check if data is an array for more than 1 entry
-			if(@is_array($data[0]))
-			{
-				foreach($data as $entries)
-				{
-					//insert to the db
-					//print_r($entries);
-					$output = $conn->insert($entries, $table);
-
-				}
-			}
-			else {
-				$output = $conn->insert($data, $table);
-			}
-
+            $xml = simplexml_load_file($xmlfile, 'SimpleXMLElement', LIBXML_NONET);
+            if ($xml === false) {
+                $this->errors[] = 'Could not read installation seed data.';
+                $this->success = false;
+                return false;
+            }
+            foreach ($xml as $table => $row) {
+                $data = array();
+                foreach ($row as $field => $value) {
+                    $data[$field] = (string) $value;
+                }
+                $conn->insert($data, $table);
+            }
 
 		}
 

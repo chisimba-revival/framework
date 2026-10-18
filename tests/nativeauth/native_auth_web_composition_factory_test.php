@@ -21,7 +21,7 @@ $required = array(
     'final class NativeAuthWebCompositionFactory',
     'new CsrfTokenService(',
     'new PendingAuthenticationService(',
-    'new Mdb2MfaRepository(',
+    'new DbTableMfaRepository(',
     'new MfaChallengeService(',
     'new AuthenticationTransactionCoordinator(',
     'new AuthenticationApplicationService(',

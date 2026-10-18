@@ -154,15 +154,7 @@ $message = $this->getParam('message');
                                     type="<?php echo $escape($mime); ?>" />
                         </video>
                     <?php elseif ($typeLabel === 'PDF'): ?>
-                        <object class="fm-pdf-preview"
-                                data="<?php echo $escape($openUrl); ?>"
-                                type="application/pdf"
-                                width="100%"
-                                height="720">
-                            <p>Preview unavailable.
-                                <a href="<?php echo $escape($openUrl); ?>"><?php echo $escape($fmText('open_pdf')); ?></a>.
-                            </p>
-                        </object>
+                        <?php echo $this->getObject('filepreview', 'filemanager')->previewFile($file['id']); ?>
                     <?php else: ?>
                         <div class="fm-preview-placeholder">
                             <span class="fm-type-badge"><?php echo $escape($typeLabel); ?></span>

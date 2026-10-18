@@ -55,6 +55,9 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class block_canvasviewer extends ChisimbaObject
 {
+    // State used by the installed rendering and service lifecycle.
+    public $configData;
+
     /**
      * The title of the block
      *
@@ -89,7 +92,7 @@ class block_canvasviewer extends ChisimbaObject
     public function init()
     {
         try {
-            $this->objLanguage = &$this->getObject('language', 'language');
+            $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             $this->title = $this->objLanguage->languageText("mod_canvas_viewer", "canvas");
         } catch(Exception $e) {

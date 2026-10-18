@@ -36,15 +36,13 @@ v108Assert(
     'ordinary membership mutations retain administrator authorization'
 );
 v108Assert(
-    strpos($user, "addBootstrapMember(\n                \$guestGroupId")
-        !== false
-        && strpos($initial, "addBootstrapMember(\n            \$groupId")
-        !== false,
-    'only canonical provisioning services use bootstrap membership'
+    strpos($user, 'addBootstrapMember(') === false
+        && strpos($initial, 'addBootstrapMember(') !== false,
+    'initial administrator provisioning alone uses bootstrap membership'
 );
 v108Assert(
-    strpos($user, 'removeBootstrapMember(') !== false,
-    'failed bootstrap provisioning has canonical compensation'
+    strpos($user, 'rollbackProvisionedUser(') !== false,
+    'failed ordinary identity provisioning compensates through UserService'
 );
 
 $production = array($group, $user, $initial);

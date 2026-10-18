@@ -61,24 +61,19 @@ class alertbox extends ChisimbaObject
     }
 
     /**
-    * Method to render the Javascript into the page header
+    * Compatibility no-op for callers of the retired legacy loader
     *
     * @return VOID
     * @access public
     */
     public function putJs()
     {
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('alertbox/facebox.js'));
-        $this->appendArrayVar('headerParams', '<script type="text/javascript">
-    jQuery(document).ready(function(jQuery) {
-        jQuery(\'a[rel*=facebox]\').facebox();
-})
-</script>');
+        // Retained as a no-op for old callers; show() loads native previews as needed.
     }
 
     /**
      *
-     * Show a link such that it will open in a facebox modal window
+     * Render a native local-fragment preview or an ordinary web link
      *
      * @param string $text The text for the link
      * @param string $link The URL to open in facebox
@@ -87,11 +82,24 @@ class alertbox extends ChisimbaObject
      */
     public function show($text, $link)
     {
-        $this->putJs();
-        $link = new link ($link);
-        $link->link = $text;
-        $link->extra = 'rel="facebox"';
-        return $link->show();
+        $url = trim((string) $link);
+        // Allow web/relative links and local fragments, never executable schemes.
+        if (preg_match('/[\x00-\x20\x7f]/', $url)
+            || (preg_match('/^([a-z][a-z0-9+.-]*):/i', $url, $scheme)
+                && !in_array(strtolower($scheme[1]), ['http', 'https'], true))) {
+            return $text;
+        }
+        $anchor = new link($url);
+        $anchor->link = $text;
+        if (str_starts_with($url, '#') && strlen($url) > 1) {
+            $close = $this->getObject('language', 'language')->languageText('mod_htmlelements_closepreview', 'htmlelements');
+            $anchor->extra = 'data-native-alert data-close-label="'
+                . htmlspecialchars($close, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
+            $this->appendArrayVar('headerParams', $this->getJavaScriptFile('alertbox/native-alert.js', 'htmlelements'));
+        }
+        // Remote content follows normal navigation and its existing access checks.
+        // Do not fetch and inject arbitrary pages into the current document.
+        return $anchor->show();
     }
 }
 ?>

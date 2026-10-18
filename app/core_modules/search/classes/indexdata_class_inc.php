@@ -22,6 +22,9 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class indexdata extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
 
     /**
      * Name of the Index
@@ -97,6 +100,13 @@ class indexdata extends ChisimbaObject
             return;
         }
         
+        // Lucene fields require strings; absent optional metadata is empty text.
+        $license = $license ?? '';
+        $permissions = $permissions ?? '';
+        $teaser = $teaser ?? '';
+        $dateAvailable = $dateAvailable ?? '';
+        $dateUnavailable = $dateUnavailable ?? '';
+
         // Remove Index if it exists
         $this->removeIndex($docId);
         
@@ -133,7 +143,7 @@ class indexdata extends ChisimbaObject
         $document->addField(Zend_Search_Lucene_Field::Keyword('userId', $userId));
         
         // Tags // Check if Array - if yes, convert to string
-        if (is_array($tags) && (is_countable($tags) ? count($tags) : 0) > 0) {
+        if (is_array($tags)) {
             $newTags = '';
             $divider = '';
             foreach ($tags as $tag)
@@ -145,7 +155,7 @@ class indexdata extends ChisimbaObject
         }
         
         // Add Tags
-        $document->addField(Zend_Search_Lucene_Field::UnStored('tags', iconv('ISO-8859-1', 'ASCII//TRANSLIT', mb_strtolower(stripslashes(strip_tags($tags))))));
+        $document->addField(Zend_Search_Lucene_Field::UnStored('tags', iconv('ISO-8859-1', 'ASCII//TRANSLIT', mb_strtolower(stripslashes(strip_tags($tags ?? ''))))));
         
         // License
         $document->addField(Zend_Search_Lucene_Field::Keyword('license', $license));
@@ -171,7 +181,7 @@ class indexdata extends ChisimbaObject
             // Todo: check that fields dont clash with existing
             foreach ($extra as $item=>$value)
             {
-                $document->addField(Zend_Search_Lucene_Field::Keyword($item, $value));
+                $document->addField(Zend_Search_Lucene_Field::Keyword($item, $value ?? ''));
             }
         }
         

@@ -123,9 +123,7 @@ class parse4mp3 extends ChisimbaObject
     */
     private function getAudioObject($link)
     {
-        $sndPlayer = $this->getObject('buildsoundplayer', 'files');
-        $sndPlayer->setSoundFile($link);
-        return $sndPlayer->showFlashVersion();
+        return $this->getObject('nativeplayer', 'files')->audio($link);
     }
     
     /**
@@ -141,8 +139,8 @@ class parse4mp3 extends ChisimbaObject
      */
     private function unHref($link)
     {
-        preg_match( '/<a[^>]+>([^<]+)<\/a>/si', $link, $m );
-        return trim( $m[1] );
+        preg_match('/<a[^>]+>([^<]+)<\/a>/si', $link, $m);
+        return trim($m[1] ?? $link);
     }
 
 

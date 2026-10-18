@@ -150,6 +150,7 @@ class dropdown extends abhtmlbase implements ifhtml
   */
   public function addOption($value=null,$label=null,$extra='')
   {
+    $value = $value ?? '';
     if ($label==null) {
         $label = $value;
     }
@@ -166,6 +167,7 @@ class dropdown extends abhtmlbase implements ifhtml
   */
   public function setSelected($value)
   {
+    $value = $value ?? '';
     if(isset($this->options[$value]))
     {
         $this->selected=$value;

@@ -127,6 +127,8 @@ function hidden_field($name, $value='', $extras='')
 */
 function text_box($name, $value, $size='', $max='', $hide_value=false, $extras='')
 {
+    $name = (string) ($name ?? '');
+    $value = (string) ($value ?? '');
 	$size = (int) $size;
 	$max  = (int) $max;
 	if (!stristr($extras, 'class=')) {

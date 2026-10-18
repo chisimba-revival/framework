@@ -302,25 +302,7 @@ $hTable->addCell($srch,null,'top','right');
 $hTable->endRow();
 $searchForm->addToForm($hTable->show());
 
-$objSelectFile = new textinput('archive',null,'file',30);
-$uploadSize = new textinput('MAX_FILE_SIZE','8000000','hidden');
-$fButton = new button('bupload',$this->objLanguage->languageText('word_upload'));
-$fButton->setToSubmit();
-$objUForm = new form('fupload',$this->uri(array('action'=>'uploadarchive','cat'=>$activeCat)));
-$objUForm->extra = 'enctype="multipart/form-data"';
-$objUForm->addToForm($uploadSize->show());
-$objUForm->addToForm($objSelectFile->show());
-$objUForm->addToForm($fButton->show());
-
-$objUploadTable = $this->newObject('htmlTable','htmlelements');
-$objUploadTable->startRow();
-$objUploadTable->addCell('&nbsp;');
-$objUploadTable->addCell($this->objLanguage->languageText('mod_modulecatalogue_uploadmod','modulecatalogue')."<br />".$objUForm->show(),null,null,'right');
-$objUploadTable->endRow();
-
-$localUpload = ($modules && $missingModules) ? $objUploadTable->show() : '';
-
-echo $searchForm->show().$objForm->show().$localUpload;
+echo $searchForm->show().$objForm->show();
 //$content = $objH->show().$notice.$topTable->show().$objTable->show().$bottomTable->show();
 //echo $content;
 ?>

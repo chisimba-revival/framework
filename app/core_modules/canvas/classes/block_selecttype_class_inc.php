@@ -56,6 +56,9 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class block_selecttype extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $configData;
+
     /**
      * The title of the block
      *
@@ -88,7 +91,7 @@ class block_selecttype extends ChisimbaObject
     public function init()
     {
         try {
-            $this->objLanguage = &$this->getObject('language', 'language');
+            $this->objLanguage = $this->getObject('language', 'language');
             $this->objUser = $this->getObject('user', 'security');
             $this->title = $this->objLanguage->languageText("mod_canvas_selecttype", "canvas");
             // Load the link class

@@ -28,9 +28,10 @@ $updateAll->link($this->uri(array('action'=>'makepatch')));
 $updateAll->link = $this->objLanguage->languageText('mod_modulecatalogue_makepatch','modulecatalogue');
 $makePatch = "<span class='floatright'><div class='adminicon'></div>" . $updateAll->show() . "</span>";
 
-$updateAll->link($this->uri(array('action'=>'updatexml')));
-$updateAll->link = str_replace('[DATE]',date('Y/m/d',filemtime($this->objConfig->getsiteRootPath()."config/catalogue.xml")),$this->objLanguage->languageText('mod_modulecatalogue_updatexml','modulecatalogue'));
-$updateXML = "<span class='floatright'><div class='adminicon'></div>" . $updateAll->show() . "</span>";
+$updateLabel = str_replace('[DATE]', date('Y/m/d', filemtime($this->objConfig->getsiteRootPath().'config/catalogue.xml')), $this->objLanguage->languageText('mod_modulecatalogue_updatexml','modulecatalogue'));
+$updateXML = '<form method="post" action="' . $escape($this->uri(array('action'=>'updatexml'))) . '">'
+    . '<input type="hidden" name="csrf_token" value="' . $escape($catalogueRefreshCsrf ?? '') . '">'
+    . '<button type="submit">' . $escape($updateLabel) . '</button></form>';
 
 // update the system types from the server
 $this->loadClass('href', 'htmlelements');

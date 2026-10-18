@@ -1,0 +1,15 @@
+[
+  "app/core_modules/files/classes/flowplayer_class_inc.php",
+  "app/core_modules/files/classes/buildflowplayer_class_inc.php",
+  "app/core_modules/files/classes/buildsoundplayer_class_inc.php",
+  "app/core_modules/files/resources/flowplayer",
+  "app/core_modules/files/resources/flowplayer3",
+  "app/core_modules/files/resources/soundplayer",
+  "app/core_modules/files/resources/flashmp3",
+  "app/core_modules/files/resources/tinyplayer",
+  "app/core_modules/files/resources/cortado_ogg_player",
+  "app/core_modules/files/resources/video-js",
+  "app/core_modules/filters/resources/flvplay.swf",
+  "app/core_modules/filters/resources/flvskin.swf",
+  "app/core_modules/filters/resources/mp3player.swf"
+]

@@ -128,58 +128,10 @@ class userservice extends dbTable
         return $this->selectRows($sql, $bindings);
     }
 
-    /**
-     * Run a SELECT with bound parameters and return the rows.
-     *
-     * MDB2::query() takes a finished SQL string and silently ignores a second
-     * bindings argument, which would leave literal ? tokens reaching the server.
-     * Placeholders therefore go through prepare() then execute($bindings), and
-     * both steps are checked because prepare() returns an MDB2_Error rather
-     * than throwing when a table is missing.
-     *
-     * Bind types are declared for the same reason tokenauthservice declares
-     * them: an undeclared placeholder resolves to null and raises a PHP 8.1
-     * deprecation on every execution.
-     *
-     * Failures are reported through error_log() rather than the inherited
-     * errorCallback(). This class's own init() default names a callback that
-     * does not exist in the framework, so calling it raises a TypeError and
-     * turns a database problem into an unhandled fatal. Logging directly also
-     * matches what dbTable::_queryRow() does on the same failure.
-     *
-     * @param string $sql Statement using ? placeholders
-     * @param array $bindings Values in placeholder order
-     * @return array Rows, or an empty array when the statement cannot be run
-     */
+    /** Read bound values through the checked shared database boundary. */
     private function selectRows($sql, array $bindings = array())
     {
-        $types = array();
-        foreach ($bindings as $value) {
-            $types[] = is_int($value) ? 'integer' : 'text';
-        }
-
-        try {
-            $db = $this->objEngine->getDbObj();
-            $statement = $db->prepare($sql, $types);
-            if (MDB2::isError($statement)) {
-                error_log('User query could not be prepared: ' . $statement->getMessage());
-                return array();
-            }
-            $result = $statement->execute($bindings);
-            if (MDB2::isError($result)) {
-                error_log('User query failed: ' . $result->getMessage());
-                $statement->free();
-                return array();
-            }
-            $rows = $result->fetchAll();
-            $result->free();
-            $statement->free();
-        } catch (Throwable $e) {
-            error_log('User query failed: ' . $e->getMessage());
-            return array();
-        }
-
-        return is_array($rows) ? $rows : array();
+        return $this->selectPrepared($sql, $bindings);
     }
 
     public function usernameAvailable($username, $excludingUserId = null)

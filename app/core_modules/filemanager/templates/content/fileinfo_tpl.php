@@ -196,8 +196,6 @@ $tabContent->width = '90%';
 if ($preview != '') {
 
     if ($file['category'] == 'images') {
-        // $this->appendArrayVar('headerParams', $this->getJavaScriptFile('jquery.imagefit_0.2.js', 'jquery'));
-        // $this->appendArrayVar('bodyOnLoad', "jQuery('#filemanagerimagepreview').imagefit();");
 
         $preview = '<div id="filemanagerimagepreview">' . $preview . '</div>';
     }

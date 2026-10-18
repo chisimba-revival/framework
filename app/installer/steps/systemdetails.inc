@@ -406,7 +406,7 @@ class RootUserAction extends StepAction
 
         ob_clean ();
 
-        text_box ( 'contentPath', $contentPath, '40', '', true, '' );
+        text_box ( 'contentPath', $_SESSION['contentPath'] ?? '', '40', '', true, '' );
 
         $contentPath = ob_get_contents ();
 

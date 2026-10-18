@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . '/fixtures/pear-oracle/bootstrap.php';
 error_reporting(E_ALL);
 set_error_handler(static function($severity,$message,$file,$line){throw new ErrorException($message,0,$severity,$file,$line);});
 $app=$argv[1]??dirname(__DIR__,2).'/app';set_include_path($app.'/lib/pear'.PATH_SEPARATOR.get_include_path());

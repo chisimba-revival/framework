@@ -38,7 +38,7 @@ $fields = array(
         'type' => 'text',
         'length' => 255,
         ),
-    ' error_text' => array(
+    'error_text' => array(
         'type' => 'text',
         'length' => 100,
         'notnull' => TRUE

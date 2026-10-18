@@ -78,10 +78,12 @@ foreach (array(
         'native web boundary excludes ' . $forbidden
     );
 }
+$toolbar = file_get_contents($root . '/app/core_modules/toolbar/classes/toolbarsecuritycontext_class_inc.php');
 nativeWebContract(
-    strpos($landing, 'method="post"') !== false
-        && strpos($landing, 'name="native_auth_logout"') !== false,
-    'native landing owns the POST logout form'
+    strpos($toolbar, 'method="post"') !== false
+        && strpos($toolbar, 'name="native_auth_logout"') !== false
+        && strpos($toolbar, "issueForSession('native_auth_logout')") !== false,
+    'canonical toolbar owns the protected POST logout control'
 );
 
 echo "ALL NATIVE WEB BOUNDARY CONTRACTS PASSED\n";

@@ -59,6 +59,13 @@ die("You cannot view this page directly");
 */
 class contextsidebar extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $contextCode;
+    public $objContext;
+    public $objContextGroups;
+    public $objLanguage;
+    public $objUser;
+
 
 
     /**

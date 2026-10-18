@@ -62,6 +62,11 @@ require_once("ifhtml_class_inc.php");
  */
 class button extends abhtmlbase implements ifhtml
 {
+    /** Dependencies and state initialised by this component. */
+    public $iconclass;
+    public $onclick;
+    public $value;
+
         /**
          *
          * @var object DOM object

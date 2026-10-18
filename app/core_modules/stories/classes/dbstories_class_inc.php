@@ -6,6 +6,8 @@
 */
 class dbStories extends dbTable
 {
+    public $objUser;
+    public $objLanguage;
 
     /**
     * Constructor method to define the table
@@ -21,24 +23,35 @@ class dbStories extends dbTable
     * @param string $mode: edit if coming from edit, add if coming from add
     */
     function saveStories($mode) {
+        if (!in_array($mode, ['edit','add','translate'], true)) throw new InvalidArgumentException('Invalid story mode');
+        foreach (['category','language','title','mainText','isActive','isSticky','expirationDate','id','parentId','abstract'] as $field) {
+            if (isset($_POST[$field]) && !is_string($_POST[$field])) throw new InvalidArgumentException('Invalid story field');
+        }
+        if (!in_array($this->getParam('isActive'), ['0','1'], true)
+            || !in_array($this->getParam('isSticky'), ['0','1'], true)
+            || trim((string)$this->getParam('title', '')) === ''
+            || !preg_match('/^[a-z]{2}$/iD', (string)$this->getParam('language', '')))
+            throw new InvalidArgumentException('Invalid story values');
+        if ($mode === 'edit' && !$this->getRow('id', $this->getParam('id', '')))
+            throw new InvalidArgumentException('Unknown story');
         //The current user
         $userId = $this->objUser->userId();
         //Get data from form
-        $category = TRIM($this->getParam('category', NULL));
-        $isActive = TRIM($this->getParam('isActive', NULL));
-        $parentId = TRIM($this->getParam('parentId', NULL));
+        $category = trim((string)$this->getParam('category', ''));
+        $isActive = trim((string)$this->getParam('isActive', ''));
+        $parentId = TRIM($this->getParam('parentId', ''));
         //Set Id to default if missing
         if ($parentId=='') {
             $parentId='base';
         }
-        $language = TRIM($this->getParam('language', NULL));
-        $title = TRIM($this->getParam('title', NULL));
+        $language = trim((string)$this->getParam('language', ''));
+        $title = trim((string)$this->getParam('title', ''));
         $abstractParam = $this->getParam('abstract', NULL);
         $abstract = ($abstractParam === NULL) ? NULL : TRIM($abstractParam);
-        $mainText = TRIM($this->getParam('mainText', NULL));
-        $isSticky = TRIM($this->getParam('isSticky', NULL));
-        $forceOrder = TRIM($this->getParam('forceOrder', NULL));
-        $expirationDate = TRIM($this->getParam('expirationDate', NULL));
+        $mainText = trim((string)$this->getParam('mainText', ''));
+        $isSticky = trim((string)$this->getParam('isSticky', ''));
+        $forceOrder = TRIM($this->getParam('forceOrder', ''));
+        $expirationDate = trim((string)$this->getParam('expirationDate', ''));
         // if edit use update
         if ($mode=="edit") {
             $rsArray=array(
@@ -50,17 +63,17 @@ class dbStories extends dbTable
                 'mainText'=>$mainText,
                 'isSticky'=>$isSticky,
                 'modifierId'=>$userId,
-                'dateModified'=>date('Y-m-d H:m:s'),
+                'dateModified'=>date('Y-m-d H:i:s'),
                 'expirationDate'=>$expirationDate);
             // Missing input must not erase stored content. A submitted empty
             // value remains deliberate and therefore still clears it.
             if ($abstract !== NULL) {
                 $rsArray['abstract'] = $abstract;
             }
-            $id = TRIM($this->getParam('id', NULL));
-            $this->update("id", $id, $rsArray);
-        } elseif ($mode=="add" || $mode="translate") {
-            $this->insert(array(
+            $id = TRIM($this->getParam('id', ''));
+            return $this->update("id", $id, $rsArray);
+        } elseif ($mode=="add" || $mode=="translate") {
+            return $this->insert(array(
               'category'=>$category,
               'parentId'=>$parentId,
               'language'=>$language,
@@ -70,7 +83,7 @@ class dbStories extends dbTable
               'mainText'=>$mainText,
               'isSticky'=>$isSticky,
               'creatorId'=>$userId,
-              'dateCreated'=>date('Y-m-d H:m:s'),
+              'dateCreated'=>date('Y-m-d H:i:s'),
               'expirationDate'=>$expirationDate));
         }
     }

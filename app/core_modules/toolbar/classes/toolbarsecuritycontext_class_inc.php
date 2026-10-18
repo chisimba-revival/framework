@@ -15,6 +15,7 @@
 class toolbarsecuritycontext extends ChisimbaObject
 {
     private $csrf;
+    private $logoutRecoveryLoaded = false;
     private $user;
     private $permissions;
     private $context;
@@ -121,6 +122,12 @@ class toolbarsecuritycontext extends ChisimbaObject
         if (!$this->isAuthenticated()) {
             return '';
         }
+        $recoveryScript = '';
+        if (!$this->logoutRecoveryLoaded) {
+            // Toolbars may render after the page head has already been emitted.
+            $recoveryScript = '<script defer src="'.htmlspecialchars($this->getResourceUri('logout-recovery.js', 'security'), ENT_QUOTES, 'UTF-8').'?v=1"></script>';
+            $this->logoutRecoveryLoaded = true;
+        }
         $token = $this->csrf->issueForSession('native_auth_logout');
         $action = html_entity_decode(
             $this->uri(array('action' => 'logout'), 'security'),
@@ -132,11 +139,17 @@ class toolbarsecuritycontext extends ChisimbaObject
             . htmlspecialchars($action, ENT_QUOTES, 'UTF-8')
             . '" class="'
             . htmlspecialchars($cssClass, ENT_QUOTES, 'UTF-8')
-            . '"><input type="hidden" name="native_auth_logout" value="'
+            . '" data-logout-recovery data-token-url="'
+            . htmlspecialchars(html_entity_decode($this->uri(array('action'=>'formtoken'), 'security'), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')
+            . '" data-recovery-error="'
+            . htmlspecialchars($this->getObject('language','language')->languageText('mod_security_logout_retry','security'), ENT_QUOTES, 'UTF-8')
+            . '"><input type="hidden" name="native_auth_actor" value="'
+            . htmlspecialchars((string)$this->user->userId(), ENT_QUOTES, 'UTF-8')
+            . '" /><input type="hidden" name="native_auth_logout" value="'
             . htmlspecialchars($token, ENT_QUOTES, 'UTF-8')
             . '" /><button type="submit">'
             . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
-            . '</button></form>';
+            . '</button></form>' . $recoveryScript;
     }
 }
 ?>

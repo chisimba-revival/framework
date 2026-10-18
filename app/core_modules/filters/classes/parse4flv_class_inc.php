@@ -65,10 +65,7 @@ class parse4flv extends ChisimbaObject
      */
     function init()
     {
-        $this->objConfig = $this->getObject('altconfig', 'config');
-        // Get an instance of the params extractor
-        $this->objExpar = $this->getObject("extractparams", "utilities");
-        
+        // Media rendering is resolved lazily; no mutable parser state.
     }
     
     /**
@@ -80,43 +77,17 @@ class parse4flv extends ChisimbaObject
     */
     public function parse($txt)
     {
-        preg_match_all('/\[FLV\](.*)\[\/FLV\]/U', $txt, $results, PREG_PATTERN_ORDER);
-        preg_match_all('/\\[FLV:(.*?)\\]/', $txt, $results2, PREG_PATTERN_ORDER);
-        $counter = 0;
-        foreach ($results[1] as $item)
-        {
-            $videoId = $item;
-            $replacement = $this->getVideoObject($videoId);
-            $txt = str_replace($results[0][$counter], $replacement, $txt);
-            $counter++;
-        }
-        
-        //Get all the ones [FLV: xx=yy] tags (added by Derek 2007 09 23)
-        $counter = 0;
-        foreach ($results2[0] as $item)
-        {
-            $this->item=$item;
-            $str = $results2[1][$counter];
-            $ar= $this->objExpar->getArrayParams($str, ",");
-            if (isset($this->objExpar->width)) {
-                $width = $this->objExpar->width;
-            } else {
-                $width=320;
+        $txt = preg_replace_callback('~\[FLV\](.*?)\[/FLV\]~s',
+            fn($m) => $this->getVideoObject(trim($m[1])), $txt);
+        return preg_replace_callback('~\[FLV:(.*?)\]~s', function ($m) {
+            $params = [];
+            foreach (explode(',', $m[1]) as $pair) {
+                $parts = explode('=', trim($pair), 2);
+                if (count($parts) === 2) $params[trim($parts[0])] = trim($parts[1], " \t\n\r\0\x0B\"'");
             }
-            if (isset($this->objExpar->height)) {
-                $height = $this->objExpar->height;
-            } else {
-                $height=240;
-            }
-            if (isset($this->objExpar->url)) {
-                $url = $this->objExpar->url;
-            }
-            $replacement = $this->getVideoObject($url, $width, $height);
-            $txt = str_replace($item, $replacement, $txt);
-            $counter++;
-        }
-        
-        return $txt;
+            if (empty($params['url'])) return $m[0];
+            return $this->getVideoObject($params['url'], $params['width'] ?? 320, $params['height'] ?? 240);
+        }, $txt);
     }
     
     /**
@@ -129,21 +100,7 @@ class parse4flv extends ChisimbaObject
      */
     private function getVideoObject($videoId, $width=320, $height=240)
     {
-        $player = $this->objConfig->getsiteRoot().$this->getResourceUri('flvplay.swf');
-        $skin = $this->objConfig->getsiteRoot().$this->getResourceUri('flvskin.swf');
-        $sskin = str_replace(".swf",'',$skin);
-        return '<object width="' . $width . '" height="' . $height . '" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" 
-                codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,19,0"> 
-                <param name="salign" value="lt"> 
-                <param name="quality" value="high">   
-                <param name="scale" value="noscale"> 
-                <param name="wmode" value="transparent"> 
-                <param name="movie" value="'.$player.'"> 
-                <param name="FlashVars" value="&amp;streamName='.$videoId.'&amp;skinName='.$sskin.'&amp;autoPlay=false&amp;autoRewind=true">  
-                <embed width="' . $width . '" height="' . $height . '" flashvars="&amp;streamName='.$videoId.'&amp;autoPlay=false&amp;autoRewind=true&amp;skinName='.$sskin.'" 
-                quality="high" scale="noscale" salign="LT" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" 
-                src="'.$player.'" wmode="transparent"> </embed>
-                </object>';
+        return $this->getObject('nativeplayer', 'files')->video($videoId, $width, $height);
     }
     
     /**

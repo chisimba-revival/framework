@@ -82,7 +82,7 @@ class auth_database extends abauth implements ifauth
     {
         $this->credentialFailureStatus = '';
         require_once dirname(__FILE__)
-            . '/nativeauth/mdb2nativedatabaseadapter.php';
+            . '/nativeauth/dbtablenativedatabaseadapter.php';
         require_once dirname(__FILE__)
             . '/nativeauth/nativeuserrepository.php';
         require_once dirname(__FILE__)
@@ -96,9 +96,7 @@ class auth_database extends abauth implements ifauth
         require_once dirname(__FILE__)
             . '/nativeauth/nativesessionservice.php';
 
-        $database = new Mdb2NativeDatabaseAdapter(
-            $this->objEngine->getDbObj()
-        );
+        $database = new DbTableNativeDatabaseAdapter($this);
         $users = new NativeUserRepository($database);
         $provider = new LocalPasswordProvider(
             $users,

@@ -126,7 +126,6 @@ class jqgrid extends ChisimbaObject
     public function init()
     {
         $this->jQuery = $this->newObject('jquery', 'jquery');
-        $this->jQuery->loadLiveQueryPlugin();
         $this->loadClass('layer', 'htmlelements');
 
         $this->gridId = 'chisimba_grid_01';
@@ -378,43 +377,30 @@ GRIDSCRIPT;
     */
     public function attachRefreshEvent($id, $event = 'click')
     {
-
-$script = <<<REFRESHBIND
-    <script type="text/javascript" >
-        jQuery(document).ready(function(){
-            jQuery('#$id').livequery('$event',function(){
-                jQuery('#{$this->gridId}').trigger('reloadGrid');
-            });
-        });
-    </script>
-REFRESHBIND;
-        $this->appendArrayVar('headerParams', $script);
+        $flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR;
+        $grid = json_encode((string) $this->gridId, $flags);
+        $this->appendArrayVar('headerParams', $this->getObject('jquery', 'jquery')->dynamicEventScript($id, $event,
+            'jQuery(document.getElementById(' . $grid . ')).trigger("reloadGrid");'));
     }
 
 
     /**
     * Method to attach an element's event to the delete(row_id) method.
     * The trigger will cause the grid to delete the row at the specified id via ajax request.
-    * By using liveQuery, the event's are seamlessly rebound even when elements are loaded via ajax.
+    * Native event delegation also handles elements inserted after page load.
     * 
     * @access public
     * @param string $id The id of the element that will be clicked/{event} to trigger the grid to reload
     * @param string $event To specify which event will trigger the reload.
     * @return void
     */
-    public function attachDeleteEvent($id, $row_id,$event = 'click')
+    public function attachDeleteEvent($id, $row_id, $event = 'click')
     {
-
-$script = <<<DELETEBIND
-<script type="text/javascript" >
-jQuery(document).ready(function(){
-    jQuery('#$id').livequery('$event',function(){
-        jQuery('#chisimba_grid_01').delGridRow('$row_id');
-    });
-});
-</script>
-DELETEBIND;
-        $this->appendArrayVar('headerParams', $script);
+        $flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR;
+        $grid = json_encode((string) 'chisimba_grid_01', $flags);
+        $row = json_encode((string) $row_id, $flags);
+        $this->appendArrayVar('headerParams', $this->getObject('jquery', 'jquery')->dynamicEventScript($id, $event,
+            'jQuery(document.getElementById(' . $grid . ')).delGridRow(' . $row . ');'));
     }
 
 
@@ -429,17 +415,10 @@ DELETEBIND;
     */
     public function attachDeleteMultipleEvent($id, $event = 'click')
     {
-
-$script = <<<DELETEMULTIBIND
-<script type="text/javascript" >
-jQuery(document).ready(function(){
-    jQuery('#$id').livequery('$event',function(){
-        jQuery('#chisimba_grid_01').delGridRow('test');
-    });
-});
-</script>
-DELETEMULTIBIND;
-        $this->appendArrayVar('headerParams', $script);
+        $flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR;
+        $grid = json_encode((string) 'chisimba_grid_01', $flags);
+        $this->appendArrayVar('headerParams', $this->getObject('jquery', 'jquery')->dynamicEventScript($id, $event,
+            'jQuery(document.getElementById(' . $grid . ')).delGridRow("test");'));
     }
 
 

@@ -29,45 +29,31 @@ class SigningKeyService
     /**
      * Where the private key lives.
      *
-     * The default is under the framework's var directory rather than beside
-     * this file, so that a deployment which serves the source tree cannot also
-     * serve its signing key. The environment variable exists so an installation
-     * can put the key on a mounted secret volume instead, which is what it
-     * should do in production.
+     * Require an explicit private path, preserving the installation's existing
+     * key when upgrading. Never silently create a replacement under the web root.
      *
      * @return string
      */
     public function keyPath(): string
     {
-        if ($this->path !== null) {
-            return $this->path;
+        if ($this->path !== null) return $this->path;
+        $environment = getenv('CHISIMBA_JWKS_KEY_PATH');
+        $configured = is_string($environment) && trim($environment) !== ''
+            ? trim($environment) : self::configuredKeyPath();
+        if ($configured === null || !str_starts_with($configured, '/')) {
+            throw new RuntimeException('Configure an absolute REST API signing-key path outside the web root.');
         }
-
-        // The environment first, then the installation's configuration file.
-        //
-        // The configuration file is here for the same reason the denylist
-        // address reads KEWL_DENYLIST_REDIS: an environment variable can only be
-        // changed by recreating the container, so an installation that needs a
-        // different path has to rebuild itself to get one. A setting that is
-        // awkward to change is a setting that gets left wrong, and leaving this
-        // one wrong means the service cannot start at all, because it has
-        // nowhere to write the key.
-        //
-        // Neither source is a fallback for the other. A path that is right in
-        // one and wrong in the other silently publishes a *different* key on
-        // every start, which invalidates every token in circulation while
-        // looking like an ordinary redeploy.
-        $fromEnvironment = getenv('CHISIMBA_JWKS_KEY_PATH');
-        if (is_string($fromEnvironment) && trim($fromEnvironment) !== '') {
-            return $this->path = $fromEnvironment;
+        $directory = realpath(dirname($configured));
+        if ($directory === false) throw new RuntimeException('Create the private REST API key directory before enabling the API.');
+        $path = $directory . '/' . basename($configured);
+        $resolved = realpath($path) ?: $path;
+        $roots = [realpath(dirname(__DIR__, 3)), realpath($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 3))];
+        foreach ($roots as $root) {
+            if ($root !== false && ($resolved === $root || str_starts_with($resolved, rtrim($root, '/') . '/'))) {
+                throw new RuntimeException('The REST API signing key must be outside the web root.');
+            }
         }
-
-        $configured = self::configuredKeyPath();
-        if ($configured !== null) {
-            return $this->path = $configured;
-        }
-
-        return $this->path = dirname(dirname(dirname(__DIR__))) . '/var/restapi/jwks_private.pem';
+        return $this->path = $path;
     }
 
     /**
@@ -112,36 +98,30 @@ class SigningKeyService
     public function privateKey(): string
     {
         $path = $this->keyPath();
-
         if (is_file($path)) {
             $pem = file_get_contents($path);
-            if ($pem === false) {
-                throw new RuntimeException(
-                    'The REST API signing key exists at ' . $path . ' but could not be read.'
-                );
-            }
+            if ($pem === false) throw new RuntimeException('Cannot read the configured REST API signing key.');
             return $pem;
         }
-
-        $resource = openssl_pkey_new([
-            'private_key_bits' => self::KEY_BITS,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA,
-        ]);
-        if ($resource === false) {
-            throw new RuntimeException(
-                'The REST API signing key could not be generated: ' . openssl_error_string()
-            );
+        // A first-use race must not generate two keys and invalidate the first
+        // caller's token. Serialise provisioning, then publish the complete PEM.
+        $mask = umask(0077);
+        try { $lock = fopen($path . '.lock', 'c'); } finally { umask($mask); }
+        if ($lock === false) throw new RuntimeException('Cannot open the signing-key provisioning lock.');
+        try {
+            if (!flock($lock, LOCK_EX)) throw new RuntimeException('Cannot lock signing-key provisioning.');
+            if (!is_file($path)) {
+                $resource = openssl_pkey_new(['private_key_bits'=>self::KEY_BITS, 'private_key_type'=>OPENSSL_KEYTYPE_RSA]);
+                if ($resource === false || !openssl_pkey_export($resource, $pem)) throw new RuntimeException('Cannot generate the REST API signing key.');
+                $this->store($path, $pem);
+            }
+            $pem = file_get_contents($path);
+            if ($pem === false) throw new RuntimeException('Cannot read the provisioned signing key.');
+            return $pem;
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
         }
-
-        $pem = '';
-        if (!openssl_pkey_export($resource, $pem)) {
-            throw new RuntimeException(
-                'The REST API signing key could not be exported: ' . openssl_error_string()
-            );
-        }
-
-        $this->store($path, $pem);
-        return $pem;
     }
 
     /**
@@ -156,33 +136,14 @@ class SigningKeyService
      */
     private function store(string $path, string $pem): void
     {
-        $directory = dirname($path);
-        if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
-            // This is the default-path failure and it is worth naming the way
-            // out of it. The default lives under the framework's var directory,
-            // which a web server user cannot always create — the document root
-            // is commonly read-only to the user Apache runs as. The answer is
-            // CHISIMBA_JWKS_KEY_PATH pointing somewhere writable, ideally a
-            // mounted secret, and saying so beats reporting a mkdir failure
-            // that looks like a permissions misconfiguration somewhere else.
-            throw new RuntimeException(
-                'The REST API signing key directory ' . $directory . ' could not be '
-                . 'created. Point CHISIMBA_JWKS_KEY_PATH at a writable location, '
-                . 'preferably a mounted secret, and the key will be created there.'
-            );
+        $temporary = tempnam(dirname($path), '.rest-key-');
+        if ($temporary === false) throw new RuntimeException('Cannot prepare the signing-key file.');
+        try {
+            if (!chmod($temporary, 0600) || file_put_contents($temporary, $pem) !== strlen($pem)
+                || !rename($temporary, $path)) throw new RuntimeException('Cannot publish the signing key.');
+        } finally {
+            if (is_file($temporary)) unlink($temporary);
         }
-
-        // The file is created with its final contents and mode together where
-        // the platform allows it. A restrictive umask still applies, so this
-        // narrows the window rather than closing it, and that is the honest
-        // claim. A deployment that needs it closed should mount the key as a
-        // secret with CHISIMBA_JWKS_KEY_PATH pointing at it.
-        if (@file_put_contents($path, $pem, LOCK_EX) === false) {
-            throw new RuntimeException(
-                'The REST API signing key could not be written to ' . $path . '.'
-            );
-        }
-        @chmod($path, 0600);
     }
 
     /**

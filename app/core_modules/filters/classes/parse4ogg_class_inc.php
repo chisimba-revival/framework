@@ -53,8 +53,7 @@ $GLOBALS['kewl_entry_point_run'])
  * It takes the form
  * [ALERT: url=http://somesite.com]The text of the alert[/ALERT]
  *
- * This causes the text to be placed in a facebox alert using the alertbox
- * class in HTML elements. It needs the jQuery resources in the jquery module.
+ * Uses the shared alert helper, preserving normal navigation to the stream page.
  *
  * @author Derek Keats
  *
@@ -69,7 +68,9 @@ class parse4ogg extends ChisimbaObject
     * @access public
     *
     */
-    public $objALert;
+    public $objAlert;
+
+    public $objLanguage;
 
     /**
     *

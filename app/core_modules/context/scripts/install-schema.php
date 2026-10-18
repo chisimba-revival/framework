@@ -38,13 +38,7 @@ $_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['QUERY_STRING'] = '';
 
-// installer/dbhandlers/dbhandler.inc rewrites this to locate the bundled PEAR
-// libraries, stripping the installer entry point from the path. Under the web
-// installer it is .../installer/index.php; here the engine entry point plays
-// that role. dbhandler.inc and dbhandlermanager.inc both append
-// "$SCRIPT_FILENAME minus installer/index.php + lib/pear/" to the include path,
-// so the bundled MDB2 and its mysqli driver resolve exactly as they do under
-// the web installer.
+// Use the installer entry point for CLI bootstrap.
 $_SERVER['SCRIPT_FILENAME'] = $app . 'installer/index.php';
 
 $GLOBALS['kewl_entry_point_run'] = true;
@@ -68,8 +62,7 @@ if (!defined('KEWL_DB_DSN')) {
 
 $_SESSION['dsn'] = KEWL_DB_DSN;
 
-// The installer defines this before it loads dbhandler.inc; reuse the same
-// value so the bundled PEAR path resolves identically here.
+// Shared installer bootstrap.
 if (!defined('INSTALL_DIR')) {
     define('INSTALL_DIR', $app . 'installer');
 }
@@ -85,7 +78,9 @@ if (!class_exists('DbHandler')) {
 
 $handler = new DbHandler();
 $conn = &$handler->getDbHandler($_SESSION['dsn']);
-$db = $engine->getDbObj();
+$db = $engine->getObject('modules', 'modulecatalogue');
+require_once $app . 'classes/core/chisimbadatabaseschema.php';
+$schema = new ChisimbaDatabaseSchema($db);
 
 /**
  * Reports whether a table already exists.
@@ -94,17 +89,7 @@ $db = $engine->getDbObj();
  * the subsequent CREATE share the same connection and the same transaction
  * boundary.
  */
-$tableExists = function ($tableName) use ($db) {
-    $result = $db->query('SHOW TABLES LIKE ' . $db->quote($tableName));
-
-    if (MDB2::isError($result)) {
-        throw new RuntimeException(
-            'Could not check for table ' . $tableName . ': ' . $result->getMessage()
-        );
-    }
-
-    return $result->numRows() > 0;
-};
+$tableExists = fn($tableName) => $schema->tableExists($tableName);
 
 $sqlDir = $app . 'core_modules/context/sql/';
 

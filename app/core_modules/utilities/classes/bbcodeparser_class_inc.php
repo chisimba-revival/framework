@@ -18,41 +18,15 @@ Public License
  * @link      http://avoir.uwc.ac.za
  */
 
+require_once __DIR__.'/nativebbcode.php';
+
 class bbcodeparser extends ChisimbaObject
 {
-    /**
-    * Constructor
-    */
-    public function init()
-    {
-        include_once($this->getPearResource('HTML/BBCodeParser.php'));
-        if(!class_exists('HTML_BBCodeParser'))
-        {
-            @include_once('HTML/BBCodeParser.php');
-        }
-        //    throw new customException("Unable to locate PEAR::BBCodeParser, please install it with pear install --alldeps html_bbcodeparser!");
-        
-    }
+    public function init() {}
 
-    /**
-     * Method to take a text string, parse it for BBCode and return a XHTML compliant string with divs
-     *
-     * @param string $text
-     * @return string
-     */
+    /** Format BBCode inside caller-owned HTML; this is not an HTML sanitiser. */
     public function parse4bbcode($text)
     {
-        
-        if(class_exists('HTML_BBCodeParser')) {
-            $parser = new HTML_BBCodeParser(parse_ini_file('BBCodeParser.ini'));
-            //log_debug("set the parser");
-            $parser->setText($text);
-            $parser->parse();
-    
-            return $parser->getParsed();
-        } else {
-            return $text;
-        }
+        return ChisimbaBbcode::parse((string)$text);
     }
 }
-?>

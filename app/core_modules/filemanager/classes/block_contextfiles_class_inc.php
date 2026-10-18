@@ -3,6 +3,12 @@
 
 class block_contextfiles extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objContext;
+    public $objFolder;
+    public $objLanguage;
+    public $title;
+
     /**
     *Initialize by send the table name to be accessed
     */

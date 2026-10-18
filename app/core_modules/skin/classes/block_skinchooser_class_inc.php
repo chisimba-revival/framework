@@ -14,6 +14,10 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class block_skinchooser extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+    public $objUser;
+
     /**
     * string $title Title of the Block
     */

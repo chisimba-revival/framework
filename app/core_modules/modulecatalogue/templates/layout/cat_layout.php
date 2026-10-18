@@ -33,12 +33,15 @@ foreach (array('all' => 'allmodules', 'installed' => 'installedmodules', 'uninst
         . ' href="' . $escape(html_entity_decode($this->uri(array('action'=>'list', 'cat'=>'all', 'modulefilter'=>$value), 'modulecatalogue'), ENT_QUOTES, 'UTF-8')) . '">'
         . $escape($label) . '</a>';
 }
-$filterBar .= '<a class="button chisimba-button-secondary" href="'
+$filterBar .= '<form method="post" action="'
     . $escape(html_entity_decode($this->uri(array('action'=>'updatexml','cat'=>$activeCat,'modulefilter'=>$moduleFilter), 'modulecatalogue'), ENT_QUOTES, 'UTF-8')) . '">'
-    . $escape($this->objLanguage->languageText('mod_modulecatalogue_refreshcatalogue', 'modulecatalogue')) . '</a></nav>';
+    . '<input type="hidden" name="csrf_token" value="' . $escape($catalogueRefreshCsrf ?? '') . '">'
+    . '<button class="button chisimba-button-secondary" type="submit">'
+    . $escape($this->objLanguage->languageText('mod_modulecatalogue_refreshcatalogue', 'modulecatalogue')) . '</button></form></nav>';
 if ($moduleFilter === 'new') {
     $filterBar .= '<p class="chisimba-notice">' . $escape($this->objLanguage->languageText('mod_modulecatalogue_newmoduleshelp', 'modulecatalogue')) . '</p>';
 }
+if ($this->objModule->checkIfRegistered('help')) { $filterBar .= $this->getObject('contextualhelp','help')->show('modulecatalogue','refresh'); }
 $ret = $filterBar . $content;
 $ret = "<div class='modcat_main'>$ret</div>";
 $cssLayout->setMiddleColumnContent($ret);

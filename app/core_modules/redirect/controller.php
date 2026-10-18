@@ -41,6 +41,9 @@ if (!$GLOBALS['kewl_entry_point_run'])
 
 class redirect extends controller
 {
+    public $objLanguage;
+    public $objDBContext;
+    public $objManageGroups;
     /**
      * Method to construct the class.
      */
@@ -85,7 +88,7 @@ class redirect extends controller
         $subhead = $this->newObject('link', 'htmlelements');
 
         $modname = $this->getParam('modname');
-        $actionname = $this->getParam('actionname');
+        $actionname = htmlspecialchars((string)$this->getParam('actionname', ''), ENT_QUOTES, 'UTF-8');
 
         $heading = $this->objLanguage->languageText('mod_redirect_noaction', 'redirect')
             .' <em>'.$actionname.'</em>';
@@ -95,7 +98,7 @@ class redirect extends controller
         $subhead->link('javascript: history.back();');
 
         $this->setVarByRef('heading', $heading);
-        $this->setVarByRef('subhead', $subhead->show());
+        $this->setVar('subhead', $subhead->show());
 
         return 'redirect_tpl.php';
     }

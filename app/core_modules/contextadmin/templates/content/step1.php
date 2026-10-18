@@ -1,4 +1,5 @@
 <?php
+$this->appendArrayVar('headerParams', $this->getJavaScriptFile('settings.js?v=2061', 'context'));
 $objSysConfig = $this->getObject ('dbsysconfig','sysconfig');
 
 $this->loadClass('htmlheading', 'htmlelements');
@@ -12,10 +13,6 @@ $this->loadClass('hiddeninput', 'htmlelements');
 $this->loadClass('checkbox', 'htmlelements');
 $this->loadClass('fieldset', 'htmlelements');
 $this->loadClass('link', 'htmlelements');
-$objIcon = $this->newObject('geticon', 'htmlelements');
-$objIcon->setIcon('loader');
-
-$contextexists = $this->objLanguage->code2Txt('mod_contextadmin_contextcodeexists', 'contextadmin');
 if ($mode == 'edit') {
     $fixup = NULL;
 
@@ -26,98 +23,7 @@ if ($mode == 'edit') {
     $headerTitle = $this->objLanguage->code2Txt('mod_contextadmin_createnewcontext', 'contextadmin', NULL, 'Create New [-context-]');
     $fixup = $this->getSession('fixup', NULL);
 
-    $this->appendArrayVar('headerParams', '
-    <script type="text/javascript">
-
-        // Flag Variable - Update message or not
-        var doUpdateMessage = false;
-
-        // Var Current Entered Code
-        var currentCode;
-
-        // Action to be taken once page has loaded
-        jQuery(document).ready(function(){
-            jQuery("#input_contextcode").bind(\'keyup\', function() {
-                checkCode(jQuery("#input_contextcode").attr(\'value\'));
-            });
-        });
-
-        // Function to check whether context code is taken
-        function checkCode(code)
-        {
-            // Messages can be updated
-            doUpdateMessage = true;
-
-            // If code is null
-            if (code == null) {
-                // Remove existing stuff
-                jQuery("#contextcodemessage").html("");
-                jQuery("#contextcodemessage").removeClass("error");
-                jQuery("#input_contextcode").removeClass("inputerror");
-                jQuery("#contextcodemessage").removeClass("success");
-                doUpdateMessage = false;
-
-            // If code is root - Reserved. Saves Ajax Call
-            } else if (code.toLowerCase() == "root") {
-
-                currentCode = code;
-
-                jQuery("#contextcodemessage").html("This code has been reserved and cannot be used as a context code.");
-                jQuery("#contextcodemessage").addClass("error");
-                jQuery("#input_contextcode").addClass("inputerror");
-                jQuery("#contextcodemessage").removeClass("success");
-                doUpdateMessage = false;
-
-            // Else Need to do Ajax Call
-            } else {
-
-
-
-                // Check that existing code is not in use
-                if (currentCode != code) {
-
-                    // Set message to checking
-                    jQuery("#contextcodemessage").removeClass("success");
-                    jQuery("#contextcodemessage").html("<span id=\"contextcodecheck\">' . addslashes($objIcon->show()) . ' Checking ...</span>");
-
-
-                    // Set current Code
-                    currentCode = code;
-
-                    // DO Ajax
-                    jQuery.ajax({
-                        type: "GET",
-                        url: "index.php",
-                        data: "module=contextadmin&action=checkcode&code="+code,
-                        success: function(msg){
-
-                            // Check if messages can be updated and code remains the same
-                            if (doUpdateMessage == true && currentCode == code) {
-
-                                // IF code exists
-                                if (msg == "exists") {
-                                    jQuery("#contextcodemessage").html("' . $contextexists . '");
-                                    jQuery("#contextcodemessage").addClass("error");
-                                    jQuery("#input_contextcode").addClass("inputerror");
-                                    jQuery("#contextcodemessage").removeClass("success");
-                                    jQuery("#savebutton").attr("disabled", "disabled");
-
-                                // Else
-                                } else {
-                                    jQuery("#contextcodemessage").html("Available");
-                                    jQuery("#contextcodemessage").addClass("success");
-                                    jQuery("#contextcodemessage").removeClass("error");
-                                    jQuery("#input_contextcode").removeClass("inputerror");
-                                    jQuery("#savebutton").removeAttr("disabled");
-                                }
-
-                            }
-                        }
-                    });
-                }
-            }
-        }
-    </script>');
+    $this->appendArrayVar('headerParams', $this->getJavaScriptFile('code-availability.js?v=1432', 'contextadmin'));
 }
 
 
@@ -269,7 +175,12 @@ if ($mode == 'edit') {
 } else {
     $table->startRow();
     $table->addCell($codeLabel->show(), 100);
-    $table->addCell($code->show() . ' <span id="contextcodemessage">' . $contextCodeMessage . '</span>');
+    $codeStatus = '<span id="contextcodemessage" role="status" aria-live="polite"';
+    foreach (['reserved','invalid','checking','available','exists','failed'] as $state) {
+        $text = $this->objLanguage->languageText('mod_contextadmin_code_'.$state, 'contextadmin');
+        $codeStatus .= ' data-'.$state.'="'.htmlspecialchars(html_entity_decode($text, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8').'"';
+    }
+    $table->addCell($code->show().' '.$codeStatus.'>'.$contextCodeMessage.'</span>');
     $table->endRow();
 }
 
@@ -324,17 +235,18 @@ $formatDescriptions = array(
     ),
     'microlearning' => $this->objLanguage->languageText(
         'mod_contextadmin_format_microlearning_help',
+        'contextadmin',
         'Short, focused learning items designed for brief study sessions.'
     ),
     'masterclass' => $this->objLanguage->languageText(
         'mod_contextadmin_format_masterclass_help',
+        'contextadmin',
         'A short, focused class on a specific topic, typically one to three hours in duration.'
     ),
 );
 $formatHelp = '<p id="delivery-format-help" class="contextadmin-field-help" data-format-descriptions="'
     . htmlspecialchars(json_encode($formatDescriptions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8')
     . '">' . htmlspecialchars($formatDescriptions[$selectedFormat] ?? $formatDescriptions['standard'], ENT_QUOTES, 'UTF-8') . '</p>';
-$this->appendArrayVar('headerParams', '<script type="text/javascript">document.addEventListener("DOMContentLoaded",function(){var select=document.getElementById("input_delivery_format"),help=document.getElementById("delivery-format-help"),descriptions={};if(!select||!help){return;}try{descriptions=JSON.parse(help.dataset.formatDescriptions||"{}");}catch(error){descriptions={};}select.addEventListener("change",function(){help.textContent=descriptions[select.value]||"";});});</script>');
 $navigation = new dropdown('navigation_mode');
 $navigation->addOption('sequential', $this->objLanguage->languageText('mod_contextadmin_navigation_sequential', 'contextadmin', 'Sequential only'));
 $navigation->addOption('backward', $this->objLanguage->languageText('mod_contextadmin_navigation_backward', 'contextadmin', 'Backward allowed'));
@@ -389,7 +301,7 @@ if ($mode == 'add' && !empty($contextAdminCpdAvailable)) {
     $table->addCell('<h2 class="contextadmin-form-section-heading">' . $this->objLanguage->languageText('mod_contextadmin_cpdrecognition', 'contextadmin', 'CPD recognition') . '</h2>');
     $table->addCell($cpdHtml);
     $table->endRow();
-    $this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){var previousAccess=null;function cpdToggle(){var on=jQuery("#cpd_enabled").is(":checked"),access=jQuery("input[name=access]");jQuery("#cpd_creation_settings").toggle(on);jQuery("#cpd_scheme_id,#cpd_category_id,#cpd_points,#cpd_reason").prop("required",on);if(on){if(previousAccess===null){previousAccess=access.filter(":checked").val()||null;}access.filter("[value=Private]").prop("checked",true);}else if(previousAccess!==null){access.filter("[value="+previousAccess+"]").prop("checked",true);previousAccess=null;}}function categoryFilter(){var scheme=jQuery("#cpd_scheme_id").val();jQuery("#cpd_category_id option[data-scheme]").each(function(){jQuery(this).prop("hidden",jQuery(this).data("scheme")!==scheme);});if(jQuery("#cpd_category_id option:selected").data("scheme")!==scheme){jQuery("#cpd_category_id").val("");}}jQuery("#cpd_enabled").on("change",cpdToggle);jQuery("#cpd_scheme_id").on("change",categoryFilter);cpdToggle();categoryFilter();jQuery("#input_delivery_format").on("change",function(){jQuery("#input_navigation_mode").val(jQuery(this).val()==="microlearning"?"backward":"free");});});</script>');
+    $this->appendArrayVar('headerParams', $this->getJavaScriptFile('creation-options.js?v=1432', 'contextadmin'));
 }
 
 
@@ -433,7 +345,6 @@ $table->addCell('Admission policy');
 $table->addCell('<div id="context_private_admission">' . $privateAdmissionMode->show() . '</div>');
 $table->endRow();
 
-$this->appendArrayVar('headerParams', '<script type="text/javascript">jQuery(function(){function admissionPolicy(){var paid=jQuery("input[name=access_policy]:checked").val()==="private",box=jQuery("#context_private_admission");box.closest("tr").toggle(paid);box.find("input").prop("disabled",!paid);}jQuery("input[name=access_policy]").on("change",admissionPolicy);admissionPolicy();});</script>');
 
 $button = new button('savecontext', $this->objLanguage->languageText('mod_contextadmin_gotonextstep', 'contextadmin', 'Go to Next Step'));
 $button->cssId = 'savebutton';

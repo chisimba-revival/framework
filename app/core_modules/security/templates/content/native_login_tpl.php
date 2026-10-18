@@ -21,10 +21,14 @@ $esc = function ($value) {
 ?>
 <main class="security-native-auth chisimba-form-card" aria-labelledby="native-login-title">
   <h1 id="native-login-title"><?php echo $esc($labels['title']); ?></h1>
+  <?php if (!empty($nativeLoginNotice) && is_string($nativeLoginNotice)): ?>
+    <p><?php echo $esc($nativeLoginNotice); ?></p>
+  <?php endif; ?>
   <?php if (!empty($labels['failure'])): ?>
     <p role="alert"><?php echo $esc($labels['failure']); ?></p>
   <?php endif; ?>
   <form method="post" action="index.php?module=security&amp;action=login">
+    <input type="hidden" name="return_to" value="<?php echo $esc($nativeReturnTo ?? ''); ?>">
     <input type="hidden" name="native_auth_begin"
       value="<?php echo $esc($token); ?>">
     <input type="hidden" name="abuse_issued_at"
@@ -44,7 +48,7 @@ $esc = function ($value) {
       ?></label>
       <div class="auth-field"><?php echo $this->getObject('iconservice','ui')->render('user',array('decorative'=>true)); ?>
       <input id="native-login-username" name="username" type="text"
-        autocomplete="username" required autofocus>
+        autocomplete="username" value="<?php echo $esc($nativeLoginUsername ?? ''); ?>" required autofocus>
       </div>
     </div>
     <div class="security-native-auth__field">
@@ -62,6 +66,12 @@ $esc = function ($value) {
           echo $esc($labels['remember']);
       ?></label>
     </p>
-    <button type="submit"><?php echo $esc($labels['submit']); ?></button>
+    <div class="chisimba-cluster">
+      <button type="submit"><?php echo $esc($labels['submit']); ?></button>
+      <a href="<?php echo $esc($this->uri(
+          array('action' => 'forgotpassword'),
+          'registration-service'
+      )); ?>"><?php echo $esc($labels['forgot_password']); ?></a>
+    </div>
   </form>
 </main>

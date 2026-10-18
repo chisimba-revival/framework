@@ -81,6 +81,7 @@ $GLOBALS['kewl_entry_point_run']) {
      * @var    dbDecisionTableAction
      */
     public $_objDBDecisionTableAction = NULL;
+    public $_objDBDecisionTableRule = NULL;
 
     /**
      * List of actions set for this module.

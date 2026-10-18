@@ -98,39 +98,30 @@ class jquery extends ChisimbaObject
         return $returnStr;
     }
     
-    /**
-     * Method to load the liveQuery plugin script files to the header
+    /** Native event binding for existing and subsequently inserted elements.
+     * Callback source is trusted application JavaScript, never request data.
      */
-    public function loadLiveQueryPlugin()
+    public function dynamicEventScript($id, $event, $callback)
     {
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile('plugins/livequery/1.0.2/jquery.livequery.js',
-          'jquery'));
-    }
-    
-    /**
-     * Method to load the form plugin script files to the header
-     */
-    public function loadFormPlugin()
-    {
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile('plugins/form/2.12/jquery.form.js',
-          'jquery'));
-    }
-    
-    /**
-     * Method to load the Image Fit plugin script files to the header
-     */
-    public function loadImageFitPlugin()
-    {
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile('plugins/imagefit/0.2/jquery.imagefit_0.2.js',
-          'jquery'));
+        $encode = static fn($value) => json_encode((string) $value,
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR);
+        $idJson = $encode($id);
+        $events = preg_split('/\s+/', trim((string) $event), -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($events as $type) {
+            if (!preg_match('/^[a-zA-Z][a-zA-Z0-9:_-]*$/D', $type)) {
+                throw new InvalidArgumentException('Expected native DOM event names');
+            }
+        }
+        $eventsJson = json_encode($events, JSON_THROW_ON_ERROR);
+        return '<script>(function(){const id=' . $idJson . ';const callback=function(event){'
+            . $callback . '};' . $eventsJson . '.forEach(function(type){'
+            . 'document.addEventListener(type,function(event){const element=document.getElementById(id);'
+            . 'if(element && (event.target===element || (event.bubbles && event.target instanceof Node && element.contains(event.target)))){'
+            . 'callback.call(element,event);}},true);});})();</script>';
     }
 
-
     /**
-     * Method to load the Image Fit plugin script files to the header
+     * Method to load the easing plugin script files to the header
      */
     public function loadEasingPlugin($version = '1.3')
     {
@@ -153,21 +144,7 @@ class jquery extends ChisimbaObject
         }
     }
 
-    /**
-     * Method to load the ddmenu plugin script files to the header
-     * TODO: This menu conflicts with prototype, resolve the conflict
-     */
-    public function loadDDMenuPlugin()
-    {
-        $basePath = 'plugins/ddmenu/0.3/';
-        $this->appendArrayVar('headerParams',
-                '<link rel="stylesheet" type="text/css" href="'
-                . $this->getResourceUri($basePath . 'ddmenu.css' . '">'));
-        $this->loadEasingPlugin('1.3');
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath.'jquery.bdc.ddmenu.pack.js',
-          'jquery'));
-    }
+
 
 
     /**
@@ -212,21 +189,6 @@ class jquery extends ChisimbaObject
           'jquery'));
     }
 
-
-    /**
-     * Method to load the flexgrid
-     * - The flexgrid plugin draws a sortable by column click/multi selectable/configurable column display table
-     * Input : An HTML table
-     * OR
-     * Input : A Json object representing the table structure
-     *
-     * Output : Local Spreadsheet-like Grid View
-     * Depricated: use jqGrid instead
-     */
-    public function loadFlexgridPlugin($version = '')
-    {
-        die("<H1>THIS CODE USES THE loadFlexgridPlugin which is deprecated</h1>");
-    }
 
     /**
      * Method to load the jQuery Core API UI Tabbing library
@@ -330,58 +292,7 @@ class jquery extends ChisimbaObject
           $this->getResourceUri($basePath.'stylesheets/'.$theme.'/boxy.css'.'">'));
     }
 
-    /**
-     * Method to load the facebox plugin
-     * Allows for the creation of facebook style notification windows/forms
-     */
-    public function loadFaceboxPlugin($version = '1.2', $theme = 'default')
-    {
-        $basePath = 'plugins/facebox/'.$version.'/';
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath.'facebox.js'));
-        $this->appendArrayVar('headerParams',
-          '<link rel="stylesheet" type="text/css" href="'
-         . $this->getResourceUri($basePath . 'themes/' . $theme
-         . '/facebox.css' .'">'));
-    }
 
-    /**
-     * Method to load the pngFix that enables png transparency in IE 5.5 & 6
-     * Simply load the plugin and voila, all pngs maintain transparency
-     */
-    public function loadPngFixPlugin($version = '1.1')
-    {
-        $basePath = 'plugins/pngfix/'.$version.'/';
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath
-          . 'jquery.pngFix.js'));
-        //Activating the plugin
-        $script = '
-        <script type="text/javascript">
-            jQuery(document).ready(function(){ 
-                jQuery(document).pngFix();
-            });
-        </script>';
-        $this->appendArrayVar('headerParams', $script);
-    }
-
-   /**
-     * Method to load the jframe plugin
-     *
-     * This plugin enables any div with a 'src' <div src=""> attribute
-     * to behave as if it where an <iframe src=""> loading the content 
-     * via ajax.
-     * 
-     * Simply load the plugin and viola, all div's with src become ajax frames
-     */
-    public function loadJFramePlugin($version = '1.131')
-    {
-        $basePath = 'plugins/jframe/' 
-          . $version . '/';
-        $this->appendArrayVar('headerParams',
-          $this->getJavascriptFile($basePath
-          . 'jquery.jframe.js'));
-    }
 
 	
    /**
@@ -430,20 +341,6 @@ class jquery extends ChisimbaObject
           'jquery'));
     }
 
-    /**
-     * Method to load the corner plugin
-     * This plugin creates round/beveled and just about any type of corner.
-	 *
-	 * View Demo : http://www.malsup.com/jquery/corner/
-     */
-    public function loadCornerPlugin($version = '1.7')
-    {
-        $basePath = 'plugins/corner/' . $version . '/';
-        $this->appendArrayVar('headerParams', 
-          $this->getJavascriptFile($basePath . 'jquery.corner.js',
-          'jquery'));
-    }
-    
     /**
      * Method to load the tablesorter plugin, which allows sorting of tables
      * by their <thead> elements

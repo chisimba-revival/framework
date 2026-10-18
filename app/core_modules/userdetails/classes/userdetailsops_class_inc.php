@@ -204,7 +204,7 @@ class userdetailsops extends ChisimbaObject
             $postalCodeValue = $userArray['postal_code'];
             $schoolIdValue = $userArray['school_id'];
             $schoolArray = $this->objDBschools->getSchool($schoolIdValue);
-            $schoolValue = $schoolArray['name'];
+            $schoolValue = $schoolArray['name'] ?? '';
             $descriptionValue = $userArray['description'];
         }
         else
@@ -221,8 +221,8 @@ class userdetailsops extends ChisimbaObject
         $countryValue = !empty($errors) ? $errors['data']['country'] : $countryValue;
         $emailAddressValue = !empty($errors) ? $errors['data']['email_address'] : $emailAddressValue;
         $contactNumberValue = !empty($errors) ? $errors['data']['contact_number'] : $contactNumberValue;
-        $passwordValue = !empty($errors) ? $errors['data']['password'] : $passwordValue;
-        $confirmPasswordValue = !empty($errors) ? $errors['data']['confirm_password'] : $confirmPasswordValue;
+        $passwordValue = '';
+        $confirmPasswordValue = '';
 
         $titleError = (!empty($errors) && array_key_exists('title', $errors['errors'])) ? $errors['errors']['title'] : NULL;
         $firstNameError = (!empty($errors) && array_key_exists('first_name', $errors['errors'])) ? $errors['errors']['first_name'] : NULL;
@@ -243,10 +243,11 @@ class userdetailsops extends ChisimbaObject
             $stateValue = !empty($errors) ? $errors['data']['state'] : $stateValue;
             $postalCodeValue = !empty($errors) ? $errors['data']['postal_code'] : $postalCodeValue;
             $schoolIdValue = !empty($errors) ? $errors['data']['school_id'] : $schoolIdValue;
-            if (!is_null($schoolIdValue))
+            if (!empty($errors)) $schoolValue=$errors['data']['school'] ?? $schoolValue;
+            if (empty($errors) && !empty($schoolIdValue))
             {
                 $schoolArray = $this->objDBschools->getSchool($schoolIdValue);
-                $schoolValue = $schoolArray['name'];
+                $schoolValue = $schoolArray['name'] ?? '';
             }
             $descriptionValue = !empty($errors) ? $errors['data']['description'] : $descriptionValue;
     
@@ -367,7 +368,7 @@ class userdetailsops extends ChisimbaObject
         if ($this->check)
         {
             $objInput = new textinput('school', $schoolValue, '', '50');
-            $schoolInput = $objInput->show();
+            $schoolInput = $objInput->show() . '<div id="profile-school-results" class="chisimba-form-actions" aria-live="polite"></div>';
 
             $objInput = new textinput('school_id', $schoolIdValue, 'hidden', '');
             $schoolIdInput = $objInput->show();
@@ -472,60 +473,18 @@ class userdetailsops extends ChisimbaObject
             'action' => 'validate'
         ), 'userdetails'));
         $objForm->extra = ' class="chisimba-form" enctype="multipart/form-data"';
-        $objForm->addToForm($userTable);
+        $objForm->addToForm($this->getObject('profileactions','userdetails')->tokenField('profile_details') . $userTable);
         $addForm = $objForm->show();
 
         $string .= '<br />' . $addForm;
         
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_imagereset');
-        $this->objDialog->setTitle(ucwords($successTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="success">' . $successImageLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog = $this->objDialog->show();
-        
-        $success = $this->getSession('success', NULL);
-        if (!empty($success))
-        {
-            if (in_array('no change', $success))
-            {
-                $this->objDialog = $this->newObject('dialog', 'jquerycore');
-                $this->objDialog->setCssId('dialog_nochange');
-                $this->objDialog->setTitle(ucwords($errorLabel));
-                $this->objDialog->setCloseOnEscape(FALSE);
-                $this->objDialog->setContent('<span class="error">' . $noChangeLabel . '</span>');
-                $this->objDialog->setAutoOpen(TRUE);
-                $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-                $this->objDialog->setBeforeClose('resetSession(this)');
-                $dialog .= $this->objDialog->show();
-            }
-            else
-            {
-                $content = '';
-                if (in_array('details', $success))
-                {
-                    $content .= '<span class="success">' . $successDetailsLabel . '</span><br />';
-
-                }
-                if (in_array('password', $success))
-                {
-                    $content .= '<span class="success">' . $successPasswordLabel . '</span>';
-                }
-                $this->objDialog = $this->newObject('dialog', 'jquerycore');
-                $this->objDialog->setCssId('dialog_updatesuccess');
-                $this->objDialog->setTitle(ucwords($successTitleLabel));
-                $this->objDialog->setCloseOnEscape(FALSE);
-                $this->objDialog->setContent($content);
-                $this->objDialog->setAutoOpen(TRUE);
-                $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-                $this->objDialog->setBeforeClose('resetSession(this)');
-                $dialog .= $this->objDialog->show();
-            }            
+        $success = $this->getSession('success', array());
+        $this->setSession('success', array());
+        if ($success) {
+            $message = in_array('no change', $success, true) ? $noChangeLabel : $successDetailsLabel;
+            $string = '<p class="success" role="status">' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>' . $string;
         }
-        $string .= $dialog;
-
+        if (!empty($errors['errors']['form'])) $string = '<p class="error" role="alert">'.$errors['errors']['form'].'</p>'.$string;
         return $string;        
     }
 
@@ -536,15 +495,6 @@ class userdetailsops extends ChisimbaObject
      * @access public
      * @return VOID
      */
-    public function ajaxFindSchools()
-    {
-        $search = $this->getParam('term');
-        $result = $this->objDBschools->autocomplete($search);
-        
-        echo json_encode($result);
-        die();
-    }
-    
     /**
      *
      * Method to validate the user data
@@ -582,7 +532,7 @@ class userdetailsops extends ChisimbaObject
             }
             elseif ($fieldname == 'school_id')
             {
-                if (empty($value))
+                if (empty($value) || !$this->objDBschools->getSchool($value))
                 {
                     $array = array('fieldname' => $this->objLanguage->code2Txt('mod_schools_school', 'schools', NULL, 'ERROR: mod_schools_school'));
                     $errorText = $this->objLanguage->code2Txt('mod_userdetails_error_1', 'userdetails', $array);
@@ -629,6 +579,7 @@ class userdetailsops extends ChisimbaObject
         }
         $errorArray = array();
         $errorArray['data'] = $data;
+        $errorArray['data']['password'] = $errorArray['data']['confirm_password'] = '';
         $errorArray['errors'] = $errors;
         $this->setSession('errors', $errorArray);
 
@@ -663,7 +614,7 @@ class userdetailsops extends ChisimbaObject
         $user['sex'] = $data['gender'];
         $user['country'] = $data['country'];
         $user['cellnumber'] = $data['contact_number'];
-        $user['staffnumber'] = $data['staffnumber'];
+        $user['staffnumber'] = $data['staffnumber'] ?? ($userArray['staffnumber'] ?? '');
 
         $changed = FALSE;
         foreach ($userArray as $field => $value)
@@ -764,7 +715,7 @@ class userdetailsops extends ChisimbaObject
     {
         $user = $this->objUserAdmin->getUserDetails($this->userId);
         $this->objBizCard->setUserArray($user);
-        $this->objBizCard->showResetImage = $reset;
+        $this->objBizCard->showResetImage = false;
         $this->objBizCard->resetModule = 'userdetails';
         return $this->objBizCard->show();
     }
@@ -778,260 +729,36 @@ class userdetailsops extends ChisimbaObject
      */
     public function showGrades()
     {
-        $selectGradeLabel = $this->objLanguage->code2Txt('mod_grades_grade', 'grades', NULL, 'ERROR: mod_grades_grade');        
-        $selectLabel = $this->objLanguage->languageText('word_select', 'system', 'ERROR: word_select');
-        $successTitleLabel = $this->objLanguage->languageText('word_success', 'system', 'ERROR: word_success');
-        $successLabel = $this->objLanguage->code2Txt('mod_userdetails_gradesuccess', 'userdetails', NULL, 'ERROR: mod_userdetails_gradesuccess');
-        $errorTitleLabel = $this->objLanguage->languageText('word_error', 'system', 'ERROR: word_error');
-        $errorLabel = $this->objLanguage->code2Txt('mod_userdetails_gradeerror', 'userdetails', NULL, 'ERROR: mod_userdetails_gradeerror');
-        
-        $grades = $this->objDBgrades->getAll();
-        $userGroups = $this->objGroups->getUserGroups($this->objUser->userId());                
-        $name = NULL;
-        if (!empty($userGroups))
-        {
-            foreach ($userGroups as $group)
-            {
-                foreach ($grades as $grade)
-                {
-                    if ($group['group_define_name'] == $grade['name'])
-                    {
-                        $name = $grade['name'];
-                        break;
-                        break;
-                    }
-                }
-            }
+        if (!$this->check || !$this->objUser->isAdmin()) return '';
+        $options = '';
+        $memberships=array_column($this->objGroups->getUserGroups($this->objUser->userId()),'group_define_name');
+        foreach ($this->objDBgrades->getAll() as $grade) {
+            $name=htmlspecialchars($grade['name'],ENT_QUOTES,'UTF-8');
+            $options.='<option value="'.$name.'"'.(in_array($grade['name'],$memberships,true)?' selected':'').'>'.$name.'</option>';
         }
-        
-        $objDrop = new dropdown('new_name');
-        $objDrop->addFromDB($grades, 'name', 'name');
-        $objDrop->setSelected($name);
-        $gradeDrop = $objDrop->show();
-        
-        $objInput = new textinput('old_name', $name, 'hidden', '50');
-        $nameInput = $objInput->show();
-
-        $objButton = new button('select', $selectLabel);
-        $objButton->setId('grade_select');
-        $selectButton = $objButton->show();
-        
-        $objTable = new htmltable();
-        $objTable->cellpadding = '4';
-        $objTable->startRow();
-        $objTable->addCell('<b>' . ucfirst(strtolower($selectGradeLabel)) . ': </b>', '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell($nameInput . $gradeDrop, '', '', '', '', '', '');
-        $objTable->endRow();
-        $objTable->startRow();
-        $objTable->addCell($selectButton, '', '', '', '', '', '');
-        $objTable->endRow();
-        $gradeTable = $objTable->show();
-
-        $objForm = new form('user', $this->uri(array(
-            'action' => 'change_grade'
-        )));
-        $objForm->extra = ' enctype="multipart/form-data"';
-        $objForm->addToForm($gradeTable);
-        $gradeForm = $objForm->show();
-
-        $string = $gradeForm;
-        
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_grade_success');
-        $this->objDialog->setTitle(ucwords($successTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="success">' . $successLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog = $this->objDialog->show();
-
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_grade_error');
-        $this->objDialog->setTitle(ucwords($errorTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="error">' . $errorLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog .= $this->objDialog->show();
-
-        return $string.$dialog;
+        $label=htmlspecialchars($this->objLanguage->code2Txt('mod_grades_grade','grades'),ENT_QUOTES,'UTF-8');
+        return '<form data-profile-action method="post" action="'.htmlspecialchars($this->uri(['action'=>'ajaxChangeGrade'],'userdetails'),ENT_QUOTES,'UTF-8').'">'
+            .$this->getObject('profileactions','userdetails')->tokenField('profile_grade')
+            .'<label for="profile-grade">'.$label.'</label><select id="profile-grade" name="new_name">'.$options.'</select>'
+            .'<button type="submit">'.htmlspecialchars($this->objLanguage->languageText('word_select'),ENT_QUOTES,'UTF-8').'</button>'
+            .'<p data-profile-status role="status" aria-live="polite"></p></form>';
     }  
     
-    /**
-     *
-     * Method to change the users grade via ajax
-     * 
-     * @access public
-     * @return VOID 
-     */
-    public function ajaxChangeGrade()
-    {
-        $user = $this->objUserAdmin->getUserDetails($this->userId);
-
-        $newName = $this->getParam('new_name');
-        $groupId = $this->objGroups->getId($newName);
-        $ret = $this->objGroups->addGroupUser($groupId, $user['puid']);
-        
-        $oldName = $this->getParam('old_name');
-        if (!empty($oldName))
-        {
-            $groupId = $this->objGroups->getId($oldName);
-            $ret = $this->objGroups->deleteGroupUser($groupId, $user['puid']);
-        }
-
-        echo $ret;
-        die();
-    }
-    
-    /**
-     *
-     * Method to display the user image
-     * 
-     * @access public
-     * @return string $string The html string for display 
-     */
     public function showUserImage()
     {
-        $updateLabel = $this->objLanguage->languageText('phrase_updateimage', 'system', 'ERROR: phrase_updateimage');
-        $errorTitleLabel = $this->objLanguage->languageText('word_error', 'system', 'ERROR: word_error');
-        $successTitleLabel = $this->objLanguage->languageText('word_success', 'system', 'ERROR: word_success');
-        $successLabel = $this->objLanguage->languageText('mod_userdetails_userimagechanged', 'userdetails', 'ERROR: mod_userdetails_userimagechanged');
-        $errorNoFileLabel = $this->objLanguage->languageText('mod_userdetails_imagedoesnotexist', 'userdetails', 'ERROR: mod_userdetails_imagedoesnotexist');
-        $errorNoImageLabel = $this->objLanguage->languageText('mod_userdetails_noimageprovided', 'userdetails', 'ERROR: mod_userdetails_noimageprovided');
-        $errorNotImageLabel = $this->objLanguage->languageText('mod_userdetails_filenotimage', 'userdetails', 'ERROR: mod_userdetails_filenotimage');
-        
-        $objSelectFile = $this->newObject('selectimage', 'filemanager');
-        $objSelectFile->name = 'imageselect';
-        $objSelectFile->restrictFileList = array('jpg', 'gif', 'png', 'jpeg', 'bmp');
-        $image = $objSelectFile->show();
-
-        $objButton = new button('update', $updateLabel);
-        $objButton->setId('update_image');
-        $updateButton = $objButton->show();
-                
-        $objForm = new form('user_image', $this->uri(array(
-            'action' => 'ajaxChangeImage'
-        ), 'userdetails'));
-        $objForm->extra = ' enctype="multipart/form-data"';
-        $objForm->addToForm($image . '<br />' . $updateButton);
-        $imageForm = $objForm->show();
-        
-        $string = $imageForm;
-        
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_imagechanged');
-        $this->objDialog->setTitle(ucwords($successTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="success">' . $successLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog = $this->objDialog->show();
-
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_nopicturegiven');
-        $this->objDialog->setTitle(ucwords($errorTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="error">' . $errorNoImageLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog .= $this->objDialog->show();
-
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_imagedoesnotexist');
-        $this->objDialog->setTitle(ucwords($errorTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="error">' . $errorNoFileLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog .= $this->objDialog->show();
-
-        $this->objDialog = $this->newObject('dialog', 'jquerycore');
-        $this->objDialog->setCssId('dialog_fileisnotimage');
-        $this->objDialog->setTitle(ucwords($errorTitleLabel));
-        $this->objDialog->setCloseOnEscape(FALSE);
-        $this->objDialog->setContent('<span class="error">' . $errorNotImageLabel . '</span>');
-        $this->objDialog->setAutoOpen(FALSE);
-        $this->objDialog->setOpen("jQuery('.ui-dialog-titlebar-close').hide();");
-        $dialog .= $this->objDialog->show();
-
-        return $string . $dialog;
-    }  
-    
-    /**
-     *
-     * Method to change the user's image via ajax
-     * 
-     * @access public
-     * @return VOID 
-     */
-    public function ajaxChangeImage()
-    {
-        $fileId = $this->getParam('imageselect');
-        if ($fileId == '') {
-            echo 'nopicturegiven';
-            die();
-        }
-        
-        $filepath = $this->objFile->getFullFilePath($fileId); 
-        $extension = substr($filepath, -3);
-        $ext = ($extension == 'png' || $extension == 'gif') ? 'png' : 'jpg';
-        if ($fileId == FALSE) {
-            echo 'imagedoesnotexist';
-            die();
-        }
-        
-        $mimetype = $this->objFile->getFileMimetype($fileId);        
-        if (substr($mimetype, 0, 5) != 'image') {
-            echo 'fileisnotimage';
-            die();
-        }
-        
-        $objImageResize = $this->getObject('imageresize', 'files');
-        $objImageResize->setImg($filepath);
-        
-        //Resize to 100x100 Maintaining Aspect Ratio
-        $objImageResize->resize(100, 100, TRUE);
-        $storePath = 'user_images/' . $this->objUser->userId() . '.' . $ext;
-        $this->objCleanUrl->cleanUpUrl($storePath);
-        $result = $objImageResize->store($storePath);
-        
-        //Resize to 100x100 Maintaining Aspect Ratio
-        $objImageResize->resize(35, 35, TRUE);
-        $storePath = 'user_images/' . $this->objUser->userId() . '_small.' . $ext;
-        $this->objCleanUrl->cleanUpUrl($storePath);
-        $result = $objImageResize->store($storePath);
-        
-        $array = array(
-            'card' => $this->showBizCard(),
-            'image' => $this->objUser->getUserImage('', TRUE),
-        );
-        echo json_encode($array);
-        die();
-    }
-    
-    /**
-     *
-     * Method to reset the user's profile image
-     * 
-     * @access public
-     * @param boolean $isAjax TRUE if this method was called via ajax | FALSE if not
-     * @return VOID 
-     */
-    public function ajaxResetImage($isAjax = TRUE)
-    {
-        $this->objUserAdmin->removeUserImage($this->objUser->userId());
-        
-        if ($isAjax)
-        {
-            $array = array(
-                'card' => $this->showBizCard(),
-                'image' => $this->objUser->getUserImage('', TRUE),
-            );
-            echo json_encode($array);
-            die();
-        }
+        $selector=$this->newObject('selectimage','filemanager');
+        $selector->name='imageselect';
+        $selector->restrictFileList=['jpg','jpeg','png','gif','webp'];
+        $actions=$this->getObject('profileactions','userdetails');
+        $escape=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+        $html='<form id="form_user_image" data-profile-action method="post" action="'.$escape($this->uri(['action'=>'ajaxChangeImage'],'userdetails')).'">'
+            .$actions->tokenField('profile_photo').$selector->show()
+            .'<div class="chisimba-form-actions"><button type="submit" id="update_image">'.$escape($this->objLanguage->languageText('phrase_updateimage')).'</button></div>'
+            .'<p data-profile-status role="status" aria-live="polite"></p></form>';
+        $html.='<form data-profile-action method="post" action="'.$escape($this->uri(['action'=>'ajaxResetImage'],'userdetails')).'">'
+            .$actions->tokenField('profile_photo').'<button type="submit">'.$escape($this->objLanguage->languageText('mod_userdetails_profile_remove_photo','userdetails')).'</button>'
+            .'<p data-profile-status role="status" aria-live="polite"></p></form>';
+        return $html;
     }
     
     /**

@@ -9,6 +9,15 @@
 require_once('presentation_class_inc.php');
 class htmllist extends presentation
 {
+    /** Dependencies and state initialised by this component. */
+    public $allLiClasses;
+    public $allListClasses;
+    public $listTag;
+    public $startProcess;
+    public $target;
+    public $topMostListClass;
+    public $topMostListId;
+
 
     /**
     * Constructor

@@ -61,6 +61,13 @@ $GLOBALS['kewl_entry_point_run'])
  */
 class block_mycontexts extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $configData;
+    public $objContext;
+    public $objGroups;
+    public $objUser;
+    public $objUserContext;
+
     /**
     * @var string $title The title of the block
     */

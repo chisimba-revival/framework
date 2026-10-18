@@ -19,6 +19,7 @@ $objModuleCatalogue = $this->getObject('modules', 'modulecatalogue');
 $isInstalled = $objModuleCatalogue->checkIfRegistered("bannerhelper");
 $statusBadge = '';
 $journeyBadges = '';
+$siteNavigation = $this->getObject('navigationservice', 'toolbar')->usesSiteProfile();
 $bannerPillsDisabled = false;
 try {
     $bannerPillsSetting = strtolower(trim((string) $this->getObject(
@@ -32,7 +33,7 @@ try {
 } catch (Throwable $configurationFailure) {
     $bannerPillsDisabled = false;
 }
-if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {
+if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled && !$siteNavigation) {
     try {
         $bannerLanguage = $this->getObject('language', 'language');
         $roleContext = $this->getObject(
@@ -328,6 +329,10 @@ $faviconVersion = is_file($siteRootPath . $favicon)
 // blank lines between the PHP closing tag and the HTML head tag. It must be
 // exactly as below.
 ?><head>
+    <?php if(isset($pageCanonical)): ?>
+    <link rel="canonical" href="<?php echo htmlspecialchars($pageCanonical,ENT_QUOTES,'UTF-8'); ?>" />
+    <meta name="description" content="<?php echo htmlspecialchars($og_content,ENT_QUOTES,'UTF-8'); ?>" />
+    <?php endif; ?>
     <meta property="og:title" content="<?php echo htmlspecialchars($og_title, ENT_QUOTES, 'UTF-8'); ?>" />
     <meta property="og:image" content="<?php echo htmlspecialchars($og_image, ENT_QUOTES, 'UTF-8'); ?>" />
     <meta property="og:description" content="<?php echo htmlspecialchars($og_content, ENT_QUOTES, 'UTF-8'); ?>" />
@@ -417,6 +422,7 @@ if (!isset($pageSuppressBanner)) {
             id="header">
             <?php
             echo '<a class="sitename_link chisimba-site-banner__brand" '
+                . 'aria-label="' . htmlspecialchars($objConfig->getsiteName(), ENT_QUOTES, 'UTF-8') . '" '
                 . 'href="' . htmlspecialchars($objConfig->getSiteRoot(), ENT_QUOTES, 'UTF-8') . '">';
             ?>
             <span class="chisimba-site-banner__identity" aria-hidden="true"></span>
@@ -441,7 +447,9 @@ if (!isset($pageSuppressBanner)) {
     echo "</header>";
     if (!isset($pageSuppressToolbar)) {
         $simulate = $this->getParam('simulate', NULL);
-        if (!$this->objUser->isLoggedIn() || ($simulate == 'prelogintoolbar')) {
+        if ($siteNavigation) {
+            echo $this->getObject('sitenavigation', 'toolbar')->show();
+        } elseif (!$this->objUser->isLoggedIn() || ($simulate == 'prelogintoolbar')) {
             if ($isInstalled) {
                 echo "\n\n<div id='prelogin_nav'>$plMenu</div>\n\n";
             }
@@ -522,6 +530,8 @@ if (!isset($suppressFooter)) {
     if (isset($footerScope)) {
         echo $footerScope;
     }
+
+    if ($siteNavigation) echo $this->getObject('sitefooter', 'toolbar')->show();
 
     // Put in the link to the top of the page.
     if (!isset($pageSuppressBanner)) {

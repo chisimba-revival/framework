@@ -90,8 +90,8 @@ class controller extends access {
         try {
             parent::__construct($objEngine, $moduleName);
             $version = $objEngine->version;
-            $this->objLu = $objEngine->lu;
-            $this->objLuAdmin = $objEngine->luAdmin;
+            $this->objLu = null;
+            $this->objLuAdmin = null;
             $this->eventDispatcher = $objEngine->eventDispatcher;
             $this->appid = $objEngine->appid;
             $this->footerStr = '<center>Powered by <a href="http://avoir.uwc.ac.za/">Chisimba</a> version ' . $version . "</center>";

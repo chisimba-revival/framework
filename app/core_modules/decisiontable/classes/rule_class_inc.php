@@ -58,6 +58,8 @@ $this->loadClass( 'decisiontableaggregate', 'decisiontable' );
  */
 class rule extends decisionTableAggregate
 {
+    /** Action-to-rule persistence used by the aggregate. */
+    public $_objActionRule;
 
     // --- OPERATIONS ---
 

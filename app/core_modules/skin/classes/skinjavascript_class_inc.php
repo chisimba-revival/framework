@@ -167,7 +167,9 @@ class skinjavascript extends ChisimbaObject
     */
     public function getJQuery()
     {
-        $supressJQuery = $this->getVar('SUPPRESS_JQUERY', false);
+        // Native pages do not load jQuery. Deferred legacy components must opt in
+        // explicitly with SUPPRESS_JQUERY=false for the current render only.
+        $supressJQuery = $this->getVar('SUPPRESS_JQUERY', true);
         if (!$supressJQuery){
             if ($this->objModules->checkIfRegistered('jquerycore'))
             {
@@ -203,23 +205,8 @@ class skinjavascript extends ChisimbaObject
      */
     public function getChromeFrame()
     {
-        $enable              = $this->objSysConfig->getValue('chrome_frame', 'skin');
-        $suppressChromeFrame = $this->getVar('SUPPRESS_CHROME_FRAME', FALSE);
-        $suppressJQuery      = $this->getVar('SUPPRESS_JQUERY', FALSE);
-
-        if ($enable && !$suppressChromeFrame) {
-            $html = $this->objMiscHTML->httpEquiv('X-UA-Compatible', 'chrome=1');
-            if ($suppressJQuery) {
-                $html .= $this->objMiscHTML->importScript('http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js');
-                $this->appendArrayVar('bodyOnLoad', 'CFInstall.check({mode:"overlay"});');
-            } else {
-                $html .= $this->getJavascriptFile('chromeframe.js', 'skin');
-            }
-        } else {
-            $html = '';
-        }
-
-        return $html;
+        // Obsolete browser plug-in: retained method for external skin compatibility.
+        return '';
     }
 
     /**

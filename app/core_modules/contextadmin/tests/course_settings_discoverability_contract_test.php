@@ -7,13 +7,13 @@ $register = file_get_contents(dirname(__DIR__) . '/register.conf');
 $checks = array(
     'sidebar exposes course settings' => strpos($sidebar, "'mod_context_coursesettings'") !== false
         && strpos($sidebar, "array('action' => 'edit', 'contextcode' => \$this->contextCode)") !== false,
-    'sidebar systext is registered' => strpos($contextRegister, 'mod_context_coursesettings|Course manager navigation link|Course settings') !== false,
+    'sidebar systext is registered' => strpos($contextRegister, 'mod_context_coursesettings|Context manager navigation link|[-CONTEXT-] settings') !== false,
     'publication controls follow the title' => strpos($form, '$table->addCell($title->show())')
         < strpos($form, "'mod_contextadmin_courseavailability'")
         && strpos($form, "'mod_contextadmin_courseavailability'")
         < strpos($form, "'mod_contextadmin_learningdesign'")
         && substr_count($form, '$status->show()') === 1,
-    'publication guidance is registered' => strpos($register, 'mod_contextadmin_courseavailabilityhelp|Course publication guidance|') !== false,
+    'publication guidance is registered' => strpos($register, 'mod_contextadmin_courseavailabilityhelp|Context publication guidance|') !== false,
 );
 $failed = array_keys(array_filter($checks, function ($passed) { return !$passed; }));
 if ($failed) {
