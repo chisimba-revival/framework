@@ -607,6 +607,49 @@ offline. They are served from the microservice rather than from Chisimba,
 because they belong with the field data and must be bundled into the offline
 cache without a second round trip.
 
+The species catalogue is also reachable **through** Chisimba. The gateway
+proxies `GET /api/v1/species` and `GET /api/v1/species/{code}`, forwarding the
+caller's own bearer token, because a device that has already been given a
+Chisimba URL and a token should not need a second base URL and a second
+credential to build its catalogue. The proxy answers with the catalogue's own
+envelope and status, and a refusal or a fault it cannot interpret is reported
+as such rather than being flattened into a generic error.
+
+The competencies catalogue and the outings list are proxied too, on the same
+terms. They were added for a concrete reason: the device's reference refresh
+fetches species, outings and competencies together, and any one of them
+answering 404 aborts the whole refresh before its cache write — so a missing
+proxied list was emptying the species picker as surely as a missing species
+route would have.
+
+This is a convenience for the client, not a second home for the catalogues.
+They are still edited, seeded and versioned in the field service; Chisimba
+holds no copy of them and no catalogue data of its own.
+
+The three lists do not agree on a shape — species and competencies answer bare,
+and outings nests its list under `data` — so the proxy lifts the payload out
+before wrapping it once. Letting the nesting through would put the outings list
+one level below where a client reads it, and a client reading the documented key
+would then see an empty list and report no outings at all, which reads as truth
+rather than as a fault.
+
+### Sync through the gateway
+
+`POST /api/v1/sync/push` and `POST /api/v1/sync/pull` are proxied as well, and
+this one is not a convenience. A device that cannot push holds its observations
+forever, so a gateway that only reads leaves the queue unable to drain.
+
+The request body is forwarded as the bytes it arrived in, and the caller's own
+`Content-Type` goes with it. The service decodes strictly and refuses fields it
+does not know, so anything decoded into PHP and re-encoded risks dropping or
+renaming a key, and a dropped key is a change applied incompletely — the one
+outcome worse than a refusal. The answer is passed through as it came, per
+operation, never bulk.
+
+`/sync/push` resolves as an action rather than as a resource id. The generic
+convention would ask for `POST_sync_by_id('push')`, which names a record called
+"push" and does not exist.
+
 ### Implementation status of the gateway surface
 
 The gateway currently exposes `GET` and `POST /api/v1/auth/login` and
@@ -616,14 +659,20 @@ be brought into line with this contract rather than the contract relaxed to
 match the implementation, because the contract names are the ones a third
 party reading the document will build against.
 
-`POST /api/v1/auth/refresh` is implemented and is **not yet proven**. It exists,
-it mints a new pair, and it re-checks the account so a token belonging to a
-deleted or deactivated user cannot keep rotating. What has not been demonstrated
-is the whole-family revocation on replay, or the device identifier the refresh
-accepts — both are part of that endpoint and neither is an optional
-simplification. A refresh that does not revoke the family on replay means a
-stolen refresh token mints tokens indefinitely, which is a different failure from
-the one the endpoint appears to solve.
+`POST /api/v1/auth/refresh` is implemented. It exists, it mints a new pair,
+it re-checks the account so a token belonging to a deleted or deactivated user
+cannot keep rotating, and it now revokes the whole family on replay. Presenting
+a refresh token whose row is already revoked revokes every token that family
+carries (the user's tokens for the bound device, or all of the user's tokens
+when no device was recorded) and refuses the request, rather than answering
+with a fresh pair. The device identifier the refresh accepts is also
+implemented: a token presented for a device it was not minted for revokes that
+device's family.
+
+No end-to-end test exercises the replay or family-revocation paths in this
+checkout, so the behaviour is implemented but not proven by automated tests
+here — it has been verified against the code path, not executed. The
+abuse-evidence and session-cookie constraints noted below remain relevant.
 
 The other half of this gap is that the endpoint cannot be reached without first
 obtaining a CSRF token and signed abuse evidence from
@@ -911,6 +960,18 @@ GET    /api/v1/competencies       list by category and level
 ```
 
 These are bundled into the offline cache and refreshed opportunistically.
+
+The two species routes are also reachable through the gateway at the same paths,
+where they answer with the same envelope and the same statuses. A device that
+only knows the Chisimba URL can build its catalogue from it. See
+*Competency and species reference* under the gateway surface for what the proxy
+does and does not own.
+
+The gateway also proxies `GET /api/v1/outings`,
+`POST /api/v1/sync/push` and `POST /api/v1/sync/pull`, on the same terms: the
+caller's own token and bytes, forwarded. The sync pair exists because the
+gateway's own device pushes through it, and a proxy that could only read would
+leave that queue undrainable.
 
 A retired competency is returned by default. A competency that leaves the
 curriculum stays readable and stays resolvable, because an assessment recorded

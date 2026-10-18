@@ -20,16 +20,60 @@ abstract class RestController extends controller
      */
     const PERMISSION_AREA = 'restapi';
 
+    /**
+     * The complete API-key scope vocabulary. Any scope string not in this list
+     * is rejected at key-creation time, and scope checks only ever look for a
+     * member of this list, so a scope outside it can never grant a route.
+     *
+     * Bearer access tokens are not scoped — they carry no scope claim, and
+     * adding one would be a field-service contract change. Enforcement here
+     * constrains long-lived API keys only.
+     */
+    const API_SCOPES = [
+        'profile:read',
+        'users:read',
+        'users:write',
+        'modules:read',
+        'modules:write',
+        'files:read',
+        'files:write',
+        'catalogue:read',
+        'sync:write',
+        'keys:manage',
+    ];
+
     protected TokenAuthService $auth;
+    protected \SigningKeyService $keys;
     protected array $currentUser = [];
     protected string $requestMethod;
     protected array $requestData = [];
     protected array $routeParams = [];
 
+    /**
+     * Credential type that authenticated the current request: 'jwt', 'api_key',
+     * or null when nothing has authenticated yet. Bearer access tokens carry no
+     * scope claim, so they are not scope-constrained; API keys are.
+     */
+    protected ?string $credentialType = null;
+
+    /**
+     * Scopes held by an API-key credential, or null for a bearer token (which
+     * is not scope-constrained) or before authentication.
+     */
+    protected ?array $credentialScopes = null;
+
+    /**
+     * Database connection, assigned in the constructor for handlers that need
+     * it. Declared here rather than in a subclass because the constructor that
+     * assigns it lives here.
+     */
+    protected $db;
+
     public function __construct($engine, $moduleName)
     {
         parent::__construct($engine, $moduleName);
         $this->auth = $this->getObject('tokenauthservice', 'security');
+        $this->keys = $this->getObject('signingkeyservice', 'security');
         $this->db = $this->getDb();
         $this->requestMethod = $this->getRequestMethod();
         $this->parseRequestData();
@@ -48,8 +92,16 @@ abstract class RestController extends controller
         $this->routeParams = $this->parseRoute($route);
         
         $handler = $this->resolveHandler();
-        
+
         if (!$handler || !method_exists($this, $handler)) {
+            // The route shape may exist under a different method. Reporting
+            // that as 404 hides a real endpoint behind a wrong status and
+            // withholds the Allow header a client needs to correct itself, so
+            // probe the other methods before falling back to 404.
+            $allowed = $this->allowedMethodsForRoute();
+            if (!empty($allowed)) {
+                ApiResponse::methodNotAllowed($allowed);
+            }
             ApiResponse::error('NOT_FOUND', 'Endpoint not found', 404);
         }
 
@@ -67,13 +119,19 @@ abstract class RestController extends controller
             ApiResponse::unauthorized($e->getMessage());
         } catch (AuthorizationException $e) {
             ApiResponse::forbidden($e->getMessage());
+        } catch (ScopeException $e) {
+            $details = [];
+            if ($e->getRequiredScope() !== null) {
+                $details['requiredScope'] = $e->getRequiredScope();
+            }
+            ApiResponse::error('SCOPE_MISSING', $e->getMessage(), 403, $details);
         } catch (NotFoundException $e) {
             ApiResponse::notFound($e->getMessage());
         } catch (ConflictException $e) {
             ApiResponse::conflict($e->getMessage(), $e->getDetails());
         } catch (RateLimitException $e) {
             ApiResponse::rateLimited($e->getRetryAfter());
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log("REST API Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             ApiResponse::serverError();
         }
@@ -109,6 +167,11 @@ abstract class RestController extends controller
             }
         }
 
+        // Reject routes with more than 3 segments (resource/id/sub) — do not silently drop extras
+        if (!empty($parts)) {
+            ApiResponse::error('NOT_FOUND', 'Endpoint not found', 404);
+        }
+
         return [
             'resource' => $resource,
             'id' => $id,
@@ -118,19 +181,41 @@ abstract class RestController extends controller
 
     /**
      * Resolve handler method name from route and HTTP method
+     *
+     * @param string|null $method HTTP method to resolve, or null to use the request method
      */
-    protected function resolveHandler(): ?string
+    protected function resolveHandler(?string $method = null): ?string
     {
         $resource = $this->routeParams['resource'];
         $id = $this->routeParams['id'];
         $sub = $this->routeParams['sub'];
-        $method = strtoupper($this->requestMethod);
+        $method = strtoupper($method ?? $this->requestMethod);
 
         if (!$resource) return null;
 
         // Special handling for auth resource - actions like login, refresh, logout, me
         // are direct actions, not resource IDs
         if ($resource === 'auth' && $id) {
+            $handler = strtolower($method) . '_' . $resource . '_' . $id;
+            if ($sub) {
+                $handler .= '_' . $sub;
+            }
+            return method_exists($this, $handler) ? $handler : null;
+        }
+
+        // Special handling for user resource - sub-actions like profile
+        if ($resource === 'user' && $id && !$sub) {
+            // For routes like /user/profile, the "id" is actually a sub-action
+            $handler = strtolower($method) . '_' . $resource . '_' . $id;
+            return method_exists($this, $handler) ? $handler : null;
+        }
+
+        // Special handling for sync resource - /sync/push and /sync/pull are
+        // actions on the sync endpoint, not identifiers of a sync record.
+        // Resolving them through the generic convention below would ask for
+        // POST_sync_by_id('push'), which names a record called "push" and does
+        // not exist. Same reasoning and same shape as the auth branch above.
+        if ($resource === 'sync' && $id) {
             $handler = strtolower($method) . '_' . $resource . '_' . $id;
             if ($sub) {
                 $handler .= '_' . $sub;
@@ -158,6 +243,26 @@ abstract class RestController extends controller
     protected function getRequestMethod(): string
     {
         return $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    }
+
+    /**
+     * Collect the HTTP methods this route supports, for an Allow header on a
+     * 405 response. Probes each common method through the same resolution the
+     * live method uses, so the header can never advertise a method the router
+     * would not actually dispatch.
+     *
+     * @return string[]
+     */
+    protected function allowedMethodsForRoute(): array
+    {
+        $allowed = [];
+        foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as $method) {
+            $handler = $this->resolveHandler($method);
+            if ($handler && method_exists($this, $handler)) {
+                $allowed[] = $method;
+            }
+        }
+        return $allowed;
     }
 
     /**
@@ -207,11 +312,15 @@ abstract class RestController extends controller
     protected function requireAuth(): void
     {
         $headers = $this->getRequestHeaders();
-        $userId = $this->auth->validateFromRequest($headers);
-        
-        if (!$userId) {
+        $credential = $this->auth->validateFromRequestDetailed($headers);
+
+        if (!$credential) {
             throw new AuthenticationException('Authentication required');
         }
+
+        $userId = $credential['user_id'];
+        $this->credentialType = $credential['type'];
+        $this->credentialScopes = $credential['scopes'];
 
         $userService = $this->getObject('userservice', 'security');
         $record = $userService->findByUserId($userId);
@@ -220,8 +329,150 @@ abstract class RestController extends controller
             throw new AuthenticationException('User not found');
         }
 
+        // A signed token is not permission to keep using a closed account.
+        // validateJWT() checks the signature, the expiry, the issuer, the
+        // audience and the type, but nothing in the token says whether the
+        // account behind it is still open, and the refresh path already
+        // refuses a deactivated account (POST_auth_refresh) — so without this
+        // the access token outlived the decision to deactivate, for up to the
+        // whole access-token lifetime, and a 30-day remember-me token for a
+        // month.
+        //
+        // The rule is the canonical one, the same as
+        // TokenAuthService::accountState(): only '1' is active. A record with
+        // no isactive column at all is reported inactive by this API
+        // everywhere else (userToArrayFromRecord() defaults it to 0), so a
+        // missing value must not read as active here either — an absent
+        // column is an unreadable state, and an unreadable state fails closed.
+        if (!isset($record['isactive']) || (int) $record['isactive'] !== 1) {
+            throw new AuthenticationException(
+                'This account is not active, so its token cannot be used.'
+            );
+        }
+
         $this->currentUser = $this->userToArrayFromRecord($record);
         $this->primeSessionUser($record);
+
+        // An API key is only allowed onto routes its scopes name. This is
+        // enforced here, at the single point where the credential and the
+        // route are both known, rather than scattered across handlers: every
+        // authenticated route calls requireAuth(), so this is the choke point
+        // that cannot be forgotten. A bearer access token carries no scope
+        // claim and is not constrained here.
+        if ($this->credentialType === 'api_key') {
+            $this->enforceApiKeyScope();
+        }
+    }
+
+    /**
+     * Check the presented API key's scopes against the scope the current route
+     * requires. Fails closed for anything not explicitly allowed.
+     */
+    protected function enforceApiKeyScope(): void
+    {
+        $required = $this->scopeForRoute(
+            $this->routeParams['resource'] ?? '',
+            $this->routeParams['id'] ?? null,
+            $this->routeParams['sub'] ?? null,
+            strtoupper($this->requestMethod)
+        );
+
+        // Unmapped route: no scope was defined for it, so no API key is
+        // allowed onto it. Adding a route without deciding its scope must not
+        // silently inherit every existing key.
+        if ($required === '') {
+            throw new ScopeException(
+                'This route cannot be reached with an API key.',
+                null
+            );
+        }
+
+        // Public route: no scope required.
+        if ($required === null) {
+            return;
+        }
+
+        $scopes = $this->credentialScopes ?? [];
+        if (!in_array($required, $scopes, true)) {
+            throw new ScopeException(
+                'This API key does not hold the scope this route requires.',
+                $required
+            );
+        }
+    }
+
+    /**
+     * Map a route to the API-key scope it requires.
+     *
+     * @return string|null Scope name; null for a public route (no scope
+     *                     needed); '' (empty string) for an authenticated route
+     *                     with no declared scope, which denies every API key.
+     */
+    protected function scopeForRoute(string $resource, $id, $sub, string $method): ?string
+    {
+        // Public routes need no scope. These never reach requireAuth() in
+        // practice, but naming them keeps the map total.
+        if ($resource === 'auth' && ($id === 'token' || $id === 'jwks')) {
+            return null;
+        }
+
+        // Profile reads.
+        if ($resource === 'user' && $id === 'profile') {
+            return 'profile:read';
+        }
+        if ($resource === 'auth' && $id === 'me') {
+            return 'profile:read';
+        }
+
+        // API-key management.
+        if ($resource === 'auth' && $id === 'api-keys') {
+            return 'keys:manage';
+        }
+
+        // User records.
+        if ($resource === 'users') {
+            if ($method === 'GET') {
+                return 'users:read';
+            }
+            if (in_array($method, ['POST', 'PATCH', 'PUT', 'DELETE'], true)) {
+                return 'users:write';
+            }
+        }
+
+        // Module catalogue.
+        if ($resource === 'modules') {
+            if ($method === 'GET') {
+                return 'modules:read';
+            }
+            if (in_array($method, ['POST', 'PATCH', 'PUT', 'DELETE'], true)) {
+                return 'modules:write';
+            }
+        }
+
+        // Files.
+        if ($resource === 'files') {
+            if ($method === 'GET') {
+                return 'files:read';
+            }
+            if (in_array($method, ['POST', 'PATCH', 'PUT', 'DELETE'], true)) {
+                return 'files:write';
+            }
+        }
+
+        // Field-guide catalogue reads.
+        if (in_array($resource, ['species', 'outings', 'competencies'], true)) {
+            return 'catalogue:read';
+        }
+
+        // Offline sync.
+        if ($resource === 'sync') {
+            return 'sync:write';
+        }
+
+        // Authenticated route with no declared scope (e.g. auth/logout,
+        // auth/refresh — bearer-oriented). Deny every API key rather than
+        // guess.
+        return '';
     }
 
     /**
@@ -606,15 +857,40 @@ class ConflictException extends Exception
 class RateLimitException extends Exception
 {
     private int $retryAfter;
-    
+
     public function __construct(string $message, int $retryAfter = 60)
     {
         $this->retryAfter = $retryAfter;
         parent::__construct($message);
     }
-    
+
     public function getRetryAfter(): int
     {
         return $this->retryAfter;
+    }
+}
+
+/**
+ * The presented API key does not hold the scope the route requires.
+ *
+ * Distinct from AuthorizationException (a permission/ownership refusal) so
+ * clients can tell "your key lacks this scope" from "you are not allowed to
+ * touch this record". $requiredScope is null when the route itself is not
+ * reachable by any API key, and a scope name when the route is reachable but
+ * this key does not carry it.
+ */
+class ScopeException extends Exception
+{
+    private ?string $requiredScope;
+
+    public function __construct(string $message, ?string $requiredScope)
+    {
+        $this->requiredScope = $requiredScope;
+        parent::__construct($message);
+    }
+
+    public function getRequiredScope(): ?string
+    {
+        return $this->requiredScope;
     }
 }

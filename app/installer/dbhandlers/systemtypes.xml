@@ -55,6 +55,7 @@
             <module>tagging</module>
             <module>filemanager</module>
             <module>jquerycore</module>
+            <module>restapi</module>
         </category>
 
         <category>

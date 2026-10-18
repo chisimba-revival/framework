@@ -53,3 +53,24 @@ if (!defined('KEWL_JWKS_KEY_PATH')) {
 if (!defined('KEWL_DENYLIST_REDIS')) {
     define('KEWL_DENYLIST_REDIS', 'localhost:6379');
 }
+
+/**
+ * Where the field guiding service is, as this installation reaches it.
+ *
+ * This is the address the REST API proxies to: the species, outing and
+ * competency catalogues, and the sync endpoints. It has a default
+ * (http://field-service:8080, the compose service name on the shared network)
+ * because those routes are the only ones that answer from another container,
+ * and an unconfigured installation should still serve its catalogue rather
+ * than 503 on every species request.
+ *
+ * Set CHISIMBA_FIELD_SERVICE_URL in the environment, or here, when the service
+ * is reached any other way: a different compose project name, a service mesh, a
+ * host-published port. Include the scheme and the port, with no trailing slash
+ * and no path — the routes append /api/v1/species and /api/v1/sync/... themselves.
+ *
+ * format: scheme://host:port
+ */
+if (!defined('KEWL_FIELD_SERVICE_URL')) {
+    define('KEWL_FIELD_SERVICE_URL', 'http://field-service:8080');
+}

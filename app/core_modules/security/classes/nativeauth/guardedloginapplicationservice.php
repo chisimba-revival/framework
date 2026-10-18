@@ -125,6 +125,7 @@ final class GuardedLoginApplicationService
             array('required' => $required),
             $this->safeMetadata($metadata)
         );
+
         if (is_array($result)
             && ($result['status'] ?? self::STATUS_INVALID)
                 !== self::STATUS_INVALID) {

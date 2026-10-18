@@ -89,12 +89,14 @@ wrong.
 | --- | --- | --- | --- |
 | 401 | `UNAUTHORIZED` | Credentials rejected | Do not retry with the same password |
 | 422 | `VALIDATION_ERROR` | Evidence invalid or expired | Fetch `GET /auth/login` again and wait `minimum_seconds` |
+| 422 | `VALIDATION_ERROR` | Evidence token not bound to this session | Fetch `GET /auth/login` again, keeping the session cookie, then post |
 | 422 | `VALIDATION_ERROR` | Honeypot `website` populated | Remove the field; a real browser never fills it |
 | 429 | `RATE_LIMITED` | Too many failures for this subject | Wait `details.retryAfter` seconds |
 
-A 422 names the offending field in `details`, so the two 422 cases stay
+A 422 names the offending field in `details`, so the 422 cases stay
 distinguishable: `details.abuse_evidence` for expired or missing evidence,
-`details.website` for the honeypot.
+`details.session_expired` for evidence that was not carried back with its
+session cookie, and `details.website` for the honeypot.
 
 Two consequences for clients:
 
@@ -202,6 +204,26 @@ other user's record. That is a deliberate self-service rule, not a missing
 check. `is_active` is excluded from self-service: it requires `users.edit`
 regardless of whose record is being edited.
 
+`GET /species` and `GET /species/{code}` add **no right**. `requireAuth()`
+alone guards them, because the catalogue is reference data that every caller
+may read, and because a right is not a small thing here: an undefined right
+denies *everyone* (`rightIdForArea()` returns null and `can()` fails closed), so
+a `species.view` guarded route would answer `403` to every caller until an
+administrator re-ran `configure-service.php`. The catalogue is advisory and
+carries nothing sensitive — it holds no counts, locations or sightings — so
+authentication is the check that fits it. Scope enforcement stays where the
+contract puts it: the field service independently requires `field:write` on the
+forwarded token.
+
+`POST /sync/push` and `POST /sync/pull` add **no right** either, and the same
+reasoning applies with more force. They are the write path: a device pushes its
+queued observations and pulls the changes made elsewhere. Adding a right would
+not make them safer in any useful way, because the field service is the thing
+that decides whether a caller may write — Chisimba's guard here is that no
+anonymous request reaches it at all. Requiring a local right would mean an
+undefined one blocking every push until `configure-service.php` was re-run,
+which is a queue that drains at no time rather than one that is gated.
+
 Verified with a zero-grant account (a permission identity with no rights):
 `403` on every protected resource, `200` on self-service reads. The same
 requests succeed for an administrator, confirming the decision comes from the
@@ -229,6 +251,12 @@ Statuses below were observed as an administrator.
 | `POST /modules/{id}/uninstall` | 200 | Refuses mandatory core modules |
 | `GET /files?policy=…` | 200 | Bearer token only; no session cookie needed |
 | `POST /files` | 201 | Bearer token only; no session cookie needed |
+| `GET /species` | 200 | Proxied from the field service; `?q=` searches it |
+| `GET /species/{code}` | 200 | Proxied from the field service; 404 for a code it does not hold |
+| `GET /outings` | 200 | Proxied from the field service |
+| `GET /competencies` | 200 | Proxied from the field service |
+| `POST /sync/push` | 200 | Proxied to the field service; answers per operation, never in bulk |
+| `POST /sync/pull` | 200 | Proxied to the field service; one page of changes |
 
 `DELETE /users/{id}` is deliberately not a general delete. It runs the
 canonical guarded rollback (`identityservice::rollbackProvisionedIdentity()`
@@ -291,6 +319,56 @@ That code is surfaced in the REST response as `details.fileApiCode`. The
 localised through the language service and an incomplete language pack renders
 it as an unhelpful `error_languageitemmissing` string that hides the real
 cause.
+
+## Species resource
+
+The species catalogue is **not stored here**. It belongs with the field data in
+the field guiding service, which is where it is edited and where the offline
+bundle a device builds comes from. These two routes proxy it, so a device that
+already talks to Chisimba can build its catalogue without a second base URL and
+a second credential:
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" \
+     http://localhost:8080/api/v1/species
+curl -H "Authorization: Bearer $TOKEN" \
+     http://localhost:8080/api/v1/species/LEOP
+```
+
+The caller's own `Authorization` header is forwarded verbatim. No credential is
+minted here, and none is held here: the field service still validates the
+signature, the revocation epoch and the `field:write` scope on its own side, so
+the answer is for the person who asked — the same as every other route.
+
+A proxy that cannot reach the catalogue must say so without guessing. Three
+failures are distinct on purpose:
+
+| Failure | Status | `error.code` |
+| --- | --- | --- |
+| The field service could not be reached at all | 503 | `UPSTREAM_UNAVAILABLE` |
+| It answered something that is not JSON | 502 | `UPSTREAM_UNREADABLE` |
+| It refused the request or does not hold the code | the status it answered | the code it answered, or `UPSTREAM_ERROR` when it sent none |
+
+An upstream refusal is passed through as its own status and code, so a 404 for
+an unknown code is a 404 that says `unknown_species` rather than a generic
+message here. Only `UPSTREAM_UNAVAILABLE`, `UPSTREAM_UNREADABLE` and the
+`UPSTREAM_ERROR` fallback for a refusal that carried no code are this module's
+own codes, and all three describe the journey rather than the catalogue — a
+fault names tables, columns and constraints, which is a schema handed to
+whoever can read the response.
+
+`?q=` is passed through to the catalogue, which searches code, common name,
+scientific name and description. The catalogue is never paginated here: it is
+reference data of a known, bounded size, and a device building an offline bundle
+needs all of it. `species` is always an array, never `null`, so a device can
+tell an empty catalogue from an unexpected response.
+
+The upstream base URL defaults to `http://field-service:8080`, which is the
+service name on the Docker network. Override it with the
+`CHISIMBA_FIELD_SERVICE_URL` environment variable or the
+`KEWL_FIELD_SERVICE_URL` constant in `config/restapi_inc.php`
+(see `config/restapi_inc.php.example`), as `scheme://host:port` with no
+trailing slash.
 
 ## Installation
 

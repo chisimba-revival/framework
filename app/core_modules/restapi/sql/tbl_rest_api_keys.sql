@@ -23,9 +23,7 @@ $fields = array(
     'id' => array(
         'type' => 'integer',
         'length' => 11,
-        'notnull' => TRUE,
-        'unsigned' => TRUE,
-        'autoincrement' => TRUE
+        'unsigned' => TRUE
     ),
     'user_id' => array(
         'type' => 'text',

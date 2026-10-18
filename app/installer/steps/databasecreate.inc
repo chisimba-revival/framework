@@ -179,6 +179,13 @@ class DbCreateAction extends StepAction
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules_dependencies.sql');
     $this->_installDb32('core_modules/modulecatalogue/sql/tbl_modules_owned_tables.sql');
+    // The pre-login page and the module toolbar query these block tables on
+    // every request, i.e. before Module Catalogue has registered any modules.
+    // Create them during setup (like the native auth tables above) so the first
+    // request can reach first-time registration; module installation then adopts
+    // them because makeTable() treats an existing table as already created.
+    $this->_installDb32('core_modules/modulecatalogue/sql/tbl_module_blocks.sql');
+    $this->_installDb32('core_modules/prelogin/sql/tbl_prelogin_blocks.sql');
     $this->_installDb32('core_modules/abuseprotection/sql/tbl_abuse_events.sql');
     $this->_installDb32('core_modules/systext/sql/tbl_systext_system.sql');
     $this->_installDb32('core_modules/systext/sql/tbl_systext_text.sql');

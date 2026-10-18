@@ -20,9 +20,7 @@ $fields = array(
     'id' => array(
         'type' => 'integer',
         'length' => 11,
-        'notnull' => TRUE,
-        'unsigned' => TRUE,
-        'autoincrement' => TRUE
+        'unsigned' => TRUE
     ),
     'user_id' => array(
         'type' => 'text',
@@ -52,6 +50,10 @@ $fields = array(
         'type' => 'text',
         'length' => 45
     ),
+    'device_id' => array(
+        'type' => 'text',
+        'length' => 255
+    ),
     'revoked_at' => array(
         'type' => 'timestamp'
     )
@@ -70,6 +72,12 @@ $tableIndexes = array(
     ),
     'rest_refresh_expiry' => array(
         'fields' => array('expires_at' => array())
+    ),
+    'rest_refresh_device' => array(
+        'fields' => array('device_id' => array())
+    ),
+    'rest_refresh_user_device' => array(
+        'fields' => array('user_id' => array(), 'device_id' => array())
     )
 );
 ?>

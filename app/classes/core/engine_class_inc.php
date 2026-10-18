@@ -519,7 +519,12 @@ class engine {
         }
         
         // Ensure the site is being accessed at the correct location.
-        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+        // Keep REST and well-known JSON endpoints host-agnostic so Docker
+        // service names (web), reverse proxies and emulators can fetch manifests
+        // without being bounced to the configured public origin.
+        $uri = isset($_SERVER['REQUEST_URI']) ? explode('?', (string) $_SERVER['REQUEST_URI'], 2)[0] : '';
+        $isRestApi = (strpos($uri, '/api/v') === 0) || (strpos($uri, '/.well-known/') === 0);
+        if (!$isRestApi && isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'GET') {
             $base = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
             //$base .= '://'.$_SERVER['HTTP_HOST'].strtok($_SERVER['REQUEST_URI'], '?');
             //$query = strtok('?');
@@ -2273,7 +2278,22 @@ class engine {
 
         // REST API routing - intercept /api/v1/* routes before normal module dispatch
         if (str_starts_with($requestedModule, 'api/v')) {
-            return $this->_dispatchRestApi($requestedModule, $action);
+            // For REST API, do not let POST body/cookies shadow the action from
+            // the request URL. The action contains the route path (e.g. 'users').
+            // The .htaccess rewrites api/v1/(.*) into module=api/v1&action=$1,
+            // so only $_GET carries the route; falling back to $_REQUEST opens
+            // a proxy-rewrite via a POST field/cookie (request_order-dependent).
+            // Read the route/action from $_GET only; if absent, fall back to
+            // the provided $action, else an empty string.
+            $restAction = $action;
+            if (isset($_GET['action'])) {
+                $restAction = (string) $_GET['action'];
+            }
+            $restModule = $requestedModule;
+            if (isset($_GET['module'])) {
+                $restModule = strtolower((string) $_GET['module']);
+            }
+            return $this->_dispatchRestApi($restModule, $restAction);
         }
 
         if (! $this->_loadModule ( $requestedModule )) {

@@ -39,17 +39,16 @@ $fields = array(
     'id' => array(
         'type' => 'integer',
         'length' => 11,
-        'notnull' => TRUE,
-        'unsigned' => TRUE,
-        'autoincrement' => TRUE
+        'unsigned' => TRUE
     ),
     'user_id' => array(
-        'type' => 'varchar',
+        'type' => 'text',
         'length' => 25,
         'notnull' => TRUE
     ),
     'epoch' => array(
-        'type' => 'bigint',
+        'type' => 'integer',
+        'length' => 8,
         'notnull' => TRUE,
         'default' => 0
     ),
@@ -63,18 +62,18 @@ $fields = array(
     // direct database edit, an LDAP synchronisation, a module not yet written —
     // rather than only the two or three places somebody remembered to call.
     'grants_fingerprint' => array(
-        'type' => 'varchar',
+        'type' => 'text',
         'length' => 64,
         'notnull' => FALSE
     ),
     'updated_at' => array(
-        'type' => 'datetime',
+        'type' => 'timestamp',
         'notnull' => TRUE
     )
 );
 
-$indices = array();
-$indices['rest_identity_epoch_user'] = array(
+$tableIndexes = array();
+$tableIndexes['rest_identity_epoch_user'] = array(
     'unique' => TRUE,
-    'fields' => array('user_id')
+    'fields' => array('user_id' => array())
 );

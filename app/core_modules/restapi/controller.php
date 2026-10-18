@@ -1,15 +1,13 @@
 <?php
 /**
  * REST API Module Controller
- * 
+ *
  * Handles all /api/v1/* routes with RESTful conventions
  */
 require_once __DIR__ . '/classes/restcontroller_class_inc.php';
 
 class restapi extends RestController
 {
-    protected $db;
-    
     public function dispatch($action)
     {
         // The action from engine will be the full route path
@@ -22,7 +20,7 @@ class restapi extends RestController
     // ============================================================
 
     /**
-     * GET /api/v1/auth/login
+     * GET /api/v1/auth/token
      * Issue the abuse-protection evidence a login submission must carry.
      *
      * The canonical GuardedLoginApplicationService refuses any login that has
@@ -37,8 +35,12 @@ class restapi extends RestController
      *
      * Public endpoint: it reveals no user data and no secret material, only a
      * short-lived signed assertion.
+     *
+     * Contract note: The field guiding service contract specifies this as
+     * POST /api/v1/auth/token for the actual credential exchange. The GET
+     * endpoint here provides the abuse evidence required before that exchange.
      */
-    public function GET_auth_login(): void
+    public function GET_auth_token(): void
     {
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
         $evidence = $stack['abuse']->issueFormEvidence('native.login');
@@ -95,8 +97,8 @@ class restapi extends RestController
     }
 
     /**
-     * POST /api/v1/auth/login
-     * Login with username/password, returns access + refresh tokens.
+     * POST /api/v1/auth/token
+     * Exchange username/password for access + refresh tokens.
      *
      * Credential verification is delegated entirely to the canonical security
      * composition root (NativeAuthWebComposition -> GuardedLoginApplicationService
@@ -107,10 +109,16 @@ class restapi extends RestController
      * deliberately not accepted as a login identifier.
      *
      * The csrf_token, abuse_issued_at, abuse_nonce and abuse_signature fields
-     * are required: they come from GET /api/v1/auth/login. The optional
+     * are required: they come from GET /api/v1/auth/token. The optional
      * honeypot field `website` must be absent or empty.
+     *
+     * Contract: This is the token exchange endpoint specified in the field
+     * guiding service contract. On success an access token and a refresh token
+     * are returned. When policy requires MFA, a challenge is returned instead
+     * of a token, and there is no route that converts a challenge directly
+     * into a token without satisfying it.
      */
-    public function POST_auth_login(): void
+public function POST_auth_token(): void
     {
         $data = $this->validate($this->getRequestData(), [
             'username' => 'required|string|max:255',
@@ -120,8 +128,11 @@ class restapi extends RestController
             'abuse_issued_at' => 'required|integer|min:1',
             'abuse_nonce' => 'required|string|max:64',
             'abuse_signature' => 'required|string|max:128',
-            'website' => 'sometimes|string|max:255'
+            'website' => 'sometimes|string|max:255',
+            'device_id' => 'sometimes|string|max:255'
         ]);
+
+
 
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
 
@@ -129,7 +140,7 @@ class restapi extends RestController
             'ip' => $this->getClientIp(),
             'user_agent' => isset($_SERVER['HTTP_USER_AGENT'])
                 ? substr((string) $_SERVER['HTTP_USER_AGENT'], 0, 255)
-                : ''
+                : '',
         ];
 
         $remember = !empty($data['remember']);
@@ -147,6 +158,8 @@ class restapi extends RestController
                 'website' => isset($data['website']) ? (string) $data['website'] : '',
             ]
         );
+
+
 
         $status = isset($result['status']) ? $result['status'] : '';
 
@@ -169,7 +182,7 @@ class restapi extends RestController
             if ($reason === 'form_evidence') {
                 throw new ValidationException([
                     'abuse_evidence' => 'Login evidence is invalid or expired. '
-                        . 'Request it again with GET /api/v1/auth/login and post '
+                        . 'Request it again with GET /api/v1/auth/token and post '
                         . 'after the advertised minimum_seconds has elapsed.'
                 ]);
             }
@@ -177,6 +190,20 @@ class restapi extends RestController
             if ($reason === 'honeypot') {
                 throw new ValidationException([
                     'website' => 'This field must be left empty.'
+                ]);
+            }
+
+            if ($reason === 'session_expired') {
+                // The evidence token did not match this session, so the password
+                // was never checked. That is not a rejected credential: it is a
+                // recoverable proof-of-session failure the client can retry by
+                // requesting fresh evidence. Kept distinct from the 401 so a
+                // person is never told their password was wrong when it was not.
+                throw new ValidationException([
+                    'session_expired' => 'The sign-in session no longer matches '
+                        . 'the evidence token, so the password was not checked. '
+                        . 'Request fresh evidence with GET /api/v1/auth/token and '
+                        . 'post it again keeping the session cookie.'
                 ]);
             }
 
@@ -208,6 +235,12 @@ class restapi extends RestController
         $options = [];
         if ($remember) {
             $options['ttl'] = 86400 * 30; // 30 days for remember me
+        }
+
+        // Include device_id if provided for family revocation on replay
+        $deviceId = $this->input('device_id');
+        if ($deviceId) {
+            $options['device_id'] = $deviceId;
         }
 
         $tokens = $this->auth->issueTokens($userId, $options);
@@ -257,7 +290,7 @@ class restapi extends RestController
 
     /**
      * POST /api/v1/auth/refresh
-     * Exchange a refresh token for a new token pair
+     * Exchange a refresh token and device identifier for a new token pair.
      *
      * The refresh token is rotated, and the session identifier is rotated with
      * it. The session must not outlive the credential that created it, so
@@ -265,15 +298,25 @@ class restapi extends RestController
      * the identity is preserved because the same account is still signed in.
      * Without this, a cookie captured under the previous token pair would
      * remain usable after that pair was revoked.
+     *
+     * Accepts a device identifier to enable whole-family revocation on replay.
+     * Presenting an already-rotated refresh token revokes the whole family for
+     * that user and device, on the assumption that reuse means the token was
+     * captured.
+     *
+     * Contract: This is the refresh endpoint specified in the field guiding
+     * service contract. It accepts a refresh token and a device identifier,
+     * and returns a new access token. Refresh tokens rotate on every use.
      */
     public function POST_auth_refresh(): void
     {
         $data = $this->validate($this->getRequestData(), [
-            'refresh_token' => 'required|string'
+            'refresh_token' => 'required|string',
+            'device_id' => 'required|string|max:255'
         ]);
 
-        $tokens = $this->auth->refreshAccessToken($data['refresh_token']);
-        
+        $tokens = $this->auth->refreshAccessToken($data['refresh_token'], $data['device_id']);
+
         if (!$tokens) {
             throw new AuthenticationException('Invalid or expired refresh token');
         }
@@ -327,14 +370,17 @@ class restapi extends RestController
      * token destroys the session, via NativeSessionService::destroy(), which
      * clears the authentication keys and then regenerates the session
      * identifier so a captured cookie cannot be replayed.
+     *
+     * Supports device-specific logout via device_id parameter.
      */
     public function POST_auth_logout(): void
     {
         $this->requireAuth();
-        
+
         $data = $this->validate($this->getRequestData(), [
             'refresh_token' => 'sometimes|string',
-            'revoke_all' => 'sometimes|boolean'
+            'revoke_all' => 'sometimes|boolean',
+            'device_id' => 'sometimes|string|max:255'
         ]);
 
         if (!empty($data['revoke_all'])) {
@@ -342,6 +388,9 @@ class restapi extends RestController
         } elseif (!empty($data['refresh_token'])) {
             $refreshHash = hash('sha256', $data['refresh_token']);
             $this->auth->revokeRefreshToken($refreshHash);
+        } elseif (!empty($data['device_id'])) {
+            // Device-specific logout
+            $this->auth->revokeAllUserDeviceTokens($this->currentUser['id'], $data['device_id']);
         }
 
         $stack = $this->getObject('nativeauthwebcomposition', 'security')->build();
@@ -397,18 +446,96 @@ class restapi extends RestController
         header('Content-Type: application/json; charset=UTF-8');
         header('Cache-Control: public, max-age=300');
         header('X-Content-Type-Options: nosniff');
-        echo json_encode($this->auth->jwks(), JSON_UNESCAPED_SLASHES);
+        echo json_encode($this->keys->jwks(), JSON_UNESCAPED_SLASHES);
         exit;
     }
 
     /**
      * GET /api/v1/auth/me
      * Get current authenticated user info
+     *
+     * @deprecated Use GET /api/v1/user/profile instead. This endpoint is kept
+     * for backward compatibility but will be removed in a future version.
      */
     public function GET_auth_me(): void
     {
         $this->requireAuth();
         $this->respond($this->currentUser);
+    }
+
+    /**
+     * GET /api/v1/auth/login
+     * Issue the abuse-protection evidence a login submission must carry.
+     *
+     * @deprecated Use GET /api/v1/auth/token instead. This endpoint is kept
+     * for backward compatibility but will be removed in a future version.
+     */
+    public function GET_auth_login(): void
+    {
+        $this->GET_auth_token();
+    }
+
+    /**
+     * POST /api/v1/auth/login
+     * Login with username/password, returns access + refresh tokens.
+     *
+     * @deprecated Use POST /api/v1/auth/token instead. This endpoint is kept
+     * for backward compatibility but will be removed in a future version.
+     */
+    public function POST_auth_login(): void
+    {
+        $this->POST_auth_token();
+    }
+
+    /**
+     * GET /api/v1/user/profile
+     * Get current authenticated user profile with context, grants, roles and epoch.
+     *
+     * Returns the caller's identity, active context, context grant set, roles,
+     * effective scopes and identity epoch. It is the one call the mobile client
+     * makes on every successful start, and the response is cacheable for the
+     * access token's lifetime.
+     *
+     * The grant set is included because the client needs it to decide what the
+     * user can see and which context to default to. It is present for display
+     * and navigation; it does not authorise anything, because the token it
+     * arrives with already did, and a client-supplied context is never trusted
+     * server-side.
+     *
+     * Contract: This is the profile endpoint specified in the field guiding
+     * service contract.
+     */
+    public function GET_user_profile(): void
+    {
+        $this->requireAuth();
+
+        $userId = $this->currentUser['id'];
+
+        // Get identity claims (includes active context, grant set, roles, epoch, scopes)
+        $claims = $this->auth->identityClaims($userId);
+
+        // Get user details
+        $userService = $this->getObject('userservice', 'security');
+        $userRow = $userService->findByUserId($userId);
+
+        if (!is_array($userRow)) {
+            throw new NotFoundException('User not found');
+        }
+
+        $profile = [
+            'user' => $this->presentUser($userRow),
+            'active_context' => $claims['ctx'],
+            'context_grants' => $claims['ctxs'],
+            'roles' => $claims['roles'],
+            'scopes' => $claims['scope'],
+            'identity_epoch' => $claims['epoch'],
+            'account_active' => $claims['active']
+        ];
+
+        // Set cache headers for the access token lifetime (1 hour)
+        header('Cache-Control: private, max-age=3600');
+
+        $this->respond($profile);
     }
 
     // ============================================================
@@ -433,17 +560,46 @@ class restapi extends RestController
     public function POST_auth_api_keys(): void
     {
         $this->requireAuth();
-        
+
         $data = $this->validate($this->getRequestData(), [
             'name' => 'required|string|max:100',
             'scopes' => 'sometimes|array',
             'expires_at' => 'sometimes|string' // ISO 8601 date
         ]);
 
+        $scopes = $data['scopes'] ?? [];
+
+        // Only names from the fixed vocabulary may be stored. A scope outside
+        // it can never grant a route (scopeForRoute() only ever names a
+        // member), so accepting one would be misleading rather than dangerous,
+        // but a caller that believes it holds a scope it does not is a bug
+        // waiting to surface later.
+        foreach ($scopes as $scope) {
+            if (!is_string($scope) || !in_array($scope, self::API_SCOPES, true)) {
+                throw new ValidationException([
+                    'scopes' => 'Unknown scope. Allowed: ' . implode(', ', self::API_SCOPES)
+                ]);
+            }
+        }
+
+        // A key minted under an API-key credential cannot exceed the scopes
+        // that credential holds. Without this, any key holder could mint a
+        // wider key for themselves and the scope list becomes advisory.
+        if ($this->credentialType === 'api_key') {
+            $held = $this->credentialScopes ?? [];
+            $excess = array_diff($scopes, $held);
+            if (!empty($excess)) {
+                throw new ScopeException(
+                    'An API key cannot mint a key with scopes it does not itself hold.',
+                    null
+                );
+            }
+        }
+
         $result = $this->auth->createApiKey(
             $this->currentUser['id'],
             $data['name'],
-            $data['scopes'] ?? [],
+            $scopes,
             $data['expires_at'] ?? null
         );
 
@@ -457,7 +613,7 @@ class restapi extends RestController
     public function DELETE_auth_api_keys_by_id($id): void
     {
         $this->requireAuth();
-        
+
         if (!$this->auth->revokeApiKey($this->currentUser['id'], (int)$id)) {
             throw new NotFoundException('API key not found');
         }
@@ -699,6 +855,21 @@ class restapi extends RestController
                     'Could not update the password'
                 );
             }
+
+            // If the user changed their own password, all other refresh tokens
+            // are invalidated. The access token used for this call may still be
+            // valid for its remaining lifetime, but a client that wishes to
+            // continue must re-authenticate or rotate with a fresh login. If an
+            // administrator changed another account's password, other sessions
+            // should also be ended — a forced password change should revoke all
+            // refresh sessions for the affected account.
+            try {
+                $authService->revokeAllUserTokens((string) $id);
+            } catch (\Throwable $t) {
+                // Best effort: we already updated the password. The rest is
+                // accounting for active sessions; do not let it abort a
+                // successful password change.
+            }
         }
 
         $record = $userService->findByUserId($id);
@@ -852,12 +1023,12 @@ class restapi extends RestController
     {
         $this->requireAuth();
         $this->requirePermission('modules.view');
-        
+
         $p = $this->getPagination();
-        
+
         $where = [];
         $params = [];
-        
+
         // Only filter on columns that tbl_modules actually has. The schema is
         // id, module_id, module_authors, module_releasedate, module_version,
         // module_path, isAdmin, isVisible, hasAdminPage, isContextAware,
@@ -885,7 +1056,7 @@ class restapi extends RestController
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-        
+
         // Count
         $countSql = "SELECT COUNT(*) as cnt FROM tbl_modules $whereSql";
         // MDB2 needs the bound types declared: an undeclared placeholder makes
@@ -896,20 +1067,23 @@ class restapi extends RestController
         );
         if (PEAR::isError($stmt)) {
             error_log("GET_modules count prepare error: " . $stmt->getMessage());
-            throw new ConflictException('Database error');
+            // A failed prepare/execute is a server fault, not a client
+            // conflict. Reporting 409 invites a retry that cannot succeed and
+            // mislabels the fault as something the caller could resolve.
+            ApiResponse::serverError('Module list could not be read');
         }
         $result = $stmt->execute($params);
         if (PEAR::isError($result)) {
             error_log("GET_modules count execute error: " . $result->getMessage());
-            throw new ConflictException('Database error');
+            ApiResponse::serverError('Module list could not be read');
         }
         $totalRow = $result->fetchRow();
         $total = (int)($totalRow['cnt'] ?? 0);
 
 // List
         $sql = "
-            SELECT id as module_id, module_id as module_key, module_version, module_path, 
-                   isVisible as module_isvisible, hasAdminPage as module_hasadminpage, 
+            SELECT id as module_id, module_id as module_key, module_version, module_path,
+                   isVisible as module_isvisible, hasAdminPage as module_hasadminpage,
                    '' as module_description
             FROM tbl_modules
             $whereSql
@@ -925,14 +1099,14 @@ class restapi extends RestController
         ));
         if (PEAR::isError($stmt)) {
             error_log("GET_modules list prepare error: " . $stmt->getMessage());
-            throw new ConflictException('Database error');
+            ApiResponse::serverError('Module list could not be read');
         }
         $result = $stmt->execute($params);
         if (PEAR::isError($result)) {
             error_log("GET_modules list execute error: " . $result->getMessage());
-            throw new ConflictException('Database error');
+            ApiResponse::serverError('Module list could not be read');
         }
-        
+
         $modules = [];
         while ($row = $result->fetchRow()) {
             $modules[] = $row;
@@ -949,15 +1123,208 @@ class restapi extends RestController
     {
         $this->requireAuth();
         $this->requirePermission('modules.view');
-        
+
         $module = $this->getObject('modules', 'modulecatalogue');
         $record = $module->getRow('module_id', $id);
-        
+
         if (!$record || !isset($record['module_id'])) {
             throw new NotFoundException('Module');
         }
 
         $this->respond($record);
+    }
+
+    // ============================================================
+    // SPECIES CATALOGUE ENDPOINTS
+    //
+    // The catalogue is the field guiding service's, and it stays there: species
+    // are reference data that belongs beside the field data they describe, and
+    // a device bundles them into its offline cache through one request. These
+    // routes are a proxy over that service so a caller needs a single address
+    // and a single token. The request carries the caller's own credentials
+    // forward, and the field service validates them itself, so this proxy
+    // gates anonymity and nothing more.
+    // ============================================================
+
+    /**
+     * GET /api/v1/species
+     * List the species catalogue, or search it.
+     *
+     * Search is passed through rather than pre-filtered here. The catalogue
+     * searches case-insensitively across code, common name, scientific name
+     * and description, and filtering twice would only drop what the upstream
+     * would have returned.
+     */
+    public function GET_species(): void
+    {
+        $this->requireAuth();
+
+        $this->respond($this->catalogueList('/api/v1/species', 'species'));
+    }
+
+    /**
+     * GET /api/v1/species/{code}
+     * One species from the catalogue, by code.
+     *
+     * The engine lowercases the whole route before the handler sees it, so the
+     * code arrives here in whatever casing the client sent, lowercased. It is
+     * forwarded untouched: the catalogue uppercases and trims it itself, so any
+     * casing works and a code the catalogue does not hold is still an answer.
+     *
+     * An unknown code is the catalogue's own 404, passed through. Answering
+     * "not found" for a code the caller asked about reveals nothing beyond
+     * what the caller already had.
+     */
+    public function GET_species_by_id($id): void
+    {
+        $this->requireAuth();
+
+        $code = trim((string) $id);
+        if ($code === '' || strpos($code, '/') !== false) {
+            throw new NotFoundException('Species');
+        }
+
+        $this->respond(
+            $this->fetchFromFieldService('/api/v1/species/' . rawurlencode($code))
+        );
+    }
+
+    /**
+     * GET /api/v1/outings
+     * List the outings the calling user may read.
+     *
+     * Nothing is searched or narrowed here beyond what the caller is entitled
+     * to see: the upstream lists the outings in the caller's own context grants
+     * and omits the rest, and it answers the same for an outing that does not
+     * exist as for one in a context the caller may not read. Forwarding the
+     * token is what carries that entitlement, so the list is the caller's own.
+     */
+    public function GET_outings(): void
+    {
+        $this->requireAuth();
+
+        $this->respond($this->catalogueList('/api/v1/outings', 'outings'));
+    }
+
+    /**
+     * GET /api/v1/competencies
+     * List the competency catalogue.
+     *
+     * Same shape and same reasoning as the species list. Competencies are the
+     * other reference list a field card needs: the behaviour and age/sex
+     * options the device offers are derived from them, and a card that cannot
+     * read them falls back to built-in defaults, so this is worth serving.
+     */
+    public function GET_competencies(): void
+    {
+        $this->requireAuth();
+
+        $this->respond($this->catalogueList('/api/v1/competencies', 'competencies'));
+    }
+
+    /**
+     * POST /api/v1/sync/push
+     * Hand a batch of queued operations to the field service.
+     *
+     * The body is forwarded exactly as it arrived rather than being decoded and
+     * re-encoded. The field service decodes strictly and refuses unknown
+     * fields, so anything read into PHP and written back out risks dropping or
+     * renaming a key on the way — and a dropped key is a change applied
+     * incompletely, which is the one outcome worse than a refusal. Re-encoding
+     * also loses nothing a caller sent and gains nothing a caller did not.
+     *
+     * The answer is passed through as it came. The device reads either a bare
+     * body or one wrapped under "data", and the field service answers bare
+     * with the per-operation results, so wrapping is left to respond() and the
+     * results are not reshaped here.
+     */
+    public function POST_sync_push(): void
+    {
+        $this->requireAuth();
+
+        $this->respond(
+            $this->fetchFromFieldService(
+                '/api/v1/sync/push',
+                $this->rawRequestBody()
+            )
+        );
+    }
+
+    /**
+     * POST /api/v1/sync/pull
+     * Ask the field service for the next page of changes.
+     *
+     * A POST rather than a GET, because the request carries a cursor in its
+     * body and a cursor is not something to put in a query string where a
+     * proxy or an access log would keep it. An empty body is a first pull,
+     * which the field service treats as ordinary rather than as an error.
+     */
+    public function POST_sync_pull(): void
+    {
+        $this->requireAuth();
+
+        $this->respond(
+            $this->fetchFromFieldService(
+                '/api/v1/sync/pull',
+                $this->rawRequestBody()
+            )
+        );
+    }
+
+    /**
+     * The request body exactly as the client sent it.
+     *
+     * Read here rather than taken from getRequestData(), which has already
+     * been through json_decode: a proxy needs the bytes, not a PHP array, and
+     * `[]` and `{}` are both truthy-empty in ways a forwarded body is not.
+     */
+    private function rawRequestBody(): string
+    {
+        $raw = file_get_contents('php://input');
+
+        return is_string($raw) ? $raw : '';
+    }
+
+    /**
+     * Fetch one catalogue list from the field service and hand it back under
+     * the key the caller reads, wrapped in Chisimba's own envelope.
+     *
+     * The three catalogue lists do not agree on a shape: species and
+     * competencies answer bare ({"species": [...]}) while outings nests its
+     * payload one level deeper under "data". Letting that reach a client
+     * unchanged would put the list somewhere the caller is not looking, and a
+     * client reading the documented key would see an empty list and report no
+     * outings at all rather than a malformed response — a silent wrong answer,
+     * which is the failure mode worth designing against. So the payload is
+     * lifted out first and wrapped once, the same way, for all three.
+     *
+     * The result is always an array and never null. A device has to tell "the
+     * catalogue is empty" from "this response was not the shape I expected",
+     * and a null where a list belongs is the second of those.
+     *
+     * @param string $path Path on the field service, '/api/v1/...' with no
+     *                     query string
+     * @param string $key  The key the caller reads the list from
+     * @return array A one-key array holding the list
+     */
+    private function catalogueList(string $path, string $key): array
+    {
+        // Every catalogue list in the contract takes the same search
+        // parameter. Each list is free to ignore it, and a parameter the
+        // upstream does not consult is harmless, while one it starts honouring
+        // later needs no change here.
+        $search = trim((string) $this->input('q', ''));
+        if ($search !== '') {
+            $path .= '?q=' . urlencode($search);
+        }
+
+        $upstream = $this->fetchFromFieldService($path);
+
+        $payload = isset($upstream['data']) && is_array($upstream['data'])
+            ? $upstream['data']
+            : $upstream;
+
+        return [$key => $payload[$key] ?? []];
     }
 
     /**
@@ -1203,5 +1570,226 @@ class restapi extends RestController
         // response body minus the boolean envelope flag.
         unset($result['ok']);
         $this->respondCreated($result);
+    }
+
+    /**
+     * Where the field guiding service is, as this installation reaches it.
+     *
+     * Environment first, then the installation's configuration file, then the
+     * compose default — the same order and for the same reasons as
+     * SigningKeyService resolving its key path. The environment is read first
+     * because the field service address is the one setting an installation is
+     * most likely to want to change, and an environment variable can only be
+     * changed by recreating the container. Neither is a fallback for the
+     * other: a URL that is right in one and wrong in the other answers from
+     * a different catalogue than the one intended, which reads as stale data
+     * rather than as a misconfiguration.
+     *
+     * @return string Base URL with any trailing slash removed
+     */
+    private function fieldServiceUrl(): string
+    {
+        $fromEnvironment = getenv('CHISIMBA_FIELD_SERVICE_URL');
+        if (is_string($fromEnvironment) && trim($fromEnvironment) !== '') {
+            return rtrim(trim($fromEnvironment), '/');
+        }
+
+        // The config file is at <docroot>/config/restapi_inc.php, and how far
+        // up that is depends on where this installation rooted the framework.
+        // Two layouts are both real: the source tree, where the module is
+        // app/core_modules/<module> and the docroot is three levels out, and
+        // the assembled image, where app/ IS the docroot and it is two. Rather
+        // than guess an installation's layout, walk up until a readable
+        // config file is found. A silently unwritable-looking-for path is the
+        // failure this avoids: the operator's setting would be ignored and the
+        // default would answer instead, which looks like the setting works.
+        for ($levels = 2; $levels <= 4; $levels++) {
+            $candidate = dirname(__DIR__, $levels);
+
+            $file = $candidate . '/config/restapi_inc.php';
+            if (!is_readable($file)) {
+                continue;
+            }
+
+            require_once $file;
+            if (defined('KEWL_FIELD_SERVICE_URL') && is_string(KEWL_FIELD_SERVICE_URL)
+                && trim(KEWL_FIELD_SERVICE_URL) !== '') {
+                return rtrim(trim(KEWL_FIELD_SERVICE_URL), '/');
+            }
+
+            // The file was found and read, so a missing or blank constant is a
+            // decision rather than an oversight. Keep looking no further.
+            break;
+        }
+
+        // The compose default. The service listens on 8080 inside its own
+        // container and shares the chisimba-dev network under this name.
+        return 'http://field-service:8080';
+    }
+
+    /**
+     * Ask the field guiding service for a path, as the calling user.
+     *
+     * Reads a path or sends one a body, depending on whether $body is given.
+     * Both exist for the same reason: the reference catalogues are read-only and
+     * a device needs them to fill its pickers, while sync carries a device's
+     * queued work and cannot be served by a proxy that only reads.
+     *
+     * The caller's own Authorization header is forwarded verbatim. The field
+     * service signs nothing here and trusts nothing here: its guard validates
+     * the token itself, against its own cached JWKS, and refuses a token whose
+     * epoch has been raised or whose scope is missing. So this proxy answers
+     * for the same person who asked, with no service credential minted and no
+     * broader access granted than the caller already had. What this method
+     * contributes is identity: the handlers require a valid Chisimba session
+     * before they get here, so no anonymous request reaches the field service.
+     *
+     * Every failure answers as JSON. A refused connection, a timeout, an
+     * upstream error page and a body that is not the expected shape have all
+     * previously surfaced as a blank page or a PHP warning, which a device
+     * cannot tell apart from "there is no network" — and an empty species
+     * picker is what a misread failure looks like when the catalogue is
+     * reference data. So each mode is distinguished:
+     *
+     *   transport failure      503 UPSTREAM_UNAVAILABLE  nothing answered
+     *   upstream's own error   its status, its own code  it refused
+     *   body that is not JSON  502 UPSTREAM_UNREADABLE   answered wrongly
+     *
+     * Details of the fault (URL, errno, raw body) go to the log, never to the
+     * client.
+     *
+     * @param string $path Path on the field service, '/api/v1/...' with any
+     *                     query string already attached
+     * @param string|null $body The request body to send, or null to send none.
+     *                     A null body is a GET; a string body is a POST. The
+     *                     field service's sync endpoints take their batch and
+     *                     their cursor in the body, so a proxy that could only
+     *                     read would leave exactly the write path unreachable.
+     * @return array The decoded upstream body
+     */
+    private function fetchFromFieldService(string $path, ?string $body = null): array
+    {
+        if (!function_exists('curl_init')) {
+            error_log('REST API: field service unreachable, the cURL extension is absent');
+            ApiResponse::error(
+                'UPSTREAM_UNAVAILABLE',
+                'The field service is unavailable.',
+                503
+            );
+        }
+
+        // Two headers are taken from the caller and the rest are this proxy's
+        // own. Each is the first of its name, so a second Authorization sent by
+        // a caller cannot quietly displace the one that was honoured.
+        $authorization = null;
+        $contentType = null;
+
+        // getallheaders() keeps the casing the client sent and the $_SERVER
+        // fallback lowercases, so the name is folded either way.
+        foreach ($this->getRequestHeaders() as $name => $value) {
+            if (!is_string($value) || $value === '') {
+                continue;
+            }
+            $folded = strtolower((string) $name);
+
+            if ($authorization === null && $folded === 'authorization') {
+                $authorization = $value;
+            } elseif ($contentType === null && $folded === 'content-type') {
+                $contentType = $value;
+            }
+        }
+
+        $requestHeaders = ['Accept: application/json'];
+        if ($authorization !== null) {
+            $requestHeaders[] = 'Authorization: ' . $authorization;
+        }
+
+        $options = [
+            CURLOPT_URL => $this->fieldServiceUrl() . $path,
+            CURLOPT_RETURNTRANSFER => true,
+            // A redirect is not followed: a 3xx would only re-ask for
+            // something already answered, and following one on a write is a
+            // way to send the same batch twice. It is reported like any other
+            // answer the proxy did not expect.
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_TIMEOUT => 6,
+            CURLOPT_HTTPHEADER => $requestHeaders,
+        ];
+
+        if ($body !== null) {
+            // The field service refuses a body whose Content-Type it does not
+            // recognise as JSON, so the caller's own value goes with the
+            // caller's own bytes. Reading it from the request rather than
+            // assuming the common case keeps a client that names a charset or
+            // a vendor suffix from being answered 415 for a well-formed body.
+            $requestHeaders[] = 'Content-Type: ' . ($contentType ?? 'application/json');
+            $options[CURLOPT_HTTPHEADER] = $requestHeaders;
+            $options[CURLOPT_POST] = true;
+            $options[CURLOPT_POSTFIELDS] = $body;
+        }
+
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
+
+        $body = curl_exec($ch);
+
+        if ($body === false) {
+            $errno = curl_errno($ch);
+            $message = curl_error($ch);
+            curl_close($ch);
+
+            error_log("REST API: field service unreachable ({$errno}): {$message}");
+            ApiResponse::error(
+                'UPSTREAM_UNAVAILABLE',
+                'The field service is unavailable.',
+                503
+            );
+        }
+
+        $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+
+        $decoded = json_decode((string) $body, true);
+
+        if (!is_array($decoded)) {
+            error_log(
+                'REST API: field service answered ' . $status
+                . ' with a body that is not JSON'
+            );
+            ApiResponse::error(
+                'UPSTREAM_UNREADABLE',
+                'The field service did not answer as expected.',
+                502
+            );
+        }
+
+        if ($status < 200 || $status >= 300) {
+            // The catalogue reports a stable code with a readable message, and
+            // its own body is flat — {"error":"unknown_species","message":...} —
+            // while Chisimba's envelope nests under error.code/error.message.
+            // Both shapes are read, because the answer we owe the caller is
+            // the catalogue's own reason rather than one of ours.
+            $error = $decoded['error'] ?? null;
+
+            $code = 'UPSTREAM_ERROR';
+            if (is_string($error) && $error !== '') {
+                $code = $error;
+            } elseif (isset($error['code']) && is_string($error['code']) && $error['code'] !== '') {
+                $code = $error['code'];
+            }
+
+            $message = 'The field service refused the request.';
+            if (isset($decoded['message']) && is_string($decoded['message'])) {
+                $message = $decoded['message'];
+            } elseif (isset($error['message']) && is_string($error['message'])) {
+                $message = $error['message'];
+            }
+
+            error_log("REST API: field service refused ({$status}): {$code}");
+            ApiResponse::error($code, $message, $status);
+        }
+
+        return $decoded;
     }
 }

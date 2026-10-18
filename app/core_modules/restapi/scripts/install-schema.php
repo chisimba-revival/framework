@@ -172,6 +172,7 @@ $columnType = function ($tableName, $columnName) use ($db) {
 $definitions = array(
     'tbl_rest_refresh_tokens' => 'core_modules/restapi/sql/tbl_rest_refresh_tokens.sql',
     'tbl_rest_api_keys' => 'core_modules/restapi/sql/tbl_rest_api_keys.sql',
+    'tbl_rest_identity_epoch' => 'core_modules/restapi/sql/tbl_rest_identity_epoch.sql',
 );
 
 $created = 0;
@@ -194,13 +195,14 @@ foreach ($definitions as $expectedTable => $path) {
             $options = null;
             $name = null;
             $indexes = null;
+            $tableIndexes = null;
 
             include $path;
 
-            return array($tablename, $fields, $options, $name, $indexes);
+            return array($tablename, $fields, $options, $name, $indexes, $tableIndexes);
         };
 
-        list($tableName, $fields, $options, $name, $indexes) = $load();
+        list($tableName, $fields, $options, $name, $indexes, $tableIndexes) = $load();
 
         if ($tableName !== $expectedTable) {
             throw new RuntimeException(
@@ -218,6 +220,17 @@ foreach ($definitions as $expectedTable => $path) {
                 throw new RuntimeException(
                     'Table ' . $tableName . ' was created but its indexes failed'
                 );
+            }
+        }
+
+        if ($tableIndexes !== null && $tableIndexes !== false) {
+            foreach ($tableIndexes as $indexName => $indexDefinition) {
+                if (!$conn->createTableIndex($tableName, $indexName, $indexDefinition)) {
+                    throw new RuntimeException(
+                        'Table ' . $tableName . ' was created but its index '
+                        . $indexName . ' failed'
+                    );
+                }
             }
         }
 

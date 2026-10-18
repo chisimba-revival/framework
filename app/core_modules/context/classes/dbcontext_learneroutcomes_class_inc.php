@@ -55,7 +55,7 @@ class dbContext_learneroutcomes extends dbTable
             //Add goal to outcomes table
             $newLO = $this->insertSingle($contextCode, $contextGoal);
             //Remove goal from context table
-            $updateContext = $this->objDBContext->updateContext( $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals="deleted", $showcomment='Y', $alerts='');
+            $updateContext = $this->objDBContext->updateContext( $contextCode, $title=FALSE, $status=FALSE, $access=FALSE, $about=FALSE, $goals="deleted", $showcomment=FALSE, $alerts='');
         }
         return $this->getAll("WHERE contextcode='" . $contextCode . "'");
     }

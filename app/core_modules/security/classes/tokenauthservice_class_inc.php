@@ -1,7 +1,7 @@
 <?php
 /**
  * TokenAuthService - JWT access/refresh tokens + API keys for REST API
- * 
+ *
  * Provides stateless authentication compatible with existing session-based auth.
  * Supports:
  * - JWT access tokens (short-lived, for API requests)
@@ -45,7 +45,7 @@ class TokenAuthService
         // The secret is still needed for API keys, which are verified here
         // against a stored hash rather than by a remote service, so it has not
         // gone away — it simply stopped being something every verifier needs.
-        require_once dirname(__DIR__) . '/classes/signinkeyservice_class_inc.php';
+        require_once dirname(__DIR__) . '/classes/signingkeyservice_class_inc.php';
         $this->signingKeys = new SigningKeyService();
 
         // Raises the epoch in MySQL and publishes it to the denylist the field
@@ -214,7 +214,7 @@ class TokenAuthService
      * class has no reason to open. Adding a second scope is a change to this
      * constant and to the service that needs it, not an argument.
      */
-    const SERVICE_SCOPE = 'field:verify';
+    const SERVICE_SCOPE = 'field:write';
 
     /**
      * How long a service token lives.
@@ -254,7 +254,7 @@ class TokenAuthService
      * @param int|null $ttl Override for the service token lifetime
      * @return string
      */
-    public function issueServiceToken(string $serviceName, ?int $ttl = null): string
+    public function issueServiceToken(string $serviceName, ?int $ttl = null, ?array $scopes = null): string
     {
         $serviceName = trim($serviceName);
         if ($serviceName === '') {
@@ -280,13 +280,42 @@ class TokenAuthService
             'type' => 'service',
             // The scope is an ARRAY, which is what the field service requires.
             // A space-separated string is the OAuth spelling of the same thing
-            // and would be read as one scope called "field:verify x", which is a
+            // and would be read as one scope called "field:write x", which is a
             // scope nothing holds.
-            'scope' => [self::SERVICE_SCOPE],
+            //
+            // A caller that names the scopes it needs gets exactly those; a
+            // caller that names none gets the default. The list was previously
+            // ignored when passed, so a module asking for field:write was
+            // silently issued field:verify instead.
+            'scope' => (!empty($scopes)
+                ? array_values(array_unique($scopes))
+                : [self::SERVICE_SCOPE]),
             'jti' => $tokenId,
             'ver' => $tokenId,
         ]);
     }
+
+    /**
+     * The scopes each field role carries.
+     *
+     * A person's roles are read from their context-role group memberships (see
+     * splitContextRoles), and the scope their token carries is the union of the
+     * scopes of the roles it names. This map is the one definition of both, so
+     * the scopes on a token are the same set the provisioning script materialised
+     * into those groups, and a token can never carry a scope its role does not
+     * grant: an unknown role contributes nothing rather than being invented.
+     *
+     * It is deliberately not read from tbl_perms_grouprights on every token. The
+     * group rights are the enforcement the modules consult; this is the smaller,
+     * auditable statement of what each role is for, kept next to the claim it
+     * feeds.
+     */
+    const ROLE_SCOPES = array(
+        'Student' => array('field:read', 'field:write'),
+        'Guide' => array('field:read', 'field:write'),
+        'Mentor' => array('field:read', 'field:write', 'field:verify'),
+        'Admin' => array('field:read', 'field:write', 'field:verify', 'field:revoke'),
+    );
 
     /**
      * The claims describing what a user may reach, and in which context.
@@ -298,26 +327,39 @@ class TokenAuthService
      * person, and which one the field service honoured would depend on which
      * query ran.
      *
-     * The consequence is that a group name IS a context code, so it becomes part
-     * of the security boundary. That is a real cost of reusing existing data and
-     * is recorded rather than hidden: 'Big 5 Reserve' and 'big5' are two
-     * contexts, and an operator who renames a group silently removes an access
-     * nobody notices until somebody cannot do their job.
+     * A field grant is a group named "<context>^<role>" — "north^Mentor" — and
+     * it carries both halves of the answer: the context is where the person may
+     * work, the role is what they may do there. The name is part of the security
+     * boundary and is recorded rather than hidden: 'north^Mentor' and
+     * 'north^mentor' are two different groups, and a typo in an operator's
+     * provisioning is a grant nobody holds until it is corrected. This is a real
+     * cost of reusing existing data, paid knowingly.
      *
-     * ctx is the active context — the one a new record is written into — and it
-     * is deliberately left EMPTY when a user holds more than one grant. Reads
-     * follow the grant set and are unaffected; writes are refused by the field
-     * service, which is the correct outcome. Picking one of several silently
-     * would put a trainee's sighting into whichever context happened to sort
-     * first, which is exactly the quiet wrongness this system exists to prevent.
-     * An operator who wants a user writing somewhere gives them one group.
+     * ctx is the active context — the one a new record is written into. It is the
+     * user's stored active context when that is one they may write to, and
+     * otherwise the single context they hold; when a user holds several contexts
+     * and has not chosen one it is deliberately left EMPTY, so writes are refused
+     * by the field service rather than a trainee's sighting landing in whichever
+     * context happened to sort first. That quiet wrongness is what this system
+     * exists to prevent. Reads follow the grant set and are unaffected by ctx.
      *
      * @param string $userId Chisimba logical user identifier
      * @return array
      */
     public function identityClaims(string $userId): array
     {
-        $groups = $this->groupsFor($userId);
+        $split = $this->splitContextRoles($this->groupsFor($userId));
+        $contexts = $split['contexts'];
+        $roles = $split['roles'];
+
+        $active = $this->activeContextFor($userId);
+        if ($active !== '' && in_array($active, $contexts, true)) {
+            $ctx = $active;
+        } elseif (count($contexts) === 1) {
+            $ctx = $contexts[0];
+        } else {
+            $ctx = '';
+        }
 
         return array(
             // Whether the account is switched on. It is in the claims because a
@@ -327,16 +369,110 @@ class TokenAuthService
             // ctx and ctxs are separate on purpose. Using the active context as
             // the read boundary would hide a guide's northern-reserve drives
             // while they happen to be working in the southern one.
-            'ctx' => count($groups) === 1 ? $groups[0] : '',
-            'ctxs' => $groups,
-            // Roles are group names. Nothing downstream interprets them yet, and
-            // emitting names rather than inventing a guide/trainee/mentor mapping
-            // means that mapping can be added when something needs it instead of
-            // being guessed at now.
-            'roles' => $groups,
+            'ctx' => $ctx,
+            'ctxs' => $contexts,
+            // Roles are the role halves of the context-role groups. The sign-off
+            // workflow reads them to decide who may act as a programme
+            // administrator, which is why they are names and not a boolean.
+            'roles' => $roles,
             'epoch' => $this->epochFor($userId),
-            'scope' => $groups,
+            'scope' => $this->scopesForRoles($roles),
         );
+    }
+
+    /**
+     * Split group names into the contexts and roles they encode.
+     *
+     * A field grant is a group named "<context>^<role>". The context half is
+     * where a person may work; the role half is what they may do there. A group
+     * without the separator is not a field grant and contributes neither half,
+     * which is what keeps LiveUser's 'Site Admin', 'Lecturers' and 'Students'
+     * out of the claim set instead of turning them into contexts.
+     *
+     * @param array $groups Raw group names from groupsFor()
+     * @return array{contexts: array, roles: array}
+     */
+    private function splitContextRoles(array $groups): array
+    {
+        $contexts = array();
+        $roles = array();
+        foreach ($groups as $name) {
+            $name = (string)$name;
+            $separator = strpos($name, '^');
+            if ($separator === false || $separator === 0) {
+                continue;
+            }
+            $context = substr($name, 0, $separator);
+            $role = substr($name, $separator + 1);
+            if ($context === '' || $role === '') {
+                continue;
+            }
+            $contexts[$context] = true;
+            $roles[$role] = true;
+        }
+        $contextList = array_keys($contexts);
+        $roleList = array_keys($roles);
+        sort($contextList);
+        sort($roleList);
+
+        return array('contexts' => $contextList, 'roles' => $roleList);
+    }
+
+    /**
+     * The scopes the named roles carry, as a sorted union.
+     *
+     * @param array $roles
+     * @return array
+     */
+    private function scopesForRoles(array $roles): array
+    {
+        $scopes = array();
+        foreach ($roles as $role) {
+            if (!isset(self::ROLE_SCOPES[$role])) {
+                continue;
+            }
+            foreach (self::ROLE_SCOPES[$role] as $scope) {
+                $scopes[$scope] = true;
+            }
+        }
+        $list = array_keys($scopes);
+        sort($list);
+
+        return $list;
+    }
+
+    /**
+     * The context a new record is written into, as stored for this user.
+     *
+     * Read from the same active-context store the field-guiding features use, so
+     * that "where am I working" has one answer. A missing store or a failed read
+     * returns '' — the claim falls back to the single-context rule and writes to
+     * a multi-context user are refused, which is the safe direction.
+     *
+     * @param string $userId Chisimba logical user identifier
+     * @return string The active context code, or '' if none is set
+     */
+    private function activeContextFor(string $userId): string
+    {
+        $statement = $this->db->prepare(
+            'SELECT context_code FROM tbl_field_active_context WHERE userid = ?',
+            array('text')
+        );
+        if (MDB2::isError($statement)) {
+            return '';
+        }
+        $result = $statement->execute(array($userId));
+        if (MDB2::isError($result)) {
+            $statement->free();
+            return '';
+        }
+        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $statement->free();
+        if (!is_array($row) || !isset($row['context_code'])) {
+            return '';
+        }
+
+        return (string)$row['context_code'];
     }
 
     /**
@@ -404,7 +540,13 @@ class TokenAuthService
     }
 
     /**
-     * The groups a user belongs to, as context codes.
+     * Every group a user belongs to, by name.
+     *
+     * The names are returned whole and interpreted by the caller: a
+     * "<context>^<role>" name is a field grant, anything else (the LiveUser
+     * programme groups) is not. The interpretation lives next to the claim it
+     * feeds rather than hidden in the query, so there is one place that decides
+     * what a group name means.
      *
      * @param string $userId Chisimba logical user identifier
      * @return array
@@ -655,6 +797,13 @@ class TokenAuthService
         $claims = $this->identityClaims($userId);
         $shape = array(
             'groups' => $claims['ctxs'],
+            // Roles and scopes are in the fingerprint alongside the contexts. A
+            // change of role inside the same context — a trainee becoming a
+            // mentor — leaves ctxs untouched, and a fingerprint over contexts
+            // alone would call that no change and leave the old,
+            // lower-privileged token valid until it expired on its own.
+            'roles' => $claims['roles'],
+            'scope' => $claims['scope'],
             // The three-valued state rather than the boolean claim. A fingerprint
             // that cannot tell 'unknown' from 'active' reports no change when the
             // account could not be read at all, and a deactivated user whose row
@@ -666,6 +815,8 @@ class TokenAuthService
         // Sorted, because the order rows come back in is not a fact about the
         // user: adding somebody to a group should not change their fingerprint.
         sort($shape['groups']);
+        sort($shape['roles']);
+        sort($shape['scope']);
         $json = json_encode($shape);
         if ($json === false) {
             // A fingerprint that cannot be computed must not read as "nothing
@@ -691,7 +842,7 @@ class TokenAuthService
 
     /**
      * Validate and decode a JWT token
-     * 
+     *
      * @return array|null [userId, payload] or null if invalid
      */
     public function validateJWT(string $token): ?array
@@ -764,6 +915,24 @@ class TokenAuthService
      */
     public function validateFromRequest(array $request): ?string
     {
+        $detailed = $this->validateFromRequestDetailed($request);
+        return $detailed['user_id'] ?? null;
+    }
+
+    /**
+     * Validate an access token or API key and report which kind of credential
+     * it was, plus its scopes when it is an API key.
+     *
+     * Bearer access tokens carry no scope claim, so their 'scopes' is null —
+     * meaning "not scope-constrained". API keys carry the scopes they were
+     * minted with, and a key with an unparseable scope blob reports an empty
+     * array so the caller fails closed rather than granting everything.
+     *
+     * @param array $request Request headers
+     * @return array|null {user_id, type: 'jwt'|'api_key', scopes: ?array}, or null when no usable credential was presented
+     */
+    public function validateFromRequestDetailed(array $request): ?array
+    {
         // HTTP header names are case-insensitive (RFC 7230), but getallheaders()
         // preserves whatever casing the client sent, so looking up 'Authorization'
         // alone rejects a perfectly legal "AUTHORIZATION: Bearer ...". Fold the
@@ -782,12 +951,22 @@ class TokenAuthService
         if (str_starts_with($auth, 'Bearer ')) {
             $token = substr($auth, 7);
             $result = $this->validateJWT($token);
-            if ($result) return $result[0];
+            if ($result) {
+                return [
+                    'user_id' => $result[0],
+                    'type' => 'jwt',
+                    'scopes' => null,
+                ];
+            }
         }
 
         $apiKey = $headers['x-api-key'] ?? '';
         if ($apiKey) {
-            return $this->validateApiKey($apiKey);
+            $detailed = $this->validateApiKeyDetailed($apiKey);
+            if ($detailed) {
+                $detailed['type'] = 'api_key';
+                return $detailed;
+            }
         }
 
         return null;
@@ -798,6 +977,17 @@ class TokenAuthService
      */
     public function validateApiKey(string $apiKey): ?string
     {
+        $detailed = $this->validateApiKeyDetailed($apiKey);
+        return $detailed ? $detailed['user_id'] : null;
+    }
+
+    /**
+     * Validate an API key and return both user ID and scopes.
+     *
+     * @return array|null {user_id, scopes: array}, or null when the key is unknown, expired or revoked
+     */
+    public function validateApiKeyDetailed(string $apiKey): ?array
+    {
         if (!str_starts_with($apiKey, self::API_KEY_PREFIX)) {
             return null;
         }
@@ -807,8 +997,8 @@ class TokenAuthService
         $keyHash = hash('sha256', $apiKey);
 
         $sql = "
-            SELECT user_id, expires_at, revoked_at 
-            FROM tbl_rest_api_keys 
+            SELECT user_id, expires_at, revoked_at, scopes
+            FROM tbl_rest_api_keys
             WHERE key_prefix = ? AND key_hash = ?
         ";
         $stmt = $this->db->prepare($sql, $this->parameterTypes(array($prefix, $keyHash)));
@@ -845,12 +1035,39 @@ class TokenAuthService
 
         // Update last_used_at
         $this->executeStatement("
-            UPDATE tbl_rest_api_keys 
-            SET last_used_at = NOW() 
+            UPDATE tbl_rest_api_keys
+            SET last_used_at = NOW()
             WHERE key_prefix = ? AND key_hash = ?
         ", [$prefix, $keyHash]);
 
-        return (string)$row['user_id'];
+        return [
+            'user_id' => (string)$row['user_id'],
+            'scopes' => $this->decodeScopes($row['scopes'] ?? null),
+        ];
+    }
+
+    /**
+     * Decode a stored scopes blob into a scope list.
+     *
+     * A missing or unparseable blob is reported as an empty list, so an
+     * unscoped key never accidentally grants a route.
+     */
+    private function decodeScopes($raw): array
+    {
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+        $decoded = json_decode((string) $raw, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+        $scopes = [];
+        foreach ($decoded as $scope) {
+            if (is_string($scope) && $scope !== '') {
+                $scopes[] = $scope;
+            }
+        }
+        return $scopes;
     }
 
     /**
@@ -867,7 +1084,7 @@ class TokenAuthService
 
         $accessToken = $this->generateJWT($userId, self::ACCESS_TOKEN_TTL, 'access');
         $refreshToken = $this->generateJWT($userId, self::REFRESH_TOKEN_TTL, 'refresh');
-        
+
         // Store refresh token hash
         $refreshHash = hash('sha256', $refreshToken);
         $expiresAt = date('Y-m-d H:i:s', time() + self::REFRESH_TOKEN_TTL);
@@ -876,10 +1093,20 @@ class TokenAuthService
         $ipAddress = $options['ip_address']
             ?? (isset($_SERVER['REMOTE_ADDR']) ? substr((string) $_SERVER['REMOTE_ADDR'], 0, 45) : '');
 
+        // The device is part of the token's identity, not decoration. The same
+        // refresh token presented from another device is treated as stolen, so
+        // the row that proves the token belongs to this install has to record
+        // which install that is. An unbound client stores NULL, so the refresh
+        // check can tell "never bound" from "bound to the empty string".
+        $deviceId = isset($options['device_id']) && $options['device_id'] !== ''
+            ? substr((string) $options['device_id'], 0, 255)
+            : null;
+
         $this->executeStatement("
-            INSERT INTO tbl_rest_refresh_tokens (user_id, token_hash, expires_at, user_agent, ip_address)
-            VALUES (?, ?, ?, ?, ?)
-        ", [$userId, $refreshHash, $expiresAt, $userAgent, $ipAddress]);
+            INSERT INTO tbl_rest_refresh_tokens
+                (user_id, token_hash, expires_at, user_agent, ip_address, device_id, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        ", [$userId, $refreshHash, $expiresAt, $userAgent, $ipAddress, $deviceId]);
 
         return [
             'access_token' => $accessToken,
@@ -892,7 +1119,7 @@ class TokenAuthService
     /**
      * Refresh access token using refresh token
      */
-    public function refreshAccessToken(string $refreshToken): ?array
+    public function refreshAccessToken(string $refreshToken, string $deviceId = ''): ?array
     {
         // Validate refresh token structure
         $parts = explode('.', $refreshToken);
@@ -902,8 +1129,8 @@ class TokenAuthService
 
         // Look up in database
         $sql = "
-            SELECT user_id, expires_at, revoked_at 
-            FROM tbl_rest_refresh_tokens 
+            SELECT user_id, expires_at, revoked_at, device_id
+            FROM tbl_rest_refresh_tokens
             WHERE token_hash = ?
         ";
         $stmt = $this->db->prepare($sql, $this->parameterTypes(array($refreshHash)));
@@ -925,14 +1152,40 @@ class TokenAuthService
 
         if (!$row) return null;
 
+        // A row that is present but already revoked is a replay: the token was
+        // rotated (or revoked) earlier, so the copy in the caller's hand should
+        // no longer exist. A well-behaved client gives up the old token the
+        // moment it is used, which leaves two explanations — a captured token
+        // being replayed, or a lost rotation response being retried with the
+        // stale token. They are indistinguishable here, and reuse of a rotated
+        // token is the documented signal of compromise, so take the safe
+        // reading: revoke the whole family instead of minting a fresh pair that
+        // would also keep the thief alive. This is what the refresh docblock and
+        // the field-service contract promise, and it is the missing half of the
+        // device-binding revocation further down: refusing only the presented
+        // token left the sibling copies already taken from the family usable.
+        //
+        // This is checked before expiry on purpose. An expired token that was
+        // never revoked is housekeeping; a revoked token is evidence, whether or
+        // not it has also expired.
+        if ($row['revoked_at']) {
+            $owner = (string) $row['user_id'];
+            $familyDevice = isset($row['device_id']) ? (string) $row['device_id'] : '';
+            if ($familyDevice !== '') {
+                $this->revokeAllUserDeviceTokens($owner, $familyDevice);
+            } else {
+                // No device was ever recorded, so there is no narrower family
+                // to revoke. Undo every session this user holds.
+                $this->revokeAllUserTokens($owner);
+            }
+            return null;
+        }
+
         // Check expiration
         if (strtotime($row['expires_at']) < time()) {
             $this->revokeRefreshToken($refreshHash);
             return null;
         }
-
-        // Check revocation
-        if ($row['revoked_at']) return null;
 
         // Decode to verify type
         $payload = json_decode($this->base64UrlDecode($parts[1]), true);
@@ -943,9 +1196,25 @@ class TokenAuthService
         $userId = (string)$payload['sub'];
         if ($userId !== (string) $row['user_id']) return null;
 
-        // Issue new token pair (rotate refresh token)
+        // The refresh token is bound to the install that signed in. A token
+        // presented by a different device is not a typo, it is a stolen
+        // credential, so the whole family is revoked rather than this one row:
+        // refusing only the presented token would leave the thief's earlier
+        // copies live. A row with no device recorded predates the binding and
+        // is accepted, because refusing it would sign out every device that
+        // signed in before this existed.
+        $bound = isset($row['device_id']) ? (string) $row['device_id'] : '';
+        if ($deviceId !== '' && $bound !== '' && !hash_equals($bound, $deviceId)) {
+            $this->revokeAllUserDeviceTokens($userId, $bound);
+            return null;
+        }
+
+        // Issue new token pair (rotate refresh token). The fresh refresh token
+        // keeps the device binding, or the rotation would quietly unbind the
+        // install that just proved it owns the token.
         $this->revokeRefreshToken($refreshHash);
-        return $this->issueTokens($userId);
+        $options = ($bound !== '') ? ['device_id' => $bound] : [];
+        return $this->issueTokens($userId, $options);
     }
 
     /**
@@ -954,8 +1223,8 @@ class TokenAuthService
     public function revokeRefreshToken(string $refreshHash): void
     {
         $this->executeStatement("
-            UPDATE tbl_rest_refresh_tokens 
-            SET revoked_at = NOW() 
+            UPDATE tbl_rest_refresh_tokens
+            SET revoked_at = NOW()
             WHERE token_hash = ?
         ", [$refreshHash]);
     }
@@ -966,15 +1235,42 @@ class TokenAuthService
     public function revokeAllUserTokens(string $userId): void
     {
         $this->executeStatement("
-            UPDATE tbl_rest_refresh_tokens 
-            SET revoked_at = NOW() 
+            UPDATE tbl_rest_refresh_tokens
+            SET revoked_at = NOW()
             WHERE user_id = ? AND revoked_at IS NULL
         ", [$userId]);
     }
 
     /**
+     * Revoke every refresh token a user holds for one device.
+     *
+     * This is the counterpart to the device binding: when a token turns up on a
+     * device it was not minted for, every token that device-bound family
+     * carries is revoked together. Without it, revoking the one presented token
+     * would leave the stolen family's other members live, and the theft would
+     * only be half undone. It is also the sign-out path for a client that names
+     * its device, so losing a phone ends the sessions on that phone alone
+     * rather than signing the trainee out everywhere.
+     */
+    public function revokeAllUserDeviceTokens(string $userId, string $deviceId): void
+    {
+        if ($deviceId === '') {
+            // An empty device is not a device. Falling back to the all-device
+            // revocation here would turn a client bug into a full sign-out, so
+            // it does nothing instead.
+            return;
+        }
+
+        $this->executeStatement("
+            UPDATE tbl_rest_refresh_tokens
+            SET revoked_at = NOW()
+            WHERE user_id = ? AND device_id = ? AND revoked_at IS NULL
+        ", [$userId, $deviceId]);
+    }
+
+    /**
      * Create an API key for a user
-     * 
+     *
      * @return array ['key' => full key (only shown once), 'id' => db id, 'prefix' => key prefix]
      */
     public function createApiKey(string $userId, string $name, array $scopes = [], ?string $expiresAt = null): array
@@ -990,7 +1286,7 @@ class TokenAuthService
         ", [$userId, $name, $keyHash, $prefix, json_encode($scopes), $expiresAt]);
 
         $id = $this->db->lastInsertId();
-        
+
         return [
             'key' => $key,  // Only returned once!
             'id' => $id,
@@ -1014,7 +1310,7 @@ class TokenAuthService
         ";
         $stmt = $this->db->prepare($sql, $this->parameterTypes(array($userId)));
         $result = $stmt->execute([$userId]);
-        
+
         $keys = [];
         while ($row = $result->fetchRow()) {
             $keys[] = $row;
@@ -1028,11 +1324,11 @@ class TokenAuthService
     public function revokeApiKey(string $userId, int $keyId): bool
     {
         $this->executeStatement("
-            UPDATE tbl_rest_api_keys 
-            SET revoked_at = NOW() 
+            UPDATE tbl_rest_api_keys
+            SET revoked_at = NOW()
             WHERE id = ? AND user_id = ?
         ", [$keyId, $userId]);
-        
+
         return $this->db->affectedRows() > 0;
     }
 
