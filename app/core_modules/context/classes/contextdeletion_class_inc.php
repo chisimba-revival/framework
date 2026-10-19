@@ -43,6 +43,9 @@ class contextdeletion extends dbTable
         // Like context creation, indexing belongs after the outermost commit.
         // Nested callers own index maintenance after their transaction completes.
         if ($result && empty($this->selectPrepared('SELECT @@in_transaction AS active')[0]['active'])) {
+            foreach($participants as $participant)if(method_exists($participant,'afterContextDeletion')){
+                try{$participant->afterContextDeletion();}catch(Throwable $error){error_log('Context deleted; private attachment cleanup remains queued.');}
+            }
             try {
                 $index=$this->getObject('indexdata','search');
                 foreach ($documents as $document) $index->removeIndex($document);

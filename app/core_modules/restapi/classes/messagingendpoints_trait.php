@@ -76,4 +76,20 @@ trait MessagingEndpoints
         $service=$this->messagingService();$data=$this->messagingPost(['context','sequence']);
         $this->messagingCall(function()use($service,$data){$channel=$this->messagingChannel($service,$data['context']??null);$service->markRead($channel['id'],$data['sequence']??null);});$this->respond(['read'=>true]);
     }
+    public function GET_messaging_sightings(): void {
+        $this->messagingService();
+        $rows=$this->messagingCall(fn()=>$this->getObject('sightingservice','messaging')->history($this->getParam('context','')));
+        $this->respond(['sightings'=>$rows]);
+    }
+    public function POST_messaging_sightings(): void {
+        $this->messagingService();$data=$this->messagingPost(['context','submission_id','body','image']);
+        $row=$this->messagingCall(fn()=>$this->getObject('sightingservice','messaging')->send($data['context']??null,$data['submission_id']??null,$data['body']??null,$data['image']??null));
+        $this->respond($row);
+    }
+    public function GET_messaging_sightingimage(): void {
+        $this->messagingService();
+        $bytes=$this->messagingCall(fn()=>$this->getObject('sightingservice','messaging')->image($this->getParam('context',''),$this->getParam('id','')));
+        $this->respond(['mime'=>'image/jpeg','base64'=>base64_encode($bytes)]);
+    }
+
 }

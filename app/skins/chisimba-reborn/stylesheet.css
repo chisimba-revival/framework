@@ -7697,3 +7697,6 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 .chisimba-chat__reply { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:2rem; height:2rem; border-radius:.35rem; color:var(--chisimba-text); text-decoration:none; }
 .chisimba-chat__reply:hover { background:var(--chisimba-primary-soft); }
 .chisimba-chat__reply svg { width:1rem; height:1rem; }
+
+/* Photographs in private conversation channels retain their aspect ratio. */
+.chisimba-chat__photo { display:block; max-width:100%; max-height:36rem; width:auto; height:auto; object-fit:contain; border-radius:var(--chisimba-radius,.5rem); }
