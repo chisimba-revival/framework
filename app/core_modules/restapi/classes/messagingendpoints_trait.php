@@ -82,8 +82,8 @@ trait MessagingEndpoints
         $this->respond(['sightings'=>$rows]);
     }
     public function POST_messaging_sightings(): void {
-        $this->messagingService();$data=$this->messagingPost(['context','submission_id','body','image']);
-        $row=$this->messagingCall(fn()=>$this->getObject('sightingservice','messaging')->send($data['context']??null,$data['submission_id']??null,$data['body']??null,$data['image']??null));
+        $this->messagingService();$data=$this->messagingPost(['context','submission_id','body','image','reply_to']);
+        $row=$this->messagingCall(fn()=>$this->getObject('sightingservice','messaging')->send($data['context']??null,$data['submission_id']??null,$data['body']??null,$data['image']??null,$data['reply_to']??''));
         $this->respond($row);
     }
     public function GET_messaging_sightingimage(): void {
