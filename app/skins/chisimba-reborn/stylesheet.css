@@ -7677,7 +7677,7 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 
 /* Conversation workspace: shared chat primitives, compact composer and receipts. */
 .chisimba-chat-workspace .chisimba-chat { height:clamp(14rem,38vh,28rem); max-height:none; margin-block:.75rem; }
-.chisimba-chat-workspace .chisimba-chat__message { flex-shrink:0; max-width:calc(100% - 1.5rem); }
+.chisimba-chat-workspace .chisimba-chat__message { flex-shrink:0; box-sizing:border-box; width:calc(100% - 1rem); max-width:calc(100% - 1rem); }
 .chisimba-chat-workspace .chisimba-chat__meta { justify-content:space-between; }
 .chisimba-chat__receipt { display:flex; justify-content:flex-end; color:var(--chisimba-text-muted); margin-top:.25rem; }
 .chisimba-chat__receipt--read { color:#0869b2; }
