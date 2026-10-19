@@ -7693,4 +7693,7 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 /* Bounded quoted replies preserve the conversation's flat message alignment. */
 .chisimba-chat__quote { margin:.5rem 0; padding:.5rem .75rem; border-inline-start:3px solid var(--chisimba-primary); background:var(--chisimba-surface-subtle); color:var(--chisimba-text); overflow-wrap:anywhere; }
 .chisimba-chat__quote p { margin:.25rem 0; font-size:.9rem; }
-.chisimba-chat__reply.button { margin-top:.35rem; padding:.25rem .5rem; min-height:2rem; font-size:.85rem; }
+.chisimba-chat__tools { display:flex; align-items:center; gap:.4rem; margin-inline-start:auto; min-width:0; }
+.chisimba-chat__reply { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:2rem; height:2rem; border-radius:.35rem; color:var(--chisimba-text); text-decoration:none; }
+.chisimba-chat__reply:hover { background:var(--chisimba-primary-soft); }
+.chisimba-chat__reply svg { width:1rem; height:1rem; }
