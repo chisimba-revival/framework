@@ -56,6 +56,17 @@ if (!/**
  */
 class utilities extends ChisimbaObject {
 
+    public $objLink;
+    public $objIcon;
+    public $objDBContextModules;
+    public $objDBContextParams;
+    public $objLanguage;
+    public $objUser;
+    public $_objContextModules;
+    public $dbSysConfig;
+    public $showStudentCount;
+    public $objUserContext;
+
     /**
      * @var object $objDBContext
      */
@@ -337,182 +348,8 @@ class utilities extends ChisimbaObject {
         }
     }
 
-    /**
-     * Block to searh for context
-     */
-    public function searchBlock_() {
-        $script = $this->getJavaScriptFile('jquery/jquery-ui-personalized-1.6rc6/jquery-1.3.1.js', 'jquery');
-        $script .= $this->getJavaScriptFile('jquery/jquery-ui-personalized-1.6rc6/jquery-ui-personalized-1.6rc6.js', 'jquery');
-        $script .= '<link type="text/css" href="' . $this->getResourceUri('jquery/jquery-ui-personalized-1.6rc6/theme/ui.all.css', 'jquery') . '" rel="Stylesheet" />';
-        $script .= $this->getJavaScriptFile('jquery/jquery.autocomplete.js', 'jquery');
-        $this->appendArrayVar('headerParams', $script);
-        $str = '<link rel="stylesheet" href="' . $this->getResourceUri('jquery/jquery.autocomplete.css', 'jquery') . '" type="text/css" />';
-        $this->appendArrayVar('headerParams', $str);
-
-        $str = '<script type="text/javascript">
-$().ready(function() {
-
-	function findValueCallback(event, data, formatted) {
-		$("<li>").html( !data ? "No match!" : "Selected: " + formatted).appendTo("#result");
-	}
-
-	function formatItem(row) {
-		return row[0] + " (<strong>username: " + row[1] + "</strong>)";
-	}
-
-	function formatContextItem(row) {
-		return row[0] + " (<strong>' . $this->objLanguage->code2Txt('phrase_othercourses', 'system', NULL, '[-context-]') . ' Code: " + row[1] + "</strong>)";
-	}
-
-	function formatResult(row) {
-		//return row[0].replace(/(<.+?>)/gi, \'\');
-		return row[0];
-	}
-
-$(":text, textarea").result(findValueCallback).next().click(function() {
-		$(this).prev().search();
-	});
-
-
-	$("#usersearch").autocomplete(\'index.php?module=context&action=searchusers\', {
-		width: 300,
-		minChars: 2,
-		multiple: false,
-		matchContains: true,
-		formatItem: formatItem,
-		formatResult: formatResult,
-
-	}).result(function (evt, data, formatted) {
-					$("#usersearch_selected").val(data[1]);
-					});
-
-$("#contextsearch").autocomplete(\'index.php?module=context&action=searchcontext\', {
-		width: 300,
-		multiple: false,
-		matchContains: true,
-		formatItem: formatContextItem,
-		formatResult: formatResult,
-
-	}).result(function (evt, data, formatted) {
-					$("#contextsearch_selected").val(data[1]);
-					});
-
-	$("#clear").click(function() {
-		$(":input").unautocomplete();
-	});
-});
-
-function submitSearch(data)
-{
-
-	alert(data[0]);
-}
-
-
-function changeOptions(){
-	var max = parseInt(window.prompt(\'Please type number of items to display:\', jQuery.Autocompleter.defaults.max));
-	if (max > 0) {
-		$("#suggest1").setOptions({
-			max: max
-		});
-	}
-}
-
-function submitSearchForm(frm)
-{
-	username = frm.usersearch_selected.value;
-
-	if(username)
-	{
-		getUserContext(username);
-	}
-
-	frm.usersearch_selected.value = "";
-	frm.usersearch.value = "";
-
-}
-
-function submitContextSearchForm(frm)
-{
-	contextCode = frm.contextsearch_selected.value;
-	if(contextCode)
-	{
-		getContext(contextCode);
-
-	}
-
-	frm.contextsearch_selected.value = "";
-	frm.contextsearch.value = "";
-}
-
-function getContexts()
-{
-	listContexts();
-}
-
-	</script>';
-        $this->appendArrayVar('headerParams', $str);
-        $input = '<div style="padding:10px;border:0px dashed black;" >
-			<form id="searchform" name="searchform" autocomplete="off">
-				<p>
-
-					<table>
-						<tr>
-							<td>Search by user</td>
-							<td><input type="text" id="usersearch"><input type="hidden" id="usersearch_selected">&nbsp;
-					<input id="searchbutton" type="button" onclick="submitSearchForm(this.form)" value="Search" /></td>
-						</tr>
-						<tr>
-							<td>' . $this->objLanguage->code2Txt('phrase_othercourses', 'system', NULL, 'Search by [-context-]') . '</td>
-							<td><input type="text" id="contextsearch"><input type="hidden" name="contextsearch_selected" id="contextsearch_selected">
-							&nbsp;
-							<input id="searchbutton" type="button" onclick="submitContextSearchForm(this.form)" value="Search" /></td>
-						</tr>
-						<tr>
-							<td><input type="button" value="' . $this->objLanguage->code2Txt('mod_context_viewallcontexts', 'context', NULL, 'View All [-contexts-]') . '" onclick="listContexts()"></td>
-					</table>
-				</p>
-			</form>
-		</div>
-		<div id="context_results"></div>';
-
-        return $input;
-    }
-
     public function searchBlock() {
         return '<div id="topic-grid"></div>';
-    }
-
-    public function searchBlock__() {
-        $script = $this->getJavaScriptFile('jquery/1.2.3/jquery-1.2.3.pack.js', 'jquery');
-        $script .= $this->getJavaScriptFile('jquery/jquery.tablesorter.js', 'jquery');
-        $script .= $this->getJavaScriptFile('jquery/plugins/tablesorter/pager/jquery.tablesorter.pager.js', 'jquery');
-        $script .= '<link rel="stylesheet" href="' . $this->getResourceUri('jquery/plugins/themes/blue/style.css', 'jquery') . '" type="text/css" />';
-        $script .= '<script type="text/javascript" id="js">
-						$(function() {
-								$("table")
-									.tablesorter({widthFixed: true, widgets: [\'zebra\']})
-									.tablesorterPager({container: $("#pager")});
-							}); </script>';
-        $this->appendArrayVar('headerParams', $script);
-
-        $pagerDiv = '	<div id="pager" class="pager">
-			<form>
-				<img src="' . $this->getResourceUri('jquery/plugins/tablesorter/pager/icons/first.png', 'jquery') . '" class="first"/>
-				<img src="' . $this->getResourceUri('jquery/plugins/tablesorter/pager/icons/prev.png', 'jquery') . '" class="prev"/>
-				<input type="text" class="pagedisplay"/>
-				<img src="' . $this->getResourceUri('jquery/plugins/tablesorter/pager/icons/next.png', 'jquery') . '" class="next"/>
-				<img src="' . $this->getResourceUri('jquery/plugins/tablesorter/pager/icons/last.png', 'jquery') . '" class="last"/>
-				<select class="pagesize">
-					<option selected="selected"  value="10">10</option>
-					<option value="20">20</option>
-					<option value="30">30</option>
-					<option  value="40">40</option>
-				</select>
-			</form>
-		</div>';
-
-        return $this->listContexts() . $pagerDiv;
     }
 
     /**

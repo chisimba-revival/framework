@@ -25,6 +25,9 @@
  * @author davidwaf
  */
 class emailutils extends ChisimbaObject {
+    public $objUser;
+    public $objSysConfig;
+    public $objManageGroups;
 
     function init() {
         $this->objUser = $this->getObject('user', 'security');
@@ -41,7 +44,9 @@ class emailutils extends ChisimbaObject {
 
         $subject = $this->objSysConfig->getValue('FILECREATE_ALERT_SUB', 'filemanager');
         $subject = str_replace("{course}", $title, $subject);
-        $objMailer = $this->getObject('mailer', 'mail');
+        $communications = $this->getObject('communicationservice', 'communications');
+        $queued = true;
+        $seen = [];
         $objWashout = $this->getObject('washout', 'utilities');
 
         foreach ($allusers as $user) {
@@ -58,14 +63,17 @@ class emailutils extends ChisimbaObject {
             $body = str_replace("{lastname}", $user['surname'], $body);
             $body = str_replace("{course}", "'" . $title . "'", $body);
             $body = str_replace("{instructor}", $this->objUser->getTitle() . '. ' . $this->objUser->fullname() . ',', $body);
-            $objMailer->setValue('to', array($user['emailaddress']));
-            $objMailer->setValue('from', $this->objUser->email());
-            $objMailer->setValue('fromName', $this->objUser->fullname());
-            $objMailer->setValue('subject', $subject);
-            $objMailer->setValue('body', strip_tags($body));
-            $objMailer->setValue('AltBody', strip_tags($body));
-            $objMailer->send();
+            $address = trim((string)($user['emailaddress'] ?? $user['email'] ?? ''));
+            $identity = strtolower($address);
+            if (isset($seen[$identity])) continue;
+            $seen[$identity] = true;
+            $result = $communications->queueEmail([
+                'to' => $address, 'subject' => $subject, 'text' => strip_tags($body),
+                'metadata' => ['module' => 'filemanager', 'purpose' => 'folder-alert'],
+            ]);
+            $queued = !empty($result['ok']) && $queued;
         }
+        return $queued;
     }
 
     function sendFileEmailAlert($fileid, $contextcode, $title) {
@@ -77,7 +85,9 @@ class emailutils extends ChisimbaObject {
 
         $subject = $this->objSysConfig->getValue('FILECREATE_ALERT_SUB', 'filemanager');
         $subject = str_replace("{course}", $title, $subject);
-        $objMailer = $this->getObject('mailer', 'mail');
+        $communications = $this->getObject('communicationservice', 'communications');
+        $queued = true;
+        $seen = [];
         $objWashout = $this->getObject('washout', 'utilities');
 
         foreach ($allusers as $user) {
@@ -94,14 +104,17 @@ class emailutils extends ChisimbaObject {
             $body = str_replace("{lastname}", $user['surname'], $body);
             $body = str_replace("{course}", "'" . $title . "'", $body);
             $body = str_replace("{instructor}", $this->objUser->getTitle() . '. ' . $this->objUser->fullname() . ',', $body);
-            $objMailer->setValue('to', array($user['emailaddress']));
-            $objMailer->setValue('from', $this->objUser->email());
-            $objMailer->setValue('fromName', $this->objUser->fullname());
-            $objMailer->setValue('subject', $subject);
-            $objMailer->setValue('body', strip_tags($body));
-            $objMailer->setValue('AltBody', strip_tags($body));
-            $objMailer->send();
+            $address = trim((string)($user['emailaddress'] ?? $user['email'] ?? ''));
+            $identity = strtolower($address);
+            if (isset($seen[$identity])) continue;
+            $seen[$identity] = true;
+            $result = $communications->queueEmail([
+                'to' => $address, 'subject' => $subject, 'text' => strip_tags($body),
+                'metadata' => ['module' => 'filemanager', 'purpose' => 'file-alert'],
+            ]);
+            $queued = !empty($result['ok']) && $queued;
         }
+        return $queued;
       }
 }
 

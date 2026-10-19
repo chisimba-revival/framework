@@ -6,9 +6,10 @@ $GLOBALS['kewl_entry_point_run']=true;
 chdir($argv[1] ?? dirname(__DIR__,2).'/app');
 require 'classes/core/object_class_inc.php';
 require 'classes/core/dbtable_class_inc.php';
+require_once 'classes/core/chisimbadatabaseconnection.php';
 require 'classes/core/access_class_inc.php';
 class WarningAuditConfig {
-    public $layer='MDB2';
+    public $layer='PDO';
     public function serverName(){return 'testserver';}
     public function getenable_memcache(){return 'FALSE';}
     public function getenable_apc(){return 'FALSE';}
@@ -20,10 +21,15 @@ class WarningAuditConfig {
 }
 class WarningAuditEngine {
     public $_moduleName='probe',$luAdmin=null,$lu=null,$enableLogging=false,$eventDispatcher=null,$appid='probe';
-    public $pdsn=['phptype'=>'pgsql'];
+    public $pdsn=['phptype'=>'mysqli'];
     public $config;
     public function __construct(){ $this->config=new WarningAuditConfig(); }
-    public function getDbObj(){return (object)['phptype'=>'mysqli'];}
+    public function getDbObj(){
+        // This test exercises initialisation state only, never database queries.
+        return $this->config->layer === 'PDO'
+            ? (new ReflectionClass(ChisimbaDatabaseConnection::class))->newInstanceWithoutConstructor()
+            : (object)['phptype'=>'mysqli'];
+    }
     public function getObject($name,$module){
         if($name==='user')return new class { public function userid(){return null;} };
         return $this->config;
@@ -32,11 +38,11 @@ class WarningAuditEngine {
 function verify($value,$message){if(!$value)throw new RuntimeException($message);}
 $engine=new WarningAuditEngine();
 $mysql=new dbTable($engine,'probe');
-verify($mysql->dbType==='mysqli','MDB2 driver is available on the instance');
+verify($mysql->dbType==='mysqli','Native driver is available on the instance');
 verify($mysql->cachePrefix==='testserver_probe_','Identifier/cache prefix is retained');
-$engine->config->layer='PDO';
-$postgres=new dbTable($engine,'probe');
-verify($postgres->dbType==='pgsql','PDO driver is available on the instance');
+$engine->pdsn=['phptype'=>'mysql'];
+$native=new dbTable($engine,'probe');
+verify($native->dbType==='mysql','PDO driver is available on the instance');
 verify($mysql->dbType==='mysqli','Initialising another connection does not alter existing driver state');
 $_SERVER['SCRIPT_NAME']='/ch/index.php';
 $object=new ChisimbaObject();
@@ -45,4 +51,4 @@ verify($object->sessionKey()===$expected && $object->sessionKey()===$expected,'S
 $access=new access($engine,'probe');
 $flag=(new ReflectionClass($access))->getProperty('logoutdestroy');
 verify($flag->getValue($access)===false,'Missing logout setting keeps its existing false semantics');
-echo "PASS: strict MDB2/PDO instance state, cache prefix, session namespace and missing access settings\n";
+echo "PASS: strict PDO instance state, cache prefix, session namespace and missing access settings\n";

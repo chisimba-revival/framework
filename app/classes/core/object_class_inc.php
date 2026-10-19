@@ -106,8 +106,8 @@ class ChisimbaObject
         }
         $this->objEngine  = $objEngine;
         $this->moduleName = $moduleName;
-        $this->objLu = $objEngine->lu;
-        $this->objLuAdmin     = $objEngine->luAdmin;
+        $this->objLu = null;
+        $this->objLuAdmin = null;
         $this->eventDispatcher = $objEngine->eventDispatcher;
         $this->appid = $objEngine->appid;
 
@@ -475,13 +475,15 @@ class ChisimbaObject
 
     /**
      * 
-     * Instantiate the Live User object
-     * @return void
+     * LiveUser was removed from the request lifecycle.  Legacy callers must
+     * use the native authentication, group, or permission service instead.
+     *
+     * @return null
      * @access public
      * 
      */
     public function getLu() {
-        $this->objLu = $this->objEngine->getLu();
+        return null;
     }
 
     /**

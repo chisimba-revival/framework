@@ -5,14 +5,76 @@
  * Handles all /api/v1/* routes with RESTful conventions
  */
 require_once __DIR__ . '/classes/restcontroller_class_inc.php';
+require_once __DIR__ . '/classes/messagingendpoints_trait.php';
 
 class restapi extends RestController
 {
+    use MessagingEndpoints;
     public function dispatch($action)
     {
         // The action from engine will be the full route path
         // e.g., "users/123/posts" for GET /api/v1/users/123/posts
         return parent::dispatch($action);
+    }
+
+    /** Public site identity, available before sign-in and safe to cache offline. */
+    public function GET_site_branding(): void
+    {
+        $this->respond($this->getObject('sitebranding', 'canvas')->getBranding());
+    }
+
+    /** Existing personal-blog categories; the shared service enforces scope access. */
+    public function GET_simpleblog_categories(): void
+    {
+        $this->requireAuth();
+        if (!$this->getObject('modules', 'modulecatalogue')->checkIfRegistered('simpleblog')) {
+            throw new NotFoundException('SimpleBlog is not installed');
+        }
+        $owner = (string) $this->currentUser['id'];
+        if (!$this->getObject('publishingpolicy', 'simpleblog')->canCreate('personal', $owner)) {
+            throw new AuthorizationException('Personal publishing permission is required');
+        }
+        $terms = $this->getObject('publishingservice', 'simpleblog')->classification()
+            ->creationChoices('simpleblog', 'personal', $owner, 'category');
+        $this->respond(['categories' => array_map(static fn($term) => [
+            'id' => (string) $term['id'], 'name' => (string) $term['name'],
+            'parentId' => (string) ($term['parent_id'] ?? '')
+        ], $terms)]);
+    }
+
+    /**
+     * POST /api/v1/simpleblog/posts: plain text in the caller's personal blog.
+     * The API translates input; SimpleBlog retains all publishing decisions.
+     * @author Derek Keats
+     */
+    public function POST_simpleblog_posts(): void
+    {
+        $this->requireAuth();
+        if (!$this->getObject('modules', 'modulecatalogue')->checkIfRegistered('simpleblog')) {
+            throw new NotFoundException('SimpleBlog is not installed');
+        }
+        $owner = (string) $this->currentUser['id'];
+        $policy = $this->getObject('publishingpolicy', 'simpleblog');
+        if (!$policy->canCreate('personal', $owner)) {
+            throw new AuthorizationException('Personal publishing permission is required');
+        }
+        require_once __DIR__ . '/classes/textpostinput_class_inc.php';
+        try {
+            $input = TextPostInput::normalise(
+                $this->getRequestData(),
+                (string) ($_SERVER['CONTENT_TYPE'] ?? ''),
+                !empty($_FILES)
+            );
+            $id = $this->getObject('publishingservice', 'simpleblog')->save(
+                null, 'personal', $owner, $input
+            );
+        } catch (DomainException $error) {
+            if ($error->getMessage() === 'forbidden') {
+                throw new AuthorizationException('Personal publishing permission is required');
+            }
+            throw new ValidationException(['post' => 'Provide a title, plain-text content, draft or posted status, and valid categories from your personal blog; media is not supported.']);
+        }
+        $this->respondCreated(['id' => $id, 'status' => $input['status']]);
     }
 
     // ============================================================
@@ -1059,28 +1121,10 @@ public function POST_auth_token(): void
 
         // Count
         $countSql = "SELECT COUNT(*) as cnt FROM tbl_modules $whereSql";
-        // MDB2 needs the bound types declared: an undeclared placeholder makes
-        // execute() look up options['datatype_map'][null] and fail.
-        $stmt = $this->getDb()->prepare(
-            $countSql,
-            array_fill(0, max(count($params), 1), 'text')
-        );
-        if (PEAR::isError($stmt)) {
-            error_log("GET_modules count prepare error: " . $stmt->getMessage());
-            // A failed prepare/execute is a server fault, not a client
-            // conflict. Reporting 409 invites a retry that cannot succeed and
-            // mislabels the fault as something the caller could resolve.
-            ApiResponse::serverError('Module list could not be read');
-        }
-        $result = $stmt->execute($params);
-        if (PEAR::isError($result)) {
-            error_log("GET_modules count execute error: " . $result->getMessage());
-            ApiResponse::serverError('Module list could not be read');
-        }
-        $totalRow = $result->fetchRow();
+        $totalRow = $this->getDb()->selectPrepared($countSql, $params)[0] ?? [];
         $total = (int)($totalRow['cnt'] ?? 0);
 
-// List
+        // List
         $sql = "
             SELECT id as module_id, module_id as module_key, module_version, module_path,
                    isVisible as module_isvisible, hasAdminPage as module_hasadminpage,
@@ -1093,24 +1137,7 @@ public function POST_auth_token(): void
         $params[] = $p['pageSize'];
         $params[] = $p['offset'];
 
-        $stmt = $this->getDb()->prepare($sql, array_merge(
-            array_fill(0, count($params) - 2, 'text'),
-            ['integer', 'integer']
-        ));
-        if (PEAR::isError($stmt)) {
-            error_log("GET_modules list prepare error: " . $stmt->getMessage());
-            ApiResponse::serverError('Module list could not be read');
-        }
-        $result = $stmt->execute($params);
-        if (PEAR::isError($result)) {
-            error_log("GET_modules list execute error: " . $result->getMessage());
-            ApiResponse::serverError('Module list could not be read');
-        }
-
-        $modules = [];
-        while ($row = $result->fetchRow()) {
-            $modules[] = $row;
-        }
+        $modules = $this->getDb()->selectPrepared($sql, $params);
 
         $this->respondPaginated($modules, $p['page'], $p['pageSize'], $total);
     }

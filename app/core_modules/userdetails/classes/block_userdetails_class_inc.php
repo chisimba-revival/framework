@@ -52,6 +52,11 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class block_userdetails extends ChisimbaObject
 {
+    public $configData;
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+    public $objOps;
+
     /**
      * The title of the block
      *

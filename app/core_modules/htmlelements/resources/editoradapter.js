@@ -10,6 +10,15 @@
             config.target = field;
             config.plugins = (config.plugins + ' fullscreen').trim();
             config.toolbar += ' | fullscreen';
+            // Give native forms the same change signal for rich text as for a textarea.
+            // This keeps unsaved-change guards independent of the editor implementation.
+            var setup = config.setup;
+            config.setup = function (editor) {
+                if (setup) setup(editor);
+                editor.on('input change Undo Redo', function () {
+                    field.dispatchEvent(new Event('input', {bubbles: true}));
+                });
+            };
             config.file_picker_callback = function (callback) {
                 window.ChisimbaEditor.beginFilePick(callback);
                 window.open(field.dataset.editorPicker, 'chisimba_image_picker', 'width=1000,height=720,resizable=yes,scrollbars=yes');

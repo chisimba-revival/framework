@@ -410,76 +410,62 @@ class dateandtime extends ChisimbaObject
     * It checks if a message has been sent today, and if not it sends one.
     * If a message has already been sent, then it does not send another
     * in the same day. Note that the table needs to have a field called
-    * expNotifDate for it to work.
+    * notificationdate for it to work.
     *
     * @access public
     * @param string $dbClass The table class to
     * @param string $pModule The module in which the data class resides
     * @param string $toId The userId of the user it is being sent to
-    * @param string $subject The subject of the message
+    * @param string $title The expired content title
     * @param string $body The body of the message
     * @param string $itemId The id field of the notification item
-    * @return bool TRUE on success else FALSE
+    * @return bool TRUE when queued and timestamp saved; FALSE when skipped or rejected
     *
     */
     public function sendExpiredMsg($dbClass, $pModule, $toId, $title, $body, $itemId)
     {
-        //Instantiate the connection to the appropriate table/module
         $objDb = $this->getObject($dbClass, $pModule);
-        //Get the last expNotifDate from the database
-        $ar = $objDb->getRow('id', $itemId);
-        //Initialize $chk
-        $chk = 0;
-        //Get the notification date and convert to unix timestamp
-        if ( $ar['notificationdate'] !== NULL ) {
-            $notificationDate  = strtotime($ar['notificationdate']);
-            //Get the unix timestamp now
-            $nowDate=time();
-            //Calculate the time elapsed since last notification
-            $chk = $nowDate - $notificationDate;
-        } else {
-            $notificationDate = "";
-        }
-        //If a notification date has not been set or its more than 24 hrs old
-        if ( $notificationDate==NULL || $notificationDate =="0000-00-00 00:00:00" || $chk > 86400) {
-            //Establish the mail subject
-            $rep=array('kng' => $this->objConfig->getsiteName());
-            $subject = $this->objLanguage->code2Txt('mod_datetime_contentexpired', $rep);
-            $mailBody = $title . "\n\n\n". $body;
-            // deprecated
-            /*$objMail =  $this->getObject('kngemail', 'utilities');
-            $objMail->sendMail('1', $toId, $subject, $mailBody);*/
-            
-            // send the mail using the mail module.
-            $this->mailUser('1', $toId, $subject, $mailBody);       
-            
-            //Add the current date to the expNotifDate field
-            $save=array('notificationDate' => date('Y-m-d H:m:s'));
-            $objDb->update("id", $itemId, $save);
-            return TRUE;
-        } else {
-            return FALSE;
-        }
+        $row = $objDb->getRow('id', $itemId);
+        if (!is_array($row)) return false;
+        $column = array_key_exists('notificationdate', $row) ? 'notificationdate' : 'notificationDate';
+        if (!array_key_exists($column, $row)) return false;
+        $previous = (string)($row[$column] ?? '');
+        $last = $previous === '' ? false : strtotime($previous);
+        if ($last !== false && $last > time() - 86400) return false;
+
+        $subject = $this->objLanguage->code2Txt(
+            'mod_datetime_contentexpired', 'utilities',
+            ['kng' => $this->objConfig->getsiteName()]
+        );
+        // Stable across retries until the notification timestamp is successfully saved.
+        $key = 'content-expiry:' . hash('sha256', json_encode([$pModule, $dbClass, $itemId, $toId, $previous]));
+        if (!$this->mailUser(null, $toId, $subject, $title . "\n\n" . $body, $key)) return false;
+        return $objDb->update('id', $itemId, [$column => date('Y-m-d H:i:s')]) !== false;
     }
 
-    public function mailUser($to, $toid, $subject, $mailbody)
+    /**
+     * Queue a plain-text notice using the site's configured sender.
+     * $to may be an explicit address; legacy placeholders resolve via logical $toid.
+     * Success means accepted into Communications, not delivered to the inbox.
+     */
+    public function mailUser($to, $toid, $subject, $mailbody, $idempotencyKey = null)
     {
-        $objMailer = $this->getObject('mailer', 'mail');
-        $objMailer->setValue('to', array($to));
-        $objMailer->setValue('from', 'noreply@uwc.ac.za');
-        $objMailer->setValue('fromName', $this->objLanguage->languageText("'mod_datetime_contentexpired", "utilities"));
-        $objMailer->setValue('subject', $toid);
-        $objMailer->setValue('body', $mailbody);
-        if ($objMailer->send()) {
-                  return TRUE;
-        } else {
-                  return FALSE;
+        if (!is_string($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            $user = $this->getObject('userservice', 'security')->findByUserId($toid);
+            $to = is_array($user) ? ($user['emailaddress'] ?? '') : '';
         }
-
+        if (!is_string($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
+        $result = $this->getObject('communicationservice', 'communications')->queueEmail([
+            'to' => $to,
+            'subject' => (string)$subject,
+            'text' => html_entity_decode(strip_tags((string)$mailbody), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            'idempotencyKey' => $idempotencyKey,
+            'metadata' => ['module' => 'utilities', 'purpose' => 'content-expiry'],
+        ]);
+        return !empty($result['ok']);
     }
-    
-    
-   /**
+
+    /**
     * Method to tag expired content
     *
     * @access public

@@ -20,6 +20,9 @@ Public License
 
 class microformats extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objUser;
+
     /**
     * Constructor
     */

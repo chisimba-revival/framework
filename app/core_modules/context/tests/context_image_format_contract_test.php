@@ -31,7 +31,7 @@ $checks = array(
     'copy is atomic' => str_contains($image, 'rename($temporary, $destination)'),
     'failed save returns to step two' => str_contains(
         $controller,
-        'array(\'mode\' => $mode, \'imageerror\' => \'1\')'
+        "return \$this->showInformation(\$contextCode, \$context, \$draft, 'image')"
     ),
     'failure is not ignored' => str_contains(
         $controller,

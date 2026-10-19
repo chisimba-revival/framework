@@ -51,6 +51,7 @@ class contextimage extends ChisimbaObject
      */
     public function getContextImage($contextCode)
     {
+        if (!is_string($contextCode) || !preg_match('/^[A-Za-z0-9_-]{1,255}$/', $contextCode)) return false;
         $basePath = rtrim($this->objConfig->getcontentBasePath(), '/');
         $contentPath = rtrim($this->objConfig->getcontentPath(), '/');
 
@@ -79,14 +80,22 @@ class contextimage extends ChisimbaObject
      */
     public function setContextImage($contextCode, $fileId)
     {
-        if (!preg_match('/^[A-Za-z0-9_-]+$/', (string) $contextCode)) {
+        if (!is_string($contextCode) || !preg_match('/^[A-Za-z0-9_-]{1,255}$/', $contextCode)) {
             return false;
         }
         if (!$this->checkContextImageFolder()) {
             return false;
         }
 
-        $sourceFile = $this->objFiles->getFilePath($fileId);
+        if (!is_string($fileId)) return false;
+        $file = $this->objFiles->getFile($fileId);
+        if (!$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) {
+            return false;
+        }
+        $delivery = $this->getObject('filedelivery', 'filemanager');
+        $secure = $this->getObject('dbsysconfig', 'sysconfig')->getValue('SECUREFODLER', 'filemanager');
+        $sourceFile = $delivery::resolve($secure, $file['path'] ?? '');
+        if ($sourceFile === false) $sourceFile = $delivery::resolve($this->objConfig->getcontentBasePath(), $file['path'] ?? '');
         if ($sourceFile === false || !is_file($sourceFile)) {
             return false;
         }
@@ -137,6 +146,7 @@ class contextimage extends ChisimbaObject
      */
     public function removeContextImage($contextCode)
     {
+        if (!is_string($contextCode) || !preg_match('/^[A-Za-z0-9_-]{1,255}$/', $contextCode)) return false;
         $basePath = rtrim($this->objConfig->getcontentBasePath(), '/');
         $success = true;
 

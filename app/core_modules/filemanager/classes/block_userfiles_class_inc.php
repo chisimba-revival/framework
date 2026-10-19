@@ -3,6 +3,12 @@
 
 class block_userfiles extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objFolder;
+    public $objLanguage;
+    public $objUser;
+    public $title;
+
 
     /**
     *Initialize by send the table name to be accessed

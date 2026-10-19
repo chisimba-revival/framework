@@ -1,0 +1,967 @@
+{
+  "tbl_kanban_access": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "boardid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "principaltype",
+      "COLUMN_TYPE": "varchar(24)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "principalid",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "permission",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "createdby",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_kanban_boards": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "scopetype",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "scopeid",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "ownerid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "description",
+      "COLUMN_TYPE": "text",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "isarchived",
+      "COLUMN_TYPE": "tinyint(4)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "sortorder",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_kanban_subtasks": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "taskid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "text",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "iscompleted",
+      "COLUMN_TYPE": "tinyint(4)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "sortorder",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_kanban_tasks": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "boardid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "description",
+      "COLUMN_TYPE": "text",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "notes",
+      "COLUMN_TYPE": "text",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "status",
+      "COLUMN_TYPE": "varchar(24)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb3",
+      "COLLATION_NAME": "utf8mb3_general_ci"
+    },
+    {
+      "COLUMN_NAME": "sortorder",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_knowledgemap_access": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "mapid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "principaltype",
+      "COLUMN_TYPE": "varchar(24)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "principalid",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "permission",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "createdby",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_knowledgemap_maps": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "scopetype",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "scopeid",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "ownerid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "rootnodeid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "description",
+      "COLUMN_TYPE": "text",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "revision",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "1",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "sourceformat",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "sourcefingerprint",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "sourcemetadata",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_knowledgemap_nodes": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "mapid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "nodetype",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "'standard'",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "varchar(255)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "description",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "presentation",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "sortorder",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_knowledgemap_relationships": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "mapid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "relationshiptype",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "fromnodeid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "tonodeid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "externaltarget",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "properties",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "sortorder",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_mcqgenerator_exams": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "ownerid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "varchar(200)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "content_json",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "version",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "1",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ],
+  "tbl_questionworkshop_sets": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "examid",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "' '",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "ownerid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "title",
+      "COLUMN_TYPE": "varchar(200)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "question_type",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "'mcq'",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "source_text",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "generation_json",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "validation_json",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": "NULL",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "questions_json",
+      "COLUMN_TYPE": "longtext",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "question_count",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "5",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "imported_testid",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "' '",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "imported_context",
+      "COLUMN_TYPE": "varchar(64)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "' '",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "state",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "'ready'",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": "utf8mb4",
+      "COLLATION_NAME": "utf8mb4_unicode_ci"
+    },
+    {
+      "COLUMN_NAME": "version",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "1",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "reviewed",
+      "COLUMN_TYPE": "int(11)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": "0",
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datecreated",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "datemodified",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    },
+    {
+      "COLUMN_NAME": "puid",
+      "COLUMN_TYPE": "bigint(20)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null,
+      "EXTRA": "auto_increment",
+      "CHARACTER_SET_NAME": null,
+      "COLLATION_NAME": null
+    }
+  ]
+}

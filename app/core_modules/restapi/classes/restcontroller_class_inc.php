@@ -132,7 +132,7 @@ abstract class RestController extends controller
         } catch (RateLimitException $e) {
             ApiResponse::rateLimited($e->getRetryAfter());
         } catch (\Throwable $e) {
-            error_log("REST API Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            error_log("REST API request failed: " . get_class($e));
             ApiResponse::serverError();
         }
     }
@@ -192,6 +192,25 @@ abstract class RestController extends controller
         $method = strtoupper($method ?? $this->requestMethod);
 
         if (!$resource) return null;
+
+        // Public site branding is a fixed endpoint, never a supplied resource ID.
+        if ($resource === 'site') {
+            $handler = strtolower($method) . '_site_branding';
+            return $id === 'branding' && $sub === null && method_exists($this, $handler)
+                ? $handler : null;
+        }
+
+        // The text-post collection is a fixed route, not a client-selected ID.
+        if ($resource === 'simpleblog') {
+            $handler = strtolower($method) . '_simpleblog_' . $id;
+            return in_array($id, ['posts', 'categories'], true) && $sub === null && method_exists($this, $handler)
+                ? $handler : null;
+        }
+
+        if ($resource === 'messaging') {
+            $handler = strtolower($method) . '_messaging_' . $id;
+            return in_array($id, ['contexts','history','messages','read','announcements','sightings','sightingimage'], true) && $sub === null && method_exists($this, $handler) ? $handler : null;
+        }
 
         // Special handling for auth resource - actions like login, refresh, logout, me
         // are direct actions, not resource IDs
@@ -274,7 +293,8 @@ abstract class RestController extends controller
         
         if (str_starts_with($contentType, 'application/json')) {
             $raw = file_get_contents('php://input');
-            $this->requestData = json_decode($raw, true) ?? [];
+            $decoded = json_decode($raw, true);
+            $this->requestData = is_array($decoded) ? $decoded : [];
         } elseif (str_starts_with($contentType, 'application/x-www-form-urlencoded')) {
             $this->requestData = $_POST;
         } elseif (str_starts_with($contentType, 'multipart/form-data')) {
@@ -804,15 +824,11 @@ abstract class RestController extends controller
     }
 
     /**
-     * Get database connection (MDB2 or PDO)
+     * Get the catalogue repository through the shared dbTable boundary
      */
     protected function getDb()
     {
-        global $_globalObjDb;
-        if ($_globalObjDb === null) {
-            $_globalObjDb = $this->objEngine->getDbObj();
-        }
-        return $_globalObjDb;
+        return $this->getObject('modules', 'modulecatalogue');
     }
 }
 

@@ -17,6 +17,9 @@ if (!$GLOBALS['kewl_entry_point_run'])
 */
 class block_stories extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $expose;
+
     /**
     * @var object $objLanguage String to hold the language object
     */

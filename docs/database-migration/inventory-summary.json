@@ -1,0 +1,842 @@
+{
+    "method": "PHP tokenisation removes comments and inline HTML; regex signals are candidates, not call-graph reachability proof.",
+    "sourceCommits": {
+        "framework": "2bf397a8e45c0aba3f10db482602a0abd8c23d35",
+        "modules": "4ecec6d65b29d6b6b5886602d40eb0af506a3357"
+    },
+    "scannedFiles": {
+        "framework": 3807,
+        "modules": 6165
+    },
+    "signals": {
+        "framework": {
+            "application": {
+                "mdb2_symbol": 15,
+                "connection_access": 10,
+                "raw_connection_member": 13,
+                "mdb2_result_or_schema": 11,
+                "driver_state": 6,
+                "transaction_or_lock": 15,
+                "pear_error": 14,
+                "pdo": 2,
+                "global_connection": 2,
+                "native_mdb2_bridge": 7,
+                "dbtable_subclass": 95,
+                "schema_subclass": 1
+            },
+            "test-or-operator": {
+                "transaction_or_lock": 12,
+                "pear_error": 19,
+                "connection_access": 9,
+                "driver_state": 8,
+                "mdb2_symbol": 24,
+                "raw_connection_member": 10,
+                "mdb2_result_or_schema": 13,
+                "pdo": 2,
+                "native_mdb2_bridge": 3
+            },
+            "embedded-or-resource-review": {
+                "transaction_or_lock": 65,
+                "mdb2_symbol": 89,
+                "raw_connection_member": 33,
+                "mdb2_result_or_schema": 96,
+                "driver_state": 48,
+                "pear_error": 133,
+                "alternate_connection": 4,
+                "pdo": 1
+            }
+        },
+        "modules": {
+            "application": {
+                "connection_access": 63,
+                "dbtable_subclass": 359,
+                "mdb2_symbol": 14,
+                "transaction_or_lock": 43,
+                "pear_error": 22,
+                "raw_connection_member": 19,
+                "mdb2_result_or_schema": 12,
+                "driver_state": 7
+            },
+            "test-or-operator": {
+                "connection_access": 26,
+                "mdb2_symbol": 12,
+                "transaction_or_lock": 23,
+                "pear_error": 12,
+                "pdo": 2,
+                "mdb2_result_or_schema": 3,
+                "raw_connection_member": 1,
+                "driver_state": 1
+            },
+            "embedded-or-resource-review": {
+                "pear_error": 8,
+                "mdb2_result_or_schema": 52,
+                "raw_connection_member": 37,
+                "transaction_or_lock": 49,
+                "alternate_connection": 6,
+                "pdo": 11,
+                "driver_state": 2
+            },
+            "retired-review": {
+                "dbtable_subclass": 2,
+                "raw_connection_member": 1
+            }
+        }
+    },
+    "owners": {
+        "framework": {
+            "application": {
+                "framework-core": {
+                    "mdb2_symbol": 5,
+                    "connection_access": 3,
+                    "raw_connection_member": 3,
+                    "mdb2_result_or_schema": 3,
+                    "driver_state": 3,
+                    "transaction_or_lock": 1,
+                    "pear_error": 5,
+                    "pdo": 2,
+                    "global_connection": 1
+                },
+                "abuseprotection": {
+                    "native_mdb2_bridge": 2,
+                    "connection_access": 1,
+                    "mdb2_symbol": 1,
+                    "raw_connection_member": 1,
+                    "mdb2_result_or_schema": 1,
+                    "transaction_or_lock": 1,
+                    "pear_error": 1
+                },
+                "ai": {
+                    "dbtable_subclass": 1
+                },
+                "blocks": {
+                    "dbtable_subclass": 2
+                },
+                "canvas": {
+                    "dbtable_subclass": 4
+                },
+                "classification": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1,
+                    "dbtable_subclass": 1
+                },
+                "communications": {
+                    "dbtable_subclass": 3
+                },
+                "config": {
+                    "mdb2_symbol": 1
+                },
+                "context": {
+                    "dbtable_subclass": 14,
+                    "transaction_or_lock": 1,
+                    "raw_connection_member": 1
+                },
+                "contextadmin": {
+                    "transaction_or_lock": 1
+                },
+                "contextgroups": {
+                    "dbtable_subclass": 2
+                },
+                "cpd": {
+                    "dbtable_subclass": 4
+                },
+                "creativecommons": {
+                    "dbtable_subclass": 1
+                },
+                "decisiontable": {
+                    "dbtable_subclass": 6
+                },
+                "filemanager": {
+                    "dbtable_subclass": 9
+                },
+                "groupadmin": {
+                    "dbtable_subclass": 6,
+                    "transaction_or_lock": 1
+                },
+                "language": {
+                    "dbtable_subclass": 2,
+                    "mdb2_symbol": 1,
+                    "connection_access": 1,
+                    "raw_connection_member": 1,
+                    "mdb2_result_or_schema": 1,
+                    "driver_state": 1,
+                    "transaction_or_lock": 1,
+                    "pear_error": 1
+                },
+                "logger": {
+                    "dbtable_subclass": 2
+                },
+                "login": {
+                    "dbtable_subclass": 1,
+                    "raw_connection_member": 1
+                },
+                "mail": {
+                    "pear_error": 1
+                },
+                "modulecatalogue": {
+                    "dbtable_subclass": 5,
+                    "schema_subclass": 1,
+                    "pear_error": 1,
+                    "mdb2_result_or_schema": 1
+                },
+                "permissions": {
+                    "dbtable_subclass": 3,
+                    "connection_access": 1
+                },
+                "prelogin": {
+                    "dbtable_subclass": 1
+                },
+                "security": {
+                    "dbtable_subclass": 13,
+                    "transaction_or_lock": 4,
+                    "native_mdb2_bridge": 5,
+                    "connection_access": 2,
+                    "mdb2_symbol": 3,
+                    "raw_connection_member": 3,
+                    "mdb2_result_or_schema": 3,
+                    "pear_error": 3
+                },
+                "skin": {
+                    "dbtable_subclass": 1
+                },
+                "stories": {
+                    "dbtable_subclass": 2
+                },
+                "storycategoryadmin": {
+                    "dbtable_subclass": 1
+                },
+                "sysconfig": {
+                    "dbtable_subclass": 1
+                },
+                "systext": {
+                    "dbtable_subclass": 5
+                },
+                "tagging": {
+                    "dbtable_subclass": 1
+                },
+                "toolbar": {
+                    "connection_access": 1,
+                    "raw_connection_member": 1,
+                    "dbtable_subclass": 1
+                },
+                "userdetails": {
+                    "dbtable_subclass": 1
+                },
+                "utilities": {
+                    "dbtable_subclass": 2
+                },
+                "installer": {
+                    "mdb2_symbol": 4,
+                    "global_connection": 1,
+                    "raw_connection_member": 2,
+                    "mdb2_result_or_schema": 2,
+                    "driver_state": 2,
+                    "pear_error": 2,
+                    "transaction_or_lock": 4
+                }
+            },
+            "test-or-operator": {
+                "classification": {
+                    "transaction_or_lock": 1
+                },
+                "modulecatalogue": {
+                    "pear_error": 1
+                },
+                "permissions": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1
+                },
+                "security": {
+                    "transaction_or_lock": 2
+                },
+                "toolbar": {
+                    "connection_access": 1,
+                    "driver_state": 1
+                },
+                "framework-core": {
+                    "mdb2_symbol": 24,
+                    "pear_error": 18,
+                    "raw_connection_member": 10,
+                    "mdb2_result_or_schema": 13,
+                    "driver_state": 7,
+                    "transaction_or_lock": 8,
+                    "pdo": 2,
+                    "connection_access": 7,
+                    "native_mdb2_bridge": 3
+                }
+            },
+            "embedded-or-resource-review": {
+                "search": {
+                    "transaction_or_lock": 12
+                },
+                "security": {
+                    "transaction_or_lock": 2,
+                    "mdb2_symbol": 1,
+                    "raw_connection_member": 4,
+                    "mdb2_result_or_schema": 2,
+                    "driver_state": 1,
+                    "pear_error": 2
+                },
+                "utilities": {
+                    "transaction_or_lock": 5
+                },
+                "framework-core": {
+                    "transaction_or_lock": 46,
+                    "mdb2_symbol": 88,
+                    "raw_connection_member": 29,
+                    "mdb2_result_or_schema": 94,
+                    "driver_state": 47,
+                    "pear_error": 131,
+                    "alternate_connection": 4,
+                    "pdo": 1
+                }
+            }
+        },
+        "modules": {
+            "application": {
+                "account-event-service": {
+                    "connection_access": 1,
+                    "dbtable_subclass": 1
+                },
+                "activitystreamer": {
+                    "dbtable_subclass": 1
+                },
+                "announcements": {
+                    "connection_access": 1,
+                    "dbtable_subclass": 1
+                },
+                "assignment": {
+                    "dbtable_subclass": 8
+                },
+                "audience": {
+                    "mdb2_symbol": 1,
+                    "connection_access": 1,
+                    "transaction_or_lock": 3,
+                    "pear_error": 1,
+                    "dbtable_subclass": 3
+                },
+                "blog": {
+                    "mdb2_symbol": 1,
+                    "raw_connection_member": 1,
+                    "mdb2_result_or_schema": 1,
+                    "pear_error": 3,
+                    "dbtable_subclass": 1
+                },
+                "blogcomments": {
+                    "dbtable_subclass": 1
+                },
+                "bookmarks": {
+                    "dbtable_subclass": 2
+                },
+                "buddies": {
+                    "dbtable_subclass": 3
+                },
+                "calendar": {
+                    "dbtable_subclass": 1
+                },
+                "calendarbase": {
+                    "transaction_or_lock": 1,
+                    "dbtable_subclass": 3
+                },
+                "certificate-service": {
+                    "connection_access": 1,
+                    "raw_connection_member": 1,
+                    "transaction_or_lock": 1,
+                    "dbtable_subclass": 1
+                },
+                "cmsadmin": {
+                    "dbtable_subclass": 24
+                },
+                "cmscomments": {
+                    "dbtable_subclass": 1
+                },
+                "comment": {
+                    "raw_connection_member": 1,
+                    "dbtable_subclass": 3
+                },
+                "commenttypeadmin": {
+                    "dbtable_subclass": 1,
+                    "raw_connection_member": 1
+                },
+                "contactform": {
+                    "connection_access": 2,
+                    "driver_state": 1,
+                    "transaction_or_lock": 1,
+                    "pear_error": 1,
+                    "dbtable_subclass": 1,
+                    "mdb2_symbol": 1,
+                    "mdb2_result_or_schema": 1
+                },
+                "contentblocks": {
+                    "raw_connection_member": 2,
+                    "dbtable_subclass": 1
+                },
+                "contextcontent": {
+                    "transaction_or_lock": 4,
+                    "connection_access": 4,
+                    "raw_connection_member": 4,
+                    "dbtable_subclass": 13
+                },
+                "contextinstructor": {
+                    "dbtable_subclass": 1
+                },
+                "digitallibrary": {
+                    "dbtable_subclass": 1
+                },
+                "discussion": {
+                    "dbtable_subclass": 17,
+                    "connection_access": 2,
+                    "transaction_or_lock": 2
+                },
+                "dublincoremetadata": {
+                    "dbtable_subclass": 1
+                },
+                "entitlement-service": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1,
+                    "dbtable_subclass": 1
+                },
+                "eportfolio": {
+                    "dbtable_subclass": 19
+                },
+                "essay": {
+                    "dbtable_subclass": 5
+                },
+                "etd": {
+                    "dbtable_subclass": 13
+                },
+                "events": {
+                    "mdb2_symbol": 2,
+                    "connection_access": 2,
+                    "mdb2_result_or_schema": 2,
+                    "driver_state": 2,
+                    "transaction_or_lock": 1,
+                    "pear_error": 2,
+                    "dbtable_subclass": 1
+                },
+                "eventscalendar": {
+                    "dbtable_subclass": 4
+                },
+                "examiners": {
+                    "dbtable_subclass": 1
+                },
+                "faq": {
+                    "dbtable_subclass": 3
+                },
+                "faq26": {
+                    "dbtable_subclass": 1,
+                    "raw_connection_member": 1
+                },
+                "foaf": {
+                    "dbtable_subclass": 2
+                },
+                "formbuilder": {
+                    "dbtable_subclass": 15
+                },
+                "forms": {
+                    "dbtable_subclass": 4
+                },
+                "glossary": {
+                    "dbtable_subclass": 4
+                },
+                "gradebook": {
+                    "dbtable_subclass": 3,
+                    "mdb2_symbol": 1
+                },
+                "happybirthday": {
+                    "dbtable_subclass": 1
+                },
+                "homepage": {
+                    "dbtable_subclass": 2
+                },
+                "host-service": {
+                    "mdb2_symbol": 2,
+                    "connection_access": 2,
+                    "mdb2_result_or_schema": 2,
+                    "pear_error": 2,
+                    "driver_state": 1
+                },
+                "im": {
+                    "dbtable_subclass": 3
+                },
+                "ingestservice": {
+                    "connection_access": 1,
+                    "raw_connection_member": 1,
+                    "dbtable_subclass": 1
+                },
+                "kanban": {
+                    "connection_access": 4,
+                    "transaction_or_lock": 2,
+                    "dbtable_subclass": 4
+                },
+                "karmapoints": {
+                    "dbtable_subclass": 1
+                },
+                "knowledgemap": {
+                    "connection_access": 4,
+                    "transaction_or_lock": 5,
+                    "dbtable_subclass": 4
+                },
+                "langadmin": {
+                    "dbtable_subclass": 3
+                },
+                "languagetextgenerator": {
+                    "dbtable_subclass": 1
+                },
+                "legal-acceptance-service": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1,
+                    "dbtable_subclass": 1
+                },
+                "libraryexams": {
+                    "dbtable_subclass": 4
+                },
+                "livechat": {
+                    "dbtable_subclass": 1
+                },
+                "liveclass": {
+                    "connection_access": 2,
+                    "dbtable_subclass": 2
+                },
+                "maillist": {
+                    "dbtable_subclass": 1,
+                    "raw_connection_member": 1
+                },
+                "mcqtests": {
+                    "transaction_or_lock": 4,
+                    "connection_access": 2,
+                    "mdb2_result_or_schema": 2,
+                    "pear_error": 2,
+                    "dbtable_subclass": 25
+                },
+                "membership-service": {
+                    "connection_access": 3,
+                    "dbtable_subclass": 3,
+                    "transaction_or_lock": 2,
+                    "pear_error": 1
+                },
+                "mentors": {
+                    "dbtable_subclass": 1
+                },
+                "messaging": {
+                    "dbtable_subclass": 1
+                },
+                "myadmin": {
+                    "dbtable_subclass": 2,
+                    "connection_access": 1
+                },
+                "notifications": {
+                    "dbtable_subclass": 2,
+                    "connection_access": 1,
+                    "transaction_or_lock": 1
+                },
+                "oer": {
+                    "dbtable_subclass": 20
+                },
+                "oeruserdata": {
+                    "dbtable_subclass": 3
+                },
+                "offlineassessment": {
+                    "dbtable_subclass": 4
+                },
+                "pagenotes": {
+                    "connection_access": 3,
+                    "dbtable_subclass": 3
+                },
+                "pastpapers": {
+                    "dbtable_subclass": 2
+                },
+                "payment-service": {
+                    "dbtable_subclass": 9,
+                    "connection_access": 7,
+                    "pear_error": 1
+                },
+                "pbl": {
+                    "dbtable_subclass": 9
+                },
+                "pdf": {
+                    "transaction_or_lock": 1
+                },
+                "personalspace": {
+                    "dbtable_subclass": 1
+                },
+                "phonebook": {
+                    "dbtable_subclass": 1
+                },
+                "photostack": {
+                    "dbtable_subclass": 1
+                },
+                "phpunit": {
+                    "mdb2_symbol": 1,
+                    "dbtable_subclass": 2,
+                    "connection_access": 1
+                },
+                "poll": {
+                    "dbtable_subclass": 4
+                },
+                "practicals": {
+                    "dbtable_subclass": 5
+                },
+                "profiles": {
+                    "dbtable_subclass": 1
+                },
+                "qrcreator": {
+                    "dbtable_subclass": 1
+                },
+                "qrreview": {
+                    "dbtable_subclass": 1
+                },
+                "questiongenerator": {
+                    "connection_access": 4,
+                    "mdb2_result_or_schema": 2,
+                    "transaction_or_lock": 2,
+                    "pear_error": 3,
+                    "dbtable_subclass": 2,
+                    "mdb2_symbol": 1
+                },
+                "registration-service": {
+                    "mdb2_symbol": 1,
+                    "connection_access": 4,
+                    "driver_state": 1,
+                    "transaction_or_lock": 3,
+                    "pear_error": 1,
+                    "raw_connection_member": 1,
+                    "dbtable_subclass": 3
+                },
+                "rtt": {
+                    "dbtable_subclass": 3
+                },
+                "rubric": {
+                    "dbtable_subclass": 5,
+                    "transaction_or_lock": 1
+                },
+                "shop": {
+                    "mdb2_symbol": 2,
+                    "connection_access": 2,
+                    "mdb2_result_or_schema": 2,
+                    "driver_state": 2,
+                    "transaction_or_lock": 1,
+                    "pear_error": 2,
+                    "dbtable_subclass": 1
+                },
+                "shorturl": {
+                    "dbtable_subclass": 1
+                },
+                "simpleblog": {
+                    "transaction_or_lock": 2,
+                    "connection_access": 2,
+                    "dbtable_subclass": 1,
+                    "pear_error": 1
+                },
+                "simplefeedback": {
+                    "dbtable_subclass": 3
+                },
+                "simplegal": {
+                    "dbtable_subclass": 1
+                },
+                "sitepages": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1,
+                    "pear_error": 1,
+                    "dbtable_subclass": 1,
+                    "raw_connection_member": 1
+                },
+                "sitestats": {
+                    "dbtable_subclass": 2
+                },
+                "skinsuploader": {
+                    "dbtable_subclass": 1
+                },
+                "slate": {
+                    "dbtable_subclass": 1
+                },
+                "statusbar": {
+                    "dbtable_subclass": 2
+                },
+                "survey": {
+                    "dbtable_subclass": 12
+                },
+                "switchboard": {
+                    "dbtable_subclass": 1
+                },
+                "systemmanagement": {
+                    "connection_access": 1,
+                    "dbtable_subclass": 1
+                },
+                "textblock": {
+                    "raw_connection_member": 4,
+                    "dbtable_subclass": 2
+                },
+                "translate": {
+                    "dbtable_subclass": 1
+                },
+                "triplestore": {
+                    "dbtable_subclass": 1
+                },
+                "tutorials": {
+                    "dbtable_subclass": 1
+                },
+                "userstats": {
+                    "dbtable_subclass": 1
+                },
+                "wall": {
+                    "dbtable_subclass": 2
+                },
+                "webinar": {
+                    "transaction_or_lock": 3,
+                    "mdb2_symbol": 1,
+                    "connection_access": 2,
+                    "pear_error": 1,
+                    "dbtable_subclass": 5
+                },
+                "workgroup": {
+                    "dbtable_subclass": 4
+                },
+                "worksheet": {
+                    "dbtable_subclass": 5
+                }
+            },
+            "test-or-operator": {
+                "account-event-service": {
+                    "connection_access": 1
+                },
+                "audience": {
+                    "mdb2_symbol": 2,
+                    "connection_access": 2,
+                    "transaction_or_lock": 2,
+                    "pear_error": 1,
+                    "pdo": 1
+                },
+                "contactform": {
+                    "connection_access": 2
+                },
+                "contentblocks": {
+                    "mdb2_symbol": 1,
+                    "connection_access": 1,
+                    "pear_error": 1
+                },
+                "contextcontent": {
+                    "transaction_or_lock": 1
+                },
+                "discussion": {
+                    "transaction_or_lock": 1
+                },
+                "entitlement-service": {
+                    "connection_access": 1
+                },
+                "events": {
+                    "mdb2_symbol": 2,
+                    "mdb2_result_or_schema": 2,
+                    "connection_access": 1
+                },
+                "gradebook": {
+                    "mdb2_symbol": 1
+                },
+                "kanban": {
+                    "connection_access": 2,
+                    "transaction_or_lock": 2
+                },
+                "knowledgemap": {
+                    "transaction_or_lock": 1
+                },
+                "legal-acceptance-service": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1
+                },
+                "mcqtests": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 1
+                },
+                "membership-service": {
+                    "pear_error": 1
+                },
+                "notifications": {
+                    "transaction_or_lock": 2
+                },
+                "payment-service": {
+                    "mdb2_symbol": 1,
+                    "connection_access": 1,
+                    "pear_error": 1
+                },
+                "questiongenerator": {
+                    "connection_access": 1
+                },
+                "registration-service": {
+                    "mdb2_symbol": 1,
+                    "connection_access": 2,
+                    "pear_error": 1,
+                    "transaction_or_lock": 1
+                },
+                "shop": {
+                    "connection_access": 3,
+                    "pear_error": 1,
+                    "transaction_or_lock": 1,
+                    "mdb2_symbol": 1,
+                    "raw_connection_member": 1,
+                    "mdb2_result_or_schema": 1,
+                    "driver_state": 1
+                },
+                "simpleblog": {
+                    "connection_access": 1,
+                    "transaction_or_lock": 3,
+                    "pear_error": 1
+                },
+                "sitepages": {
+                    "mdb2_symbol": 1,
+                    "connection_access": 1,
+                    "pear_error": 1
+                },
+                "systemmanagement": {
+                    "connection_access": 1
+                },
+                "webinar": {
+                    "connection_access": 4,
+                    "transaction_or_lock": 7,
+                    "pear_error": 4,
+                    "mdb2_symbol": 2,
+                    "pdo": 1
+                }
+            },
+            "embedded-or-resource-review": {
+                "blog": {
+                    "pear_error": 1
+                },
+                "foaf": {
+                    "pear_error": 4,
+                    "mdb2_result_or_schema": 4,
+                    "raw_connection_member": 17,
+                    "transaction_or_lock": 17,
+                    "alternate_connection": 3,
+                    "pdo": 2
+                },
+                "pdf": {
+                    "transaction_or_lock": 1
+                },
+                "phpids": {
+                    "pdo": 2,
+                    "driver_state": 1
+                },
+                "rdfgen": {
+                    "mdb2_result_or_schema": 4,
+                    "driver_state": 1,
+                    "raw_connection_member": 17,
+                    "pear_error": 3,
+                    "transaction_or_lock": 17,
+                    "alternate_connection": 3,
+                    "pdo": 2
+                },
+                "zend": {
+                    "mdb2_result_or_schema": 44,
+                    "transaction_or_lock": 14,
+                    "pdo": 5,
+                    "raw_connection_member": 3
+                }
+            },
+            "retired-review": {
+                "pagenotes_DEPRECATED": {
+                    "dbtable_subclass": 2,
+                    "raw_connection_member": 1
+                }
+            }
+        }
+    }
+}

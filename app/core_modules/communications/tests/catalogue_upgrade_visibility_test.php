@@ -14,12 +14,13 @@ $patch->objModFile = new class {
     public function findRegisterFile($module) { return dirname(__DIR__) . '/register.conf'; }
     public function findSqlXML($module) { return false; }
 };
-foreach (array('0.1','0.1.1','0.1.2','0.1.3','0.1.4','0.1.5') as $old) {
+foreach (array('0.1','0.1.1','0.1.2','0.1.3','0.1.4','0.1.5','0.106','0.107') as $old) {
     $patch->installed=$old;
     $updates=$patch->checkModules();
     if(count($updates)!==1||$updates[0]['module_id']!=='communications')throw new RuntimeException('Update hidden from '.$old);
     echo 'PASS: Communications update visible from '.$old.PHP_EOL;
 }
-$patch->installed='0.106';
+if(!preg_match('/^MODULE_VERSION:\s*(.+)$/m',file_get_contents(dirname(__DIR__).'/register.conf'),$match))throw new RuntimeException('Missing module version');
+$patch->installed=trim($match[1]);
 if($patch->checkModules()!==array())throw new RuntimeException('Already-current update offered again');
 echo "PASS: current Communications version is not offered again\n";

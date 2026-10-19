@@ -135,7 +135,7 @@ class dynamicblocks extends dbTable {
      *                  If $typeofblock is admin, this is not required
      * @param string $blocksize Size of the Block - either small or wide
      */
-    public function addBlock($module, $object, $function, $parameterValue, $title, $typeofblock = 'context', $userOrContextOrWorkgroupCode, $blocksize = 'small', $creatorId = NULL) {
+    public function addBlock($module, $object, $function, $parameterValue, $title, $typeofblock, $userOrContextOrWorkgroupCode, $blocksize = 'small', $creatorId = NULL) {
         if ($creatorId == NULL) {
             $creatorId = $this->objUser->userId ();
         }
@@ -143,7 +143,7 @@ class dynamicblocks extends dbTable {
         if ($this->blockExists ( $module, $object, $function, $parameterValue, $typeofblock )) {
             return TRUE;
         } else {
-            return $this->insert ( array ('module' => $module, 'object' => $object, 'function' => $function, 'parameter' => $parameterValue, 'title' => $title, 'typeofblock' => $typeofblock, 'userorcontextorworkgroupcode' => $userOrContextOrWorkgroupCode, 'blocksize' => strtolower ( $blocksize ), 'creatorid' => $creatorId, 'datecreated' => strftime ( '%Y-%m-%d %H:%M:%S', time() ) )
+            return $this->insert ( array ('module' => $module, 'object' => $object, 'function' => $function, 'parameter' => $parameterValue, 'title' => $title, 'typeofblock' => $typeofblock, 'userorcontextorworkgroupcode' => $userOrContextOrWorkgroupCode, 'blocksize' => strtolower ( $blocksize ), 'creatorid' => $creatorId, 'datecreated' => date('Y-m-d H:i:s') )
 
              );
         }
@@ -205,7 +205,7 @@ class dynamicblocks extends dbTable {
      * @param string $typeofblock Type of Block: Either user, context, workgroup, admin, site
      * @param string $title Title of Block
      */
-    public function updateTitle($module, $object, $function, $parameterValue, $typeofblock = 'context', $title) {
+    public function updateTitle($module, $object, $function, $parameterValue, $typeofblock, $title) {
         $where = ' WHERE module=\'' . $module . '\' AND object=\'' . $object . '\' AND function=\'' . $function . '\' AND parameter=\'' . $parameterValue . '\' AND typeofblock=\'' . $typeofblock . '\'';
 
         $results = $this->getAll ( $where );

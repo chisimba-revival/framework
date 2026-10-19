@@ -113,7 +113,8 @@ class Zend_Search_Lucene_Field
     public function __construct($name, $value, $encoding, $isStored, $isIndexed, $isTokenized, $isBinary = false)
     {
         $this->name  = $name;
-        $this->value = $value;
+        // Chisimba PHP 8 maintenance: optional text fields use empty text.
+        $this->value = $value ?? '';
 
         if (!$isBinary) {
             $this->encoding    = $encoding;

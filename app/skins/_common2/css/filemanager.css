@@ -55,25 +55,18 @@ p.folderdetails{
     -o-transition-duration: 0.5s;
     -o-transition-propery: opacity;
 }
-p.filedetails{
-    position: absolute;
-    margin-top: -0.1pc;
-    color: #000000;
-    background: #FFFFFF;
-    font-weight: bold;
-    opacity: 0;
-    text-shadow: 0.1pc 0 0.1pc #FFFFFF;
-    -moz-transition-property: opacity;
-    -moz-transition-duration: 0.5s;
-    -moz-transition-timing-function: ease;
-    -webkit-transition-timing-function: ease;
-    -webkit-transition-duration: 0.5s;
-    -webkit-transition-propery: opacity;
-    -o-transition-timing-function: ease;
-    -o-transition-duration: 0.5s;
-    -o-transition-propery: opacity;
+/* File metadata is readable without hover, scripting or pointer input. */
+#filemanagerTable .fm_thumbnails p.filedetails {
+    position: static;
+    margin: 0;
+    color: inherit;
+    background: transparent;
+    opacity: 1;
+    text-shadow: none;
+    overflow-wrap: anywhere;
+    max-inline-size: 24rem;
 }
-p.filedetails:hover, p.folderdetails:hover{
+p.folderdetails:hover, a:focus-visible p.folderdetails {
     opacity: 0.8;
 }
 

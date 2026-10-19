@@ -32,56 +32,10 @@ class permissionservice extends dbTable
         );
     }
 
-    /**
-     * Run a statement with bound values and return every row.
-     *
-     * Values are never interpolated into SQL. The previous quoteValue() helper
-     * escaped with addslashes(), which is only safe while the connection
-     * charset cannot produce a backslash byte inside a multi-byte character.
-     * Under utf8mb3 that holds; it would not under GBK, BIG5 or SJIS.
-     *
-     * Bind types are declared because an undeclared placeholder resolves to
-     * null and raises a PHP 8.1 deprecation on every execution.
-     *
-     * Failures are reported through error_log() rather than the inherited
-     * errorCallback(). This class's init() default names a callback that does
-     * not exist in the framework, so calling it would raise a TypeError and
-     * turn a database problem into an unhandled fatal. This matches
-     * dbTable::_queryRow() on the same failure.
-     *
-     * @param string $sql Statement using ? placeholders
-     * @param array $bindings Values in placeholder order
-     * @return array Rows, or an empty array when the statement cannot be run
-     */
+    /** Read bound values through the checked shared database boundary. */
     private function selectRows($sql, array $bindings = array())
     {
-        $types = array();
-        foreach ($bindings as $value) {
-            $types[] = is_int($value) ? 'integer' : 'text';
-        }
-
-        try {
-            $db = $this->objEngine->getDbObj();
-            $statement = $db->prepare($sql, $types);
-            if (MDB2::isError($statement)) {
-                error_log('Permission query could not be prepared: ' . $statement->getMessage());
-                return array();
-            }
-            $result = $statement->execute($bindings);
-            if (MDB2::isError($result)) {
-                error_log('Permission query failed: ' . $result->getMessage());
-                $statement->free();
-                return array();
-            }
-            $rows = $result->fetchAll();
-            $result->free();
-            $statement->free();
-        } catch (Throwable $e) {
-            error_log('Permission query failed: ' . $e->getMessage());
-            return array();
-        }
-
-        return is_array($rows) ? $rows : array();
+        return $this->selectPrepared($sql, $bindings);
     }
 
     /**
@@ -297,6 +251,63 @@ class permissionservice extends dbTable
         }
 
         return $rights;
+    }
+
+    /**
+     * Remove one module-owned canonical area, its rights, grants and role
+     * templates.  A missing area is already clean and therefore succeeds.
+     */
+    public function deleteArea($applicationId, $areaDefineName)
+    {
+        $applicationId = $this->normaliseApplicationId($applicationId);
+        $areaDefineName = $this->normaliseAreaName($areaDefineName);
+        if ($applicationId === null || $areaDefineName === null) {
+            return false;
+        }
+
+        $areaId = $this->areaIdForName($applicationId, $areaDefineName);
+        if ($areaId === null) {
+            return true;
+        }
+
+        $this->beginTransaction();
+        try {
+            $rightRows = $this->getArray(
+                'SELECT right_id FROM tbl_perms_rights WHERE area_id = ' . $areaId
+            );
+            if (!is_array($rightRows)) {
+                throw new Exception('area_right_lookup_failed');
+            }
+            foreach ($rightRows as $row) {
+                $rightId = isset($row['right_id'])
+                    ? $this->positiveInteger($row['right_id'])
+                    : null;
+                if ($rightId === null) {
+                    throw new Exception('area_right_invalid');
+                }
+                $this->_execute(
+                    'DELETE FROM tbl_perms_contextrolegrants WHERE right_id = '
+                    . $rightId
+                );
+                $this->_execute(
+                    'DELETE FROM tbl_perms_grouprights WHERE right_id = ' . $rightId
+                );
+                $this->_execute(
+                    'DELETE FROM tbl_perms_userrights WHERE right_id = ' . $rightId
+                );
+            }
+            $this->_execute('DELETE FROM tbl_perms_rights WHERE area_id = ' . $areaId);
+            $this->_execute('DELETE FROM tbl_perms_areas WHERE area_id = ' . $areaId);
+
+            if ($this->areaIdForName($applicationId, $areaDefineName) !== null) {
+                throw new Exception('area_delete_verify_failed');
+            }
+            $this->commitTransaction();
+            return true;
+        } catch (Exception $exception) {
+            $this->rollbackTransaction();
+            return false;
+        }
     }
 
     /**

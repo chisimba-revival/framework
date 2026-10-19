@@ -51,7 +51,7 @@ $name = 'userid';
 $indexes = array(
                 'fields' => array(
                     'userid' => array(),
-                    'meta_value' => array(),
+                    'meta_value' => array('length' => 128),
                     'module' => array(),
                     'context' => array(),
                     'searchkey' => array(),

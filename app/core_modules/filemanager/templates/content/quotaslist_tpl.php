@@ -1,4 +1,5 @@
 <?php
+$escapeQuota = fn($value) => htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 
 
 if ((is_countable($results) ? count($results) : 0) == 0) {
@@ -8,16 +9,14 @@ if ((is_countable($results) ? count($results) : 0) == 0) {
     $this->loadClass('link', 'htmlelements');
     $objFileSize = new formatfilesize();
     
-    $objIcon = $this->newObject('geticon', 'htmlelements');
-    $objIcon->setIcon('edit');
-    
-    $editIcon = $objIcon->show();
-    
+    $editLabel = $this->objLanguage->languageText('mod_filemanager_editquota', 'filemanager');
+    $editIcon = $this->getObject('iconservice', 'ui')->render('pencil');
+
     if ($searchType == 'context') {
         $table = $this->newObject('htmltable', 'htmlelements');
         $table->startHeaderRow();
-        $table->addHeaderCell(ucwords($this->objLanguage->code2Txt('mod_context_contextcode', 'context', NULL, '[-context-] Code')));
-        $table->addHeaderCell(ucwords($this->objLanguage->code2Txt('mod_context_contexttitle', 'context', NULL, '[-context-] Title')));
+        $table->addHeaderCell(ucwords($this->objLanguage->code2Txt('mod_filemanager_quota_context_code', 'filemanager', NULL, '[-context-] Code')));
+        $table->addHeaderCell(ucwords($this->objLanguage->code2Txt('mod_filemanager_quota_context_title', 'filemanager', NULL, '[-context-] Title')));
         $table->addHeaderCell($this->objLanguage->languageText('mod_filemanager_usedefault', 'filemanager', 'Use default'), 100);
         $table->addHeaderCell($this->objLanguage->languageText('mod_filemanager_quota', 'filemanager', 'Quota'), 100);
         $table->addHeaderCell($this->objLanguage->languageText('mod_filemanager_usage', 'filemanager', 'Usage'), 100);
@@ -28,9 +27,9 @@ if ((is_countable($results) ? count($results) : 0) == 0) {
         foreach ($results as $result)
         {
             $table->startRow();
-            $table->addCell($result['contextcode']);
-            $table->addCell($result['title']);
-            $table->addCell($result['usedefault']);
+            $table->addCell($escapeQuota($result['contextcode']));
+            $table->addCell($escapeQuota($result['title']));
+            $table->addCell($escapeQuota($result['usedefault']));
             
             if ($result['usedefault'] == 'Y') {
                 $quota = $defaultQuota;
@@ -44,6 +43,7 @@ if ((is_countable($results) ? count($results) : 0) == 0) {
             
             $link = new link ($this->uri(array('action'=>'editquota', 'id'=>$result['id'])));
             $link->link = $editIcon;
+            $link->extra = 'class="button" aria-label="' . $escapeQuota($editLabel) . '"';
             
             $table->addCell('&nbsp; '.$link->show());
             
@@ -66,9 +66,9 @@ if ((is_countable($results) ? count($results) : 0) == 0) {
         foreach ($results as $result)
         {
             $table->startRow();
-            $table->addCell($result['firstname']);
-            $table->addCell($result['surname']);
-            $table->addCell($result['usedefault']);
+            $table->addCell($escapeQuota($result['firstname']));
+            $table->addCell($escapeQuota($result['surname']));
+            $table->addCell($escapeQuota($result['usedefault']));
             
             if ($result['usedefault'] == 'Y') {
                 $quota = $defaultQuota;
@@ -82,6 +82,7 @@ if ((is_countable($results) ? count($results) : 0) == 0) {
             
             $link = new link ($this->uri(array('action'=>'editquota', 'id'=>$result['id'])));
             $link->link = $editIcon;
+            $link->extra = 'class="button" aria-label="' . $escapeQuota($editLabel) . '"';
             
             $table->addCell('&nbsp; '.$link->show());
             

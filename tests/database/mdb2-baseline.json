@@ -1,0 +1,61 @@
+{
+    "row": {
+        "puid": "1",
+        "id": "first",
+        "body": "Quote ' slash \\ Unicode é 中文",
+        "amount": "12.30",
+        "quantity": "0"
+    },
+    "nullRow": {
+        "puid": "2",
+        "id": "second",
+        "body": null,
+        "amount": "0.00",
+        "quantity": "2"
+    },
+    "emptyStringRow": {
+        "puid": "3",
+        "id": "third",
+        "body": null,
+        "amount": null,
+        "quantity": null
+    },
+    "missingRow": null,
+    "emptySet": [],
+    "aliasCase": [
+        {
+            "mixedcase": "first"
+        }
+    ],
+    "limited": [
+        {
+            "id": "second"
+        }
+    ],
+    "afterLimit": [
+        {
+            "id": "first"
+        },
+        {
+            "id": "second"
+        },
+        {
+            "id": "third"
+        }
+    ],
+    "recordCount": "3",
+    "whitespace": [
+        {
+            "empty": null,
+            "spaces": "",
+            "padded": " x"
+        }
+    ],
+    "unchangedAffected": 0,
+    "changedAffected": 1,
+    "missingAffected": 0,
+    "transactionChecks": "commit and rollback passed",
+    "updateReturnType": "MDB2_BufferedResult_mysqli",
+    "deleteReturnType": "MDB2_BufferedResult_mysqli",
+    "generatedIdShape": "fixture_<random>_<timestamp>"
+}

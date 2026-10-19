@@ -4,6 +4,11 @@ if (!$GLOBALS['kewl_entry_point_run']) { die('You cannot view this page directly
 
 class landingresolver extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $contexts;
+    public $modules;
+    public $user;
+
     public function init()
     {
         $this->user = $this->getObject('user', 'security');

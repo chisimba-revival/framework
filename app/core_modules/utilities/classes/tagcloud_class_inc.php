@@ -1,134 +1,109 @@
 <?php
 // security check - must be included in all scripts
-if (!$GLOBALS['kewl_entry_point_run']) {
-    die("You cannot view this page directly");
+if (empty($GLOBALS['kewl_entry_point_run'])) {
+    die('You cannot view this page directly');
 }
-// end security check
 
 /**
- * Tag Cloud class
- * This is an adaptor pattern that wraps the functionality found in PEAR::HTML_TagCloud
+ * Shared native tag-cloud rendering. Owning modules supply authorised tags/URLs;
+ * the skin owns their appearance. Rendering never queries or widens access.
  *
- * @category  Chisimba
- * @access public
- * @package   utilities
+ * @category Chisimba
+ * @package utilities
  * @author Paul Scott <pscott@uwc.ac.za>
+ * @author Derek Keats
  * @copyright AVOIR
- * @license   http://www.gnu.org/licenses/gpl-2.0.txt The GNU General
-Public License
- * @version   $Id$
- * @link http://pear.php.net/package/html_tagcloud
- * @link      http://avoir.uwc.ac.za
+ * @license http://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License
  */
-
 class tagcloud extends ChisimbaObject
 {
-    /**
-     * Tag Cloud class
-     *  This package can be used to generate tag coulds
-     * in HTML and CSS.
-     * A tag cloud is an visual representation of list of so-called "tags" or keywords,
-     * that have a different font size depending on how often they occur on the page/blog.
-     * More information on tag clouds is available in Wikipedia.
-     * This package does not only visualize frequency, but also timeline infomation.
-     * The newer the tag is, the deeper its color will be;
-     * older tags will have a lighter color.
-     *
-     * @author Paul Scott <pscott@uwc.ac.za>
-     */
+    private $elements = array();
+
+    public function init() { $this->clearElements(); }
+    public function clearElements() { $this->elements = array(); }
 
     /**
-     * Tags object to hold the tag cloud
-     *
-     * @var object
+     * Append a caller's tag set, retaining the historical incremental contract.
+     * Use a newObject or clearElements() for an independent cloud.
      */
-    public $tags;
-
-    /**
-     * Standard init function for the engine
-     *
-     * @access public
-     * @param void
-     * @return void
-     */
-    public function init()
+    public function buildCloud($tags)
     {
-        if (!@include_once('HTML/TagCloud.php'))
-        {
-            throw new customException("Unable to locate PEAR::HTML_TagCloud, please install it with pear install --alldeps html_tagcloud-beta");
+        foreach ($tags as $tag) {
+            $this->addElement($tag['name'], $tag['url'], $tag['weight'], $tag['time'] ?? null);
         }
-        else {
-            $this->tags = new HTML_TagCloud();
-        }
-
+        return $this->buildAll();
     }
 
     /**
-     * Example function
-     *
-     * @param void
-     * @return string
+     * The timestamp argument remains accepted for existing callers. Age no
+     * longer fades link colours: all tags use the active skin's readable colour.
      */
+    public function addElement($tag, $uri, $weight, $time = null)
+    {
+        $name = (string) $tag;
+        if (trim($name) === '') { return; }
+        $count = is_numeric($weight) ? (float) $weight : 0.0;
+        if (!is_finite($count) || $count < 0) { $count = 0.0; }
+        $this->elements[] = array('name' => $name, 'url' => (string) $uri, 'weight' => $count);
+    }
+
+    /** Render an alphabetical list with five bounded, square-root weight bands. */
+    public function buildAll()
+    {
+        if (!$this->elements) { return ''; }
+        $tags = $this->elements;
+        usort($tags, static function ($a, $b) { return strcmp($a['name'], $b['name']); });
+        $weights = array_column($tags, 'weight');
+        $minimum = sqrt(min($weights));
+        $maximum = sqrt(max($weights));
+        $html = '<ul class="chisimba-tag-cloud" role="list">';
+        foreach ($tags as $tag) {
+            $level = $maximum > $minimum
+                ? 1 + (int) round(4 * (sqrt($tag['weight']) - $minimum) / ($maximum - $minimum))
+                : 3;
+            $label = $this->escape($tag['name']);
+            $url = $this->safeUrl($tag['url']);
+            $content = $url === null ? '<span>' . $label . '</span>'
+                : '<a href="' . $this->escape($url) . '">' . $label . '</a>';
+            $html .= '<li class="chisimba-tag-cloud__weight-' . $level . '">' . $content . '</li>';
+        }
+        return $html . '</ul>';
+    }
+
+    /** Historical spelling used by FAQ; delegates to the canonical method. */
+    public function biuldAll() { return $this->buildAll(); }
+
+    private function escape($value)
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    /** Only web URLs and relative references may become navigation targets. */
+    private function safeUrl($url)
+    {
+        if ($url === '' || preg_match('/[\x00-\x20\x7f\\\\]/', $url)) { return null; }
+        $parts = parse_url($url);
+        if ($parts === false) { return null; }
+        if (isset($parts['scheme'])) {
+            if (!in_array(strtolower($parts['scheme']), array('http', 'https'), true)
+                || empty($parts['host'])) { return null; }
+        }
+        return $url;
+    }
+
+    /** Retained demonstration entry point, using the same native renderer. */
     public function exampletags()
     {
-
-        // add Elements
-        $this->tags->addElement('PHP'       ,'http://www.php.net'  , 39, strtotime('-1 day'));
-        $this->tags->addElement('XML'       ,'http://www.xml.org'  , 21, strtotime('-2 week'));
-        $this->tags->addElement('Perl'      ,'http://www.xml.org'  , 15, strtotime('-1 month'));
-        $this->tags->addElement('PEAR'      ,'http://pear.php.net' , 32, time());
-        $this->tags->addElement('MySQL'     ,'http://www.mysql.com', 10, strtotime('-2 day'));
-        $this->tags->addElement('PostgreSQL','http://pgsql.com'    ,  6, strtotime('-3 week'));
-        // output HTML and CSS
-        return $this->tags->buildALL();
-    }
-
-    /**
-     * Build the tag cloud and return the cloud in a featurebox or not.
-     *
-     * It is possible to modify the colors used by the CSS.
-     * You need to define your own class which extends HTML_TagCloud and override color and size properties.
-     *
-     * if you don't want to add timeline information and have the color changing accordingly,
-     * just omit the fourth parameter to addElement().
-     * When doing this, the current time is set.
-     *
-     * @access public
-     * @param array $tagarr
-     * @return string tagcloud
-     */
-    public function buildCloud($tagarr)
-    {
-        //loop through an associative array
-        foreach($tagarr as $tags)
-        {
-            $this->tags->addElement($tags['name'], $tags['url'], $tags['weight'], $tags['time']);
+        foreach (array(
+            array('PHP', 'http://www.php.net', 39),
+            array('XML', 'http://www.xml.org', 21),
+            array('Perl', 'http://www.xml.org', 15),
+            array('PEAR', 'http://pear.php.net', 32),
+            array('MySQL', 'http://www.mysql.com', 10),
+            array('PostgreSQL', 'http://pgsql.com', 6),
+        ) as $tag) {
+            $this->addElement($tag[0], $tag[1], $tag[2]);
         }
-        //$this->appendArrayVar('headerParams', '<style>'.$this->tags->buildCSS())."</style>";
-        return $this->tags->buildHTML();
+        return $this->buildAll();
     }
-    
-    /**
-    * Method to add an element 
-    * @param string $tag
-    * @param string $uri
-    * @param string $weight
-    * @param string $time
-    */
-    public function addElement($tag, $uri, $weight, $time )
-    {
-        $this->tags->addElement($tag ,$uri, intval($weight) ,$time);
-    }
-    
-    /**
-    * Abstracted method to call build all from tag object
-    * @return string
-    */
-    public function biuldAll()
-    {
-    
-            return $this->tags->buildALL();
-    }
-
 }
-?>

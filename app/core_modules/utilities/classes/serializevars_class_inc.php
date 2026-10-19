@@ -61,6 +61,9 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class serializevars extends dbtable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+
 
     /**
     *

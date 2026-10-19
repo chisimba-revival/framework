@@ -12,6 +12,7 @@
 */
 class Template 
 {
+    public $file;
 	/**
 	* Hold all the variables that are going to be imported into the template file
 	* @var array

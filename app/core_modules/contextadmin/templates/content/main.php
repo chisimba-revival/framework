@@ -24,7 +24,7 @@ if ($this->getParam('message') != '' ) {
                 $message = $title.' '.$this->objLanguage->languageText('mod_contextadmin_successfullyupdated', 'contextadmin', 'has been successfully updated').'!';
             break;
         case 'contextdeleted':
-            $message = $this->getParam('title').' '.$this->objLanguage->languageText('mod_contextadmin_hasbeendeleted', 'contextadmin', 'has been successfully deleted');
+            $message = htmlspecialchars((string)$this->getParam('title'),ENT_QUOTES,'UTF-8').' '.$this->objLanguage->languageText('mod_contextadmin_hasbeendeleted', 'contextadmin', 'has been successfully deleted');
             break;
     }
 

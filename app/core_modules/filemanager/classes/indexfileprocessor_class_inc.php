@@ -44,6 +44,7 @@
 class indexfileprocessor extends ChisimbaObject
 {
 
+    public $objMimetype;
     public $recurseFolder = TRUE;
     public $debug = FALSE;
 

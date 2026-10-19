@@ -139,9 +139,7 @@ class dbpageblocks extends dbtable
      */
     public function getPageBlocksList($pageId, $side)
     {
-        return $this->getAll(' WHERE side=\'' 
-          . $side . '\' AND pageid=\''
-          . $pageId . '\' ORDER BY position');
+        return $this->pageRows('WHERE side = ? AND pageid = ? ORDER BY position', [$side, $pageId]);
     }
 
 
@@ -192,7 +190,7 @@ class dbpageblocks extends dbtable
                 'module' => $module,
                 'pageid' => $pageId,
                 'position' => $this->getLastOrder($pageId, $side)+1,
-                'datelastupdated' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'datelastupdated' => $this->now(),
             ));
     }
 
@@ -207,9 +205,7 @@ class dbpageblocks extends dbtable
      */
     private function getLastOrder($pageId, $side)
     {
-        $results = $this->getAll(' WHERE side=\''.$side 
-          . '\' AND pageid=\'' .$pageId
-          . '\' ORDER BY position DESC LIMIT 1');
+        $results = $this->pageRows('WHERE side = ? AND pageid = ? ORDER BY position DESC LIMIT 1', [$side, $pageId]);
         if ((is_countable($results) ? count($results) : 0) == 0) {
             return 0;
         } else {
@@ -242,19 +238,7 @@ class dbpageblocks extends dbtable
      */
     public function moveBlockUp($id)
     {
-        $record = $this->getRow('id', $id);
-        if ($record == FALSE) {
-            return FALSE;
-        } else {
-            $prevRecord = $this->getPreviousBlock($record['side'], $record['position']);
-            if ($prevRecord == FALSE) {
-                return FALSE;
-            } else {
-                $this->update('id', $record['id'], array('position'=>$prevRecord['position']));
-                $this->update('id', $prevRecord['id'], array('position'=>$record['position']));
-                return TRUE;
-            }
-        }
+        return $this->moveOnPage($id, 'up');
     }
 
     /**
@@ -268,69 +252,32 @@ class dbpageblocks extends dbtable
      */
     public function moveBlockDown($id)
     {
-        $record = $this->getRow('id', $id);
-        if ($record == FALSE) {
-            return FALSE;
-        } else {
-            $nextRecord = $this->getNextBlock($record['side'], $record['position']);
-            if ($nextRecord == FALSE) {
-                return FALSE;
-            } else {
-                $this->update('id', $record['id'], array('position'=>$nextRecord['position']));
-                $this->update('id', $nextRecord['id'], array('position'=>$record['position']));
-                return TRUE;
-            }
-        }
+        return $this->moveOnPage($id, 'down');
     }
 
-    /**
-     *
-     * Method to get the details of the previous block
-     *
-     * @param string $side Side Block is on
-     * @param int $position Position of the Block
-     * @return boolean or int array An array with the position
-     * @access private
-     * 
-     */
-    private function getPreviousBlock($side, $position)
+    private function moveOnPage($id, string $direction): bool
     {
-        $pageId = $this->getParam('pageId', NULL);
-        $results = $this->getAll(' WHERE side=\'' . $side . '\' '
-                . 'AND pageid=\'' . $pageId . '\' '
-                . 'AND position < ' . $position
-                .' ORDER BY position DESC LIMIT 1');
-        if ((is_countable($results) ? count($results) : 0) == 0) {
-            return FALSE;
-        } else {
-            return $results[0];
-        }
+        $pageId = $this->getParam('pageId', '');
+        return $this->withDatabaseLock('canvas-page-edit', function () use ($id, $pageId, $direction) {
+            return $this->transaction(function () use ($id, $pageId, $direction) {
+                $record = $this->pageRows('WHERE id = ? AND pageid = ? FOR UPDATE', [$id, $pageId])[0] ?? null;
+                if (!$record) return false;
+                $comparison = $direction === 'up' ? '<' : '>';
+                $order = $direction === 'up' ? 'DESC' : 'ASC';
+                $neighbour = $this->pageRows('WHERE pageid = ? AND side = ? AND position '.$comparison.' ? ORDER BY position '.$order.' LIMIT 1 FOR UPDATE', [$pageId, $record['side'], $record['position']])[0] ?? null;
+                if (!$neighbour) return false;
+                if (!$this->update('id', $record['id'], ['position'=>$neighbour['position']])
+                    || !$this->update('id', $neighbour['id'], ['position'=>$record['position']])) throw new RuntimeException('Block move failed');
+                return true;
+            });
+        });
     }
 
-    /**
-     *
-     * Method to get the details of the next block
-     *
-     * @param string $side Side Block is on
-     * @param int $position Position of the Block
-     * @return boolean or int array An array with the position
-     * @access private
-     * 
-     */
-    private function getNextBlock($side, $position)
+    private function pageRows(string $suffix, array $parameters): array
     {
-        $pageId = $this->getParam('pageId', NULL);
-        //$results = $this->getAll(' WHERE side=\''.$side.'\' AND position > '.$position.' ORDER BY position LIMIT 1');
-        $sql = ' WHERE side=\'' . $side . '\' '
-        . 'AND pageid=\'' . $pageId . '\' '
-        . 'AND position > ' . $position
-        .' ORDER BY position DESC LIMIT 1';
-        $results = $this->getAll($sql);
-        if ((is_countable($results) ? count($results) : 0) == 0) {
-            return FALSE;
-        } else {
-            return $results[0];
-        }
+        if (!preg_match('/^tbl_[a-z0-9_]+_pageblocks$/D', $this->_tableName)) throw new RuntimeException('Invalid page block table');
+        return $this->selectPrepared('SELECT * FROM `'.$this->_tableName.'` '.$suffix, $parameters);
     }
+
 }
 ?>

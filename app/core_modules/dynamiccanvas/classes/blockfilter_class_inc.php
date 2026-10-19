@@ -160,13 +160,13 @@ class blockfilter extends ChisimbaObject
                                     // It is not a valid block so wrapt it in an error
                                     $blockCode = '<div class="featurebox"><div class="error">'
                                       . $this->objLanguage->languageText("mod_dynamiccanvas_invalidblock", "dynamiccanvas", "Invalid block")
-                                      . '<br />'. $item . '</div></div>';
+                                      . '<br />'. htmlspecialchars($item, ENT_QUOTES, 'UTF-8') . '</div></div>';
                                 }
                             } else {
                                 // The JSON is not valid so wrap it in an error
                                 $blockCode = '<div class="featurebox"><div class="error">'
                                   . $this->objLanguage->languageText("mod_dynamiccanvas_invalidjson", "dynamiccanvas", "Invalid JSON block definition")
-                                  . '<br />' . $item . '</div></div>';
+                                  . '<br />' . htmlspecialchars($item, ENT_QUOTES, 'UTF-8') . '</div></div>';
                             }
                         } elseif ($this->objJson->display == 'externalblock') {
                             // Use counter to uniquely identify the div.
@@ -177,7 +177,7 @@ class blockfilter extends ChisimbaObject
                     } else {
                         $blockCode = '<div class="featurebox"><div class="error">'
                           . $this->objLanguage->languageText("mod_dynamiccanvas_invaliddisplaynotset", "dynamiccanvas", "Block display method not set in JSON")
-                          . '<br />' . $item . '</div></div>';
+                          . '<br />' . htmlspecialchars($item, ENT_QUOTES, 'UTF-8') . '</div></div>';
                     }
                     $replacement = $blockCode;
                     //$tmp = "<h1>" . $counter . $this->objJson->block . "||" . $this->objJson->module . "</h1>";
@@ -271,113 +271,12 @@ class blockfilter extends ChisimbaObject
     }
 
 
-    /**
-    *
-    * Get an external block and render it with Ajax code. Blocktypes can be
-    * NULL, tabbedbox, table, wrapper, none (for wideblocks), or invisible
-    * (for turning off blocks programmatically)
-    * bn = blockname
-    * om = owning module
-    * bt = blocktype
-    * tl = title length
-    * ws = wrap string
-    * stg = show toggle
-    * hd = hidden
-    * st = show title
-    * cls = CSS class
-    * cid = CSS id
-    *
-    * @param string $blockName The block name
-    * @param string $owningModule The module that owns the block
-    * @return string The parsed content
-    *
-    */
-    public function getExternalBlock($counter)
+    /** Remote HTML imports are retired; preserve a visible, escaped placeholder. */
+    public function getExternalBlock($counter = 0)
     {
-        // The layer to render the content into. Use counter to make it unique.
-        $layer = "<div id='externalblock_$counter'>Loading...</div>";
-        // The basic URL, with the parameter names shortened.
-        $url = $this->objJson->server
-          . "index.php?module=externalblocks&bn="
-          . $this->objJson->block
-          . "&om=" .$this->objJson->module;
-        // Set the block type (see method comment or blocks_class in blocks module).
-        if (isset($this->objJson->blockType)) {
-            $url .= "&bt=" . $this->objJson->blockType;
-        }
-        // Set the title length, defaulting to 20. Only works if wrapStr=TRUE
-        if (isset($this->objJson->titleLength)) {
-            $url .= "&tl=" . $this->objJson->titleLength;
-        }
-        // Set whether or not we wrap the title to title length.
-        if (isset($this->objJson->wrapStr)) {
-             $url .= "&ws=" . $this->objJson->wrapStr;
-        }
-        // Set whether wes should display the toggle up/down, defaulting to TRUE.
-        if (isset($this->objJson->showToggle)) {
-             $url .= "&stg=" . $this->objJson->showToggle;
-        }
-        // Set whether the contents are hidden (toggled up) by default.
-        if (isset($this->objJson->hidden)) {
-             $url .= "&hd=" . $this->objJson->hidden;
-        }
-        // Set whether the title is visible.
-        if (isset($this->objJson->showTitle)) {
-             $url .= "&st=" . $this->objJson->showTitle;
-        }
-        // Set the CSS class to use (normally featurebox).
-        if (isset($this->objJson->cssClass)) {
-             $url .= "&cls=" . $this->objJson->cssClass;
-        }
-        // Set a custom cssId if required. Cannot think of a usecase!
-        if (isset($this->objJson->cssId)) {
-             $url .= "&cid=" . $this->objJson->cssId;
-        }
-        //$url = urlencode($url);
-         
-        /*$catchUrl = $this->uri(array('action' => 'proxy',
-          'url' => $url), 'dynamiccanvas');
-        // Render the ajax using jQuery.load
-        $script = "\n\n<script type=\"text/javascript\">\n"
-          . "// <![CDATA[\n"
-          . "jQuery('.externalblock_$counter').load('$catchUrl')\n"
-          . "// ]]>\n</script>\n\n";
-        //return htmlentities($layer . $script);
-        //return $layer . $script;*/
-        return $this->proxy($url);
-    }
-
-    /**
-    *
-    * Method to get the external blocks. This should be used as a proxy
-    * for Ajax, but I cannot seem to get it to work that way.
-    *
-    * @param string $url The URL to retrieve
-    * @return string The content from the URL
-    */
-    public function proxy($url)
-    {
-        $oCh = $this->getObject("curl", "utilities");
-        return $oCh->exec($url);
-    }
-
-    /**
-     *
-     * Render the jQuery Embed script to embed the content via
-     * Ajax.
-     *
-     * @param string $cssClass The CSS class which holds the content
-     * @param strings $url The URL to render the block
-     * @return string The rendered script
-     */
-    public function renderEmbed($cssClass, $url)
-    {
-        // Render the ajax using jQuery.load
-        $script = "\n\n<script type=\"text/javascript\">\n"
-          . "// <![CDATA[\n"
-          . "jQuery('$cssClass').load('$url')\n"
-          . "// ]]>\n</script>\n\n";
-        return $script;
+        return '<p class="warning">' . htmlspecialchars(
+            $this->objLanguage->code2Txt('mod_dynamiccanvas_remote_retired', 'dynamiccanvas'),
+            ENT_QUOTES, 'UTF-8'
+        ) . '</p>';
     }
 }
-?>

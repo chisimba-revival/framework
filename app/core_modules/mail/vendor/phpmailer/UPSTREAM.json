@@ -1,0 +1,12 @@
+{
+  "tag": "v7.1.1",
+  "url": "https://github.com/PHPMailer/PHPMailer/releases/tag/v7.1.1",
+  "tarball": "https://api.github.com/repos/PHPMailer/PHPMailer/tarball/v7.1.1",
+  "sha256": {
+    "src/PHPMailer.php": "45599a196ae7944ee2dcd4f3d3da0ac4243513d346b2d77bbd15dbd0c37f7064",
+    "src/SMTP.php": "522bcf0d07be7e7e00114711db5c9ce2b4d59ac041c5ec36eaadd979d5fa7046",
+    "src/Exception.php": "22ab858ae438d98f58f41f38ad2191d1b0d59570aebea0463a7948cfae1021b7",
+    "LICENSE": "a1a33180d02960ab1c5de36cf20b1a2f0fe9888d83826ad263da5db52f1b183b",
+    "composer.json": "0d29d0a9c86be376433530333bee758ba563e7267347300c181299f5a1d920a4"
+  }
+}

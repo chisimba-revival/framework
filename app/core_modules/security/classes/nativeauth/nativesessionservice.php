@@ -75,6 +75,9 @@ class NativeSessionService implements NativeSessionServiceInterface
             : array();
 
         try {
+            $this->remove('nativeAuthCsrfTokens');
+            $this->remove('nativeAuthenticatedFormCsrf');
+            $this->set('nativeAuthFormEpoch', bin2hex(random_bytes(32)));
             $this->set(self::KEY_AUTHENTICATED, true);
             $this->set(self::KEY_USER_ID, $userId);
 
@@ -191,6 +194,9 @@ class NativeSessionService implements NativeSessionServiceInterface
             self::KEY_PROVIDER,
             self::KEY_METADATA,
             self::KEY_AUTHENTICATED_AT,
+            'nativeAuthFormEpoch',
+            'nativeAuthenticatedFormCsrf',
+            'nativeAuthCsrfTokens',
         );
     }
 

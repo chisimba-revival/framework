@@ -55,6 +55,7 @@ if (!
 class filemanager extends controller {
 
     // State used by authenticated editing and file selection.
+    public $objMkdir;
     public $contextCode;
     public $fckVersion;
     public $objCleanUrl;
@@ -192,7 +193,7 @@ class filemanager extends controller {
      * @access public
      */
     public function requiresLogin($action) {
-        if ($action == 'file' || $action == 'dav') {
+        if ($action == 'file' || $action == 'coursefile' || $action == 'filederivative' || $action == 'dav') {
             return FALSE;
         } else {
             return TRUE;
@@ -283,6 +284,13 @@ class filemanager extends controller {
 
         // Check to ensure the user has access to the file manager.
         if (!$this->userHasAccess()) {
+            return 'access_denied_tpl.php';
+        }
+
+        // These routes expose site-wide quotas, not the caller's personal files.
+        if (in_array(strtolower($action), ['quotamanager', 'ajaxgetquotas', 'editquota', 'updatequota'], true)
+            && !$this->objUser->lookupAdmin($this->objUser->userId())) {
+            http_response_code(403);
             return 'access_denied_tpl.php';
         }
 
@@ -464,7 +472,7 @@ class filemanager extends controller {
     private function __filepicker()
     {
         $policy = (string) $this->getParam('policy', '');
-        if (!in_array($policy, array('image', 'audio', 'video', 'pdf', 'zip', 'assignment'), true)) {
+        if (!in_array($policy, array('image', 'audio', 'video', 'pdf', 'zip', 'assignment', 'download'), true)) {
             throw new InvalidArgumentException($this->objLanguage->languageText('mod_filemanager_picker_unknown_policy', 'filemanager'));
         }
 
@@ -633,12 +641,19 @@ class filemanager extends controller {
         exit;
     }
 
-    /**
-     * Method to view/download the actual file
-     * This approach is used to allow files to be move around without
-     * adjust links in content
-     * @access private
-     */
+    /** Serve a registered generated preview through its original file policy. */
+    private function __filederivative() {
+        $this->getObject('filedelivery', 'filemanager')->sendDerivative($this->getParam('path'));
+    }
+
+    /** Compatibility endpoint for registered legacy course paths. */
+    private function __coursefile() {
+        $path = $this->getParam('path');
+        $file = is_string($path) ? $this->objFiles->getFileDetailsFromPath($path) : false;
+        $this->getObject('filedelivery', 'filemanager')->sendCourseFile($file);
+    }
+
+    /** Stable ID-based file delivery, independent of physical storage. */
     private function __file() {
         $id = $this->getParam('id');
         $filename = $this->getParam('filename');
@@ -646,6 +661,9 @@ class filemanager extends controller {
         if (!is_array($file) || $file['filename'] !== $filename
             || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) {
             return "access_denied_tpl.php";
+        }
+        if (str_starts_with((string)$file['filefolder'], 'context/')) {
+            $this->getObject('filedelivery', 'filemanager')->sendCourseFile($file);
         }
         $folder = $this->objFolders->getFolder($this->objFolders->getFolderId($file['filefolder']));
         $objFolderAccess = $this->getObject('folderaccess', 'filemanager');
@@ -714,7 +732,15 @@ class filemanager extends controller {
 
         // To do: Build in Security on whether user can view file
         if (file_exists($this->objConfig->getSiteRootPath() . '/' . $filePath)) {
-            //echo $filePath;
+            $this->loadClass('filedelivery', 'filemanager');
+            if (filedelivery::mayCachePublicImageRedirect($file, $folder, $_SERVER['REQUEST_METHOD'] ?? 'GET')) {
+                // Cache this public redirect briefly, not protected file responses.
+                // Remove the page/session headers emitted earlier by the engine.
+                header_remove('Pragma');
+                header_remove('Expires');
+                header_remove('Last-Modified');
+                header('Cache-Control: private, max-age=300');
+            }
             header("Location:{$filePath}");
         } else {
             return "access_denied_tpl.php";
@@ -1760,9 +1786,9 @@ class filemanager extends controller {
      *
      */
     private function __viewbytag() {
-        $tag = $this->getParam('tag');
+        $tag = $this->getParam('tag', '');
 
-        if (trim($tag) == '') {
+        if (!is_string($tag) || trim($tag) == '') {
             return $this->nextAction('tagcloud', array('error' => 'notag'));
         }
 
@@ -1937,7 +1963,7 @@ function checkWindowOpener()
         $searchField = $this->getParam('searchField', '');
         $searchFor = $this->getParam('searchFor', '');
         $orderBy = $this->getParam('orderBy', '');
-        $numItemsPerPage = (int) $this->getParam('numItemsPerPage', '0');
+        $numItemsPerPage = (int) $this->getParam('numItemsPerPage', '20');
         $page = (int) $this->getParam('page', '0');
 
         if ($searchType == 'context') {
@@ -1957,54 +1983,69 @@ function checkWindowOpener()
         return 'quotaslist_tpl.php';
     }
 
-    private function __editquota() {
-        $id = $this->getParam('id');
-
-        $quota = $this->objQuotas->getQuotaFromId($id);
-
-        if ($quota == FALSE) {
-            return $this->nextAction('quotamanager', array('error' => 'unknownquota'));
-        } else {
-            $this->setVarByRef('quota', $quota);
-            return 'editquota_tpl.php';
-        }
+    /** Render a fresh token and retain submitted work after rejected writes. */
+    private function quotaEditor($quota, $draft = null, $error = '')
+    {
+        $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+        $this->setVar('quota', $quota);
+        $this->setVar('quotaDraft', $draft);
+        $this->setVar('quotaError', $error);
+        $this->setVar('quotaRevision', hash('sha256', json_encode([$quota['usedefault'], $quota['quota'], $quota['datemodified']])));
+        $this->setVar('quotaToken', $csrf->issue('fm_quota_' . hash('sha256', $quota['id'])));
+        return 'editquota_tpl.php';
     }
 
-    private function __updatequota() {
-        // Get Values
+    private function __editquota()
+    {
         $id = $this->getParam('id');
-        $quotatype = $this->getParam('quotatype');
-        $customquota = $this->getParam('customquota');
+        $quota = is_string($id) ? $this->objQuotas->getQuotaFromId($id) : false;
+        if (!$quota) return $this->nextAction('quotamanager', ['error' => 'unknownquota']);
+        return $this->quotaEditor($quota);
+    }
 
-        // Are we setting default or custom value
-        if ($quotatype == 'Y') {
-            $this->objQuotas->setToUseDefaultQuota($id);
-        } else {
-            if ($customquota == '') {
-                return $this->nextAction('editquota', array('id' => $id, 'error' => 'novalue'));
-            }
-
-            if (!is_numeric($customquota)) {
-                return $this->nextAction('editquota', array('id' => $id, 'error' => 'nonumber'));
-            } else {
-                $this->objQuotas->setToUseCustomQuota($id, $customquota);
-            }
+    private function __updatequota()
+    {
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            http_response_code(405);
+            header('Allow: POST');
+            return 'access_denied_tpl.php';
         }
-
-        // Get quota
-        $quota = $this->objQuotas->getQuotaFromId($id);
-
-        // If quota doesn't exist, redirect
-        if ($quota == FALSE) {
-            return $this->nextAction('quotamanager');
-        } else {
-            // Do an approximate search to quota that was update
-            if (substr($quota['path'], 0, 7) == 'context') {
-                return $this->nextAction('quotamanager', array('message' => 'quotatupdated', 'id' => $quota['id'], 'searchType' => 'context', 'searchField_context' => 'contextcode', 'searchfor' => substr($quota['path'], 8)));
-            } else {
-                return $this->nextAction('quotamanager', array('message' => 'quotatupdated', 'id' => $quota['id'], 'searchType' => 'users', 'searchField_user' => 'firstname', 'searchfor' => $this->objUser->getFirstname(substr($quota['path'], 6))));
-            }
+        $id = $_POST['id'] ?? '';
+        $quota = is_string($id) ? $this->objQuotas->getQuotaFromId($id) : false;
+        if (!$quota) {
+            http_response_code(404);
+            return 'access_denied_tpl.php';
         }
+        $type = is_string($_POST['quotatype'] ?? null) ? $_POST['quotatype'] : '';
+        $size = is_string($_POST['customquota'] ?? null) ? trim($_POST['customquota']) : '';
+        $draft = ['usedefault' => $type, 'quota' => $size];
+        $csrf = $this->getObject('nativeauthwebcomposition', 'security')->build()['csrf'];
+        $token = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
+        if (!$csrf->consume('fm_quota_' . hash('sha256', $id), $token)) {
+            http_response_code(403);
+            return $this->quotaEditor($quota, $draft, 'expired');
+        }
+        $revision = hash('sha256', json_encode([$quota['usedefault'], $quota['quota'], $quota['datemodified']]));
+        if (!is_string($_POST['quota_revision'] ?? null) || !hash_equals($revision, $_POST['quota_revision'])) {
+            http_response_code(409);
+            return $this->quotaEditor($quota, $draft, 'conflict');
+        }
+        if (!in_array($type, ['Y', 'N'], true)
+            || ($type === 'N' && (!preg_match('/^[0-9]{1,10}$/D', $size) || (float)$size > 2147483647))) {
+            http_response_code(422);
+            return $this->quotaEditor($quota, $draft, 'invalid');
+        }
+        try {
+            $saved = $this->objQuotas->saveQuotaChecked($quota, $type, (int)$size);
+            if (!$saved) {
+                http_response_code(409);
+                return $this->quotaEditor($this->objQuotas->getQuotaFromId($id) ?: $quota, $draft, 'conflict');
+            }
+        } catch (Throwable $error) {
+            http_response_code(500);
+            return $this->quotaEditor($quota, $draft, 'failed');
+        }
+        return $this->nextAction('quotamanager', ['message' => 'quotatupdated']);
     }
 
     private function __renamefolder() {

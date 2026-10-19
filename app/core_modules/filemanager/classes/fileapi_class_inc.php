@@ -329,7 +329,7 @@ class fileapi extends ChisimbaObject
             return $this->error('invalid_extension', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
         }
         if ($tmp==='' || !is_uploaded_file($tmp)) { return $this->error('invalid_upload', $this->objLanguage->languageText('mod_filemanager_native_invalid_upload', 'filemanager')); }
-        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); finfo_close($fi); } }
+        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); unset($fi); } }
         if (!in_array(strtolower($mime), $policy['mimetypes'], true)) {
             return $this->error('invalid_mimetype', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
         }
@@ -530,6 +530,15 @@ class fileapi extends ChisimbaObject
                 'titleKey' => 'select_zip', 'uploadKey' => 'upload_zip', 'icon' => 'zip'
             )
         );
+        // Reuse the established document/media allowlists for downloadable products.
+        if ($name === 'download') {
+            $extensions=[]; $mimetypes=[];
+            foreach ($policies as $policy) { $extensions=array_merge($extensions,$policy['extensions']); $mimetypes=array_merge($mimetypes,$policy['mimetypes']); }
+            $extensions=array_values(array_unique($extensions));
+            return ['extensions'=>$extensions,'mimetypes'=>array_values(array_unique($mimetypes)),
+                'accept'=>implode(',',array_map(static fn($ext)=>'.'.$ext,$extensions)),
+                'titleKey'=>'select_download','uploadKey'=>'upload_download','icon'=>'zip'];
+        }
         return isset($policies[$name]) ? $policies[$name] : null;
     }
     private function fileMatchesPolicy($file,$policy)

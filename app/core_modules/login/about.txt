@@ -1,3 +1,5 @@
+Historical design notes below. As of Login 0.083, entry points delegate to Security; the old nonce/CAPTCHA backend is retired.
+
 I just had a look at the login / security code.
 I don't think I have seen something so ghastly
 since at least three lifetimes ago during the

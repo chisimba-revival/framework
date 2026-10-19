@@ -1,12 +1,5 @@
 <?php
 $this->setVar('canvastype', 'context');
-/*
-  $objExtJS = $this->getObject('extjs', 'ext');
-  $objExtJS->show();
- */
-//Language items
-$default = 'You are using an unsupported browser. Please switch to Mozilla FireFox available at ( http://getfirefox.com ). Currently the system functionality is limited. Thanks!';
-$browserError = $objLanguage->languageText('mod_poll_browserError', 'poll', $default);
 $objConfig = $this->getObject('altconfig', 'config');
 $objIconService = $this->getObject('iconservice', 'ui');
 // Add JavaScript if User can update blocks
@@ -35,12 +28,12 @@ if ($this->isValid('addblock')) {
         moveDownLabel = <?php echo json_encode($moveDownLabel); ?>;
         removeBlockLabel = <?php echo json_encode($removeBlockLabel); ?>;
         blockControlsLabel = <?php echo json_encode($blockControlsLabel); ?>;
-        deleteConfirm = '<?php echo $objLanguage->languageText('mod_context_confirmremoveblock', 'context', 'Are you sure you want to remove the block'); ?>';
-        unableMoveBlock = '<?php echo $objLanguage->languageText('mod_context_unablemoveblock', 'context', 'Error - Unable to move block'); ?>';
-        unableDeleteBlock = '<?php echo $objLanguage->languageText('mod_context_unabledeleteblock', 'context', 'Error - Unable to delete block'); ?>';
-        unableAddBlock = '<?php echo $objLanguage->languageText('mod_context_unableaddblock', 'context', 'Error - Unable to add block'); ?>';
-        turnEditingOn = '<?php echo $objLanguage->languageText('mod_context_turneditingon', 'context', 'Turn Editing On'); ?>';
-        turnEditingOff = '<?php echo $objLanguage->languageText('mod_context_turneditingoff', 'context', 'Turn Editing Off'); ?>';
+        deleteConfirm = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_confirmremoveblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableMoveBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unablemoveblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableDeleteBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unabledeleteblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        unableAddBlock = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_unableaddblock', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        turnEditingOn = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_turneditingon', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
+        turnEditingOff = <?php echo json_encode(html_entity_decode($objLanguage->languageText('mod_context_turneditingoff', 'context'), ENT_QUOTES, 'UTF-8')); ?>;
         theModule = 'context';
 
         // ]]>
@@ -48,7 +41,16 @@ if ($this->isValid('addblock')) {
 
 
     <?php
-    echo $this->getJavaScriptFile('contextblocks.js?v=2002');
+    $editor=$this->getObject('contextblockeditor','context');
+    $attributes=['contextcode'=>$contextCode,'csrf'=>$editor->csrf()->issue($editor->purpose($contextCode)),
+        'revision'=>$blockEditingRevision,'cancel'=>html_entity_decode($objLanguage->languageText('word_cancel'),ENT_QUOTES,'UTF-8')];
+    foreach(['saving','saved','failed','stale','uncertain','denied','method','csrf-error'] as $key) {
+        $attributes[$key]=html_entity_decode($objLanguage->languageText('mod_context_block_'.($key==='csrf-error'?'csrf':$key),'context'),ENT_QUOTES,'UTF-8');
+    }
+    echo '<div id="block-editor-settings"';
+    foreach($attributes as $key=>$value)echo ' data-'.$key.'="'.htmlspecialchars($value,ENT_QUOTES,'UTF-8').'"';
+    echo '><p id="block-editor-status" role="status" aria-live="polite"></p></div>';
+    echo $this->getJavaScriptFile('contextblocks.js?v=2057');
 } // End Addition of JavaScript
 
 $objModule = $this->getObject('modules', 'modulecatalogue');
@@ -122,7 +124,7 @@ if ($this->isValid('addblock')) {
     $wideBlocksDropDown->cssId = 'ddmiddleblocks';
     $wideBlocksDropDown->addOption('', $objLanguage->languageText('phrase_selectone', 'phrase', 'Select One') . '...');
     foreach ($wideDynamicBlocks as $wideBlock) {
-        $smallBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
+        $wideBlockOptions['dynamicblock|' . $wideBlock['id'] . '|' . $wideBlock['module']] = htmlentities($wideBlock['title']);
     }
     foreach ($wideBlocks as $wideBlock) {
         if($wideBlock["moduleid"]!="contentblocks"){
@@ -254,11 +256,6 @@ if ($this->isValid('addblock')) {
             . $editBut . '</div>';
 }
 
-$liveChatIsRegistered = $objModule->checkIfRegistered('livechat');
-if ($liveChatIsRegistered) {
-    $liveChatBlock = $this->getObject("block_livechat", "livechat");
-    $utillink.=$liveChatBlock->show();
-}
 $objCssLayout->rightColumnContent .= $utillink;
 $objCssLayout->rightColumnContent .= '<div id="rightblocks">' . $rightBlocksStr . '</div>';
 
@@ -386,28 +383,5 @@ if ($this->getParam('message') == 'contextsetup') {
       . '</p>'
       . '</div>'
       . '</section>';
-} else {
-    //Check if poll module is installed
-    $pollInstalled = $this->objModuleCatalogue->checkIfRegistered('poll');
-    //get the version number
-    $pollModuleVer = $this->objModuleCatalogue->getVersion('poll');
-    //Display polls if poll is installed & version is higher than 0.121
-    if ($pollModuleVer >= '0.121' && $pollInstalled == True) {
-        $alertBox = $this->getObject('alertbox', 'htmlelements');
-        $alertBox->putJs();
-        echo "<script type='text/javascript'>
-                 var browser=navigator.appName;
-                 var b_version=parseFloat(b_version);
-                 if(browser=='Microsoft Internet Explorer'){
-                    alert('" . $browserError . "');
-                 }else{
-                     jQuery.facebox(function() {
-                      jQuery.get('" . str_replace('&amp;', '&', $this->uri(array('action' => 'happyeval'), 'poll')) . "', function(data) {
-                        jQuery.facebox(data);
-                      })
-                    })
-                }
-            </script>";
-    }
 }
 ?>

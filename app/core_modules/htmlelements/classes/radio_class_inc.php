@@ -187,7 +187,7 @@ class radio extends abhtmlbase implements ifhtml
         {
             $str.= $breakSpace;
             
-            $str.='<input type="radio" name="'.$this->name.'"';
+            $str.='<span class="chisimba-choice"><input type="radio" name="'.$this->name.'"';
             $str.=' value="'.$opt.'"';
             
             if ($this->cssClass) {
@@ -217,7 +217,7 @@ class radio extends abhtmlbase implements ifhtml
             $str.=' />' ;
             
             $label = new label($lbl, $cssId);
-            $str.=$label->show();
+            $str.=$label->show().'</span>';
             
             $breakSpace = $this->breakSpace;
         }

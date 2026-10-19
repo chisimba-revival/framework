@@ -1,133 +1,25 @@
 <?php
-/**
- * 
- * Template for displaying data for the current module
- *
- * @version $Id: main_tpl.php 17302 2010-03-28 13:09:34Z dkeats $
- * @copyright 2005
- * 
- **/
-
-
-//View template for table: tbl_userparamsadmin
-//Note that you will probably need to edit this to make it actually work
-
-
-//Set up the button class to make the edit, add and delet icons
-$objButtons = & $this->getObject('navbuttons', 'navigation');
-
-//Create the centered area for display
-$this->center = $this->objConfig = & $this->getObject('layer', 'htmlelements');
-
-$allowAdmin = True; //You need to write your security here
-
-// Add the heading to the content
-$this->objH =& $this->getObject('htmlheading', 'htmlelements');
-$this->objH->type=1; //Heading <h1>
-if ($allowAdmin) {
-    $paramArray = array('action' => 'add');
-    $this->objH->str=$objLanguage->languageText("mod_userparamsadmin_title",'userparamsadmin')
-      ."&nbsp;".$objButtons->linkedButton("add", $this->uri($paramArray));
-  } else {  
-        $this->objH->str=$objLanguage->languageText("mod_userparamsadmin_title",'userparamsadmin');
-       }
-$this->center->addToStr($this->objH->show());       
-//Create a table
-$this->Table = &$this->newObject('htmltable', 'htmlelements');
-$tab =& $this->getObject('tabpane','htmlelements');
-
-$this->Table->cellspacing="2";
-$this->Table->cellpadding="2";
-$this->Table->width="90%";
-//Create the array for the table header
-$tableRow=array();
-$tableHd[]=$objLanguage->languageText("mod_userparamsadmin_pname",'userparamsadmin');
-$tableHd[]=$objLanguage->languageText("mod_userparamsadmin_pvalue",'userparamsadmin');
-$tableHd[]=$objLanguage->languageText("phrase_addedby");
-//$tableHd[]=$objLanguage->languageText("phrase_dateadded");
-//$tableHd[]=$objLanguage->languageText("phrase_modifiedby");
-//$tableHd[]=$objLanguage->languageText("phrase_datemodified");
-if($allowAdmin){
-$tableHd[]=$objLanguage->languageText("mod_userparamsadmin_action",'userparamsadmin');
-}
-
-//Get the icon class and create an add, edit and delete instance
-$objAddIcon = $this->newObject('geticon', 'htmlelements');
-$objEditIcon = $this->newObject('geticon', 'htmlelements');
-$objDelIcon = $this->newObject('geticon', 'htmlelements');
-
-//Create the table header for display
-$this->Table->addHeader($tableHd, "heading");
-
-//Loop through and display the records
-$rowcount = 0;
-if (isset($ar['root']['Settings'][1])){
-    $ar = $ar['root']['Settings'][0];
-} else {
-	$ar = $ar['root']['Settings'];
-}
-if (isset($ar)) {
-    if ((is_countable($ar) ? count($ar) : 0) > 0) {
-        foreach ($ar as $key =>$value) {
-            $oddOrEven = ($rowcount == 0) ? "odd" : "even";
-            if($key=='creatorId'||$key=='dateCreated'){
-            	continue;
-            } else {
-	        $tableRow[] = $key;
-                $tableRow[]= $value;
-                $tableRow[]=$this->objUser->fullName();
-            	#----------------add to tableadmin
-                //The URL for the edit link
-                $editLink=$this->uri(array('action' => 'edit',
-                  'key' => $key,
-                  'value'=>$value), 'userparamsadmin');
-                $rep = array('PARAM', $key);
-                $objEditIcon->alt=$this->objLanguage->code2Txt("mod_userparams_edit",'userparamsadmin');
-                $ed = $objEditIcon->getEditIcon($editLink);
-
-                // The delete icon with link uses confirm delete utility
-                $objDelIcon->setIcon("delete");
-                $rep = array('PARAM' => $key);
-                $objDelIcon->alt=$this->objLanguage->code2Txt("mod_userparams_delete",'userparamsadmin');
-                $delLink = $this->uri(array(
-                      'action' => 'delete',
-                      'confirm' => 'yes',
-                  'key' => $key,
-                  'value'=>$value), 'userparamsadmin');
-                $objConfirm=&$this->newObject('confirm','utilities');
-                $rep = array('PARAM', $key);
-                $objConfirm->setConfirm($objDelIcon->show(),
-                   $delLink,$this->objLanguage->code2Txt("mod_userparams_confirmdelete",'userparamsadmin'));
-                $conf = $objConfirm->show();
-          
-                if ($allowAdmin) {
-                    $editArray = array('action' => 'edit',
-                      'id' => $key);
-                    $deleteArray = array('action' => 'delete',
-                      'id' => $key);
-                     $tableRow[]=$ed."&nbsp;".$conf;
-
-                    //Add the row to the table for output
-                   $this->Table->addRow($tableRow, $oddOrEven);
-                   $tableRow=array(); // clear it out
-                   // Set rowcount for bitwise determination of odd or even
-                   $rowcount = ($rowcount == 0) ? 1 : 0;
-                   //$tmp++;
-                }
-            }
-        }
-    }
-}
-
-//Add the table to the centered layer
-$this->center->addToStr($this->Table->show());
-// Create link to add template
-$objAddLink = &$this->newObject('link', 'htmlelements');
-$objAddLink->link($this->uri(array('action' => 'add')));
-$objAddLink->link = $objLanguage->languageText('mod_userparamsadmin_addnew','userparamsadmin');
-//Add the add link to the centered layer
-$this->center->addToStr($objAddLink->show());
-//Output the content to the page
-$tab->addTab(array('name'=>'Userparams','url'=>'http://localhost','content' => $this->center->show()),'luna-tab-style-sheet');
-echo $tab->show();
+/** Semantic preference list. Values and mutations stay out of navigation URLs. */
+$escape=static fn($value)=>htmlspecialchars((string)$value,ENT_QUOTES,'UTF-8');
+$text=fn($key,$fallback)=>$this->objLanguage->languageText($key,'userparamsadmin',$fallback);
+$icons=$this->getObject('iconservice','ui');
 ?>
+<h1><?php echo $escape($text('mod_userparamsadmin_title','Manage user parameters list')); ?></h1>
+<?php if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) { echo $this->getObject('contextualhelp','help')->show('userparamsadmin','preferences'); } ?>
+<?php if ($preferencesError): ?><p role="alert"><?php echo $escape($preferencesError); ?></p><?php endif; ?>
+<p><a class="button" href="<?php echo $escape($this->uri(array('action'=>'add'))); ?>"><?php echo $escape($text('mod_userparamsadmin_addnew','Add New Parameter')); ?></a></p>
+<table>
+<thead><tr><th><?php echo $escape($text('mod_userparamsadmin_pname','Parameter name')); ?></th><th><?php echo $escape($text('mod_userparamsadmin_pvalue','Parameter value')); ?></th><th><?php echo $escape($text('mod_userparamsadmin_action','Action')); ?></th></tr></thead>
+<tbody>
+<?php foreach (($ar['root']['Settings'] ?? array()) as $key=>$value): ?>
+<tr><th scope="row"><?php echo $escape($key); ?></th><td><?php echo $escape(is_array($value)?implode(', ',$value):$value); ?></td><td>
+<div class="chisimba-form-actions chisimba-form-actions--equal">
+<a class="button" href="<?php echo $escape($this->uri(array('action'=>'edit','key'=>$key))); ?>"><?php echo $icons->render('pencil',array('decorative'=>true)); ?> <?php echo $escape($text('word_edit','Edit')); ?></a>
+<form method="post" onsubmit="return window.confirm(<?php echo $escape(json_encode($text('mod_userparams_confirmdelete','Confirm deletion of this parameter'), JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP)); ?>);" action="<?php echo $escape($this->uri(array('action'=>'delete'))); ?>">
+<input type="hidden" name="key" value="<?php echo $escape($key); ?>">
+<input type="hidden" name="preferences_csrf" value="<?php echo $escape($preferencesCsrf); ?>">
+<input type="hidden" name="preferences_revision" value="<?php echo $escape($preferencesRevision); ?>">
+<button type="submit"><?php echo $icons->render('trash-2',array('decorative'=>true)); ?> <?php echo $escape($text('word_delete','Delete')); ?></button>
+</form></div></td></tr>
+<?php endforeach; ?>
+</tbody></table>

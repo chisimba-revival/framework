@@ -25,14 +25,14 @@ Public License
 * @link      http://avoir.uwc.ac.za
 */
 
-require_once($this->getResourceUri('safehtml/safehtml.php', 'utilities'));
+require_once dirname(__DIR__, 3) . '/classes/core/chisimbahtmlsanitizer.php';
 class htmlcleaner  extends ChisimbaObject
 {
    /**
-     * @var object $_objSafeHtml The safehtml object
+     * @var object $_purifier The shared maintained HTML purifier
      * @access protected
      */
-    protected $_objSafeHtml;
+    protected $_purifier;
 
     /**
      * Constructor
@@ -40,7 +40,7 @@ class htmlcleaner  extends ChisimbaObject
     public function init()
     {
 
-        $this->_objSafeHtml = new safehtml();
+        $this->_purifier = ChisimbaHtmlSanitizer::purifier();
     }
 
     /**
@@ -56,7 +56,7 @@ class htmlcleaner  extends ChisimbaObject
         {
             return $html;
         } else {
-            return $this->_objSafeHtml->parse($html);
+            return $this->_purifier->purify($html);
         }
     }
 

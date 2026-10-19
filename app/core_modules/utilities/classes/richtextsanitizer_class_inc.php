@@ -28,6 +28,8 @@ class richtextsanitizer extends ChisimbaObject
         if(in_array($tag,array('script','style','iframe','object','embed','svg','math','template','form','input','button','textarea','select','link','meta','base'),true))return '';
         if(!in_array($tag,array('p','br','hr','h2','h3','h4','h5','h6','strong','b','em','i','u','s','blockquote','ul','ol','li','pre','code','a','img','figure','figcaption','sub','sup'),true))return $this->children($node);
         $attrs='';
+        // A single semantic marker, never arbitrary authored styling or SVG.
+        if($tag==='ul' && $node->getAttribute('class')==='chisimba-social-links')$attrs.=' class="chisimba-social-links"';
         foreach(array('title','href','src','width','height','alt') as $name) {
             if(!$node->hasAttribute($name))continue;
             $v=$node->getAttribute($name);

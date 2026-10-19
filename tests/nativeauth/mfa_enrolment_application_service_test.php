@@ -73,20 +73,19 @@ v62check(
     $service->confirm('other-user', $begin['enrolment_id'], $code) === false,
     'enrollment is bound to its user'
 );
-putenv(InstallationMfaKeyProvider::ENVIRONMENT_NAME);
+// Exercise the current installation-key boundary with isolated synthetic material.
+$keyPath=sys_get_temp_dir().'/chisimba-mfa-test-'.bin2hex(random_bytes(8));
+$master=new InstallationMasterKeyProvider($keyPath);
+$provider=new InstallationMfaKeyProvider($master);
 try {
-    (new InstallationMfaKeyProvider())->getKey();
-    v62check(false, 'missing key fails closed');
-} catch (RuntimeException $expected) {
-    v62check(true, 'missing key fails closed');
-}
-putenv(
-    InstallationMfaKeyProvider::ENVIRONMENT_NAME
-    . '=' . base64_encode($key)
-);
-v62check(
-    hash_equals($key, (new InstallationMfaKeyProvider())->getKey()),
-    'valid environment key is decoded exactly'
-);
-
+    try {
+        $provider->getKey();
+        v62check(false, 'missing installation key fails closed');
+    } catch (RuntimeException $expected) {
+        v62check(true, 'missing installation key fails closed');
+    }
+    file_put_contents($keyPath,base64_encode($key));chmod($keyPath,0600);
+    v62check(hash_equals(hash_hmac('sha256','chisimba:mfa-encryption-v1',$key,true),$provider->getKey()),'MFA key is purpose-derived from the installation master key');
+    v62check(!hash_equals($key,$provider->getKey()),'raw installation key is not used as the MFA key');
+} finally {if(is_file($keyPath))unlink($keyPath);}
 echo "PASS: V62 MFA enrollment composition prerequisite tests." . PHP_EOL;

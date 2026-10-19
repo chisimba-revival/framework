@@ -35,6 +35,10 @@ class iconservice extends ChisimbaObject
         }
 
         $path = dirname(__DIR__) . '/resources/icons/lucide/' . $name . '.svg';
+        $brand = str_starts_with($name, 'brand-');
+        if ($brand) {
+            $path = dirname(__DIR__) . '/resources/icons/brands/' . substr($name, 6) . '.svg';
+        }
         if (!is_file($path)) {
             throw new InvalidArgumentException('icon_name_unknown');
         }
@@ -48,7 +52,13 @@ class iconservice extends ChisimbaObject
         }
         $svg = preg_replace('/\\swidth="[^"]*"/', '', $svg, 1);
         $svg = preg_replace('/\\sheight="[^"]*"/', '', $svg, 1);
+        $svg = preg_replace('/\\sclass="[^"]*"/', '', $svg, 1);
         $svg = preg_replace('/stroke-width="[^"]*"/', 'stroke-width="1.5"', $svg, 1);
+        if ($brand) {
+            $svg = preg_replace('/<title>.*?<\/title>/s', '', $svg);
+            $svg = preg_replace('/\srole="[^"]*"/', '', $svg, 1);
+            $svg = preg_replace('/<svg\b/', '<svg fill="currentColor"', $svg, 1);
+        }
         $attrs = ' class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '"';
         $attrs .= ' width="1em" height="1em" focusable="false"';
         if ($decorative) {

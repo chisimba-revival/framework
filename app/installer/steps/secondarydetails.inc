@@ -10,7 +10,7 @@ require_once INSTALL_DIR.'/5ivestepaction.inc';
 
 require_once INSTALL_DIR.'/html_form/html_form.inc';
 
-require_once 'DB.php';
+require_once dirname(__DIR__, 2).'/classes/core/chisimbadatabasedsn.php';
 
 
 
@@ -326,7 +326,7 @@ function DbSecondUser($sn, $pr='db_')
 
 			require_once $_SESSION['sys_root'].'/data/private/conf/main.inc';
 
-			$dsn_details = DB::parseDSN(SQ_CONF_DB2_DSN);
+			$dsn_details = ChisimbaDatabaseDsn::forInstaller(SQ_CONF_DB2_DSN);
 
 			$_SESSION[$this->db_prefix.'user'] = $dsn_details['username'];
 

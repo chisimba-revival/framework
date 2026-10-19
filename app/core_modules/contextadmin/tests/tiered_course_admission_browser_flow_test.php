@@ -28,8 +28,8 @@ $expect(strpos($form, "addOption('private', '<strong>Paid separately</strong>')"
     'Both forms must describe the learner-facing purchase choice plainly.');
 $expect(strpos($form, 'id="context_private_admission"') !== false
     && strpos($editForm, 'id="context_private_admission"') !== false
-    && strpos($form, '.prop("disabled",!paid)') !== false
-    && strpos($editForm, '.prop("disabled",!paid)') !== false,
+    && strpos($form, 'settings.js?v=2061') !== false
+    && strpos($editForm, 'settings.js?v=2061') !== false,
     'Admission mode must be visible and submitted only for separately paid courses.');
 $expect(strpos($creation, "if (\$accessPolicy !== 'private')") !== false
     && strpos($controller, "if (\$accessPolicy !== 'private')") !== false,

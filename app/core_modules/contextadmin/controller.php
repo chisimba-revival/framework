@@ -56,6 +56,10 @@ if (!
  * @see       core
  */
 class contextadmin extends controller {
+    public $objCourseCreation;
+    public $objContextAuthors;
+    public $objModules;
+    public $csrf;
 
     const CSRF_CONTEXT = 'contextadmin_step1';
     const CSRF_AUTHORS = 'contextadmin_authors';
@@ -289,328 +293,115 @@ class contextadmin extends controller {
     /**
      * Step 2 of Creating a Context - Adding About Info and Image
      */
-    private function __step2() {
-        $contextCode = $this->getSession('contextCode');
+    private function informationPurpose($code) {
+        return 'context_information_' . substr(hash('sha256', $code), 0, 32);
+    }
 
-        $context = $this->objContext->getContext($contextCode);
-
-        if ($context == FALSE) {
-            return $this->nextAction(NULL);
-        }
-        $this->setSession('contextCode', $contextCode);
-        $this->setVar('mode', $this->getParam('mode'));
+    private function showInformation($contextCode, $context, $draft = array(), $error = '') {
+        $this->setVar('mode', $this->getParam('mode') === 'edit' ? 'edit' : 'add');
         $this->setVar('contextCode', $contextCode);
+        if (isset($draft['about'])) { $context['about'] = $draft['about']; }
         $this->setVar('context', $context);
-        $this->setVar(
-            'contextImageSaveError',
-            $this->getParam('imageerror', '') === '1'
-        );
-
+        $this->setVar('informationDraft', $draft);
+        $this->setVar('informationError', $error);
+        $this->setVar('informationCsrf', $this->csrf->issue($this->informationPurpose($contextCode)));
         return 'step2.php';
     }
 
-    /**
-     * Method to save step 2 of creating a context - about info and image
-     */
-    private function __savestep2() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            $contextCode = $this->getSession('contextCode');
-            $about = $this->getParam('about');
-            $image = $this->getParam('imageselect');
-            $mode = $this->getParam('mode');
-
-            if ($image != '') {
-                $objContextImage = $this->getObject('contextimage', 'context');
-                if (!$objContextImage->setContextImage($contextCode, $image)) {
-                    $this->objContext->updateAbout($contextCode, $about);
-                    $this->setSession('contextCode', $contextCode);
-                    return $this->nextAction(
-                        'step2',
-                        array('mode' => $mode, 'imageerror' => '1')
-                    );
-                }
-            }
-
-            $this->objContext->updateAbout($contextCode, $about);
-            $this->setSession('contextCode', $contextCode);
-            return $this->nextAction('step3', array('mode' => $mode, 'contextCode' => $contextCode));
-        }
-    }
-
-    /**
-     * Step 3 of Creating a Context - Adding Goals
-     */
-    private function __step3() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            //Get Mode
-            $mode = $this->getParam('mode');
-            //Fetch contextCode
-            $contextCode = $this->getSession('contextCode');
-            $context = $this->objContext->getContext($contextCode);
-            //Get context Learner Outcomes if its an edit
-            if ($mode == 'edit') {
-                $contextLO = $this->objDBLearnerOutcomes->getContextOutcomes($contextCode);
-            } else {
-                $contextLO = "";
-            }
-            if ($context == FALSE) {
-                return $this->nextAction(NULL);
-            }
-            $this->setVar('mode', $mode);
-            $this->setVar('contextCode', $contextCode);
-            $this->setVar('context', $context);
-            $this->setVar('contextLO', $contextLO);
-            $this->setVar('outcomesCount', $this->getParam("outcomesCount", Null));
-            return 'step3.php';
-        }
-    }
-
-    /**
-     * Method to save step 3 of creating a context - goals
-     */
-    private function __savestep3() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            $actionDelete = $this->getParam('deleteoutcomes', Null);
-            $actionUpdate = $this->getParam('savecontext', Null);
-            $lodrops = $this->getParam('lodrops', Null);
-            $outCount = $this->getParam('outcount', Null);
-            $addFields = $this->getParam('addfields', Null);
-            $backPressed = $this->getParam('back', Null);
-            if ($backPressed == "Back") {
-                //Delete and go back to step 3
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                $outCount = $this->getParam('loAddCount', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step2', array('mode' => "edit", 'contextCode' => $contextCode));
-            }
-            //Update if not delete action and move to next step
-            if ($actionDelete != Null) {
-                //Delete and go back to step 3
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                $outCount = $this->getParam('loAddCount', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step3', array('mode' => $mode, 'contextCode' => $contextCode, 'outcomesCount' => $lodrops, 'messagesuccess' => 'success'));
-            } else if ($addFields != Null) {
-                //Delete and go back to step 3
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                //$lodrops = $this->getParam('lodrops', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step3', array('mode' => $mode, 'contextCode' => $contextCode, 'outcomesCount' => $lodrops, 'messagesuccess' => 'success'));
-            } else {
-                $contextCode = $this->getSession('contextCode');
-                //Get number of outcomes
-                $outCount = $this->getParam('loAddCount', 0);
-                $loEditdrops = $this->getParam('loEditCount', 0);
-                $mode = $this->getParam('mode');
-
-                //String to hold fetched LO's
-                $getAddLO = Null;
-                $getEditLO = Null;
-                //Add if there are new outcomes, add
-                if ($outCount > 0) {
-                    $getAddLO = $this->getLearnerOutcomes($outCount, "add", $contextCode);
-                }
-                //If edit, fetch the new values & update or delete if textinput is empty
-                if ($mode == 'edit' && $loEditdrops > 0) {
-                    $getEditLO = $this->getLearnerOutcomes($loEditdrops, "edit", $contextCode);
-                }
-                //check If there are records to add/update
-                if (array($getAddLO)) {
-                    $addLO = $this->addLearnerOutcomes($contextCode, $getAddLO);
-                }
-                $goals = $this->getParam('goals');
-                $this->objContext->updateGoals($contextCode, $goals);
-                return $this->nextAction('step4', array('mode' => $mode, 'contextcode' => $contextCode));
-            }
-        }
-    }
-
-    /**
-     * Method to get all the posted learner outcomes
-     *
-     * @param string $lodrops The number of outcomes added
-     * @param string $mode Add/Edit mode
-     * @return array : The submitted learner outcomes
-     */
-    private function getLearnerOutcomes($lodrops=Null, $mode="add", $contextCode) {
-        $count = 1;
-
-        //Get all context Learner Outcomes and for each, get updated value
-        $contextLO = $this->objDBLearnerOutcomes->getContextOutcomes($contextCode);
-        $existingOutcomes = (is_countable($contextLO) ? count($contextLO) : 0);
-        if ($existingOutcomes > 0) {
-            $count = $existingOutcomes + 1;
-            $lodrops = $existingOutcomes + $lodrops;
-        }
-        //Array to store the outcomes
-        $loArray = array();
-        if ($mode != "edit") {
-            while ($count <= $lodrops) {
-                $learneroutcome = $this->getParam('learneroutcome_' . $count);
-                //Check to avoid storing empty record
-                if (!empty($learneroutcome)) {
-                    $loArray[] = $learneroutcome;
-                }
-                $count++;
-            }
-        } else if ($mode == "edit") {
-            foreach ($contextLO as $thisLO) {
-                //Get Textinput name on step 3 form for this outcome
-                $loTxtInput = $this->getParam($thisLO["id"]);
-                $learneroutcome = $this->getParam("update" . $loTxtInput);
-                $delLO = $this->getParam("delete" . $loTxtInput);
-                //If empty LO delete record, otherwise update with new value
-                if ($delLO == "on") {
-                    $id = $this->objDBLearnerOutcomes->deleteSingle($thisLO["id"]);
-                } elseif (!empty($learneroutcome)) {
-                    $id = $this->objDBLearnerOutcomes->updateSingle($thisLO["id"], $learneroutcome);
-                    $loArray[] = $learneroutcome;
-                }
-            }
-        }
-        return $loArray;
-    }
-
-    /**
-     * Method to get all the posted learner outcomes
-     *
-     * @param string $contextCode
-     * @param array $lodrops
-     * @return array : The id's of submitted learner outcomes
-     */
-    private function addLearnerOutcomes($contextcode, $loList) {
-        //Array to hold the Id's
-        $arrId = array();
-        if (!empty($loList)) {
-            //Insert each record to LO table
-            foreach ($loList as $lo) {
-                $id = $this->objDBLearnerOutcomes->insertSingle($contextcode, $lo);
-                $arrId[] = $id;
-            }
-        }
-        return $arrId;
-    }
-
-    /**
-     * Step 4 - Selecting modules to be used in context
-     */
-    private function __step4() {
+    private function __step2() {
         $contextCode = $this->getSession('contextCode');
-        //Get Context Title
-        $contextTitle = $this->objContext->getTitle($contextCode);
-        if (empty($contextTitle))
-            $contextTitle = $this->objContext->getMenuText($contextCode);
-        if ($contextTitle == FALSE) {
-            return $this->nextAction(NULL);
+        if (!$this->getObject('contextsettingsaccess', 'context')->canEdit($contextCode)) {
+            http_response_code(403); return $this->nextAction(NULL);
         }
-        $this->setVar('mode', $this->getParam('mode'));
-        $this->setVar('contextCode', $contextCode);
-        $this->setVar('contextTitle', $contextTitle);
-
-        $objContextModules = $this->getObject('dbcontextmodules', 'context');
-        $objModules = $this->getObject('modules', 'modulecatalogue');
-
-        $contextModules = $objContextModules->getContextModules($contextCode);
-        $plugins = $objModules->getListContextPlugins();
-
-        $this->setVarByRef('contextModules', $contextModules);
-        $this->setVarByRef('plugins', $plugins);
-
-        return 'step4.php';
+        $context = $this->objContext->getContext($contextCode);
+        if (!$context) { return $this->nextAction(NULL); }
+        return $this->showInformation($contextCode, $context);
     }
 
-    /**
-     * Method to save step 3 of creating a context - module selection
-     */
-    private function __savestep4() {
-        if ($this->getParam('contextCode') != $this->getSession('contextCode')) {
-            return $this->nextAction(NULL);
-        } else {
-            $plugins = $this->getParam('plugins');
-            $contextCode = $this->getParam('contextCode');
-            $mode = $this->getParam('mode');
-
-            $objContextModules = $this->getObject('dbcontextmodules', 'context');
-            $objContextModules->deleteModulesForContext($contextCode);
-
-
-            if (is_array($plugins) && (is_countable($plugins) ? count($plugins) : 0) > 0) {
-                foreach ($plugins as $plugin) {
-                    $objContextModules->addModule($contextCode, $plugin);
-                }
-            }
-
-            if ($mode == 'add') {
-                return $this->nextAction(NULL, array('message' => 'contextsetup'), 'context');
-            } else {
-                $this->setSession('contextcode', NULL);
-                $this->setSession('displayconfirmationmessage', TRUE);
-                return $this->nextAction(NULL, array('message' => 'contextupdated', 'contextcode' => $contextCode));
-            }
+    /** Save the information form; failed/expired requests retain the draft. */
+    private function __savestep2() {
+        $contextCode = $this->getSession('contextCode');
+        if (!$this->getObject('contextsettingsaccess', 'context')->canEdit($contextCode)
+            || $this->getParam('contextCode') !== $contextCode) {
+            http_response_code(403); return $this->nextAction(NULL);
         }
+        if (!$this->isPost()) { http_response_code(405); return $this->nextAction('step2'); }
+        $context = $this->objContext->getContext($contextCode);
+        if (!$context) { http_response_code(404); return $this->nextAction(NULL); }
+        $draft = array();
+        foreach (array('about', 'imageselect', 'removeimage') as $field) {
+            $value = $this->getParam($field, '');
+            $draft[$field] = is_string($value) ? $value : '';
+        }
+        $token = $this->getParam('csrf_token', '');
+        if (!is_string($token) || !$this->csrf->consume($this->informationPurpose($contextCode), $token)) {
+            return $this->showInformation($contextCode, $context, $draft, 'expired');
+        }
+        $image = $draft['imageselect'];
+        $objContextImage = $this->getObject('contextimage', 'context');
+        // A selected replacement takes precedence over removal. Never remove first.
+        if ($image !== '') {
+            if (!$objContextImage->setContextImage($contextCode, $image)) {
+                return $this->showInformation($contextCode, $context, $draft, 'image');
+            }
+        } elseif ($draft['removeimage'] === '1' && !$objContextImage->removeContextImage($contextCode)) {
+            return $this->showInformation($contextCode, $context, $draft, 'image');
+        }
+        $about = $this->getObject('richtextsanitizer', 'utilities')->cleanHtml($draft['about']);
+        if ($this->objContext->updateAbout($contextCode, $about) === false) {
+            return $this->showInformation($contextCode, $context, $draft, 'save');
+        }
+        return $this->nextAction('step3', array('mode' => $this->getParam('mode') === 'edit' ? 'edit' : 'add', 'contextCode' => $contextCode));
+    }
+
+    private function showWizardStep($step, $draft = null, $error = '', $revision = null) {
+        $code = $this->getSession('contextCode');
+        $service = $this->getObject('coursewizardservice', 'contextadmin');
+        if (!$service->canEdit($code)) { http_response_code(403); return $this->nextAction(NULL); }
+        try { $state = $this->getObject('coursewizardstore', 'contextadmin')->snapshot($code, $step); }
+        catch (Throwable $error) { http_response_code(404); return $this->nextAction(NULL); }
+        $this->setVar('wizardStep', $step);
+        $this->setVar('wizardState', $state);
+        $this->setVar('wizardDraft', $draft);
+        $this->setVar('wizardError', $error);
+        $this->setVar('wizardSaved', $this->getParam('saved') === '1');
+        $this->setVar('wizardRevision', is_string($revision) ? $revision : $state['revision']);
+        $this->setVar('wizardCsrf', $service->csrf()->issue($service->purpose($code, $step)));
+        $this->setVar('contextCode', $code);
+        $this->setVar('mode', $this->getParam('mode') === 'add' ? 'add' : 'edit');
+        $this->setVar('plugins', $step === 'plugins' ? $service->offeredPlugins() : []);
+        return 'wizard_final.php';
+    }
+
+    private function __step3() { return $this->showWizardStep('outcomes'); }
+    private function __step4() { return $this->showWizardStep('plugins'); }
+    private function __savestep3() { return $this->saveWizardStep('outcomes'); }
+    private function __savestep4() { return $this->saveWizardStep('plugins'); }
+
+    private function saveWizardStep($step) {
+        $code = $this->getSession('contextCode');
+        $changes = $step === 'plugins' ? $this->getParam('plugins', []) : [
+            'existing' => $this->getParam('outcomes', []),
+            'remove' => $this->getParam('remove', []),
+            'new' => $this->getParam('newoutcomes', [])
+        ];
+        $input = ['contextCode' => $this->getParam('contextCode'), 'csrf_token' => $this->getParam('csrf_token'),
+            'revision' => $this->getParam('revision'), 'changes' => $changes,
+            'operation' => $this->getParam('operation', 'save')];
+        $result = $this->getObject('coursewizardservice', 'contextadmin')->submit($code, $step, $input, $_SERVER['REQUEST_METHOD'] ?? '');
+        if (in_array($result, ['denied','method'], true)) {
+            http_response_code($result === 'method' ? 405 : 403);
+            $this->setLayoutTemplate(NULL); $this->setPageTemplate(NULL); echo 'forbidden'; return;
+        }
+        if ($result === 'add') {
+            if (!is_array($changes['new'])) $changes['new'] = [];
+            if (count($changes['new']) < 20) $changes['new'][] = '';
+            return $this->showWizardStep($step, $changes, '', $input['revision']);
+        }
+        if ($result !== '') return $this->showWizardStep($step, is_array($changes) ? $changes : [], $result, $input['revision']);
+        return $step === 'outcomes'
+            ? $this->nextAction('step4', ['mode' => $this->getParam('mode') === 'add' ? 'add' : 'edit'])
+            : $this->nextAction('step4', ['mode' => 'edit', 'saved' => '1']);
     }
 
     /**
@@ -716,7 +507,7 @@ class contextadmin extends controller {
                         $this->getParam('delivery_format', 'standard'),
                         $this->getParam('navigation_mode', 'free'),
                         $accessPolicy, $privateAdmissionMode,
-                        $this->getParam('use_sections') === '1');
+                        $this->getParam('use_sections') === '1' ? 1 : 0);
 
                 return $this->nextAction('step2', array('mode' => 'edit'));
             }
@@ -727,53 +518,38 @@ class contextadmin extends controller {
      * Method to delete a context
      */
     private function __delete() {
-        $contextCode = $this->getParam('contextcode');
-
-        $context = $this->objContext->getContext($contextCode);
-
-        if ($context == FALSE) {
-            return $this->nextAction(NULL, array('error' => 'deletenoneexistingcourse', 'context' => $contextCode));
-        } else {
-            if (!$this->canManageAuthorRoster($contextCode)) {
-                return $this->nextAction(NULL, array('error' => 'forbidden'));
-            }
-            $this->setVarByRef('context', $context);
-            $this->setSession('deletecontext', $context['contextcode']);
-
-            return 'delete.php';
-        }
+        $code=$this->getParam('contextcode');
+        $repair=$this->getParam('repair')==='1';
+        if (!is_string($code) || $code==='' || strlen($code)>32 || !$this->canManageAuthorRoster($code)
+            || ($repair && !$this->objUser->isAdmin())) return $this->nextAction(NULL,['error'=>'forbidden']);
+        $context=$this->objContext->getContext($code);
+        if (($repair && $context) || (!$repair && !$context)) return $this->nextAction(NULL,['error'=>'forbidden']);
+        $this->setVar('context',$context ?: ['contextcode'=>$code,'title'=>$code]);
+        $this->setVar('repairDeletion',$repair);
+        $this->setVar('deleteCsrf',$this->csrf->issue('context_delete_'.hash('sha256',$code.':'.(int)$repair)));
+        return 'delete.php';
     }
 
-    /**
-     * Method to process delete confirmation
-     */
+    /** POST and a scope-bound CSRF token are required for deletion and repair. */
     private function __deleteconfirm() {
-
-        $contextCode = $this->getParam('contextcode');
-
-        $context = $this->objContext->getContext($contextCode);
-
-        if ($context == FALSE) {
-            return $this->nextAction(NULL, array('error' => 'deletenoneexistingcourse', 'context' => $contextCode));
-        } else {
-
-            if (!$this->canManageAuthorRoster($contextCode)) {
-                return $this->nextAction(NULL, array('error' => 'forbidden'));
-            }
-            if ($contextCode != $this->getSession('deletecontext')) {
-                return $this->nextAction(NULL, array('error' => 'incompletedelete', 'context' => $contextCode));
-            }
-
-            $deleteConfirm = $this->getParam('deleteconfirm', 'no');
-            if ($deleteConfirm == 'yes') {
-                $result = $this->objContext->deleteContext($contextCode);
-                $result = $result ? 'y' : 'n';
-                return $this->nextAction(NULL, array('message' => 'contextdeleted', 'context' => $contextCode, 'title' => $context['title'], 'result' => $result));
-            } else {
-                return $this->nextAction(NULL, array('message' => 'deletecancelled', 'context' => $contextCode));
-            }
+        $code=$this->getParam('contextcode');
+        $repair=$this->getParam('repair')==='1';
+        if (($_SERVER['REQUEST_METHOD']??'')!=='POST' || !is_string($code)
+            || !$this->canManageAuthorRoster($code) || ($repair && !$this->objUser->isAdmin())
+            || !$this->csrf->consume('context_delete_'.hash('sha256',$code.':'.(int)$repair),(string)$this->getParam('csrf_token',''))) {
+            return $this->nextAction('delete',['contextcode'=>$code,'repair'=>(int)$repair,'deletefailed'=>1]);
         }
+        $context=$this->objContext->getContext($code);
+        try {
+            $result=$this->getObject('contextdeletion','context')->remove($code,$repair);
+            if (!$result) throw new RuntimeException('Context not found');
+        } catch (Throwable $error) {
+            error_log('Context deletion failed: '.$error->getMessage());
+            return $this->nextAction('delete',['contextcode'=>$code,'repair'=>(int)$repair,'deletefailed'=>1]);
+        }
+        return $this->nextAction(NULL,['message'=>'contextdeleted','context'=>$code,'title'=>$context['title']??$code,'result'=>'y']);
     }
+
 
     /**
      * Manage contextual authors and course ownership.
@@ -825,26 +601,19 @@ class contextadmin extends controller {
     private function __checkcode() {
         $this->setPageTemplate(NULL);
         $this->setLayoutTemplate(NULL);
-
+        header('Content-Type: text/plain; charset=UTF-8');
+        header('Cache-Control: no-store');
         if (!$this->canCreateContext()) {
+            http_response_code(403);
             echo 'forbidden';
             return;
         }
         $code = $this->getParam('code');
-
-        switch (strtolower($code)) {
-            case NULL:
-                break;
-            case 'root':
-                echo 'reserved';
-                break;
-            default:
-                if ($this->objContext->contextExists($code)) {
-                    echo 'exists';
-                } else {
-                    echo 'ok';
-                }
-        }
+        if (!is_string($code)) { http_response_code(400); echo 'invalid'; return; }
+        $code = strtolower(trim($code));
+        if ($code === 'root') { echo 'reserved'; return; }
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{0,254}$/', $code)) { echo 'invalid'; return; }
+        echo $this->objContext->contextExists($code) ? 'exists' : 'ok';
     }
 
     private function isPost() {
@@ -893,18 +662,12 @@ class contextadmin extends controller {
      * Ajax function to remove a context image
      */
     private function __removeimage() {
-        $contextCode = $this->getParam('contextcode');
-
-        if ($contextCode != $this->getSession('contextCode')) {
-            echo 'notok';
-        } else {
-            $objContextImage = $this->getObject('contextimage', 'context');
-            if ($objContextImage->removeContextImage($contextCode)) {
-                echo 'ok';
-            } else {
-                echo 'notok';
-            }
-        }
+        // Retired unsafe GET mutation. Image changes belong to the protected form.
+        $this->setPageTemplate(NULL);
+        $this->setLayoutTemplate(NULL);
+        http_response_code(410);
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo 'gone';
     }
 
     /**

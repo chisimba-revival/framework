@@ -44,6 +44,9 @@
  */
 
 class modulecatalogue extends controller {
+    /** Dependencies and state initialised by this component. */
+    public $objPOFile;
+
 
     private const UPDATE_CSRF_CONTEXT = 'modulecatalogue_apply_update';
     private const UPDATE_ALL_CSRF_CONTEXT = 'modulecatalogue_apply_all_updates';
@@ -233,6 +236,11 @@ class modulecatalogue extends controller {
             if (($action != 'firsttimeregistration') && (! $this->objUser->isAdmin ())) { //no access to non-admin users
                 return 'noaccess_tpl.php';
             }
+            // Retired executable-code upload: reject before inspecting files or changing state.
+            if ($action === 'uploadarchive') {
+                http_response_code(410);
+                return 'archive_retired_tpl.php';
+            }
             if (! isset ( $activeCat )) {
                 $activeCat = $this->getParm ( 'cat', 'Local Updates' );
             }
@@ -254,6 +262,7 @@ class modulecatalogue extends controller {
             //$this->setVar('letter',$this->getParam('letter','none'));
             $this->setLayoutTemplate ( 'cat_layout.php' );
             $this->setVar ( 'connected', false );
+            $this->setVar('catalogueRefreshCsrf', $this->csrf()->issue('modulecatalogue_refresh'));
             switch ($action) { //check action
                 case 'updatedeps' :
                     $modname = $this->getParam('modname');
@@ -539,8 +548,8 @@ class modulecatalogue extends controller {
 
                     if (!$this->ajaxInstall)
                     {
-                        $url = array ('username' => 'admin', 'password' => 'a', 'mod' => 'modulecatalogue' );
-                        return $this->nextAction ( 'login', $url, 'security' );
+                        $url = array ('mod' => 'modulecatalogue' );
+                        return $this->nextAction ( 'showlogin', $url, 'security' );
                     }
                     else
                     {
@@ -571,7 +580,7 @@ class modulecatalogue extends controller {
                         $ins->preinstall ($patchver);
                     }
                     $updateSucceeded = true;
-                    if (($this->output = $this->objPatch->applyUpdates ( $modname )) === FALSE
+                    if (($this->output = $this->runPatchUpdate($modname)) === FALSE
                         || !is_array($this->output)
                         || !isset($this->output['current'])) {
                         $updateSucceeded = false;
@@ -683,7 +692,16 @@ class modulecatalogue extends controller {
                     return 'front_tpl.php';
 
                 case 'updatexml' :
-                    $summary = $this->objCatalogueConfig->writeCatalogue ();
+                    try {
+                        if (!$this->validUpdateRequest('modulecatalogue_refresh')) {
+                            throw new RuntimeException('Invalid catalogue refresh request.');
+                        }
+                        $summary = $this->objCatalogueConfig->writeCatalogue();
+                    } catch (RuntimeException $e) {
+                        $message = $this->objLanguage->languageText('mod_modulecatalogue_refreshfailed', 'modulecatalogue',
+                            'The catalogue refresh did not complete. Reload the page and try again. If it still fails, check module files and configuration permissions.');
+                        return $this->nextAction('list', array('message'=>$message, 'cat'=>$activeCat, 'modulefilter'=>$moduleFilter));
+                    }
                     $message = $this->objLanguage->languageText ( 'mod_modulecatalogue_xmlupdated', 'modulecatalogue' );
                     if (is_array($summary)) {
                         $detail = $this->objLanguage->languageText(
@@ -704,43 +722,6 @@ class modulecatalogue extends controller {
                     }
                     return $this->nextAction('list', array('message' => $message, 'cat' => $activeCat, 'modulefilter' => $moduleFilter));
 
-                case 'uploadarchive' :
-                    $file = $_FILES ['archive'] ['name'];
-                    $module = substr ( $file, 0, strpos ( $file, '.' ) );
-                    $tmpFile = $_FILES ['archive'] ['tmp_name'];
-                    var_dump ( $_FILES );
-                    if ($_FILES ['archive'] ['size'] == 0) {
-                        $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_notfound', 'modulecatalogue' ) );
-                        $this->setVar ( 'error', 1 );
-                        return 'front_tpl.php';
-                    }
-                    if (is_dir ( $this->objConfig->getModulePath () . $module )) {
-                        $this->setSession ( 'output', $this->objLanguage->languageText ( 'mod_modulecatalogue_directoryexists', 'modulecatalogue' ) );
-                        $this->setVar ( 'error', 1 );
-                        return 'front_tpl.php';
-                    }
-                    if (! file_exists ( $file )) {
-                        $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_transferfailed', 'modulecatalogue' ) );
-                        $this->setVar ( 'error', 1 );
-                        return 'front_tpl.php';
-                    }
-                    if (strtolower ( substr ( $file, strlen ( $file ) - 4, 4 ) ) == '.zip') {
-                        $objZip = $this->getObject ( 'wzip', 'utilities' );
-                        if (! $objZip->unZipArchive ( $tmpFile, $this->objConfig->getModulePath () )) {
-                            $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_unziperror', 'modulecatalogue' ) . "<br /> $objZip->error" );
-                            $this->setVar ( 'error', 1 );
-                            return 'front_tpl.php';
-                        }
-                    } else {
-                        require_once ($this->getPearResource ( 'Archive/Tar.php' ));
-                        $objArchive = new Archive_Tar ( $tmpFile );
-                        if (! $objArchive->extract ( $this->objConfig->getModulePath () )) {
-                            $this->setSession ( "output", $this->objLanguage->languageText ( 'mod_modulecatalogue_untarerror', 'modulecatalogue' ) );
-                            $this->setVar ( 'error', 1 );
-                            return 'front_tpl.php';
-                        }
-                    }
-                    return $this->nextAction ( 'install', array ('cat' => $activeCat, 'mod' => $module ) );
                 case 'downloadpo' :
                     $this->setPageTemplate ( NULL );
                     $this->setLayoutTemplate ( NULL );
@@ -784,7 +765,7 @@ class modulecatalogue extends controller {
                     }
                     // var_dump($this->registerdata); die();
                     if ($upgrade == TRUE) {
-                        return $this->objPatch->applyUpdates ( $modname );
+                        return $this->runPatchUpdate($modname);
                     } else {
                         return $this->objModuleAdmin->installModule ( $this->registerdata );
                     }
@@ -813,9 +794,6 @@ class modulecatalogue extends controller {
      */
     private function uninstallModule($modname) {
         try {
-            // find all available applications
-            $applications = $this->objLuAdmin->perm->getApplications();
-            //var_dump($applications); die();
             $filepath = $this->objModFile->findRegisterFile ( $modname );
             $this->registerdata = $this->objModFile->readRegisterFile ( $filepath );
             if (is_array ( $this->registerdata )) {
@@ -1003,12 +981,20 @@ class modulecatalogue extends controller {
     /**
      * Apply a module patch with its schema hooks before recording the version.
      */
+    private function runPatchUpdate($moduleId) {
+        try { return $this->objPatch->applyUpdates($moduleId); }
+        catch (Throwable $error) {
+            error_log('Module patch failed for '.$moduleId.': '.$error->getMessage());
+            return ['error'=>'patch_failed'];
+        }
+    }
+
     private function applyPatchWithHooks($moduleId, $version) {
         $installer = $this->getPatchObject($moduleId);
         if ($installer !== null && method_exists($installer, 'preinstall')) {
             $installer->preinstall($version);
         }
-        $result = $this->objPatch->applyUpdates($moduleId);
+        $result = $this->runPatchUpdate($moduleId);
         if (is_array($result) && isset($result['current'])
             && $installer !== null && method_exists($installer, 'postinstall')) {
             $installer->postinstall($version);

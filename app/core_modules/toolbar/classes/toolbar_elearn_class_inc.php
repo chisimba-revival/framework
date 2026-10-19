@@ -213,31 +213,11 @@ class toolbar_elearn extends ChisimbaObject
             )
             . '</li>';
 
-        if ($this->objModule->checkIfRegistered('bookmarks')
-            && $this->securityContext->isAuthenticated())
-        {
-            if (!$this->objModule->checkIfRegistered('statusbar'))
-            {
-                $objBookmark = $this->getObject('bookmarksops', 'bookmarks');
-                $goto = $objBookmark->showGotoLink();
-                if (!empty($goto))
-                {
-                    $str .= '<li class="bookmark_icon">' . $goto . '</li>';
-                }
-                $str .= '<li class="bookmark_icon">' . $objBookmark->showLink() . '</li>';
-                $this->params[] = $objBookmark->bookmarkParams();
-            }
-        }
+
 
         $str .= '</ul></span>';
 
-        if ($this->objModule->checkIfRegistered('statusbar')
-            && $this->securityContext->isAuthenticated())
-        {
-            $objStatusbar = $this->getObject('statusbarops', 'statusbar');
-            $str .= $objStatusbar->showStatusbar();
-            $this->params[] = $objStatusbar->statusbarParams();
-        }
+
 
         return $str;
     }

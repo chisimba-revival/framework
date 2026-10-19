@@ -19,6 +19,9 @@ if (!$GLOBALS['kewl_entry_point_run']){
 
 class sidebar extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objLanguage;
+
 
     /**
      * The nodes array

@@ -1,0 +1,8 @@
+[
+  "app/core_modules/filemanager/classes/swfupload_class_inc.php",
+  "app/core_modules/filemanager/resources/swfupload",
+  "app/core_modules/filemanager/resources/swfupload_f8.swf",
+  "app/core_modules/filemanager/templates/content/popup_showpresentationwindow_tpl.php",
+  "app/core_modules/filters/runway",
+  "app/core_modules/tinymce/jscripts/tiny_mce/plugins/flash"
+]

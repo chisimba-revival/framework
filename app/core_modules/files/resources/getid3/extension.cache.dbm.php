@@ -1,16 +1,17 @@
 <?php
+
 /////////////////////////////////////////////////////////////////
 /// getID3() by James Heinrich <info@getid3.org>               //
-//  available at http://getid3.sourceforge.net                 //
-//            or http://www.getid3.org                         //
-/////////////////////////////////////////////////////////////////
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
 //                                                             //
 // extension.cache.dbm.php - part of getID3()                  //
 // Please see readme.txt for more information                  //
 //                                                            ///
 /////////////////////////////////////////////////////////////////
 //                                                             //
-// This extension written by Allan Hansen <ahØartemis*dk>      //
+// This extension written by Allan Hansen <ahÃ˜artemis*dk>      //
 //                                                            ///
 /////////////////////////////////////////////////////////////////
 
@@ -32,7 +33,7 @@
 *    getID3_cached usage:
 *
 *       require_once 'getid3/getid3.php';
-*       require_once 'getid3/getid3/extension.cache.dbm.php';
+*       require_once 'getid3/extension.cache.dbm.php';
 *       $getID3 = new getID3_cached('db3', '/tmp/getid3_cache.dbm',
 *                                          '/tmp/getid3_cache.lock');
 *       $getID3->encoding = 'UTF-8';
@@ -71,152 +72,199 @@
 
 class getID3_cached_dbm extends getID3
 {
+	/**
+	 * @var null|resource|Dba\Connection
+	 */
+	private $dba; // @phpstan-ignore-line
 
-	// public: constructor - see top of this file for cache type and cache_options
-	function getID3_cached_dbm($cache_type, $dbm_filename, $lock_filename) {
+	/**
+	 * @var resource|bool|null
+	 */
+	private $lock;
+
+	/**
+	 * @var string
+	 */
+	private $cache_type;
+
+	/**
+	 * @var string
+	 */
+	private $dbm_filename;
+
+	/**
+	 * @var string
+	 */
+	private $lock_filename;
+
+	/**
+	 * constructor - see top of this file for cache type and cache_options
+	 *
+	 * @param string $cache_type
+	 * @param string $dbm_filename
+	 * @param string $lock_filename
+	 *
+	 * @throws Exception
+	 * @throws getid3_exception
+	 */
+	public function __construct($cache_type, $dbm_filename, $lock_filename) {
 
 		// Check for dba extension
 		if (!extension_loaded('dba')) {
-			die('PHP is not compiled with dba support, required to use DBM style cache.');
+			throw new Exception('PHP is not compiled with dba support, required to use DBM style cache.');
 		}
 
 		// Check for specific dba driver
-		if (function_exists('dba_handlers')) {  // PHP 4.3.0+
-			if (!in_array('db3', dba_handlers())) {
-				die('PHP is not compiled --with '.$cache_type.' support, required to use DBM style cache.');
-			}
+		if (!function_exists('dba_handlers') || !in_array($cache_type, dba_handlers())) {
+			throw new Exception('PHP is not compiled --with '.$cache_type.' support, required to use DBM style cache.');
 		}
-		else { // PHP <= 4.2.3
-			ob_start(); // nasty, buy the only way to check...
-			phpinfo();
-			$contents = ob_get_contents();
-			ob_end_clean();
-			if (!strstr($contents, $cache_type)) {
-				die('PHP is not compiled --with '.$cache_type.' support, required to use DBM style cache.');
-			}
-		}
+
+		// Store lock filename for cleanup operations
+		$this->lock_filename = $lock_filename;
 
 		// Create lock file if needed
-		if (!file_exists($lock_filename)) {
-			if (!touch($lock_filename)) {
-				die('failed to create lock file: ' . $lock_filename);
+		if (!file_exists($this->lock_filename)) {
+			if (!touch($this->lock_filename)) {
+				throw new Exception('failed to create lock file: '.$this->lock_filename);
 			}
 		}
 
-		// Open lock file for writing
-		if (!is_writeable($lock_filename)) {
-			die('lock file: ' . $lock_filename . ' is not writable');
+		// Open lock file for writing with read/write mode (w+) to prevent truncation on BSD systems
+		$this->lock = fopen($this->lock_filename, 'w+');
+		if (!$this->lock) {
+			throw new Exception('Cannot open lock file: '.$this->lock_filename);
 		}
-		$this->lock = fopen($lock_filename, 'w');
 
 		// Acquire exclusive write lock to lock file
-		flock($this->lock, LOCK_EX);
-
-		// Create dbm-file if needed
-		if (!file_exists($dbm_filename)) {
-			if (!touch($dbm_filename)) {
-				die('failed to create dbm file: ' . $dbm_filename);
-			}
+		if (!flock($this->lock, LOCK_EX)) {
+			fclose($this->lock);
+			throw new Exception('Cannot acquire lock: '.$this->lock_filename);
 		}
 
-		// Try to open dbm file for writing
-		$this->dba = @dba_open($dbm_filename, 'w', $cache_type);
-		if (!$this->dba) {
-
-			// Failed - create new dbm file
-			$this->dba = dba_open($dbm_filename, 'n', $cache_type);
-
-			if (!$this->dba) {
-				die('failed to create dbm file: ' . $dbm_filename);
-			}
-
-			// Insert getID3 version number
-			dba_insert(GETID3_VERSION, GETID3_VERSION, $this->dba);
-		}
-
-		// Init misc values
-		$this->cache_type   = $cache_type;
+		// Store connection parameters
+		$this->cache_type = $cache_type;
 		$this->dbm_filename = $dbm_filename;
+
+		try {
+			// Try to open existing DBM file
+			$this->dba = dba_open($this->dbm_filename, 'w', $this->cache_type);
+
+			// Create new DBM file if it didn't exist
+			if (!$this->dba) {
+				$this->dba = dba_open($this->dbm_filename, 'n', $this->cache_type);
+				if (!$this->dba) {
+					throw new Exception('failed to create dbm file: '.$this->dbm_filename);
+				}
+
+				// Insert getID3 version number
+				dba_insert(getID3::VERSION, getID3::VERSION, $this->dba);
+			}
+
+			// Check version number and clear cache if changed
+			if (dba_fetch(getID3::VERSION, $this->dba) != getID3::VERSION) {
+				$this->clear_cache();
+			}
+
+		} catch (Exception $e) {
+			$this->safe_close();
+			throw $e;
+		}
 
 		// Register destructor
 		register_shutdown_function(array($this, '__destruct'));
 
-		// Check version number and clear cache if changed
-		if (dba_fetch(GETID3_VERSION, $this->dba) != GETID3_VERSION) {
-			$this->clear_cache();
+		parent::__construct();
+	}
+
+	/**
+	 * Destructor - ensure proper cleanup of resources
+	 */
+	public function __destruct() {
+		$this->safe_close();
+	}
+
+	/**
+	 * Safely close all resources with error handling
+	 */
+	private function safe_close() {
+		try {
+			// Close DBM connection if open
+			if (is_resource($this->dba)) {
+				dba_close($this->dba);
+				$this->dba = null;
+			}
+
+			// Release lock if acquired
+			if (is_resource($this->lock)) {
+				flock($this->lock, LOCK_UN);
+				fclose($this->lock);
+				$this->lock = null;
+			}
+		} catch (Exception $e) {
+			error_log('getID3_cached_dbm cleanup error: ' . $e->getMessage());
 		}
-
-		parent::getID3();
 	}
 
-
-
-	// public: destuctor
-	function __destruct() {
-
-		// Close dbm file
-		@dba_close($this->dba);
-
-		// Release exclusive lock
-		@flock($this->lock, LOCK_UN);
-
-		// Close lock file
-		@fclose($this->lock);
-	}
-
-
-
-	// public: clear cache
-	function clear_cache() {
-
-		// Close dbm file
-		dba_close($this->dba);
+	/**
+	 * Clear cache and recreate DBM file
+	 *
+	 * @throws Exception
+	 */
+	public function clear_cache() {
+		$this->safe_close();
 
 		// Create new dbm file
 		$this->dba = dba_open($this->dbm_filename, 'n', $this->cache_type);
-
 		if (!$this->dba) {
-			die('failed to clear cache/recreate dbm file: ' . $this->dbm_filename);
+			throw new Exception('failed to clear cache/recreate dbm file: '.$this->dbm_filename);
 		}
 
 		// Insert getID3 version number
-		dba_insert(GETID3_VERSION, GETID3_VERSION, $this->dba);
+		dba_insert(getID3::VERSION, getID3::VERSION, $this->dba);
 
-		// Reregister shutdown function
+		// Re-register shutdown function
 		register_shutdown_function(array($this, '__destruct'));
 	}
 
+	/**
+	 * Analyze file and cache results
+	 *
+	 * @param string $filename
+	 * @param int $filesize
+	 * @param string $original_filename
+	 * @param resource $fp
+	 *
+	 * @return mixed
+	 */
+	public function analyze($filename, $filesize=null, $original_filename='', $fp=null) {
+		try {
+			$key = null;
+			if (file_exists($filename)) {
+				// Calc key: filename::mod_time::size - should be unique
+				$key = $filename.'::'.filemtime($filename).'::'.filesize($filename);
 
+				// Lookup key in cache
+				$result = dba_fetch($key, $this->dba);
 
-	// public: analyze file
-	function analyze($filename) {
-
-		if (file_exists($filename)) {
-
-			// Calc key     filename::mod_time::size    - should be unique
-			$key = $filename . '::' . filemtime($filename) . '::' . filesize($filename);
-
-			// Loopup key
-			$result = dba_fetch($key, $this->dba);
-
-			// Hit
-			if ($result !== false) {
-				return unserialize($result);
+				// Cache hit
+				if ($result !== false) {
+					return unserialize($result);
+				}
 			}
+
+			// Cache miss - perform actual analysis
+			$result = parent::analyze($filename, $filesize, $original_filename, $fp);
+
+			// Store result in cache if key was generated
+			if ($key !== null) {
+				dba_replace($key, serialize($result), $this->dba);
+			}
+
+			return $result;
+
+		} catch (Exception $e) {
+			$this->safe_close();
+			throw $e;
 		}
-
-		// Miss
-		$result = parent::analyze($filename);
-
-		// Save result
-		if (file_exists($filename)) {
-			dba_insert($key, serialize($result), $this->dba);
-		}
-
-		return $result;
 	}
-
 }
-
-
-?>

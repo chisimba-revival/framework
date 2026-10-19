@@ -20,56 +20,10 @@ class identityservice extends dbTable
         );
     }
 
-    /**
-     * Run a statement with bound values and return every row.
-     *
-     * Values are never interpolated into SQL. The previous quoteValue() helper
-     * escaped with addslashes(), which is only safe while the connection
-     * charset cannot produce a backslash byte inside a multi-byte character.
-     * Under utf8mb3 that holds; it would not under GBK, BIG5 or SJIS.
-     *
-     * Bind types are declared because an undeclared placeholder resolves to
-     * null and raises a PHP 8.1 deprecation on every execution.
-     *
-     * Failures are reported through error_log() rather than the inherited
-     * errorCallback(). This class's init() default names a callback that does
-     * not exist in the framework, so calling it would raise a TypeError and
-     * turn a database problem into an unhandled fatal. This matches
-     * dbTable::_queryRow() on the same failure.
-     *
-     * @param string $sql Statement using ? placeholders
-     * @param array $bindings Values in placeholder order
-     * @return array Rows, or an empty array when the statement cannot be run
-     */
+    /** Read bound values through the checked shared database boundary. */
     private function selectRows($sql, array $bindings = array())
     {
-        $types = array();
-        foreach ($bindings as $value) {
-            $types[] = is_int($value) ? 'integer' : 'text';
-        }
-
-        try {
-            $db = $this->objEngine->getDbObj();
-            $statement = $db->prepare($sql, $types);
-            if (MDB2::isError($statement)) {
-                error_log('Identity query could not be prepared: ' . $statement->getMessage());
-                return array();
-            }
-            $result = $statement->execute($bindings);
-            if (MDB2::isError($result)) {
-                error_log('Identity query failed: ' . $result->getMessage());
-                $statement->free();
-                return array();
-            }
-            $rows = $result->fetchAll();
-            $result->free();
-            $statement->free();
-        } catch (Throwable $e) {
-            error_log('Identity query failed: ' . $e->getMessage());
-            return array();
-        }
-
-        return is_array($rows) ? $rows : array();
+        return $this->selectPrepared($sql, $bindings);
     }
 
     /**

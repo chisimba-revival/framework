@@ -111,7 +111,8 @@ class dbmoduleblocks extends dbTable
      */
     public function getBlocks($width=NULL, $type=NULL, $audience=NULL)
     {
-        $filter = array();
+        // Old catalogue rows must not offer blocks from uninstalled modules.
+        $filter = array("moduleid IN (SELECT module_id FROM tbl_modules)");
         
         if ($width != NULL) {
             $filter[] = "blockwidth = '$width'";
@@ -212,7 +213,7 @@ class dbmoduleblocks extends dbTable
     public function deleteModuleBlocks($moduleid)
     {
         $record = $this->getAll("WHERE moduleid = '$moduleid'");
-        foreach($record as $block) {
+        foreach(($record ?: array()) as $block) {
             $this->delete('id',$block['id']);
         }
     }

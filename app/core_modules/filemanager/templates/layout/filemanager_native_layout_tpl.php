@@ -105,7 +105,7 @@ $fmText = function ($code) {
 }
 .fm-native-search input,
 .fm-native-search button,
-.fm-native-shell input,
+.fm-native-shell input:not([type="checkbox"]):not([type="radio"]),
 .fm-native-shell select,
 .fm-native-shell button {
     min-height: 2.6rem;

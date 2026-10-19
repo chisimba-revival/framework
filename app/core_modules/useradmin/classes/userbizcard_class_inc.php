@@ -8,6 +8,11 @@
 */
 class userbizcard extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $objCountries;
+    public $objLanguage;
+    public $objUser;
+
 
     /**
     * @var Array $userArray User Details stored as an array

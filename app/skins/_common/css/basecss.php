@@ -29,7 +29,6 @@ $cssArray = array(
     "switchmenu.css",
     "colorboxes.css",
     "manageblocks.css",
-    "facebox.css",
     "modernbrickmenu.css",
     "jquerytags.css",
     "glossytabs.css",

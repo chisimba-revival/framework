@@ -57,6 +57,8 @@ $GLOBALS ['kewl_entry_point_run']) {
  * @see       core
  */
 class dbcontextparams extends dbTable {
+    public $_objDBContext;
+
     /**
      *Initialize by send the table name to be accessed
      */

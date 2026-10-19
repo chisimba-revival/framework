@@ -11,6 +11,7 @@
 */
 class StepAction
 {
+    public $step_help = "";
 	/**
 	* The name of the parent step of this action.
 	* @var string

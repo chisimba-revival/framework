@@ -20,6 +20,10 @@ $GLOBALS['kewl_entry_point_run']) {
  */
 class logactivity extends dbTable
 {
+    /** Dependencies and state initialised by this component. */
+    public $objDBContext;
+    public $userId;
+
     /**
      * Property to hold the user object
      *

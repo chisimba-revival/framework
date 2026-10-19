@@ -56,6 +56,12 @@ $GLOBALS['kewl_entry_point_run'])
 */
 class canvas extends controller
 {
+    // State used by the installed rendering and service lifecycle.
+    public $cbExists;
+    public $objBlocksContent;
+    public $objMasterCanvas;
+    public $objModule;
+
     
     /**
     * 
@@ -96,7 +102,7 @@ class canvas extends controller
         // Create the configuration object
         $this->objConfig = $this->getObject('config', 'config');
         // Create an instance of the master canvas class
-        $this->objMasterCanvas = & $this->getObject('mastercanvas', 'canvas');
+        $this->objMasterCanvas = $this->getObject('mastercanvas', 'canvas');
         // Let the active skin resolve the current site/user canvas. The old
         // hard-coded "modcanvas" target does not exist in the modern skin and
         // prevented the chooser itself from rendering with a valid canvas.
@@ -170,11 +176,10 @@ class canvas extends controller
      */
     private function __save()
     {
-        $pname = $this->getParam('pname');
-        $ptag = $this->getParam('ptag');
-        $objDbUserparamsadmin = & $this->getObject("dbuserparamsadmin", "userparamsadmin");
-        $objDbUserparamsadmin->writeProperties($this->getParam('mode', 'edit'), $this->objUser->userId(), $pname, $ptag);
-        $this->nextAction(null,null,'canvas');
+        // Legacy submissions open the canonical editor for review; they cannot
+        // bypass its CSRF/revision checks or silently report a failed write.
+        return $this->nextAction('edit', array('key'=>'canvas',
+            'suggested_value'=>$this->getParam('ptag','')), 'userparamsadmin');
     }
 
     /**
@@ -191,8 +196,8 @@ class canvas extends controller
         $this->setPageTemplate('page_template.php');
         switch ($canvasType) {
             case 'personal':
-                $this->setvar('str', $this->objLanguage->languageText("mod_canvas_ask", "canvas"));
-                return "edit_tpl.php";
+                return $this->nextAction('edit', array('key'=>'canvas',
+                    'suggested_value'=>$this->getParam('value','')), 'userparamsadmin');
                 break;
             case 'skin':
                 $objConfig = $this->getObject('dbsysconfig', 'sysconfig');

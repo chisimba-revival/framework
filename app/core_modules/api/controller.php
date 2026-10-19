@@ -74,12 +74,7 @@ class api extends controller
      */
     public function init() 
     {
-        try {
-            $this->objRPC = $this->getObject('xmlrpcapi');
-        } catch (customException $e) {
-            customException::cleanUp();
-            exit;
-        }
+        // The historical XML-RPC service is retired. Do not initialise it.
     }
     
     /**
@@ -93,26 +88,11 @@ class api extends controller
      */
     public function dispatch($action = NULL)
     {
-        switch ($action) {
-            case 'serveapi':
-                $this->requiresLogin(FALSE);
-                // start the server.
-                $this->objRPC->serve();
-                break;
-            default:
-                // cannot require any login, as remote clients use this. Auth is done internally
-                $this->requiresLogin(FALSE);
-                // start the server.
-                $this->objRPC->serve();   
-                // break to be pedantic, although not strictly needed.    
-                break;
-
-            case 'test':
-                $objLangCode = $this->getObject('languagecode', 'language');
-        $arrOfCountries = $objLangCode->countryListArr();
-var_dump($arrOfCountries);
-                break;
-        }
+        http_response_code(410);
+        $this->setPageTemplate(NULL);
+        $this->setLayoutTemplate(NULL);
+        $this->setVar('pageSuppressToolbar', TRUE);
+        return 'service_retired_tpl.php';
     }
     
     /**

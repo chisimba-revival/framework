@@ -47,13 +47,16 @@ $sources = array(
 );
 foreach ($forbidden as $needle) {
     foreach ($sources as $source) {
-        $command = 'rg -l -F '
-            . escapeshellarg($needle) . ' '
-            . escapeshellarg($source);
-        exec($command, $output, $status);
-        v99contract($status === 1,
+        $found = false;
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source, FilesystemIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            if ($file->isFile() && strpos(file_get_contents($file->getPathname()), $needle) !== false) {
+                $found = true;
+                break;
+            }
+        }
+        v99contract(!$found,
             'forbidden rollback contract is absent: ' . $needle);
-        $output = array();
     }
 }
 

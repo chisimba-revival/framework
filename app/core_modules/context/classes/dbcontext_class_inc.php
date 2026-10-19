@@ -794,27 +794,7 @@ class dbcontext extends dbTable {
      * @access public
      */
     public function deleteContext($contextCode) {
-        $result = $this->delete('contextCode', $contextCode);
-
-        if ($result) {
-            //delete groups
-            $contextGroups = $this->getObject('manageGroups', 'contextgroups');
-            $contextGroups->deleteGroups($contextCode);
-        }
-
-        // Remove from Search Results
-        $objIndexData = $this->getObject('indexdata', 'search');
-        $objIndexData->removeIndex('context_contextcode_' . $contextCode);
-
-        // Clear List of Modules
-        $objContextModules = $this->getObject('dbcontextmodules');
-        $objContextModules->deleteModulesForContext($contextCode);
-
-        // Remove Context Blocks
-        $objContextBlocks = $this->getObject('dbcontextblocks');
-        $objContextBlocks->removeContextBlocks($contextCode);
-
-        return $result;
+        return $this->getObject('contextdeletion', 'context')->remove($contextCode);
     }
 
     /**

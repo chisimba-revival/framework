@@ -61,7 +61,16 @@ class featurebox extends ChisimbaObject
                 . '</div></section>';
         }
 
-        $objIcon = $this->newObject('geticon', 'htmlelements');
+        // Native disclosure retains initial collapsed state and works without JavaScript.
+        if (!empty($id) && $showToggle && $showTitle) {
+            $outerId = trim($cssId) === '' ? '' : ' id="'.htmlspecialchars($cssId, ENT_QUOTES, 'UTF-8').'"';
+            return '<details class="'.htmlspecialchars($cssClass, ENT_QUOTES, 'UTF-8').' featurebox-disclosure"'.$outerId
+                . ($hidden === 'none' ? '' : ' open').'><summary class="featureboxheader">'
+                . '<h5 class="featurebox-disclosure-title">'.$title.'</h5></summary>'
+                . '<div class="featureboxcontent" id="'.htmlspecialchars($id, ENT_QUOTES, 'UTF-8').'">'
+                . $content.'</div></details>';
+        }
+
         if (trim($cssId) != '') {
             $sidebar = '<div class="' . $cssClass . '" id="' . $cssId . '"  >';
         } else {
@@ -78,15 +87,6 @@ class featurebox extends ChisimbaObject
                         <div class="featureboxtopright"></div>
                         
 </div>';
-
-        if(!empty($id) && $showToggle)
-        {
-            $objIcon->setIcon('toggle');
-            $objIcon->extra = "class='toggleIt' style='vertical-align:middle'";
-            $this->loadToggleScript();
-            $toggle = $objIcon->show();
-            $title = $title;
-        }
 
         if ($showTitle) {
             $sidebar .= '   <h5 class="featureboxheader">' .$toggle 
@@ -150,34 +150,4 @@ class featurebox extends ChisimbaObject
         return $contentbox;
     }
 
-    /**
-     *
-     * Add the togle script to the page header.
-     *
-     * @access private
-     * @return VOID;
-     *
-     */
-    private function loadToggleScript()
-    {
-        $script = '
-<script type="text/javascript">
-jQuery(document).ready(function(){
-jQuery(\'.toggleIt\').unbind(\'click\').bind(\'click\',function(){
-var blockContent = jQuery(this).parent().parent().children(\'.featureboxcontent\');
-if(  blockContent.is(":hidden") == true )
-{
-blockContent.slideDown(\'slow\');
 }
-else
-{
-blockContent.slideUp(\'slow\');
-}
-});
-});
-</script>
-        ';
-        $this->appendArrayVar('headerParams', $script);
-    }
-}
-?>

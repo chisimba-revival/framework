@@ -6,7 +6,7 @@
 
 
         <title>Chisimba | Install : <?php echo $title; ?></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <style type="text/css" media="screen">
             <!--
             @import url("<?php echo $extras;?>/screen.css");
@@ -19,7 +19,7 @@
         <!--
         <link rel="stylesheet" type="text/css" href="./domtt/example.css" />
         -->
-        <link rel="stylesheet" type="text/css" href="../skins/echo/print.css" media="print" />
+
          <link rel="stylesheet" type="text/css" href="<?php echo $extras;?>/secondary.css" media="screen" />
 
         <script language="javascript" type="text/javascript"  src="<?php echo $extras;?>/prototype.js"></script>

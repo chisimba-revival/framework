@@ -58,6 +58,16 @@ $GLOBALS['kewl_entry_point_run']) {
  * whether the users array contains one or more records.
  */
 class groupops extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $_serverName;
+    public $loading;
+    public $objDBConfig;
+    public $objDBContext;
+    public $objGroups;
+    public $objIdentityService;
+    public $objLanguage;
+    public $objUserService;
+
 
     /**
      * $_objUsers an association to the userDb object.
@@ -66,6 +76,7 @@ class groupops extends ChisimbaObject {
      * @var    userDb
      */
     public $objUser;
+    // Legacy compatibility flag; Memcache initialisation has been retired.
     public $objMemcache = FALSE;
     public $objAPC = FALSE;
     protected $cacheTTL = 3600;
@@ -91,16 +102,6 @@ class groupops extends ChisimbaObject {
         $this->loading = ""; //$objIcon->show();
 
         $this->objDBConfig = $this->getObject('altconfig', 'config');
-        // check for memcache
-        if (extension_loaded('memcache')) {
-            require_once $this->objDBConfig->getSiteRootPath() . 'classes/core/chisimbacache_class_inc.php';
-            if ($this->objDBConfig->getenable_memcache() == 'TRUE') {
-                $this->objMemcache = TRUE;
-            } else {
-                $this->objMemcache = FALSE;
-            }
-            $this->cacheTTL = $this->objDBConfig->getcache_ttl();
-        }
         // check for APC
         if (extension_loaded('apc')) {
             if ($this->objDBConfig->getenable_apc() == 'TRUE') {

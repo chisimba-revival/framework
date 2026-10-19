@@ -12,9 +12,10 @@ require_once dirname(__FILE__) . '/nativeauth/nativeauthwebcompositionfactory.ph
 require_once dirname(__FILE__) . '/nativeauth/nativesessionservice.php';
 require_once dirname(__FILE__) . '/nativeauth/configurablemfaenforcementpolicy.php';
 
-class nativeauthwebcomposition extends ChisimbaObject
+class nativeauthwebcomposition extends dbTable
 {
     private $stack;
+    private $resumptionAttempted = false;
 
     public function build()
     {
@@ -34,7 +35,7 @@ class nativeauthwebcomposition extends ChisimbaObject
             )
         );
         $this->stack = NativeAuthWebCompositionFactory::build(
-            $this->objEngine->getDbObj(),
+            $this,
             $this,
             new NativeSessionService($this),
             $this->getObject('auth_database', 'security'),
@@ -61,6 +62,20 @@ class nativeauthwebcomposition extends ChisimbaObject
             )
         );
         return $this->stack;
+    }
+
+    /** Called once at request entry, before maintenance and module permissions. */
+    public function resumeRememberedLogin()
+    {
+        if ($this->resumptionAttempted) return;
+        $this->resumptionAttempted = true;
+        if (empty($_COOKIE[PersistentLoginCoordinator::COOKIE_NAME])) return;
+        try {
+            $this->build()['resumption']->resume(time());
+        } catch (Throwable $error) {
+            // An unavailable or invalid credential must never grant partial identity.
+            error_log('Remembered-login restoration failed; fresh sign-in is required.');
+        }
     }
 
     private function enabled($value)

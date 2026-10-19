@@ -40,19 +40,19 @@ class RestControllerRoutingTest
         
         // Test that new endpoint methods exist
         $this->test('Controller has GET_auth_token method', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_auth_token') !== false,
                 'GET_auth_token method must exist for GET /api/v1/auth/token');
         });
 
         $this->test('Controller has POST_auth_token method', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function POST_auth_token') !== false,
                 'POST_auth_token method must exist for POST /api/v1/auth/token');
         });
 
         $this->test('Controller has POST_auth_refresh with device_id', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function POST_auth_refresh') !== false,
                 'POST_auth_refresh method must exist');
             $this->assertTrue(strpos($source, 'device_id') !== false,
@@ -61,31 +61,31 @@ class RestControllerRoutingTest
 
         // Test backward compatibility methods
         $this->test('Controller has GET_auth_login (deprecated)', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_auth_login') !== false,
                 'GET_auth_login method must exist for backward compatibility');
         });
 
         $this->test('Controller has POST_auth_login (deprecated)', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function POST_auth_login') !== false,
                 'POST_auth_login method must exist for backward compatibility');
         });
 
         $this->test('Controller has GET_auth_me (deprecated)', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_auth_me') !== false,
                 'GET_auth_me method must exist for backward compatibility');
         });
 
         $this->test('Controller has GET_auth_jwks', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_auth_jwks') !== false,
                 'GET_auth_jwks method must exist');
         });
 
         $this->test('Controller has POST_auth_logout', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function POST_auth_logout') !== false,
                 'POST_auth_logout method must exist');
         });
@@ -99,13 +99,13 @@ class RestControllerRoutingTest
         echo "\n--- User Resource Routes ---\n";
         
         $this->test('Controller has GET_user_profile method', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_user_profile') !== false,
                 'GET_user_profile method must exist for GET /api/v1/user/profile');
         });
 
         $this->test('GET_user_profile returns proper profile structure', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'active_context') !== false,
                 'Profile should include active_context');
             $this->assertTrue(strpos($source, 'context_grants') !== false,
@@ -122,13 +122,13 @@ class RestControllerRoutingTest
 
         // Test existing user methods still exist
         $this->test('Controller has GET_users method', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_users') !== false,
                 'GET_users method must exist');
         });
 
         $this->test('Controller has GET_users_by_id method', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/controller.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_users_by_id') !== false,
                 'GET_users_by_id method must exist');
         });
@@ -325,8 +325,8 @@ class RestControllerRoutingTest
     private function routingSource(): string
     {
         foreach ([
-            '/var/www/html/ch/core_modules/restapi/classes/restcontroller_class_inc.php',
-            '/var/www/html/core_modules/restapi/classes/restcontroller_class_inc.php',
+            dirname(__DIR__, 2) . '/restapi/classes/restcontroller_class_inc.php',
+            dirname(__DIR__, 2) . '/restapi/classes/restcontroller_class_inc.php',
             dirname(__DIR__) . '/classes/restcontroller_class_inc.php',
         ] as $path) {
             if (is_file($path)) {
@@ -348,8 +348,8 @@ class RestControllerRoutingTest
     private function controllerSource(): string
     {
         foreach ([
-            '/var/www/html/ch/core_modules/restapi/controller.php',
-            '/var/www/html/core_modules/restapi/controller.php',
+            dirname(__DIR__, 2) . '/restapi/controller.php',
+            dirname(__DIR__, 2) . '/restapi/controller.php',
             dirname(__DIR__) . '/controller.php',
         ] as $path) {
             if (is_file($path)) {
@@ -385,7 +385,7 @@ class RestControllerRoutingTest
         echo "\n--- RestController Routing Logic ---\n";
         
         $this->test('RestController handles user/profile route', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/classes/restcontroller_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/classes/restcontroller_class_inc.php');
             $this->assertTrue(strpos($source, '$resource === \'user\'') !== false,
                 'RestController should have special handling for user resource');
             $this->assertTrue(strpos($source, 'Special handling for user resource') !== false,
@@ -393,13 +393,13 @@ class RestControllerRoutingTest
         });
 
         $this->test('RestController has resolveHandler method', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/classes/restcontroller_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/classes/restcontroller_class_inc.php');
             $this->assertTrue(strpos($source, 'function resolveHandler') !== false,
                 'RestController must have resolveHandler method');
         });
 
         $this->test('RestController parseRoute method exists', function() {
-            $source = file_get_contents('/var/www/html/core_modules/restapi/classes/restcontroller_class_inc.php');
+            $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/classes/restcontroller_class_inc.php');
             $this->assertTrue(strpos($source, 'function parseRoute') !== false,
                 'RestController must have parseRoute method');
         });

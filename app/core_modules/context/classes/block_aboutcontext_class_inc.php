@@ -59,6 +59,9 @@ $GLOBALS['kewl_entry_point_run']) {
  * @see       core
  */
 class block_aboutcontext extends ChisimbaObject {
+    /** Dependencies and state initialised by this component. */
+    public $configData;
+
 /**
  * @var string $title The title of the block
  */

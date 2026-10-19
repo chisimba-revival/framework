@@ -112,9 +112,6 @@ class loginInterface extends ChisimbaObject {
             $objBox = $this->newObject('alertbox', 'htmlelements');
             $authIcons = $this->getObject('iconservice', 'ui');
 
-            // prepare the link for the oAuth providers 
-            $box = $this->oauthDisp();
-            $fb = $this->fbButton(); //fbConnect();
             // Use the canonical web composition so this embedded form receives
             // the same CSRF and signed abuse evidence as the native login page.
             $nativeAuthStack = $this->getObject(
@@ -180,7 +177,8 @@ class loginInterface extends ChisimbaObject {
 
             //--Create an element for the username
             $objInput = new textinput('username', $username, 'text', '15');
-            $objInput->extra = 'maxlength="255" placeholder="' . $this->objLanguage->languageText('word_username', 'system') . '"';
+            $fieldLabel = $escapeAuthValue($this->objLanguage->languageText('word_username', 'system'));
+            $objInput->extra = 'maxlength="255" autocomplete="username" aria-label="' . $fieldLabel . '" placeholder="' . $fieldLabel . '"';
             $objLabel = new label($this->objLanguage->languageText('word_username') . ': ', 'input_username');
             //Add validation for username
             $objForm->addRule('username', $this->objLanguage->languageText("mod_login_unrequired", 'security', 'Please enter a username. A username is required in order to login.'), 'required');
@@ -192,7 +190,8 @@ class loginInterface extends ChisimbaObject {
             //$objForm->addToForm();
             //--- Create an element for the password
             $objInput = new textinput('password', '', 'password', '15');
-            $objInput->extra = 'maxlength="255" placeholder="' . $this->objLanguage->languageText('word_password', 'system') . '"';
+            $fieldLabel = $escapeAuthValue($this->objLanguage->languageText('word_password', 'system'));
+            $objInput->extra = 'maxlength="255" autocomplete="current-password" aria-label="' . $fieldLabel . '" placeholder="' . $fieldLabel . '"';
             $objLabel = new label($this->objLanguage->languageText('word_password') . ': ', 'input_password');
             //Add the password box to the form
             //$objForm->addToForm();
@@ -248,79 +247,6 @@ class loginInterface extends ChisimbaObject {
             return $objForm->show();
         } catch (Exception $e) {
             customException::cleanUp();
-        }
-    }
-
-    public function oauthDisp() {
-        // displays a set of oAuth providers
-        $this->objDbSysconfig = $this->getObject('dbsysconfig', 'sysconfig');
-        $show = $this->objDbSysconfig->getValue('show_twitter_auth', 'security');
-        // An unset configuration value is NULL, and strtolower() raises a
-        // deprecation when handed one. Treat an absent or non-string value as
-        // "not enabled", which is the behaviour the comparison below already
-        // implied for every value other than a literal 'true'.
-        if (is_scalar($show) && strtolower((string) $show) === 'true') {
-            $objIcon = $this->getObject('geticon', 'htmlelements');
-            $objIcon->alt = "Sign in with Twitter";
-            $this->consumer_key = $this->objDbSysconfig->getValue('twitter_consumer_key', 'security');
-            $this->consumer_secret = $this->objDbSysconfig->getValue('twitter_consumer_secret', 'security');
-            // create a link to log in with twitter
-            $this->objEpiWrapper = $this->getObject('epiwrapper');
-            $twitterObj = new EpiTwitter($this->consumer_key, $this->consumer_secret);
-            $twiticon = $objIcon->getLinkedIcon($twitterObj->getAuthenticateUrl(), 'Sign-in-with-Twitter-lighter', 'png');
-            $twitter = $twiticon;
-            return $twitter . '<br />';
-        } else {
-            return NULL;
-        }
-    }
-
-    public function doTwitterLogin() {
-
-        // Get the currently valid auth package.
-        $loadPath = $this->getResourcePath('twitteroauth2', 'security');
-        $loadPath = str_replace('//', '/', $loadPath . '/twitteroauth.php');
-        require_once $loadPath;
-        
-        // Get the required keys
-        $this->objDbSysconfig = $this->getObject('dbsysconfig', 'sysconfig');
-        $objAltConfig = $this->getObject('altconfig', 'config');
-        $consumer_key = $this->objDbSysconfig->getValue('twitter_consumer_key', 'security');
-        $consumer_secret = $this->objDbSysconfig->getValue('twitter_consumer_secret', 'security');
-        $access_token = $this->objDbSysconfig->getValue('twitter_access_token', 'security');
-        $token_secret = $this->objDbSysconfig->getValue('twitter_token_secret', 'security');
-        try {
-            
-            /* Create a TwitterOauth object with consumer/user tokens. */
-            $connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $token_secret);
-            
-            
-            /* Create a TwitterOauth object with consumer/user tokens. */
-            //KEEP CRUFT FOR NOW$connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $token_secret);
-            $twitterInfo = $connection->get('account/verify_credentials');
-            $userid = $twitterInfo->id;
-            $username = $twitterInfo->screen_name;
-            $fullname = $twitterInfo->name;
-            $name = explode(" ", $fullname);
-            $surname = '';
-            if ((is_countable($name) ? count($name) : 0) > 1) {
-                $surname = $name[1];
-            }
-
-            $me = array();
-
-            $updateDetailsPhrase = $this->objLanguage->languageText("mod_security_updateprofile", 'security');
-            $me['username'] = $userid;
-            $me['email'] = $username;
-            $me['first_name'] = $updateDetailsPhrase;
-            $me['last_name'] = '';
-            $me['gender'] = 'male';
-            $me['id'] = mt_rand(1000, 9999) . date('ymd');
-
-            return $this->openIdAuth($me);
-        } catch (customException $e) {
-            customException::cleanUp();
-            exit;
         }
     }
 
@@ -424,103 +350,6 @@ class loginInterface extends ChisimbaObject {
     }
 
     /**
-     * This initiates openid connection. This method can also used for google/yahoo
-     * signin, since those support openid.
-     * @param type $auth_site 
-     */
-    function openIdConnect($auth_site) {
-        //required includes
-        //session_start();
-        require_once "Auth/OpenID/Consumer.php";
-        require_once "Auth/OpenID/FileStore.php";
-        require_once "Auth/OpenID/SReg.php";
-        require_once "Auth/OpenID/AX.php";
-
-
-        $objAltConfig = $this->getObject('altconfig', 'config');
-        $this->objDbSysconfig = $this->getObject('dbsysconfig', 'sysconfig');
-
-        $modPath = $objAltConfig->getModulePath();
-        $moduleUri = $objAltConfig->getModuleURI();
-        $siteRoot = $objAltConfig->getSiteRoot();
-
-        $DEFAULT_REDIRECT_ULR = $siteRoot . '?module=security&action=openidloginresult';
-        $OPENID_AUTH_PAGE = $siteRoot . '?module=security&action=openidlogin';
-        $OPENID_CALLBACK_PAGE = $siteRoot . '?module=security&action=openidlogin';
-
-        $_SESSION['AUTH'] = false;
-
-        switch ($auth_site) {
-
-            case "google":
-                $oid_identifier = 'https://www.google.com/accounts/o8/id';
-                $_SESSION['auth_site'] = "Google";
-                break;
-            case "yahoo":
-                $oid_identifier = 'https://yahoo.com';
-                $_SESSION['auth_site'] = "Yahoo!";
-                break;
-            case "openid":
-                if (!$_POST['openIDField']) {
-                    header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=' . $this->objLanguage->languageText("mod_security_invalidopenid", 'security'));
-                } else {
-                    $oid_identifier = $_POST['openIDField'];
-                    $_SESSION['openid_user'] = $oid_identifier;
-                    $_SESSION['auth_site'] = "OpenID";
-                }
-                break;
-            default:
-                header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=' . $this->objLanguage->languageText("mod_security_invalidorunsupportedopenidprovider", 'security'));
-        }
-
-        //Here starts the authentication process
-        // Create file storage area for OpenID data
-        $openidPath = $this->objConfig->getcontentBasePath() . '/openid';
-        $objMkDir = $this->getObject('mkdir', 'files');
-        $objMkDir->mkdirs($openidPath);
-
-        $store = new Auth_OpenID_FileStore($openidPath);
-
-        // Create OpenID consumer
-
-        $consumer = new Auth_OpenID_Consumer($store);
-
-        // Create an authentication request to the OpenID provider
-        $auth = $consumer->begin($oid_identifier);
-
-        //checks for errors
-        if (!$auth)
-            header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=' . $this->objLanguage->languageText("mod_security_errorconnectingtoprovider", 'security') . ': ' . $auth_provider);
-
-
-        //configuring atributtes to be retrieved
-        $attribute[] = Auth_OpenID_AX_AttrInfo::make('http://axschema.org/contact/email', 1, 1, 'email');
-
-        // Create AX fetch request
-        $ax = new Auth_OpenID_AX_FetchRequest;
-
-        if (!$ax)
-            header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=' . $this->objLanguage->languageText("mod_security_errorconnectingtoprovider", 'security') . ': ' . $auth_provider);
-
-        foreach ($attribute as $attr) {
-            $ax->add($attr);
-        }
-        if (!$auth) {
-            header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=' . $this->objLanguage->languageText("mod_security_errorconnectingtoprovider", 'security') . ': ' . $auth_provider);
-        }
-        try {
-            // Add AX fetch request to authentication request 
-            $auth->addExtension($ax);
-        } catch (Exception $ex) {
-            header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=' . $this->objLanguage->languageText("mod_security_errorconnectingtoprovider", 'security') . ': ' . $auth_provider);
-        }
-        // redirect to the OpenID provider's website for authentication
-        $url = $auth->redirectURL($siteRoot, $OPENID_CALLBACK_PAGE);
-
-        header('Location: ' . $url);
-    }
-
-    /**
      * this function handles all the facebook login
      * @return string
      */
@@ -577,70 +406,6 @@ class loginInterface extends ChisimbaObject {
             }
         }
         //  die("not here no wat");
-    }
-
-    /**
-     * Using this option, we need to redirect to user profile after login
-     * to update user details as we have no other way of getting this info
-     * @return type
-     */
-    function openIdLogin() {
-        // session_start();
-        require_once "Auth/OpenID/Consumer.php";
-        require_once "Auth/OpenID/FileStore.php";
-        require_once "Auth/OpenID/SReg.php";
-        require_once "Auth/OpenID/AX.php";
-
-        $objAltConfig = $this->getObject('altconfig', 'config');
-        $modPath = $objAltConfig->getModulePath();
-        $moduleUri = $objAltConfig->getModuleURI();
-        $siteRoot = $objAltConfig->getSiteRoot();
-        $DEFAULT_REDIRECT_ULR = $siteRoot . '?module=security&action=openidloginresult';
-        $OPENID_AUTH_PAGE = $siteRoot . '?module=security&action=openidlogin';
-        $OPENID_CALLBACK_PAGE = $siteRoot . '?module=security&action=openidlogin';
-
-        $objMkDir = $this->getObject('mkdir', 'files');
-
-        $openidPath = $this->objConfig->getcontentBasePath() . '/openid';
-        $objMkDir->mkdirs($openidPath);
-        $store = new Auth_OpenID_FileStore($openidPath);
-
-        $consumer = new Auth_OpenID_Consumer($store);
-        $response = $consumer->complete($OPENID_CALLBACK_PAGE);
-
-        if ($response->status == Auth_OpenID_SUCCESS) {
-            $ax = new Auth_OpenID_AX_FetchResponse();
-            $obj = $ax->fromSuccessResponse($response);
-            $data = $obj->data;
-            //this is a workaround because some openid providers, like myopenid.com,
-            //does not fully support attribute exchange just yet. They're working on it.
-            //I may update it in the future.
-
-            if ($_SESSION['openid_user']) {
-                $email = $_SESSION['openid_user'];
-                $_SESSION['openid_user'] = null;
-            }
-            else
-                $email = $data['http://axschema.org/contact/email']['0'];
-
-            $_SESSION['user'] = $email;
-            $_SESSION['AUTH'] = true;
-
-            $me = array();
-
-            $updateDetailsPhrase = $this->objLanguage->languageText("mod_security_updateprofile", 'security');
-            $me['username'] = $email;
-            $me['email'] = $email;
-            $me['first_name'] = $updateDetailsPhrase;
-            $me['last_name'] = '';
-            $me['gender'] = 'male';
-            $me['id'] = mt_rand(1000, 9999) . date('ymd');
-
-            return $this->openIdAuth($me);
-        } else {
-            $_SESSION['AUTH'] = false;
-            header('Location: ' . $siteRoot . '?module=security&action=error&message=no_openidconnect&msg=mod_security_problemlogginginwith');
-        }
     }
 
     public function nextAction($action, $params = array(), $module = NULL) {

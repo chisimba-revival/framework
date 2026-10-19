@@ -2,6 +2,12 @@
 /** Contextual Help topics owned by Context. @package context */
 class helpcontent extends ChisimbaObject
 {
+    /** Dependencies and state initialised by this component. */
+    public $context;
+    public $groups;
+    public $language;
+    public $user;
+
     public function init()
     {
         $this->language = $this->getObject('language', 'language');
@@ -12,6 +18,9 @@ class helpcontent extends ChisimbaObject
 
     public function mayViewTopic($topicId)
     {
+        if ($topicId === 'dashboard-editing') {
+            return $this->user->isLoggedIn() && $this->user->lookupAdmin($this->user->userId());
+        }
         if ($topicId === 'course-marketing') {
             $code=$this->getParam('contextcode','');
             return is_string($code) && $code!==''
@@ -26,6 +35,7 @@ class helpcontent extends ChisimbaObject
 
     public function getTopic($topicId)
     {
+        if ($topicId === 'dashboard-editing') return $this->dashboardTopic();
         if ($topicId === 'course-marketing') return $this->marketingTopic();
         if ($topicId !== 'managing-the-context-home') { return null; }
         $defaults = array(
@@ -34,7 +44,7 @@ class helpcontent extends ChisimbaObject
             'step_editing' => 'Select Turn Editing On to reveal controls for adding, moving and removing blocks.',
             'step_create' => 'Select Manage [-context-] landing content to create rich text or a welcome video for this landing page.',
             'step_add' => 'Return to the [-context-] home page, choose the new item in the main Add a Block list, and select Add Block.',
-            'step_arrange' => 'Use the arrow controls to place blocks in a useful reading order. Removing a block from the page does not delete its saved content.',
+            'step_arrange' => 'Use the arrow controls to place blocks in a useful reading order. Removing a block from the page does not delete its saved content. Changes save immediately; adding reloads the page. Reload before continuing after an interrupted response or a stale-page warning.',
             'step_review' => 'Turn editing off and review the finished landing page as a learner will encounter it.',
             'content_heading' => 'Landing content and learning content',
             'content_body' => 'Landing-page text and welcome videos introduce the [-context-] and are not attached to chapters. Pages, assessments and the learning sequence remain in [-context-] Content.',
@@ -67,6 +77,15 @@ class helpcontent extends ChisimbaObject
                 array('heading' => $text('permissions_heading'), 'body' => $text('permissions_body')),
             ),
         );
+    }
+    /** Shared account-dashboard layout guide; audience rules remain module-owned. */
+    private function dashboardTopic()
+    {
+        $text = fn($suffix) => $this->language->languageText('mod_context_help_dashboard_'.$suffix, 'context');
+        return ['title'=>$text('title'), 'summary'=>$text('summary'),
+            'steps'=>[$text('editing'), $text('add'), $text('arrange'), $text('review')],
+            'sections'=>[['heading'=>$text('access_heading'), 'body'=>$text('access')],
+                ['heading'=>$text('recovery_heading'), 'body'=>$text('recovery')]]];
     }
     /** Guide to the selected course marketing workflow. */
     private function marketingTopic()

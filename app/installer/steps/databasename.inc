@@ -228,7 +228,7 @@ function DbNameAction($ps, $pr='db_')
 
 					} else {
 						
-						$this->errors[] ='<span style="color: Green">Connected to '.(isset($_SESSION['dsn']) ? $_SESSION['dsn'] : '').'</span>';
+						$this->errors[] ='Database connection successful (PDO MySQL).';
 
 						$this->success = true;
 

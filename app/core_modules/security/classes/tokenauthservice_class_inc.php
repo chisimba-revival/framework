@@ -8,7 +8,7 @@
  * - JWT refresh tokens (long-lived, for token renewal)
  * - API keys (long-lived, for server-to-server)
  */
-class TokenAuthService
+class TokenAuthService extends dbTable
 {
     const ACCESS_TOKEN_TTL = 3600;          // 1 hour
     const REFRESH_TOKEN_TTL = 86400 * 14;   // 14 days
@@ -26,17 +26,15 @@ class TokenAuthService
      */
     const MAX_GRANTS = 32;
 
-    private $db;
     private $secret;
     private $signingKeys;
     private $denylist;
     private $issuer = 'chisimba';
     private $audience = 'chisimba-api';
 
-    public function __construct()
+    public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback')
     {
-        global $_globalObjDb;
-        $this->db = $_globalObjDb;
+        parent::init($tableName ?? 'tbl_rest_refresh_tokens', $pearDb, $errorCallback);
 
         // Use a config-based secret or generate from site key
         $this->secret = $this->getSecret();
@@ -107,80 +105,12 @@ class TokenAuthService
         );
     }
 
-    /**
-     * Execute a statement that uses ? placeholders.
-     *
-     * MDB2::query() does not bind values: it takes a complete SQL string only.
-     * Passing a bindings array as the second argument is silently ignored, the
-     * literal ? tokens reach the server, and the statement fails without the
-     * caller noticing. Placeholders must go through prepare() and then
-     * execute($bindings), and both steps have to be checked because prepare()
-     * returns an MDB2_Error rather than throwing when a table is missing.
-     *
-     * @throws RuntimeException when the statement cannot be prepared or run
-     */
-    /**
-     * Declare the bind types so MDB2 does not fall back to a null type.
-     *
-     * MDB2 records the types given to prepare() and looks each one up per
-     * placeholder when binding. A placeholder with no recorded type resolves to
-     * null, which reaches MDB2\Driver\Datatype::mapPrepareDatatype(null) and
-     * indexes $options['datatype_map'][null], raising a PHP 8.1 deprecation on
-     * every statement. Quoting already infers the type from the value, so
-     * declaring it changes nothing except supplying the bind type character
-     * MDB2 was otherwise leaving out.
-     *
-     * Only the names MDB2 recognises may be declared: declaring an unknown one
-     * makes execute() fail with "not supported". Those are 'boolean',
-     * 'integer', 'float' and 'blob'; every other value is bound as text, which
-     * is what MDB2 would have used anyway once quoting inferred it.
-     *
-     * @param array $bindings The bound values, in placeholder order
-     * @return array MDB2 type names, positionally matching $bindings
-     */
-    private function parameterTypes(array $bindings): array
+    /** Execute a checked write through dbTable; return the affected row count. */
+    private function executeStatement(string $sql, array $bindings = []): int
     {
-        $types = array();
-
-        foreach ($bindings as $value) {
-            if (is_int($value)) {
-                $types[] = 'integer';
-            } elseif (is_bool($value)) {
-                $types[] = 'boolean';
-            } elseif (is_float($value)) {
-                $types[] = 'float';
-            } else {
-                $types[] = 'text';
-            }
-        }
-
-        return $types;
+        return $this->executePrepared($sql, $bindings);
     }
 
-    private function executeStatement(string $sql, array $bindings = []): void
-    {
-        $statement = $this->db->prepare($sql, $this->parameterTypes($bindings));
-
-        if (MDB2::isError($statement)) {
-            throw new RuntimeException(
-                'Token statement could not be prepared: ' . $statement->getMessage()
-            );
-        }
-
-        $result = $statement->execute($bindings);
-
-        if (MDB2::isError($result)) {
-            $message = $result->getMessage();
-            $statement->free();
-            throw new RuntimeException('Token statement failed: ' . $message);
-        }
-
-        $statement->free();
-    }
-
-    /**
-     * Ensure required database tables exist
-     */
     /**
      * Generate a JWT token
      */
@@ -454,25 +384,13 @@ class TokenAuthService
      */
     private function activeContextFor(string $userId): string
     {
-        $statement = $this->db->prepare(
-            'SELECT context_code FROM tbl_field_active_context WHERE userid = ?',
-            array('text')
-        );
-        if (MDB2::isError($statement)) {
-            return '';
-        }
-        $result = $statement->execute(array($userId));
-        if (MDB2::isError($result)) {
-            $statement->free();
-            return '';
-        }
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $statement->free();
-        if (!is_array($row) || !isset($row['context_code'])) {
-            return '';
-        }
-
-        return (string)$row['context_code'];
+        // The field module is optional. A missing store means no active context.
+        require_once dirname(__DIR__, 3) . '/classes/core/chisimbadatabaseschema.php';
+        if (!(new ChisimbaDatabaseSchema($this))->tableExists('tbl_field_active_context')) return '';
+        $row = $this->selectPrepared(
+            'SELECT context_code FROM tbl_field_active_context WHERE userid = ?', [$userId]
+        )[0] ?? null;
+        return (string)($row['context_code'] ?? '');
     }
 
     /**
@@ -497,24 +415,9 @@ class TokenAuthService
      */
     private function accountState(string $userId): string
     {
-        $statement = $this->db->prepare(
-            'SELECT isactive FROM tbl_users WHERE userid = ?'
-        );
-        if (MDB2::isError($statement)) {
-            return 'unknown';
-        }
-        $result = $statement->execute(array($userId));
-        if (MDB2::isError($result)) {
-            $statement->free();
-            return 'unknown';
-        }
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $statement->free();
-
-        if (!is_array($row) || !array_key_exists('isactive', $row)) {
-            return 'unknown';
-        }
-        return (int) $row['isactive'] === 1 ? 'active' : 'inactive';
+        $row = $this->getObject('userservice', 'security')->findByUserId($userId);
+        if (!is_array($row) || !array_key_exists('isactive', $row)) return 'unknown';
+        return (int)$row['isactive'] === 1 ? 'active' : 'inactive';
     }
 
     /**
@@ -555,35 +458,14 @@ class TokenAuthService
     {
         $sql = 'SELECT DISTINCT g.group_define_name AS name'
              . ' FROM tbl_perms_groupusers gu'
-             . ' JOIN tbl_perms_groups g ON g.puid = gu.group_id'
+             . ' JOIN tbl_perms_groups g ON g.group_id = gu.group_id'
              . ' WHERE gu.perm_user_id = ?'
              . ' AND g.group_define_name IS NOT NULL'
              . ' AND g.group_define_name <> ""'
              . ' ORDER BY g.group_define_name ASC';
 
-        $statement = $this->db->prepare($sql, array('text'));
-        if (MDB2::isError($statement)) {
-            throw new RuntimeException(
-                'Grant lookup could not be prepared: ' . $statement->getMessage()
-            );
-        }
-
-        // The join column holds the numeric primary key; the logical identifier
-        // is what it should be matched on. Mixing the two is how a grant set ends
-        // up describing the wrong person.
-        $result = $statement->execute(array($this->numericIdOf($userId)));
-        if (MDB2::isError($result)) {
-            $message = $result->getMessage();
-            $statement->free();
-            throw new RuntimeException('Grant lookup failed: ' . $message);
-        }
-
-        $names = array();
-        while ($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-            $names[] = (string)$row['name'];
-        }
-        $result->free();
-        $statement->free();
+        $rows = $this->selectPrepared($sql, [$this->numericIdOf($userId)]);
+        $names = array_map(static fn($row) => (string)$row['name'], $rows);
 
         if (count($names) > self::MAX_GRANTS) {
             throw new RuntimeException(
@@ -610,35 +492,10 @@ class TokenAuthService
      */
     private function numericIdOf(string $userId): int
     {
-        if (ctype_digit($userId)) {
-            return (int)$userId;
-        }
-
-        $statement = $this->db->prepare(
-            'SELECT puid FROM tbl_users WHERE userid = ?',
-            array('text')
-        );
-        if (MDB2::isError($statement)) {
-            throw new RuntimeException(
-                'User lookup could not be prepared: ' . $statement->getMessage()
-            );
-        }
-        $result = $statement->execute(array($userId));
-        if (MDB2::isError($result)) {
-            $message = $result->getMessage();
-            $statement->free();
-            throw new RuntimeException('User lookup failed: ' . $message);
-        }
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $result->free();
-        $statement->free();
-
-        if (!$row || !isset($row['puid'])) {
-            throw new RuntimeException(
-                'No user matches the identifier this token was issued for.'
-            );
-        }
-        return (int)$row['puid'];
+        // Logical numeric user IDs are not permission storage keys.
+        $id = $this->getObject('identityservice', 'security')->permissionUserIdForUser($userId);
+        if ($id === null) throw new RuntimeException('No permission identity matches this user.');
+        return (int)$id;
     }
 
     /**
@@ -652,26 +509,10 @@ class TokenAuthService
      */
     public function epochFor(string $userId): int
     {
-        $statement = $this->db->prepare(
-            'SELECT epoch FROM tbl_rest_identity_epoch WHERE user_id = ?',
-            array('text')
-        );
-        if (MDB2::isError($statement)) {
-            throw new RuntimeException(
-                'Epoch lookup could not be prepared: ' . $statement->getMessage()
-            );
-        }
-        $result = $statement->execute(array($userId));
-        if (MDB2::isError($result)) {
-            $message = $result->getMessage();
-            $statement->free();
-            throw new RuntimeException('Epoch lookup failed: ' . $message);
-        }
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $result->free();
-        $statement->free();
-
-        return $row && isset($row['epoch']) ? (int)$row['epoch'] : 0;
+        $row = $this->selectPrepared(
+            'SELECT epoch FROM tbl_rest_identity_epoch WHERE user_id = ?', [$userId]
+        )[0] ?? null;
+        return (int)($row['epoch'] ?? 0);
     }
 
     /**
@@ -721,64 +562,21 @@ class TokenAuthService
      */
     public function syncEpochFor(string $userId): int
     {
-        $fingerprint = $this->grantsFingerprintOf($userId);
-
-        $statement = $this->db->prepare('SELECT epoch, grants_fingerprint
-            FROM tbl_rest_identity_epoch WHERE user_id = ?');
-        if (MDB2::isError($statement)) {
-            return 0;
-        }
-        // execute() is checked before it is used. Chaining fetchRow() onto it
-        // means calling a method on whatever came back, which for a failed
-        // statement is an MDB2_Error and the result is "Call to undefined
-        // method MDB2_Error::fetchRow()" instead of the query that actually
-        // failed.
-        $result = $statement->execute(array($userId));
-        if (MDB2::isError($result)) {
-            $statement->free();
-            return 0;
-        }
-        $row = $result->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $statement->free();
-
-        if (empty($row)) {
-            $this->storeEpoch($userId, 0, $fingerprint);
-            return 0;
-        }
-
-        $epoch = (int) $row['epoch'];
-        if ($row['grants_fingerprint'] === $fingerprint) {
+        return $this->transactionWithSavepoint(function () use ($userId) {
+            $fingerprint = $this->grantsFingerprintOf($userId);
+            $this->executeStatement('INSERT INTO tbl_rest_identity_epoch (user_id, epoch, grants_fingerprint, updated_at)'
+                . ' VALUES (?, 0, ?, NOW()) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)', [$userId, $fingerprint]);
+            $row = $this->selectPrepared('SELECT epoch, grants_fingerprint FROM tbl_rest_identity_epoch WHERE user_id = ? FOR UPDATE', [$userId])[0];
+            $epoch = (int)$row['epoch'];
+            if ($row['grants_fingerprint'] === $fingerprint) return $epoch;
+            ++$epoch;
+            $this->executeStatement('UPDATE tbl_rest_identity_epoch SET epoch = ?, grants_fingerprint = ?, updated_at = NOW() WHERE user_id = ?', [$epoch, $fingerprint, $userId]);
+            // Roll back the fingerprint if publishing fails, so a retry still
+            // publishes the revocation. Redis cannot join the SQL transaction:
+            // a later SQL commit failure can conservatively over-revoke.
+            $this->denylist->publish($userId, $epoch);
             return $epoch;
-        }
-
-        // Greatest, so a concurrent issue cannot lower the value another one
-        // just raised. An epoch that fell would make tokens already issued at
-        // the higher value readable again.
-        //
-        // Bindings go through execute(), which is the form this class uses
-        // everywhere else and the only one that works: MDB2's bindValue() wants
-        // a named placeholder, and passing a position instead produces
-        // "Unable to bind to missing placeholder: 0" at execution time — a
-        // failure php -l cannot see and one this file's own working statements
-        // never hit because they do not bind by position.
-        $this->executeStatement(
-            'UPDATE tbl_rest_identity_epoch'
-            . ' SET epoch = GREATEST(epoch + 1, ?), grants_fingerprint = ?, updated_at = NOW()'
-            . ' WHERE user_id = ?',
-            array($epoch + 1, $fingerprint, $userId)
-        );
-
-        // Published once the database has accepted the new epoch, so a
-        // published epoch is never one the database has not recorded.
-        //
-        // A failure here is deliberately not caught. Raising an epoch and failing
-        // to publish it leaves tokens issued under the old grants readable, and
-        // returning quietly would report a revocation that has not happened.
-        // Refusing the sign-in is the only outcome that matches what the caller
-        // was just told.
-        $this->denylist->publish($userId, $epoch + 1);
-
-        return $epoch + 1;
+        });
     }
 
     /**
@@ -1001,25 +799,7 @@ class TokenAuthService
             FROM tbl_rest_api_keys
             WHERE key_prefix = ? AND key_hash = ?
         ";
-        $stmt = $this->db->prepare($sql, $this->parameterTypes(array($prefix, $keyHash)));
-        if (MDB2::isError($stmt)) {
-            // Without this, a failed prepare returns an MDB2_Error and the
-            // call below fatals on it, turning a database problem into a 500
-            // that is indistinguishable from a bad credential.
-            throw new RuntimeException(
-                'API key lookup could not be prepared: ' . $stmt->getMessage()
-            );
-        }
-        $result = $stmt->execute([$prefix, $keyHash]);
-        if (MDB2::isError($result)) {
-            $stmt->free();
-            throw new RuntimeException(
-                'API key lookup failed: ' . $result->getMessage()
-            );
-        }
-        $row = $result->fetchRow();
-        $result->free();
-        $stmt->free();
+        $row = $this->selectPrepared($sql, [$prefix, $keyHash])[0] ?? null;
 
         if (!$row) return null;
 
@@ -1121,6 +901,10 @@ class TokenAuthService
      */
     public function refreshAccessToken(string $refreshToken, string $deviceId = ''): ?array
     {
+        return $this->transactionWithSavepoint(function () use ($refreshToken, $deviceId) {
+        // Refuse nontransactional installations before consuming a credential.
+        require_once dirname(__DIR__, 3) . '/classes/core/chisimbadatabaseschema.php';
+        (new ChisimbaDatabaseSchema($this))->requireTransactional('tbl_rest_refresh_tokens');
         // Validate refresh token structure
         $parts = explode('.', $refreshToken);
         if (count($parts) !== 3) return null;
@@ -1131,24 +915,9 @@ class TokenAuthService
         $sql = "
             SELECT user_id, expires_at, revoked_at, device_id
             FROM tbl_rest_refresh_tokens
-            WHERE token_hash = ?
+            WHERE token_hash = ? FOR UPDATE
         ";
-        $stmt = $this->db->prepare($sql, $this->parameterTypes(array($refreshHash)));
-        if (MDB2::isError($stmt)) {
-            throw new RuntimeException(
-                'Refresh token lookup could not be prepared: ' . $stmt->getMessage()
-            );
-        }
-        $result = $stmt->execute([$refreshHash]);
-        if (MDB2::isError($result)) {
-            $stmt->free();
-            throw new RuntimeException(
-                'Refresh token lookup failed: ' . $result->getMessage()
-            );
-        }
-        $row = $result->fetchRow();
-        $result->free();
-        $stmt->free();
+        $row = $this->selectPrepared($sql, [$refreshHash])[0] ?? null;
 
         if (!$row) return null;
 
@@ -1215,6 +984,7 @@ class TokenAuthService
         $this->revokeRefreshToken($refreshHash);
         $options = ($bound !== '') ? ['device_id' => $bound] : [];
         return $this->issueTokens($userId, $options);
+        });
     }
 
     /**
@@ -1275,6 +1045,7 @@ class TokenAuthService
      */
     public function createApiKey(string $userId, string $name, array $scopes = [], ?string $expiresAt = null): array
     {
+        return $this->transactionWithSavepoint(function () use ($userId, $name, $scopes, $expiresAt) {
         $randomBytes = random_bytes(self::API_KEY_LENGTH);
         $key = self::API_KEY_PREFIX . bin2hex($randomBytes);
         $keyHash = hash('sha256', $key);
@@ -1285,7 +1056,11 @@ class TokenAuthService
             VALUES (?, ?, ?, ?, ?, ?)
         ", [$userId, $name, $keyHash, $prefix, json_encode($scopes), $expiresAt]);
 
-        $id = $this->db->lastInsertId();
+        // Registered tables use puid as their generated storage key. Keep the
+        // public numeric id contract without depending on a driver lastInsertId.
+        $row = $this->selectPrepared('SELECT id, puid FROM tbl_rest_api_keys WHERE key_hash = ?', [$keyHash])[0];
+        $id = (int)($row['id'] ?? $row['puid']);
+        $this->executeStatement('UPDATE tbl_rest_api_keys SET id = ? WHERE key_hash = ?', [$id, $keyHash]);
 
         return [
             'key' => $key,  // Only returned once!
@@ -1295,6 +1070,7 @@ class TokenAuthService
             'scopes' => $scopes,
             'expires_at' => $expiresAt
         ];
+        });
     }
 
     /**
@@ -1308,14 +1084,7 @@ class TokenAuthService
             WHERE user_id = ? AND revoked_at IS NULL
             ORDER BY created_at DESC
         ";
-        $stmt = $this->db->prepare($sql, $this->parameterTypes(array($userId)));
-        $result = $stmt->execute([$userId]);
-
-        $keys = [];
-        while ($row = $result->fetchRow()) {
-            $keys[] = $row;
-        }
-        return $keys;
+        return $this->selectPrepared($sql, [$userId]);
     }
 
     /**
@@ -1323,13 +1092,12 @@ class TokenAuthService
      */
     public function revokeApiKey(string $userId, int $keyId): bool
     {
-        $this->executeStatement("
+        return $this->executeStatement("
             UPDATE tbl_rest_api_keys
             SET revoked_at = NOW()
             WHERE id = ? AND user_id = ?
-        ", [$keyId, $userId]);
+        ", [$keyId, $userId]) > 0;
 
-        return $this->db->affectedRows() > 0;
     }
 
     /**

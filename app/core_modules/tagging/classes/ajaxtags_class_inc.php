@@ -1,60 +1,22 @@
 <?php
+if (empty($GLOBALS['kewl_entry_point_run'])) die('No direct access');
 
-// security check - must be included in all scripts
-if (!$GLOBALS['kewl_entry_point_run']) {
-    die("You cannot view this page directly");
-}
-// end security check
-
-/**
- * Class to generate an ajax tagging input
- *
- * This class generates a text input for tags with support for
- * auto complete, tag suggestions.
- *
- * @author TOhir Solomons
- * @filesource
- * @copyright AVOIR
- * @category chisimbacssId
- * @access public
- */
-
+/** Native, progressively enhanced comma-separated tag input. */
 class ajaxtags extends ChisimbaObject
 {
+    public $name = 'tags';
+    public $defaultValue = '';
+    private static $sequence = 0;
 
-    /**
-     * Standard init function - Class Constructor
-     *
-     * @access public
-     * @param void
-     * @return void
-     */
-    public function init()
-    {
-        $this->loadClass('textinput', 'htmlelements');
-        $this->name = 'tags';
-        $this->defaultValue = '';
-    }
-    
     public function show()
     {
-        $textinput = new textinput($this->name, $this->defaultValue);
-        $textinput->cssId = 'ajaxtags_'.$this->name;
-        
-        $this->loadJavaScript('ajaxtags_'.$this->name);
-        
-        return $textinput->show();
-    }
-    
-    private function loadJavaScript($cssId)
-    {
-        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('tag.js'));
-        
-        $this->appendArrayVar('bodyOnLoad', "
-jQuery('#{$cssId}').tagSuggest({
-    url: 'index.php',
-    separator: ', '
-});");
+        $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        $id = 'ajaxtags_' . (++self::$sequence);
+        $url = html_entity_decode($this->uri(['action' => 'gettags'], 'tagging'), ENT_QUOTES, 'UTF-8');
+        $this->appendArrayVar('headerParams', $this->getJavaScriptFile('native-tags.js', 'tagging'));
+        return '<input type="text" name="' . $escape($this->name) . '" id="' . $id
+            . '" value="' . $escape($this->defaultValue) . '" data-tag-suggestions="' . $escape($url)
+            . '" list="' . $id . '_suggestions" autocomplete="off">'
+            . '<datalist id="' . $id . '_suggestions"></datalist>';
     }
 }
-?>
