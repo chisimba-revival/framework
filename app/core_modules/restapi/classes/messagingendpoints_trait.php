@@ -48,6 +48,25 @@ trait MessagingEndpoints
             return $result;
         });$this->respond($data);
     }
+    /** Read-only announcements use the same scope and audience policy as the website. */
+    public function GET_messaging_announcements(): void {
+        $this->messagingService();
+        $scope=$this->getParam('scope','context');$context=$this->getParam('context','');
+        if(!in_array($scope,['context','site'],true)||!is_string($context))throw new ValidationException(['scope'=>'Invalid announcement scope']);
+        $data=$this->messagingCall(function()use($scope,$context){
+            $rows=$this->getObject('conversationview','messaging')->announcements($context,$scope==='site');
+            $chat=$this->getObject('announcementchat','announcements');
+            $messages=$chat->messages($rows);
+            foreach($messages as&$message)$message['time_label']=$this->getObject('conversationview','messaging')->timestamp($message['created_at']);
+            return ['announcements'=>$messages,'can_send'=>$chat->maySend($context,$scope==='site')];
+        });$this->respond($data);
+    }
+    public function POST_messaging_announcements(): void {
+        $this->messagingService();$data=$this->messagingPost(['scope','context','submission_id','body']);
+        if(!in_array($data['scope']??null,['context','site'],true)||!is_string($data['context']??null))throw new ValidationException(['scope'=>'Invalid announcement scope']);
+        $row=$this->messagingCall(fn()=>$this->getObject('announcementchat','announcements')->send($data['context'],$data['scope']==='site',$data['submission_id']??null,$data['body']??null));
+        $this->respond($row);
+    }
     public function POST_messaging_messages(): void {
         $service=$this->messagingService();$data=$this->messagingPost(['context','submission_id','body','reply_to']);
         $row=$this->messagingCall(function()use($service,$data){$channel=$this->messagingChannel($service,$data['context']??null);return $service->send($channel['id'],$data['submission_id']??null,$data['body']??null,$data['reply_to']??'');});
