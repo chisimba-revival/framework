@@ -7674,3 +7674,18 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 .chisimba-chat__meta time { color:var(--chisimba-text-muted); font-size:.8rem; }
 .chisimba-chat__message p { margin:.5rem 0 0; white-space:normal; }
 @media(max-width:40rem) { .chisimba-chat { padding:.5rem; } .chisimba-chat__message { max-width:95%; padding:.65rem .8rem; } }
+
+/* Conversation workspace: shared chat primitives, compact composer and receipts. */
+.chisimba-chat-workspace .chisimba-chat { height:clamp(14rem,38vh,28rem); max-height:none; margin-block:.75rem; }
+.chisimba-chat-workspace .chisimba-chat__message { flex-shrink:0; max-width:calc(100% - 1.5rem); }
+.chisimba-chat-workspace .chisimba-chat__meta { justify-content:space-between; }
+.chisimba-chat__receipt { display:flex; justify-content:flex-end; color:var(--chisimba-text-muted); margin-top:.25rem; }
+.chisimba-chat__receipt--read { color:#0869b2; }
+.chisimba-chat__receipt svg { width:1.1rem; height:1.1rem; }
+.chisimba-chat-workspace [data-chat-status]:empty { display:none; }
+.chisimba-chat-workspace [data-conversation-compose] { margin-top:.5rem; }
+.chisimba-chat-workspace .chisimba-form-field--brief textarea { min-height:4rem; }
+
+.chisimba-chat-workspace { padding:1.25rem; }
+.chisimba-chat-workspace > header { justify-content:space-between; }
+.chisimba-chat-workspace > header h1 { margin:0; }

@@ -101,3 +101,8 @@ Use `chisimba-chat` for a bounded, vertically scrolling conversation transcript,
 for the current user’s messages. `chisimba-chat__meta` groups the sender and time.
 Keep chronological DOM order and place the composer after history. The caller
 controls initial scroll position; the skin owns bubbles, alignment and tokens.
+
+`chisimba-chat-workspace` composes compact headers and composers with the shared
+publishing layout. Receipt icons use `chisimba-chat__receipt` and sent/delivered/read
+modifiers, with accessible status labels supplied by the caller. Reading/sending
+semantics remain in the messaging service; the skin only renders their presentation.
