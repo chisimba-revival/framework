@@ -49,8 +49,8 @@ trait MessagingEndpoints
         });$this->respond($data);
     }
     public function POST_messaging_messages(): void {
-        $service=$this->messagingService();$data=$this->messagingPost(['context','submission_id','body']);
-        $row=$this->messagingCall(function()use($service,$data){$channel=$this->messagingChannel($service,$data['context']??null);return $service->send($channel['id'],$data['submission_id']??null,$data['body']??null);});
+        $service=$this->messagingService();$data=$this->messagingPost(['context','submission_id','body','reply_to']);
+        $row=$this->messagingCall(function()use($service,$data){$channel=$this->messagingChannel($service,$data['context']??null);return $service->send($channel['id'],$data['submission_id']??null,$data['body']??null,$data['reply_to']??'');});
         $this->respond(['id'=>$row['id'],'submission_id'=>$row['submission_id'],'sequence'=>(int)$row['sequence_no']]);
     }
     public function POST_messaging_read(): void {
