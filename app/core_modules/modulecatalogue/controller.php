@@ -580,7 +580,7 @@ class modulecatalogue extends controller {
                         $ins->preinstall ($patchver);
                     }
                     $updateSucceeded = true;
-                    if (($this->output = $this->objPatch->applyUpdates ( $modname )) === FALSE
+                    if (($this->output = $this->runPatchUpdate($modname)) === FALSE
                         || !is_array($this->output)
                         || !isset($this->output['current'])) {
                         $updateSucceeded = false;
@@ -765,7 +765,7 @@ class modulecatalogue extends controller {
                     }
                     // var_dump($this->registerdata); die();
                     if ($upgrade == TRUE) {
-                        return $this->objPatch->applyUpdates ( $modname );
+                        return $this->runPatchUpdate($modname);
                     } else {
                         return $this->objModuleAdmin->installModule ( $this->registerdata );
                     }
@@ -981,12 +981,20 @@ class modulecatalogue extends controller {
     /**
      * Apply a module patch with its schema hooks before recording the version.
      */
+    private function runPatchUpdate($moduleId) {
+        try { return $this->objPatch->applyUpdates($moduleId); }
+        catch (Throwable $error) {
+            error_log('Module patch failed for '.$moduleId.': '.$error->getMessage());
+            return ['error'=>'patch_failed'];
+        }
+    }
+
     private function applyPatchWithHooks($moduleId, $version) {
         $installer = $this->getPatchObject($moduleId);
         if ($installer !== null && method_exists($installer, 'preinstall')) {
             $installer->preinstall($version);
         }
-        $result = $this->objPatch->applyUpdates($moduleId);
+        $result = $this->runPatchUpdate($moduleId);
         if (is_array($result) && isset($result['current'])
             && $installer !== null && method_exists($installer, 'postinstall')) {
             $installer->postinstall($version);

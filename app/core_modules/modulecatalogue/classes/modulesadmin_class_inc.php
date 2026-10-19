@@ -856,15 +856,14 @@ class modulesadmin extends dbTableManager
                 // check that the record does not already exist
                 if(!$this->objModules->getRow('id', $sqlArray['id'], $table)) {
                     if(!$this->objModules->insert($sqlArray,$table)) {
-                        log_debug("Error inserting default data for $table");
+                        throw new RuntimeException("Default data insert failed for $table");
                     }
                 }
 
             }
             return TRUE;
         } catch (Exception $e) {
-            $this->errorCallback('Caught exception: '.$e->getMessage());
-            exit();
+            throw new RuntimeException('Module default data update failed: '.$moduleId,0,$e);
         }
     }
 
