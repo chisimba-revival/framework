@@ -518,53 +518,38 @@ class contextadmin extends controller {
      * Method to delete a context
      */
     private function __delete() {
-        $contextCode = $this->getParam('contextcode');
-
-        $context = $this->objContext->getContext($contextCode);
-
-        if ($context == FALSE) {
-            return $this->nextAction(NULL, array('error' => 'deletenoneexistingcourse', 'context' => $contextCode));
-        } else {
-            if (!$this->canManageAuthorRoster($contextCode)) {
-                return $this->nextAction(NULL, array('error' => 'forbidden'));
-            }
-            $this->setVarByRef('context', $context);
-            $this->setSession('deletecontext', $context['contextcode']);
-
-            return 'delete.php';
-        }
+        $code=$this->getParam('contextcode');
+        $repair=$this->getParam('repair')==='1';
+        if (!is_string($code) || $code==='' || strlen($code)>32 || !$this->canManageAuthorRoster($code)
+            || ($repair && !$this->objUser->isAdmin())) return $this->nextAction(NULL,['error'=>'forbidden']);
+        $context=$this->objContext->getContext($code);
+        if (($repair && $context) || (!$repair && !$context)) return $this->nextAction(NULL,['error'=>'forbidden']);
+        $this->setVar('context',$context ?: ['contextcode'=>$code,'title'=>$code]);
+        $this->setVar('repairDeletion',$repair);
+        $this->setVar('deleteCsrf',$this->csrf->issue('context_delete_'.hash('sha256',$code.':'.(int)$repair)));
+        return 'delete.php';
     }
 
-    /**
-     * Method to process delete confirmation
-     */
+    /** POST and a scope-bound CSRF token are required for deletion and repair. */
     private function __deleteconfirm() {
-
-        $contextCode = $this->getParam('contextcode');
-
-        $context = $this->objContext->getContext($contextCode);
-
-        if ($context == FALSE) {
-            return $this->nextAction(NULL, array('error' => 'deletenoneexistingcourse', 'context' => $contextCode));
-        } else {
-
-            if (!$this->canManageAuthorRoster($contextCode)) {
-                return $this->nextAction(NULL, array('error' => 'forbidden'));
-            }
-            if ($contextCode != $this->getSession('deletecontext')) {
-                return $this->nextAction(NULL, array('error' => 'incompletedelete', 'context' => $contextCode));
-            }
-
-            $deleteConfirm = $this->getParam('deleteconfirm', 'no');
-            if ($deleteConfirm == 'yes') {
-                $result = $this->objContext->deleteContext($contextCode);
-                $result = $result ? 'y' : 'n';
-                return $this->nextAction(NULL, array('message' => 'contextdeleted', 'context' => $contextCode, 'title' => $context['title'], 'result' => $result));
-            } else {
-                return $this->nextAction(NULL, array('message' => 'deletecancelled', 'context' => $contextCode));
-            }
+        $code=$this->getParam('contextcode');
+        $repair=$this->getParam('repair')==='1';
+        if (($_SERVER['REQUEST_METHOD']??'')!=='POST' || !is_string($code)
+            || !$this->canManageAuthorRoster($code) || ($repair && !$this->objUser->isAdmin())
+            || !$this->csrf->consume('context_delete_'.hash('sha256',$code.':'.(int)$repair),(string)$this->getParam('csrf_token',''))) {
+            return $this->nextAction('delete',['contextcode'=>$code,'repair'=>(int)$repair,'deletefailed'=>1]);
         }
+        $context=$this->objContext->getContext($code);
+        try {
+            $result=$this->getObject('contextdeletion','context')->remove($code,$repair);
+            if (!$result) throw new RuntimeException('Context not found');
+        } catch (Throwable $error) {
+            error_log('Context deletion failed: '.$error->getMessage());
+            return $this->nextAction('delete',['contextcode'=>$code,'repair'=>(int)$repair,'deletefailed'=>1]);
+        }
+        return $this->nextAction(NULL,['message'=>'contextdeleted','context'=>$code,'title'=>$context['title']??$code,'result'=>'y']);
     }
+
 
     /**
      * Manage contextual authors and course ownership.

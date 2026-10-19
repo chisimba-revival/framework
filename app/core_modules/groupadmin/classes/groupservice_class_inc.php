@@ -481,6 +481,43 @@ class groupservice extends ChisimbaObject
         }
     }
 
+    /**
+     * Remove only the canonical groups owned by one context. The caller's
+     * transaction is preserved. Reject foreign/shared children before any write.
+     * Missing courses may be repaired only by a signed-in site administrator.
+     */
+    public function deleteContextGroups($code)
+    {
+        $context = $this->objContext->getContextDetails($code);
+        $allowed = $this->objUser->isLoggedIn() && ($this->objUser->isAdmin()
+            || ($context && $this->getObject('contextauthorservice', 'contextadmin')
+                ->canManageAuthorRoster($code, $this->objUser->userId())));
+        if (!$allowed || !is_string($code) || $code === '' || strlen($code) > 32
+            || str_contains($code, '^') || in_array(strtolower($code), ['site admin','guest','lecturers','students','site','root'])) {
+            throw new DomainException('Context group deletion is not authorised');
+        }
+        return $this->objUser->transactionWithSavepoint(function () use ($code) {
+            $names = [$code, $code.'^Lecturers', $code.'^Students', $code.'^Guest'];
+            $rows = $this->objUser->selectPrepared(
+                'SELECT group_id, group_define_name FROM tbl_perms_groups WHERE group_define_name IN (?,?,?,?) FOR UPDATE', $names);
+            $ids = array_column($rows, 'group_id');
+            if (!$ids) return true;
+            if (count($rows)===1 && $rows[0]['group_define_name']===$code && !$this->objContext->getContextDetails($code)) throw new RuntimeException('Not an identifiable context group family');
+            $marks = implode(',', array_fill(0, count($ids), '?'));
+            $edges = $this->objUser->selectPrepared(
+                'SELECT group_id, subgroup_id FROM tbl_perms_group_subgroups WHERE group_id IN ('.$marks.') OR subgroup_id IN ('.$marks.') FOR UPDATE', array_merge($ids,$ids));
+            foreach ($edges as $edge) {
+                if (!in_array($edge['group_id'], $ids) || !in_array($edge['subgroup_id'], $ids)) {
+                    throw new RuntimeException('Context groups have shared or unexpected relationships');
+                }
+            }
+            foreach (['tbl_perms_groupusers','tbl_perms_grouprights','tbl_perms_group_subgroups','tbl_perms_groups'] as $table) {
+                $this->objUser->executePrepared('DELETE FROM '.$table.' WHERE group_id IN ('.$marks.')', $ids);
+            }
+            return true;
+        });
+    }
+
     private function ensureCanonicalGroup($groupName, $description)
     {
         $rows = $this->exactGroupRows($groupName);
