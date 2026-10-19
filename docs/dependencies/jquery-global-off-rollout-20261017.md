@@ -52,7 +52,11 @@ updated registration through Module Catalogue and verified both column widths.
 The full rehearsal and repeat run passed before production; business rows were
 unchanged. No general schema-review safeguard was disabled.
 
-**Follow-up: repair and regression-test the general Module Catalogue patch runner.**
+**Follow-up resolved in source on 2026-10-19:** the general Module Catalogue
+patch runner repair and regression tests are recorded in
+[module-patch-runner-20261019.md](module-patch-runner-20261019.md), framework
+commit `a3fa6b839`, Module Catalogue 3.142. The original finding follows for history.
+
 Source tracing found patch receipt inserts containing arrays/SimpleXML values,
 where the native database boundary accepts scalar parameters. Its caught
 exceptions can also redirect/exit without useful CLI diagnostics. Verify the

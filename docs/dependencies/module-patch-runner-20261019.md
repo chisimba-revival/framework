@@ -37,3 +37,19 @@ The original six-site rollout workaround remains historical evidence in
 jquery-global-off-rollout-20261017.md. This repair does not automatically approve
 or run unrelated pending schema updates. Six-site deployment receipts belong in
 the dev-environment patch-runner-20261019 tool directory.
+
+## Six-site completion
+
+Framework repair `a3fa6b839` was published and deployed on 2026-10-19 to
+Chisimba.com, KengaLearn, Learn-the-Birds, KengaSolutions, HeritageTreazures and
+KengaPub. All six registered Module Catalogue 3.142 and share the same four-file
+repair manifest. Each passed an isolated database-clone rehearsal (including
+the PDO failure/retry fixture and repeated catalogue update) before deployment.
+Verified database/files backups were retained; protected-data fingerprints and
+source hashes matched. Public home/sign-in/reset pages, running web services and
+mail timers passed final checks. No unrelated pending module updates were run.
+
+Exact release paths, backup paths, image IDs and checks are archived in
+`dev-environment/tools/patch-runner-20261019/receipts/`. Protected table counts
+were 121, 171, 109, 218, 218 and 222 respectively; these exclude registration
+bookkeeping, not a claim of exhaustive application testing.
