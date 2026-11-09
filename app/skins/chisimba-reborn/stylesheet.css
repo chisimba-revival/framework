@@ -7665,3 +7665,12 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 #filemanagerTable tbody { display: flex; flex-wrap: wrap; gap: .75rem; }
 #filemanagerTable tr { margin: 0; min-inline-size: 0; max-inline-size: 100%; box-sizing: border-box; }
 #filemanagerTable tr td { min-inline-size: 0; min-block-size: 0; }
+
+/* Shared page/post video sizing: the player keeps the selected orientation. */
+.chisimba-content-block .chisimba-video-frame { width:100%; margin-inline:auto; }
+.chisimba-content-block .chisimba-video-frame--normal { max-width:48rem; }
+.chisimba-content-block .chisimba-video-frame--portrait.chisimba-video-frame--normal { max-width:26.875rem; }
+.chisimba-content-block .chisimba-video-frame > iframe,
+.chisimba-content-block .chisimba-video-frame > video { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; border:0; }
+.chisimba-content-block .chisimba-video-frame--portrait > iframe,
+.chisimba-content-block .chisimba-video-frame--portrait > video { aspect-ratio:9/16; }
