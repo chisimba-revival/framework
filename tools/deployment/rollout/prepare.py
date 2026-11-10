@@ -49,7 +49,9 @@ try:
  columns={}
  for row in query("SELECT TABLE_NAME,COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,ORDINAL_POSITION;").splitlines():
   table,field=row.split('\t');
-  if table.startswith(excluded):continue
+  # Public HTTP probes expire online-presence rows; this is transient state,
+  # not saved user/account data. Keep every other business table protected.
+  if table=='tbl_loggedinusers' or table.startswith(excluded):continue
   assert re.fullmatch('[a-zA-Z0-9_]+',table) and re.fullmatch('[a-zA-Z0-9_]+',field)
   columns.setdefault(table,[]).append(field)
  def fingerprint():
