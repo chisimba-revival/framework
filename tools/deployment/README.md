@@ -8,7 +8,10 @@ from feature branches, working trees, per-site snapshots or copied live source.
 `source_manifest.py build` requires each local HEAD to equal the actual GitHub
 branch tip. It reads Git archives, never working files, and creates one source
 bundle and SHA-256 manifest for every site. Site settings, content and selected
-canvas remain independent of the shared source. All public canvases ship together.
+canvas remain independent of the shared source. All public canvases ship together. `module-profile.json` is the single fleet-wide
+application-module inventory, including the union of currently used applications.
+Add a new shared application there before deploying it; archived/unmaintained
+modules are not reintroduced merely because their historical source exists in Git.
 
 ```
 python3 tools/deployment/source_manifest.py build \

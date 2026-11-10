@@ -43,6 +43,7 @@ def build(framework, modules, ref, destination):
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=False)
     files, pins = {}, {}
+    module_profile = json.loads(git(framework, 'show', 'HEAD:tools/deployment/module-profile.json'))
     with tarfile.open(destination / 'source.tar.gz', 'w:gz') as bundle:
         for name, repo in [('framework', framework), ('modules', modules)]:
             # Require the actual remote branch tip, not just a stale origin ref.
@@ -65,6 +66,10 @@ def build(framework, modules, ref, destination):
                         if not source_path(path):
                             continue
                     else:
+                        if '/' in member.name and member.name.split('/')[0] not in module_profile:
+                            continue
+                        if '/' not in member.name and member.name != 'AGENTS.md':
+                            continue
                         path = 'packages/' + member.name
                     safe_path(path)
                     if path.startswith(('packages/hairplanner/', 'packages/imageedit-service/')) or 'hairplannerendpoints_trait' in path:
@@ -75,7 +80,7 @@ def build(framework, modules, ref, destination):
                     entry.size = len(data)
                     entry.mode = 0o644
                     bundle.addfile(entry, io.BytesIO(data))
-    manifest = {'schema': 1, 'pins': pins, 'files': dict(sorted(files.items()))}
+    manifest = {'schema': 1, 'pins': pins, 'module_profile': module_profile, 'files': dict(sorted(files.items()))}
     raw = (json.dumps(manifest, sort_keys=True, indent=2) + '\n').encode()
     (destination / 'manifest.json').write_bytes(raw)
     (destination / 'manifest.sha256').write_text(digest(raw) + '\n')
