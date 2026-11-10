@@ -73,9 +73,9 @@
       "source": "/srv/chisimba-com/app/current",
       "runtime_root": "/var/www/html",
       "container": "chisimba-com-web-1",
-      "manifest": "/srv/design-heading-chisimba-20261110/source-manifest.json",
-      "manifest_sha256": "fef703a796aa84401ffbba6d4e47682a22095b257ad8eaf4b5460d0af6ff617a",
-      "overlays": "/srv/design-heading-chisimba-20261110/private-overlays.json",
+      "manifest": "/srv/banner-width-chisimba-20261110/source-manifest.json",
+      "manifest_sha256": "00c4cae3850e0585084e815c085486b7d3518ce8e3776466d3d4363f83aafb32",
+      "overlays": "/srv/banner-width-chisimba-20261110/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -175,6 +175,22 @@
       "kengasolutions",
       "heritagetreazures",
       "myhairplanner"
-    ]
+    ],
+    "followup": {
+      "site": "chisimba",
+      "reason": "Restore viewport-wide banner background without changing layout widths",
+      "pins": {
+        "framework": {
+          "branch": "release/consolidation-20260930",
+          "commit": "9c80e5f99e11d5f169928380d83bb131bfb8cb61",
+          "remote": "git@github.com:chisimba-revival/framework.git"
+        },
+        "modules": {
+          "branch": "release/consolidation-20260930",
+          "commit": "cccb6a3b5238fc7cd01355869f1f9f22fc6b7317",
+          "remote": "git@github.com:chisimba-revival/modules.git"
+        }
+      }
+    }
   }
 }

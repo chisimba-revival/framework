@@ -30,3 +30,21 @@ The fleet inventory records exact per-site manifest paths and hashes. This
 record and the operator correction are operational metadata; they do not alter
 the runtime source manifest. Private adapters and unrelated local tenancy work
 were excluded from this deployment.
+
+## Chisimba banner follow-up
+
+Framework `9c80e5f99e11d5f169928380d83bb131bfb8cb61` restores the
+viewport-wide charcoal background through shared shadow/clip tokens. Content,
+logo and pills keep their layout bounds. The local specimen now includes the
+constrained page wrapper so it exercises the real layout condition. Desktop
+and 390px checks confirmed unchanged layout bounds; pills wrap normally.
+Only Chisimba.com was redeployed. Source audit verified all 13,537 files.
+Rehearsal and live checks preserved 130 protected tables.
+Backup: `/srv/chisimba-com/backups/shared-20261110-134903`.
+
+The live follow-up exposed zero archive timestamps retaining stylesheet
+`?v=0` URLs. Builder commit `cedf38d99` assigns deterministic source commit
+timestamps to future archives. The two changed Chisimba stylesheet timestamps
+were corrected to the deployed source commit time, with hashes verified before
+and after; no source bytes changed. A normal browser reload then displayed the
+full-width background on desktop and phone.
