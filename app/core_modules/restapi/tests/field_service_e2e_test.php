@@ -314,7 +314,7 @@ class FieldServiceE2ETest
         );
     }
 
-    private function chisimbaRequest(string $method, string $path, array $body = null): array
+    private function chisimbaRequest(string $method, string $path, ?array $body = null): array
     {
         $ch = curl_init($this->chisimbaUrl . $path);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -330,7 +330,7 @@ class FieldServiceE2ETest
         return json_decode($response, true) ?: [];
     }
 
-    private function fieldServiceRequest(string $method, string $path, string $token, array $body = null): array
+    private function fieldServiceRequest(string $method, string $path, string $token, ?array $body = null): array
     {
         $ch = curl_init($this->fieldServiceUrl . $path);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
