@@ -52,6 +52,7 @@ def build(framework, modules, ref, destination):
             if local != remote:
                 raise RuntimeError(name + ': HEAD has not been pushed to the common branch')
             pins[name] = {'commit': local, 'branch': ref, 'remote': git(repo, 'remote', 'get-url', 'origin').decode().strip()}
+            commit_time = int(git(repo, 'show', '-s', '--format=%ct', local).decode().strip())
             archive = git(repo, 'archive', '--format=tar', local)
             with tarfile.open(fileobj=io.BytesIO(archive)) as source:
                 for member in source:
@@ -81,6 +82,9 @@ def build(framework, modules, ref, destination):
                     entry = tarfile.TarInfo(path)
                     entry.size = len(data)
                     entry.mode = 0o644
+                    # The skin uses filemtime for stylesheet cache versions.
+                    # A deterministic commit timestamp avoids stale ?v=0 URLs.
+                    entry.mtime = commit_time
                     bundle.addfile(entry, io.BytesIO(data))
     manifest = {'schema': 1, 'pins': pins, 'module_profile': module_profile, 'files': dict(sorted(files.items()))}
     raw = (json.dumps(manifest, sort_keys=True, indent=2) + '\n').encode()
