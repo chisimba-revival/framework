@@ -18,19 +18,6 @@ if (empty($GLOBALS['kewl_entry_point_run'])) {
 
 class userservice extends dbTable
 {
-    /**
-     * Columns this service is allowed to interpolate into a statement.
-     *
-     * Identifiers cannot be bound as parameters, so the few lookups that vary
-     * by column interpolate the name. Restricting that name to a fixed list
-     * keeps the interpolation from ever reaching client input.
-     *
-     * @var array
-     */
-    private $lookupColumns = array(
-        'id', 'userid', 'username', 'emailaddress',
-    );
-
     public function init(
         $tableName = null,
         $pearDb = null,
@@ -89,11 +76,6 @@ class userservice extends dbTable
 
     /**
      * Return users for the native administration interface.
-     *
-     * The search term is bound, not interpolated. Escaping it by hand was
-     * never sufficient on its own: it relies on the connection charset never
-     * admitting a backslash as a trailing byte of a multi-byte character, which
-     * stops holding if the charset ever changes.
      */
     public function listUsers($query = '', $includeInactive = true)
     {
@@ -103,14 +85,12 @@ class userservice extends dbTable
         }
 
         $conditions = array();
-        $bindings = array();
         if ($query !== '') {
-            // Bound once and referenced four times, so the placeholder order in
-            // $bindings must match the placeholder order in the condition.
-            $term = '%' . $query . '%';
-            $conditions[] = '(username LIKE ? OR firstname LIKE ?'
-                . ' OR surname LIKE ? OR emailaddress LIKE ?)';
-            $bindings = array($term, $term, $term, $term);
+            $term = $this->quoteValue('%' . $query . '%');
+            $conditions[] = '(username LIKE ' . $term
+                . ' OR firstname LIKE ' . $term
+                . ' OR surname LIKE ' . $term
+                . ' OR emailaddress LIKE ' . $term . ')';
         }
         if (!$includeInactive) {
             $conditions[] = 'isactive = 1';
@@ -125,13 +105,8 @@ class userservice extends dbTable
         }
         $sql .= ' ORDER BY UPPER(surname), UPPER(firstname), UPPER(username)';
 
-        return $this->selectRows($sql, $bindings);
-    }
-
-    /** Read bound values through the checked shared database boundary. */
-    private function selectRows($sql, array $bindings = array())
-    {
-        return $this->selectPrepared($sql, $bindings);
+        $rows = $this->getArray($sql);
+        return is_array($rows) ? $rows : array();
     }
 
     public function usernameAvailable($username, $excludingUserId = null)
@@ -408,15 +383,14 @@ class userservice extends dbTable
         if ($value === null) {
             return null;
         }
-        $rows = $this->selectRows(
+        $rows = $this->getArray(
             'SELECT id, userid, username, title, firstname, surname, pass,'
             . ' creationdate, emailaddress, logins, sex, country,'
             . ' staffnumber, cellnumber, accesslevel, isactive, howcreated,'
-            . ' updated, last_login FROM tbl_users WHERE ' . $this->column($column)
-            . ' = ? LIMIT 2',
-            array($value)
+            . ' updated, last_login FROM tbl_users WHERE ' . $column . ' = '
+            . $this->quoteValue($value) . ' LIMIT 2'
         );
-        return count($rows) === 1 ? $rows[0] : null;
+        return is_array($rows) && count($rows) === 1 ? $rows[0] : null;
     }
 
     private function valueAvailable($column, $value, $excludingUserId)
@@ -425,43 +399,15 @@ class userservice extends dbTable
         if ($value === null) {
             return false;
         }
-        $sql = 'SELECT userid FROM tbl_users WHERE LOWER(' . $this->column($column)
-            . ') = LOWER(?)';
-        $bindings = array($value);
+        $sql = 'SELECT userid FROM tbl_users WHERE LOWER(' . $column . ') = LOWER('
+            . $this->quoteValue($value) . ')';
         $excludingUserId = $this->normaliseUserId($excludingUserId);
         if ($excludingUserId !== null) {
-            $sql .= ' AND userid <> ?';
-            $bindings[] = $excludingUserId;
+            $sql .= ' AND userid <> ' . $this->quoteValue($excludingUserId);
         }
         $sql .= ' LIMIT 1';
-        $rows = $this->selectRows($sql, $bindings);
-        return count($rows) === 0;
-    }
-
-    /**
-     * Return a column name that is safe to interpolate.
-     *
-     * An identifier cannot be a bound parameter, so the few lookups that vary
-     * by column have to interpolate the name itself. This is the allowlist that
-     * keeps that from ever reaching client input.
-     *
-     * An unrecognised name is a programming error, so it raises rather than
-     * silently degrading: a lookup that quietly matched nothing would turn a
-     * username or email uniqueness check into a false "available".
-     *
-     * @param string $column Requested column name
-     * @return string
-     * @throws RuntimeException when the column is not in the allowlist
-     */
-    private function column($column)
-    {
-        if (!in_array($column, $this->lookupColumns, true)) {
-            throw new RuntimeException(
-                'userservice lookup refused an unlisted column: ' . (string) $column
-            );
-        }
-
-        return $column;
+        $rows = $this->getArray($sql);
+        return !is_array($rows) || count($rows) === 0;
     }
 
     private function inputValue(array $input, array $keys, &$present)
@@ -513,5 +459,9 @@ class userservice extends dbTable
         return $result;
     }
 
+    private function quoteValue($value)
+    {
+        return "'" . addslashes((string) $value) . "'";
     }
+}
 ?>

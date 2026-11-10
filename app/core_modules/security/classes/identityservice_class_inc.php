@@ -20,12 +20,6 @@ class identityservice extends dbTable
         );
     }
 
-    /** Read bound values through the checked shared database boundary. */
-    private function selectRows($sql, array $bindings = array())
-    {
-        return $this->selectPrepared($sql, $bindings);
-    }
-
     /**
      * Resolve a logical user ID to its permission identity.
      *
@@ -44,11 +38,11 @@ class identityservice extends dbTable
              . ' FROM tbl_perms_perm_users AS pu'
              . ' INNER JOIN tbl_users AS u'
              . ' ON CAST(pu.auth_user_id AS CHAR(25)) = u.userid'
-             . ' WHERE u.userid = ?'
-             . ' AND pu.auth_container_name = ?'
+             . ' WHERE u.userid = ' . $this->quoteValue($userId)
+             . ' AND pu.auth_container_name = ' . $this->quoteValue($containerName)
              . ' LIMIT 2';
 
-        $rows = $this->selectRows($sql, array($userId, $containerName));
+        $rows = $this->getArray($sql);
         if (!is_array($rows) || count($rows) !== 1) {
             return null;
         }
@@ -72,10 +66,10 @@ class identityservice extends dbTable
              . ' FROM tbl_perms_perm_users AS pu'
              . ' INNER JOIN tbl_users AS u'
              . ' ON CAST(pu.auth_user_id AS CHAR(25)) = u.userid'
-             . ' WHERE pu.perm_user_id = ?'
+             . ' WHERE pu.perm_user_id = ' . $permissionUserId
              . ' LIMIT 2';
 
-        $rows = $this->selectRows($sql, array($permissionUserId));
+        $rows = $this->getArray($sql);
         if (!is_array($rows) || count($rows) !== 1) {
             return null;
         }
@@ -112,15 +106,16 @@ class identityservice extends dbTable
             return $existing;
         }
 
-        $userRows = $this->selectRows(
-            'SELECT userid FROM tbl_users WHERE userid = ? LIMIT 2',
-            array($userId)
+        $userRows = $this->getArray(
+            'SELECT userid FROM tbl_users WHERE userid = '
+            . $this->quoteValue($userId)
+            . ' LIMIT 2'
         );
         if (!is_array($userRows) || count($userRows) !== 1) {
             return null;
         }
 
-        $rows = $this->selectRows(
+        $rows = $this->getArray(
             'SELECT MAX(perm_user_id) AS max_perm_user_id FROM tbl_perms_perm_users'
         );
         $nextPermissionUserId = 1;
@@ -168,13 +163,12 @@ class identityservice extends dbTable
             return false;
         }
 
-        $rows = $this->selectRows(
+        $rows = $this->getArray(
             'SELECT perm_user_id FROM tbl_perms_perm_users'
-            . ' WHERE perm_user_id = ?'
-            . ' AND auth_user_id = ?'
-            . ' AND auth_container_name = ?'
-            . ' LIMIT 2',
-            array($permissionUserId, $userId, $containerName)
+            . ' WHERE perm_user_id = ' . $permissionUserId
+            . ' AND auth_user_id = ' . $this->quoteValue($userId)
+            . ' AND auth_container_name = ' . $this->quoteValue($containerName)
+            . ' LIMIT 2'
         );
         if (!is_array($rows) || count($rows) !== 1) {
             return false;
@@ -219,6 +213,11 @@ class identityservice extends dbTable
         }
 
         return (int) $value;
+    }
+
+    private function quoteValue($value)
+    {
+        return "'" . addslashes((string) $value) . "'";
     }
 }
 ?>

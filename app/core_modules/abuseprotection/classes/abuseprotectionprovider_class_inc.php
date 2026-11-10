@@ -24,12 +24,6 @@ class abuseprotectionprovider extends dbTable
         );
     }
 
-    /** Atomically reserve independent attempt budgets before a credential lookup. */
-    public function admit($action, array $context, array $limits)
-    {
-        return $this->service->admit($action, $context, $limits);
-    }
-
     public function issueFormEvidence($action)
     {
         return $this->service->issueFormEvidence($action);

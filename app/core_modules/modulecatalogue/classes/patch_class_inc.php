@@ -59,15 +59,10 @@ class patch extends dbtable {
      *
      */
     public function init($tableName = null, $pearDb = null, $errorCallback = 'globalPearErrorCallback') {
-        try {
-            parent::init('tbl_modules');
-            $this->objConfig = $this->getObject('altconfig','config');
-            $this->objModFile = $this->getObject('modulefile','modulecatalogue');
-            $this->objLanguage = $this->getObject('language','language');
-        } catch (Exception $e) {
-            echo customException::cleanUp($e->getMessage());
-            exit(0);
-        }
+        parent::init('tbl_modules');
+        $this->objConfig = $this->getObject('altconfig','config');
+        $this->objModFile = $this->getObject('modulefile','modulecatalogue');
+        $this->objLanguage = $this->getObject('language','language');
     }
 
     /**
@@ -127,16 +122,8 @@ class patch extends dbtable {
     * @return string $version the version in the database
     */
     function getVersion($module) {
-        try {
-            $row = $this->getRow('module_id',$module);
-            if (!is_array($row)) {
-                return FALSE;
-            }
-            return $row['module_version'];
-        } catch (Exception $e) {
-            echo customException::cleanUp($e->getMessage());
-            exit(0);
-        }
+        $row=$this->selectPrepared('SELECT module_version FROM tbl_modules WHERE module_id=?',[$module])[0]??null;
+        return $row['module_version']??false;
     }
 
     /**
@@ -145,261 +132,133 @@ class patch extends dbtable {
     * @param string $modname the name of the module
     *
     */
-    function applyUpdates($modname) {
-        try {
-            log_debug('patch::applyUpdates::BEGIN');
-            // Find the updates file
-            $this->objModule = $this->getObject('modules','modulecatalogue');
-            $this->objModuleAdmin = $this->getObject('modulesadmin','modulecatalogue');
-            $this->objModFile = $this->getObject('modulefile','modulecatalogue');
-            //check that there are no new unmet dependencies
-            $rData = $this->objModFile->readRegisterFile($this->objModFile->findregisterfile($modname));
-            if (isset($rData['DEPENDS'])) {
-                $missing = FALSE;
-                $localModules = $this->objModFile->getLocalModulelist();
-                $unMetDep = $notPresentDep = array();
-                foreach ($rData['DEPENDS'] as $dep) {
-                    if (!$this->objModule->checkIfRegistered($dep)) {
-                        $missing = TRUE;
-                        if (in_array($dep,$localModules)) {
-                            $unMetDep[] = $dep;
-                        } else {
-                            $notPresentDep[] = $dep;
-                        }
-                    }
-                }
-                if ($missing) {
-                    return array('unMetDep'=>$modname,'modules'=>$unMetDep,'missing'=>$notPresentDep);
+    /** Apply reviewed XML operations, retaining scalar, repeat-safe receipts. */
+    public function applyUpdates($modname) {
+        if (!is_string($modname) || !preg_match('/^[a-zA-Z0-9_-]+$/D',$modname)) throw new InvalidArgumentException('Invalid module identifier');
+        return $this->withDatabaseLock('patch:'.substr(hash('sha256',$modname),0,18),function()use($modname){
+            $this->objModule=$this->getObject('modules','modulecatalogue');
+            $this->objModuleAdmin=$this->getObject('modulesadmin','modulecatalogue');
+            $this->objModFile=$this->getObject('modulefile','modulecatalogue');
+            $registration=$this->objModFile->readRegisterFile($this->objModFile->findRegisterFile($modname));
+            if (!is_array($registration) || !isset($registration['MODULE_VERSION'])) throw new RuntimeException('Module registration is unavailable: '.$modname);
+            $unmet=[];$missing=[];$local=$this->objModFile->getLocalModulelist();
+            foreach ($registration['DEPENDS']??[] as $dependency) {
+                if (!$this->objModule->checkIfRegistered($dependency)) {
+                    if (in_array($dependency,$local,true)) $unmet[]=$dependency; else $missing[]=$dependency;
                 }
             }
-            $data=array();
-            $file=$this->objModFile->findSqlXML($modname);
-            // Apply the table changes
-            $oldversion = (float)$this->getVersion($modname);
-            $result = array();
-            log_debug('patch::applyUpdates::findSqlXML');
-            if (file_exists($file)){
-                log_debug('patch::applyUpdates::file_exists($file)');
-                $check = file_get_contents($file);
-                if (!empty($check)) {
-                    log_debug('patch::applyUpdates::!empty($check)');
-                    $objXml = simplexml_load_file($file);
-                    foreach ($objXml->update as $update) {
-                        log_debug('patch::applyUpdates::$update=='.var_export($update, TRUE));
-                        $ver = (float)$update->version;
-                        log_debug('patch::applyUpdates::$ver=='.var_export($ver, TRUE));
-                        $verStr = str_replace('.','_',$update->version);
-                        if ($ver>$oldversion) {
-                            foreach ($update->data as $data) {
-                                log_debug('patch::applyUpdates::$data=='.$data);
-                                foreach ($data as $opKey => $opValue) {
-                                    log_debug('patch::applyUpdates::$opKey => $opValue=='.$opKey.' => '.$opValue);
-                                    $pData = array();
-                                    $change = '';
-                                    switch ($opKey) {
-                                        case 'name':
-                                            $pData[$opKey] = (string)$opValue;
-                                            break;
-                                        case 'add':
-                                            $name = (string)$opValue->name;
-                                            $innerData = array();
-                                            foreach ($opValue as $rowKey => $rowVal) {
-                                                if ($rowKey != 'name') {
-                                                    $k = (string)$rowKey;
-                                                    $rowVal = (string)$rowVal;
-                                                    if (($rowKey == 'notnull')||($rowKey =='unsigned')) {
-                                                                if ($this->dbType == 'pgsql') {
-                                                                    $rowVal = ($rowVal == 0)? 'f':'t';
-                                                                }
-                                                            }
-                                                    $v = $rowVal;
-                                                    $innerData[$k] = $v;
-                                                }
-                                            }
-                                            $pData[$opKey] = array($name=>$innerData);
-                                            break;
-                                        case 'remove':
-                                            $op = (string)$opKey;
-                                            $strVal = (string)$opValue;
-                                            $pData[$op] = array($strVal => array());
-                                            break;
-                                        case 'change':
-                                            $op = (string)$opKey;
-                                            $chArray = array();
-                                            $change = array();
-                                            foreach ($opValue as $name => $chData) {
-                                                log_debug('patch::applyUpdates::$name => $chData=='.$name.' => '.$chData);
-                                                foreach ($chData as $chKey => $chVal) {
-                                                    log_debug('patch::applyUpdates::$chKey => $chVal=='.$chKey.' => '.$chVal);
-                                                    $chKey = (string)$chKey;
-                                                    if (($chKey == 'notnull')||($chKey=='unsigned')) {
-                                                        if ($this->dbType == 'pgsql') {
-                                                            $chVal = (string)$chVal;
-                                                            $chVal = ($chVal == 0)? 'f':'t';
-                                                        }
-                                                    }
-                                                    if ($chKey == 'definition') {
-                                                        $def = array();
-                                                        foreach ($chVal as $inKey => $inVal) {
-                                                            log_debug('patch::applyUpdates::$inKey => $inVal=='.$inKey.' => '.$inVal);
-                                                            $inKey = (string)$inKey;
-                                                            $inVal = (string)$inVal;
-                                                            if (($inKey == 'notnull')||($inKey=='unsigned')) {
-                                                                if ($this->dbType == 'pgsql') {
-                                                                    $inVal = ($inVal == 0)? 0:'t';
-                                                                }
-                                                            }
-                                                            $def[$inKey] = $inVal;
-                                                        }
-                                                        $chArray[$chKey] = $def;
-                                                    } else {
-                                                        $chArray[$chKey] = (string)$chVal;
-                                                    }
-                                                }
-                                                $change[$name]=$chArray;
-                                                $pData[$op] = $change;
-                                            }
-                                            break;
-                                        case 'rename':
-                                            $op = (string)$opKey;
-                                            $chArray = array();
-                                            $change = array();
-                                            foreach ($opValue as $name => $chData) {
-                                                foreach ($chData as $chKey => $chVal) {
-                                                    $chKey = (string)$chKey;
-                                                    if ($chKey == 'definition') {
-                                                        $def = array();
-                                                        foreach ($chVal as $inKey => $inVal) {
-                                                            $inKey = (string)$inKey;
-                                                            $def[$inKey] = (string)$inVal;
-                                                        }
-                                                        $chArray[$chKey] = $def;
-                                                    } else {
-                                                        if ($chKey == 'name') {
-                                                            $chArray[$chKey] = (string)$chVal;
-                                                        }
-                                                    }
-                                                }
-                                                $change[$name]=$chArray;
-                                                $pData[$op] = $change;
-                                            }
-                                            break;
-                                        case 'insert':
-                                            $op = (string)$opKey;
-                                            $change = array();
+            if ($unmet || $missing) return ['unMetDep'=>$modname,'modules'=>$unmet,'missing'=>$missing];
+            $old=$this->getVersion($modname);
+            if ($old===false) throw new RuntimeException('Cannot patch an unregistered module: '.$modname);
+            $operations=$this->pendingOperations($this->objModFile->findSqlXML($modname),(float)$old,(float)$registration['MODULE_VERSION']);
+            // Validate the entire pending plan before any operation or receipt write.
+            foreach ($operations as $operation) {
+                if (!isset($operation['data']['deleteRows']) && $this->objModuleAdmin->alterTable($operation['table'],$operation['data'],true)!==true) throw new RuntimeException('Schema validation failed for '.$modname);
+            }
+            foreach ($operations as $operation) $this->applyOperation($modname,$operation);
+            if ($this->objModuleAdmin->loadData($modname)===false) throw new RuntimeException('Default data update failed: '.$modname);
+            if (!$this->objModuleAdmin->installModule($registration,true)) throw new RuntimeException('Module registration failed: '.$modname.' ('.$this->objModuleAdmin->getLastErrorCode().')');
+            return ['current'=>$this->getVersion($modname),'old'=>(float)$old,'modname'=>$modname];
+        });
+    }
 
-                                            foreach($opValue as $rowKey => $rowVal){
-                                                $change[(string)$rowKey] = (string)$rowVal;
-                                            }
-                                            $pData[$op] = $change;
-                                            break;
-
-                                        case 'deleteRows':
-                                            $conditions = array();
-                                            foreach ($opValue as $rowKey => $rowVal) {
-                                                $field = (string) $rowKey;
-                                                if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $field) !== 1) {
-                                                    throw new customException('invalid deleteRows field');
-                                                }
-                                                $conditions[$field] = (string) $rowVal;
-                                            }
-                                            if ($conditions === array()) {
-                                                throw new customException('deleteRows requires conditions');
-                                            }
-                                            $pData[$opKey] = $conditions;
-                                            break;
-
-                                        default:
-                                            throw new customException('error in patch data');
-                                            break;
-                                    }
-                                    log_debug('patch::applyUpdates::'.var_export($pData, TRUE));
-                                    if (isset($pData['deleteRows'])) {
-                                        $table = (string) $update->table;
-                                        if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $table) !== 1) {
-                                            throw new customException('invalid deleteRows table');
-                                        }
-                                        $where = array();
-                                        foreach ($pData['deleteRows'] as $field => $value) {
-                                            $where[] = $field . "='" . addslashes($value) . "'";
-                                        }
-                                        $deleteResult = $this->objModule->query(
-                                            'DELETE FROM ' . $table . ' WHERE ' . implode(' AND ', $where)
-                                        );
-                                        if ($deleteResult === false) {
-                                            return false;
-                                        }
-                                        $patch = array(
-                                            'moduleid'=>$modname,
-                                            'version'=>$ver,
-                                            'tablename'=>$table,
-                                            'patchdata'=>$pData,
-                                            'applied'=>$this->objModule->now()
-                                        );
-                                        $this->objModule->insert($patch, 'tbl_module_patches');
-                                        continue;
-                                    }
-                                    if(isset($pData['change']) && is_array($pData['change'])) {
-                                        $field2change = array_keys($pData['change']);
-                                        $existfields = $this->objModuleAdmin->listTblFields($update->table);
-                                        foreach($field2change as $changes) {
-                                            if(in_array($changes, $existfields)) {
-                                                // return FALSE;
-                                                // No changes were needed so we bring the mod to the version specified
-                                                $patch = array('moduleid'=>$modname,'version'=>$ver,'tablename'=>$update->table,
-                                                           'patchdata'=>$pData,'applied'=>$this->objModule->now());
-                                                $this->objModule->insert($patch,'tbl_module_patches');
-                                            }
-                                        }
-                                    }
-                                    $ret = $this->objModuleAdmin->alterTable($update->table,$pData,true);
-                                    log_debug('patch::applyUpdates::$ret=='.var_export($ret, TRUE));
-                                    //log_debug('patch::applyUpdates::MDB2_OK=='.var_export(MDB2_OK, TRUE));
-                                    if ($ret === TRUE || !is_string($ret)) {
-                                        log_debug('patch::applyUpdates::$ret === TRUE || !is_string($ret)');
-                                        //$this->objModuleAdmin->alterTable($update->table,$pData,false);
-                                        $ret = $this->objModuleAdmin->alterTable($update->table,$pData,false);
-                                        log_debug('patch::applyUpdates::$ret=='.var_export($ret, TRUE));
-                                        //log_debug('patch::applyUpdates::MDB2_OK=='.var_export(MDB2_OK, TRUE));
-                                        if ($ret === FALSE || is_string($ret)) {
-                                            log_debug('patch::applyUpdates::$ret === FALSE || is_string($ret)');
-                                            return FALSE;
-                                        }
-                                        // MDB2_OK==1
-                                        $patch = array('moduleid'=>$modname,'version'=>$ver,'tablename'=>$update->table,
-                                        'patchdata'=>$pData,'applied'=>$this->objModule->now());
-                                        $this->objModule->insert($patch,'tbl_module_patches');
-                                    } else {
-                                        log_debug('patch::applyUpdates::!{$ret === TRUE || !is_string($ret)}');
-                                        if (is_string($ret)) {
-                                            log_debug($ret);
-                                        }
-                                        return FALSE;
-                                    }
-                                }
+    /** Parse scalars only; reject malformed XML and unsupported operations. */
+    protected function pendingOperations($file,$old,$target) {
+        if (!is_string($file) || $file==='' || !is_file($file)) return [];
+        $source=file_get_contents($file);
+        if ($source===false) throw new RuntimeException('Cannot read module update XML');
+        if (trim($source)==='') return [];
+        if (stripos($source,'<!DOCTYPE')!==false || stripos($source,'<!ENTITY')!==false) throw new RuntimeException('XML document types and entities are not permitted');
+        $previous=libxml_use_internal_errors(true);
+        try {$xml=simplexml_load_string($source,'SimpleXMLElement',LIBXML_NONET);}
+        finally {libxml_clear_errors();libxml_use_internal_errors($previous);}
+        if ($xml===false || $xml->getName()!=='updates') throw new RuntimeException('Invalid module update XML');
+        $operations=[];$ordinal=0;
+        foreach ($xml->update as $update) {
+            $version=trim((string)$update->version);
+            if (!preg_match('/^[0-9]+(?:\.[0-9]+)?$/D',$version)) throw new RuntimeException('Invalid XML patch version');
+            foreach ($update->data as $data) foreach ($data as $kind=>$value) {
+                $position=$ordinal++;
+                if ((float)$version<=$old || (float)$version>$target) continue;
+                $table=(string)$update->table;
+                $this->patchIdentifier($table);
+                switch ($kind) {
+                    case 'name': $parsed=(string)$value;$this->patchIdentifier($parsed);break;
+                    case 'remove': $field=(string)$value;$this->patchIdentifier($field);$parsed=[$field=>[]];break;
+                    case 'add':
+                        $field=(string)$value->name;$this->patchIdentifier($field);$spec=[];
+                        foreach ($value as $key=>$scalar) if ($key!=='name') $spec[$key]=$this->patchScalar($scalar);
+                        $parsed=[$field=>$spec];break;
+                    case 'change': case 'rename':
+                        $parsed=[];
+                        foreach ($value as $field=>$spec) {
+                            $this->patchIdentifier($field);$parsed[$field]=[];
+                            foreach ($spec as $key=>$item) {
+                                if ($key==='definition') {
+                                    $definition=[];foreach ($item as $option=>$scalar) $definition[$option]=$this->patchScalar($scalar);
+                                    $parsed[$field][$key]=$definition;
+                                } else $parsed[$field][$key]=$this->patchScalar($item);
                             }
                         }
-                    }
+                        if (!$parsed) throw new RuntimeException('Empty schema alteration');break;
+                    case 'insert': case 'deleteRows':
+                        $parsed=[];
+                        foreach ($value as $field=>$scalar) {$this->patchIdentifier($field);$parsed[$field]=$this->patchScalar($scalar);}
+                        if (!$parsed) throw new RuntimeException($kind.' requires conditions or values');break;
+                    default: throw new RuntimeException('Unsupported XML patch operation: '.$kind);
                 }
+                $operations[]=['version'=>$version,'table'=>$table,'data'=>[$kind=>$parsed],'ordinal'=>$position];
             }
-            //update version info in db
-            $regData = $this->objModFile->readRegisterFile($this->objModFile->findregisterfile($modname));
-            if (!$this->objModuleAdmin->installModule($regData,TRUE)) {
-                return $this->objModuleAdmin->getLastError();
-            }
-            $result['current'] = $this->getVersion($modname);
-            $result['old'] = $oldversion;
-            $result['modname'] = $modname;
+        }
+        usort($operations,fn($a,$b)=>[(float)$a['version'],$a['ordinal']]<=>[(float)$b['version'],$b['ordinal']]);
+        return $operations;
+    }
+    private function patchIdentifier($value) {
+        if (!is_string($value) || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D',$value)!==1) throw new RuntimeException('Invalid XML patch identifier');
+    }
+    private function patchScalar($value) {
+        if (count($value->children())!==0) throw new RuntimeException('Expected scalar XML patch value');
+        return (string)$value;
+    }
 
-            // finally reload the defaultdata
-            $objModAdmin = $this->getObject('modulesadmin');
-            $objModAdmin->loadData($modname);
-            // Now pass along the info to the template.
-            log_debug('patch::applyUpdates::END');
-            return $result;
-        } catch (Exception $e) {
-            echo customException::cleanUp($e->getMessage());
-            exit(0);
+    /** DDL implicitly commits in MySQL: an uncertain pending receipt blocks retry.
+     * DML and its applied receipt commit together. Never infer success from a column's existence.
+     */
+    private function applyOperation($module,array $operation) {
+        $digest=hash('sha256',json_encode($operation,JSON_THROW_ON_ERROR));
+        $id=substr(hash('sha256',$module.':'.$operation['version'].':'.$operation['ordinal']),0,32);
+        $receipt=$this->selectPrepared('SELECT patchdata FROM tbl_module_patches WHERE id=?',[$id])[0]??null;
+        if ($receipt) {
+            $saved=json_decode($receipt['patchdata'],true,512,JSON_THROW_ON_ERROR);
+            if (($saved['sha256']??'')!==$digest || ($saved['state']??'')!=='applied') throw new RuntimeException('Patch '.$module.' '.$operation['version'].' has an incomplete receipt; inspect the schema before retrying');
+            return;
+        }
+        foreach ($this->selectPrepared('SELECT patchdata FROM tbl_module_patches WHERE moduleid=? AND version=? AND tablename=?',[$module,$operation['version'],$operation['table']]) as $legacy) {
+            $saved=json_decode($legacy['patchdata'],true);
+            if (!is_array($saved) || ($saved['format']??null)!==1) throw new RuntimeException('Legacy patch receipt requires review before retrying '.$module.' '.$operation['version']);
+        }
+        $kind=array_key_first($operation['data']);
+        $encoded=fn($state)=>json_encode(['format'=>1,'sha256'=>$digest,'operation'=>$kind,'state'=>$state],JSON_THROW_ON_ERROR);
+        $write=function($state)use($id,$module,$operation,$encoded){
+            $this->executePrepared('INSERT INTO tbl_module_patches (id,moduleid,version,tablename,patchdata,applied) VALUES (?,?,?,?,?,?)',[$id,$module,$operation['version'],$operation['table'],$encoded($state),$state==='applied'?date('Y-m-d'):null]);
+        };
+        $execute=function()use($operation){
+            if (isset($operation['data']['deleteRows'])) {
+                $where=[];$values=[];
+                foreach ($operation['data']['deleteRows'] as $field=>$value) {$where[]='`'.$field.'`=?';$values[]=$value;}
+                $this->executePrepared('DELETE FROM `'.$operation['table'].'` WHERE '.implode(' AND ', $where),$values);
+            } elseif ($this->objModuleAdmin->alterTable($operation['table'],$operation['data'],false)!==true) throw new RuntimeException('Patch operation failed');
+        };
+        if (in_array($kind,['insert','deleteRows'],true)) {
+            foreach ([$operation['table'],'tbl_module_patches'] as $table) {
+                $row=$this->selectPrepared('SELECT ENGINE AS engine FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?',[$table])[0]??null;
+                if (strcasecmp($row['engine']??'','InnoDB')!==0) throw new RuntimeException('Data patches require transactional tables');
+            }
+            $this->transactionWithSavepoint(function()use($execute,$write){$execute();$write('applied');});
+        } else {
+            $write('pending');
+            $execute();
+            $this->executePrepared('UPDATE tbl_module_patches SET patchdata=?,applied=? WHERE id=?',[$encoded('applied'),date('Y-m-d'),$id]);
         }
     }
 

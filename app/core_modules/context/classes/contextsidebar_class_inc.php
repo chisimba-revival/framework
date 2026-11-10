@@ -137,18 +137,6 @@ class contextsidebar extends ChisimbaObject
             }
         }
         if ($mayManageLearning) {
-            // Match section authoring permissions and the current course setting.
-            if ((int)$this->objContext->getField('use_sections', $this->contextCode) === 1
-                && $objModules->checkIfRegistered('contextcontent')) {
-                $nodes[] = array(
-                    'text' => ucfirst($this->objLanguage->code2Txt(
-                        'mod_contextcontent_managesections', 'contextcontent', NULL,
-                        'Manage [-sections-]'
-                    )),
-                    'uri' => $this->uri(array('action'=>'managesections'), 'contextcontent'),
-                    'nodeid' => 'contextcontent-sections'
-                );
-            }
             $nodes[] = array(
                 'text' => ucwords($this->objLanguage->code2Txt(
                     'mod_context_coursesettings',
@@ -179,11 +167,6 @@ class contextsidebar extends ChisimbaObject
                 && $this->getParam('action') === 'edit'
                 ? 'contextadmin-settings'
                 : $this->getParam('module');
-        }
-
-        if ($this->getParam('module') === 'contextcontent'
-            && $this->getParam('action') === 'managesections') {
-            $activeId = 'contextcontent-sections';
         }
 
         foreach ($nodes as &$node) {

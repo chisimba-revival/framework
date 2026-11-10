@@ -370,7 +370,7 @@ class systext_facet extends dbTable
                 $abstractTextList = $this -> listAbstractText($systemTypeId);
             }
         }
-        if(isset($abstractTextList) && is_array($abstractTextList) && !empty($abstractTextList)){
+        if(isset($abstractTextList) && !empty($abstractTextList)){
             foreach($textItemList as $textItem){
                 $notFound = TRUE;
                 foreach($abstractTextList as $abstractText){
@@ -384,6 +384,7 @@ class systext_facet extends dbTable
                     if(!empty($abstractItem)){
                         $abstractList[$textItem['textinfo']] = $abstractItem[0]['abstract'];
                     }
+
                 }
             }
         }
