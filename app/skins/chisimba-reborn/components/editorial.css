@@ -80,3 +80,8 @@ form.chisimba-form--sectioned > fieldset > legend { padding:0 .8rem 0 0; font-si
 .chisimba-field-grid > .chisimba-choice-row { flex-direction:row; align-items:center; font-weight:400; }
 
 .chisimba-title-field textarea { box-sizing:border-box; display:block; width:100%; min-height:3.5rem; line-height:1.35; resize:vertical; overflow-wrap:anywhere; }
+
+/* Avoid stacking the legacy canvas and container gutters on phones. */
+@media (max-width:42rem) {
+    #Canvas_Content > #container { margin-inline:0; padding-inline:0; }
+}
