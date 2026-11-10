@@ -75,6 +75,8 @@ def build(framework, modules, ref, destination):
                     if path.startswith(('packages/hairplanner/', 'packages/imageedit-service/')) or 'hairplannerendpoints_trait' in path:
                         raise RuntimeError('Private source must not enter the shared bundle')
                     data = source.extractfile(member).read()
+                    if path in ('core_modules/restapi/controller.php', 'core_modules/restapi/classes/restcontroller_class_inc.php') and b'hairplanner' in data.lower():
+                        raise RuntimeError('Private API adapter accidentally entered shared source')
                     files[path] = digest(data)
                     entry = tarfile.TarInfo(path)
                     entry.size = len(data)

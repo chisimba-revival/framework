@@ -46,3 +46,18 @@ automatically overwriting it. A temporary rollout in progress must name its
 intended commits; otherwise all sites must match the common manifest.
 
 Run `python3 tools/deployment/test_source_manifest.py` after changing the checks.
+
+## Recurring fleet audit
+
+`audit_fleet.py --framework /path/to/framework --modules /path/to/modules`
+checks every entry in `fleet.json`. It verifies the common manifest and private
+inventory hashes, scans the host source for extras/edits, rejects unexpected source
+mounts and checks every expected file again inside the running web container.
+It also compares the pinned source with the current common GitHub branch; a newer
+shared runtime change is reported even if each old deployment is internally
+consistent. Fetching Git objects does not alter local working trees.
+
+After an authorised full rollout, update `fleet.json` to the reviewed common
+manifest and private overlay inventory, run this audit, then commit and push the
+record. Never update it just to make unexplained drift disappear. Routine audits
+report problems and leave live systems unchanged.
