@@ -1,5 +1,9 @@
 # GitHub source audit — 10 November 2026
 
+Follow-up: the [common development rollout](../common-development-20261110/README.md)
+reconciles these historical differences. This document records the earlier audit,
+not the current deployment status.
+
 The maintained branch is `release/consolidation-20260930` in both repositories.
 Completed local maintenance and reviewed shared fixes recovered from production
 are now on that branch. Private HairPlanner business code is excluded.

@@ -1,0 +1,359 @@
+{
+  "shared_source_files": 13530,
+  "common_manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
+  "source_audit": {
+    "ok": true,
+    "sites": [
+      {
+        "site": "chisimba.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13530
+      },
+      {
+        "site": "learnthebirds.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13530
+      },
+      {
+        "site": "kengapub.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13530
+      },
+      {
+        "site": "kengasolutions.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13530
+      },
+      {
+        "site": "heritagetreazures.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13530
+      },
+      {
+        "site": "myhairplanner.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13555
+      },
+      {
+        "site": "kengalearn.com",
+        "ok": true,
+        "issues": [],
+        "pins": {
+          "framework": {
+            "branch": "release/consolidation-20260930",
+            "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+            "remote": "git@github.com:chisimba-revival/framework.git"
+          },
+          "modules": {
+            "branch": "release/consolidation-20260930",
+            "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+            "remote": "git@github.com:chisimba-revival/modules.git"
+          }
+        },
+        "files": 13530
+      }
+    ],
+    "newer_shared_source": {
+      "framework": [],
+      "modules": []
+    }
+  },
+  "http_checks": [
+    {
+      "site": "chisimba.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "chisimba.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "chisimba.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengalearn.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengalearn.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengalearn.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "learnthebirds.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "learnthebirds.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "learnthebirds.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengapub.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengapub.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengapub.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengasolutions.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengasolutions.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "kengasolutions.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "heritagetreazures.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "heritagetreazures.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "heritagetreazures.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "myhairplanner.com",
+      "route": "/",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "myhairplanner.com",
+      "route": "index.php?module=security&action=showlogin",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "site": "myhairplanner.com",
+      "route": "index.php?module=registration-service&action=forgotpassword",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "log_checks": [
+    {
+      "site": "chisimba",
+      "new_error_lines": [],
+      "count": 0
+    },
+    {
+      "site": "kengasolutions",
+      "new_error_lines": [],
+      "count": 0
+    },
+    {
+      "site": "learnthebirds",
+      "new_error_lines": [],
+      "count": 0
+    },
+    {
+      "site": "kengapub",
+      "new_error_lines": [],
+      "count": 0
+    },
+    {
+      "site": "heritagetreazures",
+      "new_error_lines": [],
+      "count": 0
+    },
+    {
+      "site": "myhairplanner",
+      "new_error_lines": [],
+      "count": 0
+    },
+    {
+      "site": "kengalearn",
+      "new_error_lines": [],
+      "count": 0
+    }
+  ],
+  "sites": {
+    "chisimba": {
+      "protected_tables": 130,
+      "backup": "/srv/chisimba-com/backups/shared-20261110-103150",
+      "release": "/srv/chisimba-com/releases/common-dev-20261110-103150/ch",
+      "worker_timers": {}
+    },
+    "kengasolutions": {
+      "protected_tables": 224,
+      "backup": "/srv/kengasolutions.com/backups/shared-20261110-102816",
+      "release": "/srv/kengasolutions.com/releases/common-dev-20261110-102816/ch",
+      "worker_timers": {}
+    },
+    "learnthebirds": {
+      "protected_tables": 112,
+      "backup": "/srv/learnthebirds.com/backups/shared-20261110-103309",
+      "release": "/srv/learnthebirds.com/releases/common-dev-20261110-103309/ch",
+      "worker_timers": {
+        "learnthebirds-mail.timer": "active"
+      }
+    },
+    "kengapub": {
+      "protected_tables": 226,
+      "backup": "/srv/kengapub.com/backups/shared-20261110-103621",
+      "release": "/srv/kengapub.com/releases/common-dev-20261110-103621/ch",
+      "worker_timers": {
+        "kengapub-mail.timer": "active"
+      }
+    },
+    "heritagetreazures": {
+      "protected_tables": 220,
+      "backup": "/srv/heritagetreazures.com/backups/shared-20261110-103815",
+      "release": "/srv/heritagetreazures.com/releases/common-dev-20261110-103815/ch",
+      "worker_timers": {
+        "heritage-mail.timer": "active"
+      }
+    },
+    "myhairplanner": {
+      "protected_tables": 90,
+      "backup": "/srv/myhairplanner.com/backups/shared-20261110-104005",
+      "release": "/srv/myhairplanner.com/releases/common-dev-20261110-104005/ch",
+      "worker_timers": {
+        "myhairplanner-worker.timer": "active",
+        "myhairplanner-mail.timer": "active"
+      }
+    },
+    "kengalearn": {
+      "protected_tables": 173,
+      "backup": "/srv/kengalearn/backups/shared-20261110-102825",
+      "release": "/srv/kengalearn/releases/common-dev-20261110-102825/ch",
+      "worker_timers": {
+        "chisimba-communications-worker.timer": "active"
+      }
+    }
+  }
+}
