@@ -4,8 +4,8 @@ verify_baseline(current)
 i=json.loads(out(['docker','inspect',web]))[0];image=i['Image']
 baseline={'code':str(current),'image':i['Config']['Image'],'imageId':i['Image'],'files':[]}
 for r in manifest:
- assert sha(current/r['path'])==expected[r['path']],'Live drift '+r['path']
- baseline['files'].append({'path':r['path'],'before':expected[r['path']]})
+ assert sha(current/r['path'])==expected.get(r['path']),'Live drift '+r['path']
+ baseline['files'].append({'path':r['path'],'before':expected.get(r['path'])})
 (work/'baseline.json').write_text(json.dumps(baseline,indent=2))
 if stage.exists():
  for r in manifest:assert sha(stage/r['path'])==r['after'],'Staged drift '+r['path']
