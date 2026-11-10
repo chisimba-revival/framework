@@ -1,6 +1,11 @@
 from common import *
 work.mkdir(mode=0o700,exist_ok=True);stage=work/'stage';current=current.resolve();expected=json.loads((B/(key+'-hashes.json')).read_text())
 verify_baseline(current)
+if '--restage' in sys.argv and stage.exists():
+ assert not (work/'deployed.json').exists(), 'Cannot restage a deployed operation'
+ stage.rename(work/('stage-replaced-'+str(time.time_ns())))
+ (work/'lint.log').unlink(missing_ok=True)
+ (work/'prepared.json').unlink(missing_ok=True)
 i=json.loads(out(['docker','inspect',web]))[0];image=i['Image']
 baseline={'code':str(current),'image':i['Config']['Image'],'imageId':i['Image'],'files':[]}
 for r in manifest:
