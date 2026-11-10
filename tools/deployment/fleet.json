@@ -97,10 +97,10 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/chisimba-common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
-      "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
+      "manifest": "/srv/ltb-design-deploy-20261110/source-manifest.json",
+      "manifest_sha256": "d515a3b718298f752e1c1c427308551c03427e27cf24672edbc7b46e0d7cfb79",
+      "overlays": "/srv/ltb-design-deploy-20261110/private-overlays.json",
+      "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
       "key": "kengapub",
@@ -150,5 +150,31 @@
       "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     }
-  ]
+  ],
+  "rollout": {
+    "status": "LTB design review; other sites await user approval",
+    "target_pins": {
+      "framework": {
+        "branch": "release/consolidation-20260930",
+        "commit": "7774886c54784804a33a52a18f897f1da4c96666",
+        "remote": "git@github.com:chisimba-revival/framework.git"
+      },
+      "modules": {
+        "branch": "release/consolidation-20260930",
+        "commit": "9e9be7b3c0e1d1ca61a81a23037cc483b39ee0c4",
+        "remote": "git@github.com:chisimba-revival/modules.git"
+      }
+    },
+    "updated_sites": [
+      "learnthebirds"
+    ],
+    "pending_sites": [
+      "chisimba",
+      "kengalearn",
+      "kengapub",
+      "kengasolutions",
+      "heritagetreazures",
+      "myhairplanner"
+    ]
+  }
 }
