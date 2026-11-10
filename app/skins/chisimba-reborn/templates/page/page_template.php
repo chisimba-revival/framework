@@ -329,7 +329,6 @@ $faviconVersion = is_file($siteRootPath . $favicon)
 // blank lines between the PHP closing tag and the HTML head tag. It must be
 // exactly as below.
 ?><head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php if(isset($pageCanonical)): ?>
     <link rel="canonical" href="<?php echo htmlspecialchars($pageCanonical,ENT_QUOTES,'UTF-8'); ?>" />
     <meta name="description" content="<?php echo htmlspecialchars($og_content,ENT_QUOTES,'UTF-8'); ?>" />
@@ -400,7 +399,7 @@ if (!isset($pageSuppressContainer)) { ?>
         <div class='ChisimbaCanvas' id='<?php echo htmlspecialchars($canvasName ?? '_default', ENT_QUOTES, 'UTF-8'); ?>'>
             <div id='Canvas_Content'>
                 <div id='Canvas_BeforeContainer'></div>
-                <div id='container'<?php echo !$this->objUser->isLoggedIn() ? ' class="chisimba-public-shell"' : ''; ?>>
+                <div id='container'>
 <?php
 }
 
@@ -431,23 +430,6 @@ if (!isset($pageSuppressBanner)) {
                 <?php echo htmlspecialchars($objConfig->getsiteName(), ENT_QUOTES, 'UTF-8'); ?>
             </span>
             <?php echo '</a>'; ?>
-            <?php if (!$this->objUser->isLoggedIn()
-                && $this->getParam('module', '') !== 'security'): ?>
-                <a class="chisimba-public-login" href="<?php
-                    echo htmlspecialchars($this->uri(array(
-                        'action' => 'showlogin',
-                        'return_to' => $_SERVER['REQUEST_URI'] ?? '',
-                    ), 'security'), ENT_QUOTES, 'UTF-8');
-                ?>"><?php
-                    echo $this->getObject('iconservice', 'ui')->render(
-                        'log-in', array('decorative' => true)
-                    );
-                    echo '<span>' . htmlspecialchars(
-                        $this->getObject('language', 'language')->languageText('word_login', 'system'),
-                        ENT_QUOTES, 'UTF-8'
-                    ) . '</span>';
-                ?></a>
-            <?php endif; ?>
             <?php if ($journeyBadges !== '' || $statusBadge !== ''): ?>
                 <div class="chisimba-site-banner__utilities">
                     <?php echo $journeyBadges . $statusBadge; ?>

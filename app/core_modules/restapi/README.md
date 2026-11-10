@@ -2,8 +2,8 @@
 
 Versioned JSON API exposed under `/api/v1`.
 
-Use the normal Module Catalogue update path on the PDO-only runtime.
-Review [the configuration example](config/restapi_inc.php.example) before enabling API routes.
+For the current PDO-only runtime, upgrade prerequisites and validation limits,
+read [the 18 October integration record](../../../docs/api/CURRENT_RUNTIME_INTEGRATION_20261018.md).
 Signing keys now require an explicit private path outside the web root; preserve
 the existing key when upgrading.
 
@@ -550,10 +550,3 @@ Clients may cache this public identity separately per canonical HTTPS site URL.
 Render the name as text, accept only the documented colour/image formats, and
 show the actual connected server address alongside branding. A logo is not proof
 of server identity. This endpoint neither authenticates nor grants permissions.
-
-## Proprietary consumers
-
-Application-specific HTTP adapters belong to their private deployment overlay.
-The shared controller does not load HairPlanner routes. MyHairPlanner currently
-retains its private controller overlay and adapter alongside its private modules;
-these files must not be added to the public framework repository.

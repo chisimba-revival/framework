@@ -184,8 +184,7 @@ class loginInterface extends ChisimbaObject {
             $objForm->addRule('username', $this->objLanguage->languageText("mod_login_unrequired", 'security', 'Please enter a username. A username is required in order to login.'), 'required');
 
             //Add the username box to the form
-            $objFields->addContent('<div class="auth-field-label">'
-                . $objLabel->show() . '</div><div class="auth-field">'
+            $objFields->addContent('<div class="auth-field">'
                 . $authIcons->render('user', array('decorative' => true))
                 . $objInput->show() . '</div>');
             //$objForm->addToForm();
@@ -196,8 +195,7 @@ class loginInterface extends ChisimbaObject {
             $objLabel = new label($this->objLanguage->languageText('word_password') . ': ', 'input_password');
             //Add the password box to the form
             //$objForm->addToForm();
-            $objFields->addContent('<div class="auth-field-label">'
-                . $objLabel->show() . '</div><div class="auth-field">'
+            $objFields->addContent('<div class="auth-field">'
                 . $authIcons->render('key-round', array('decorative' => true))
                 . $objInput->show() . '</div>');
             //--- Create an element for the network login radio
@@ -242,7 +240,7 @@ class loginInterface extends ChisimbaObject {
                 'security',
                 'Forgot your password?'
             );
-            $p = '<div class="auth-recovery">' . $resetLink->show() . '</div>';
+            $p = '<br />' . $resetLink->show() . '<br />';
             $objFields->addContent($p);
             $objForm->addToForm($objFields->show());
 

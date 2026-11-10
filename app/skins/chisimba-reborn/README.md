@@ -93,20 +93,3 @@ The shared radio helper emits `.chisimba-choice` wrappers: each input and associ
 label align on their first baseline, and wrapped labels stay in the text column.
 Keep native inputs, label associations and keyboard behaviour; avoid module-specific
 position offsets to compensate for stretched controls.
-
-## Public entry screens and mobile review
-
-The page template declares a device-width viewport without restricting zoom.
-Anonymous pages use `chisimba-public-shell` to remove nested desktop gutters on
-small screens. Their banner offers a direct Login link below 60rem; it uses the
-normal security route and validated return destination. Public content and
-sidebar blocks retain their configured order. Both embedded and dedicated login
-forms keep visible labels, native autocomplete and touch-sized controls.
-
-Open [the public entry preview](docs/public-entry-preview.html) through a local
-installation to compare the actual home, sign-in and password recovery
-screens at 320, 390, 768 and 1440 pixels. The preview uses the current canvas and
-real routes, not duplicated application markup. Forms are live: do not submit
-password recovery unless an email is intended. Changing preview size or screen
-does not change site settings. Check keyboard focus, long headings, navigation
-expansion, image sizing and horizontal overflow before releasing skin changes.
