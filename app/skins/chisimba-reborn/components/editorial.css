@@ -46,7 +46,7 @@ form.chisimba-form--sectioned > fieldset > legend { padding:0 .8rem 0 0; font-si
 .chisimba-action-bar { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; padding-block:1.1rem; border-top:1px solid var(--chisimba-border); margin-top:1.5rem; }
 .chisimba-action-bar :is(.button,button,a.button) { min-height:2.875rem; display:inline-flex; align-items:center; justify-content:center; gap:.5rem; margin:0; }
 .chisimba-action-bar__note { margin:0; font-size:.875rem; color:var(--chisimba-text-muted); }
-.chisimba-title-field input { font-family:var(--chisimba-font-family-heading); font-size:clamp(1.25rem,2vw,1.75rem); min-height:3.5rem; }
+.chisimba-title-field :is(input,textarea) { font-family:var(--chisimba-font-family-heading); font-size:clamp(1.25rem,2vw,1.75rem); min-height:3.5rem; }
 .chisimba-editor-section { min-inline-size:0; border:0; border-top:1px solid var(--chisimba-border); border-radius:0; box-shadow:none; padding:1rem 0; margin:0; }
 .chisimba-editor-section legend { padding-right:.65rem; font-size:1rem; font-weight:650; }
 .chisimba-editor-section > p { color:var(--chisimba-text-muted); font-size:.9rem; }
@@ -78,3 +78,5 @@ form.chisimba-form--sectioned > fieldset > legend { padding:0 .8rem 0 0; font-si
 }
 
 .chisimba-field-grid > .chisimba-choice-row { flex-direction:row; align-items:center; font-weight:400; }
+
+.chisimba-title-field textarea { box-sizing:border-box; display:block; width:100%; min-height:3.5rem; line-height:1.35; resize:vertical; overflow-wrap:anywhere; }

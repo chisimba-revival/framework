@@ -133,3 +133,8 @@ editorial composition primitives; they do not alter existing page content.
 
 The first consumers are the native user editor and SimpleBlog post editor.
 Existing submission, permissions, CSRF and composition contracts are unchanged.
+
+Title fields can use a `textarea` with `rows="1"` and `data-auto-expand`.
+The shared autoexpand helper fits its height on input, width changes, font load
+and form reset. Keep the normal label, name, required and maxlength attributes.
+Without JavaScript the textarea remains manually resizable.

@@ -362,6 +362,8 @@ $faviconVersion = is_file($siteRootPath . $favicon)
         echo $objSkin->putJavaScript($mime, $headerParams);
         // Load the helper JS from the current skin
         $helperJs = 'skins/' . $skinName . '/javascript/skinhelper.js';
+        $autoExpandJs = 'skins/' . $skinName . '/javascript/autoexpand.js';
+        echo '<script defer src="' . $autoExpandJs . '?v=' . filemtime($autoExpandJs) . '"></script>';
         echo "\n<script type='text/javascript' src='" . $helperJs . "'></script>\n\n";
     }
 
