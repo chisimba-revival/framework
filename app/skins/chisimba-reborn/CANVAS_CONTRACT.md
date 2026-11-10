@@ -78,3 +78,23 @@ Learn-the-Birds retains its established blue primary/action palette; the warm
 neutral surfaces and serif headings are independent presentation choices. Its
 existing white wordmark is rendered dark by a CSS brightness filter on the light
 banner, without changing the source asset.
+
+## Chisimba.com canvas review
+
+Chisimba.com selects `chisimba-classic`, not the `_default` fallback or the
+blue `chisimba` identity. Its revision keeps the recorded earth/ochre action
+palette and original logo, and adds warm stone surfaces, strong system-font
+headings and a compact charcoal banner. All changes are identity tokens; forms,
+responsive layout, banner pills and status meanings remain shared skin behaviour.
+
+`docs/chisimba-canvas-preview.html` is a local visual specimen using a snapshot
+of the public welcome block and two stories from 10 November 2026. It omits the
+live video and mailing-list form and is not a homepage replacement or database
+clone. Links lead to the public sites; the banner selector changes only the
+specimen. The workshop also offers this canvas for sample forms and editors.
+
+Checked public content with administrator pills at 320, 390, 768 and 1280px,
+plus the user-form and expanding-title editor specimens at phone/desktop widths.
+No horizontal overflow or clipped title was observed. Skin ownership and header
+journey contracts pass. This revision remains on a design branch pending review;
+production and the Learn-the-Birds canvas are unchanged.

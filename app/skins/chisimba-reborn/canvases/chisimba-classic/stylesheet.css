@@ -13,6 +13,39 @@
     --chisimba-focus: #be792f;
     --chisimba-grey-blue: #4c4d4f;
     --chisimba-info: #5a3f1e;
+
+    /* Warm structural neutrals; original earth/ochre identity stays intact. */
+    --chisimba-page: #eeeae2;
+    --chisimba-surface: #fffdf8;
+    --chisimba-surface-subtle: #f6f2ea;
+    --chisimba-surface-muted: #e6e0d5;
+    --chisimba-ink: #292b2b;
+    --chisimba-text: #404340;
+    --chisimba-text-muted: #646357;
+    --chisimba-border: #d7d0c3;
+    --chisimba-border-strong: #968b78;
+    --chisimba-font-family-heading: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --chisimba-heading-weight: 720;
+    --chisimba-heading-tracking: -.035em;
+    --chisimba-editor-radius: .3rem;
+    --chisimba-image-radius: .3rem;
+    --chisimba-region-radius: .4rem;
+    --chisimba-shadow: 0 .2rem .7rem rgb(41 43 43 / .06);
+
+    /* A compact charcoal frame for the original, unmodified logo and pills. */
+    --chisimba-banner-background: #292b2b;
+    --chisimba-banner-foreground: #fff8e9;
+    --chisimba-banner-name-shadow: none;
+    --chisimba-banner-icon-color: #e4b775;
+    --chisimba-banner-min-height: 5.5rem;
+    --chisimba-banner-min-height-mobile: 4.75rem;
+    --chisimba-banner-padding-block: .65rem;
+    --chisimba-brand-logo-height: 4rem;
+    --chisimba-brand-logo-height-mobile: 3.25rem;
+    --chisimba-brand-logo-width: 4.7rem;
+    --chisimba-brand-logo-width-mobile: 3.8rem;
+    --chisimba-banner-pill-background: #3b3c38;
+    --chisimba-banner-pill-border: #827965;
 }
 
 .chisimba-learning-journey--polished {
