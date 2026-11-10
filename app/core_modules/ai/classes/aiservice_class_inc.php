@@ -120,11 +120,10 @@ class aiservice extends dbTable
         $since = $this->objTimeAndDate->toStorage(
             $this->objTimeAndDate->nowUtc()->modify('-' . $days . ' days')
         );
-        $where = 'WHERE date_created >= ?';
-        $parameters = [$since];
-        if ($consumer !== '') { $where .= ' AND consumer_module = ?'; $parameters[] = $consumer; }
-        if ($providerFilter !== '') { $where .= ' AND provider = ?'; $parameters[] = $providerFilter; }
-        $rows = $this->selectPrepared('SELECT * FROM tbl_ai_requests ' . $where . ' ORDER BY date_created ASC', $parameters);
+        $where = "WHERE date_created >= '" . addslashes($since) . "'";
+        if ($consumer !== '') { $where .= " AND consumer_module='" . addslashes($consumer) . "'"; }
+        if ($providerFilter !== '') { $where .= " AND provider='" . addslashes($providerFilter) . "'"; }
+        $rows = $this->getAll($where . ' ORDER BY date_created ASC');
         if (!is_array($rows)) { $rows = array(); }
 
         $summary = array(
