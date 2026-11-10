@@ -35,6 +35,11 @@ class permissionservicefixture extends permissionservice
     public $inserted = array();
     public $permissionUserId = 7;
 
+    public function selectPrepared($sql, array $bindings = array())
+    {
+        return $this->getArray($sql);
+    }
+
     public function getArray($sql)
     {
         $this->queries[] = $sql;

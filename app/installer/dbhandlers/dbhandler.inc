@@ -27,6 +27,15 @@ $mepath = str_replace('installer/index.php', '', $mepath);
 class DbHandler extends dbHandlermanager
 
 {
+	/**
+	* Database configuration captured at construction. Declared explicitly so
+	* PHP 8.2+ does not emit a deprecation for assigning it dynamically.
+	*
+	* @var array
+	*
+	*/
+
+	protected $_objDbConfig;
 
 	/**
 

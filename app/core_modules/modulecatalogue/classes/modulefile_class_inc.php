@@ -305,7 +305,7 @@ class modulefile extends ChisimbaObject {
             if ((strlen($modulePath)>1) && file_exists($modulePath."/$modname")) { // added chech for undefined path
                 $path = $modulePath."/$modname/register.";
             } else {
-                $path = $this->config->getSiteRootPath().'core_modules/'.$modname."/register.";
+                $path = $this->config->getSiteRootPath().'/core_modules/'.$modname."/register.";
             }
             foreach ($endings as $line)
             {
@@ -334,7 +334,7 @@ class modulefile extends ChisimbaObject {
             if ((strlen($modulePath)>1) && file_exists($modulePath."/$modname")) { // added chech for undefined path
                 $path = $modulePath."/$modname/controller.php";
             } else {
-                $path = $this->config->getSiteRootPath()."core_modules/$modname/controller.php";
+                $path = $this->config->getSiteRootPath()."/core_modules/$modname/controller.php";
             }
             if (file_exists($path)) {
                     return $path;
@@ -357,7 +357,7 @@ class modulefile extends ChisimbaObject {
             if ((strlen($modulePath)>1) && file_exists($modulePath."/$modname")) { // added chech for undefined path
                 $path = $modulePath."/$modname/sql/sql_updates.xml";
             } else {
-                $path = $this->config->getSiteRootPath().'core_modules/'.$modname."/sql/sql_updates.xml";
+                $path = $this->config->getSiteRootPath().'/core_modules/'.$modname."/sql/sql_updates.xml";
             }
             if (file_exists($path)) {
                     return $path;
@@ -380,7 +380,7 @@ class modulefile extends ChisimbaObject {
             if ((strlen($modulePath)>1) && file_exists($modulePath."/$modname")) { // added chech for undefined path
                     $path = $modulePath."/$modname/sql/$tablename.sql";
             } else {
-                    $path = $this->config->getSiteRootPath().'core_modules/'.$modname."/sql/$tablename.sql";
+                    $path = $this->config->getSiteRootPath().'/core_modules/'.$modname."/sql/$tablename.sql";
             }
             if (file_exists($path)) {
                     return $path;

@@ -32,6 +32,12 @@ class permissionservice extends dbTable
         );
     }
 
+    /** Read bound values through the checked shared database boundary. */
+    private function selectRows($sql, array $bindings = array())
+    {
+        return $this->selectPrepared($sql, $bindings);
+    }
+
     /**
      * Resolve one right name within one explicit canonical area.
      *
@@ -85,11 +91,12 @@ class permissionservice extends dbTable
             return null;
         }
 
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT area_id FROM tbl_perms_areas'
-            . ' WHERE application_id = ' . $this->quoteValue($applicationId)
-            . ' AND area_define_name = ' . $this->quoteValue($areaDefineName)
-            . ' LIMIT 2'
+            . ' WHERE application_id = ?'
+            . ' AND area_define_name = ?'
+            . ' LIMIT 2',
+            array($applicationId, $areaDefineName)
         );
         if (!is_array($rows) || count($rows) !== 1
             || !isset($rows[0]['area_id'])) {
@@ -319,11 +326,12 @@ class permissionservice extends dbTable
             return false;
         }
 
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT id FROM tbl_perms_contextrolegrants'
-            . ' WHERE right_id = ' . $rightId
-            . ' AND role_name = ' . $this->quoteValue($roleName)
-            . ' LIMIT 2'
+            . ' WHERE right_id = ?'
+            . ' AND role_name = ?'
+            . ' LIMIT 2',
+            array($rightId, $roleName)
         );
         if (!is_array($rows) || count($rows) > 1) {
             return false;
@@ -581,11 +589,11 @@ class permissionservice extends dbTable
         $rightId,
         $roleName
     ) {
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT group_id, group_define_name FROM tbl_perms_groups'
-            . ' WHERE group_define_name LIKE '
-            . $this->quoteValue('%^' . $roleName)
-            . ' ORDER BY group_id'
+            . ' WHERE group_define_name LIKE ?'
+            . ' ORDER BY group_id',
+            array('%^' . $roleName)
         );
         if (!is_array($rows)) {
             return false;
@@ -608,10 +616,11 @@ class permissionservice extends dbTable
 
     private function groupIdsForExactName($groupName)
     {
-        $rows = $this->getArray(
+        $rows = $this->selectRows(
             'SELECT group_id, group_define_name FROM tbl_perms_groups'
-            . ' WHERE group_define_name = ' . $this->quoteValue($groupName)
-            . ' LIMIT 2'
+            . ' WHERE group_define_name = ?'
+            . ' LIMIT 2',
+            array($groupName)
         );
         if (!is_array($rows)) {
             return array();
@@ -749,11 +758,6 @@ class permissionservice extends dbTable
             0,
             32
         );
-    }
-
-    private function quoteValue($value)
-    {
-        return "'" . addslashes((string) $value) . "'";
     }
 }
 ?>
