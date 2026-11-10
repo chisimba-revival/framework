@@ -1,7 +1,7 @@
 <?php
 /**
  * RestController - Base controller for REST API endpoints
- *
+ * 
  * Provides shared functionality: authentication, pagination, validation,
  * request parsing, and standardized responses via ApiResponse.
  */
@@ -81,7 +81,7 @@ abstract class RestController extends controller
 
     /**
      * Main dispatch method - routes to appropriate handler based on REST conventions
-     *
+     * 
      * Expected route format: /resource/id/subresource
      * Maps to methods like: GET_users, POST_users, GET_users_by_id, GET_users_by_id_posts
      */
@@ -90,7 +90,7 @@ abstract class RestController extends controller
         // For REST API, the action contains the full route path
         $route = $action ?? '';
         $this->routeParams = $this->parseRoute($route);
-
+        
         $handler = $this->resolveHandler();
 
         if (!$handler || !method_exists($this, $handler)) {
@@ -139,7 +139,7 @@ abstract class RestController extends controller
 
     /**
      * Parse route into components
-     *
+     * 
      * /users -> ['resource' => 'users', 'id' => null, 'sub' => null]
      * /users/123 -> ['resource' => 'users', 'id' => '123', 'sub' => null]
      * /users/admin -> ['resource' => 'users', 'id' => 'admin', 'sub' => null]
@@ -244,15 +244,15 @@ abstract class RestController extends controller
 
         // Build handler name: METHOD_resource[_by_id][_sub]
         $handler = strtolower($method) . '_' . $resource;
-
+        
         if ($id) {
             $handler .= '_by_id';
         }
-
+        
         if ($sub) {
             $handler .= '_' . $sub;
         }
-
+        
         return method_exists($this, $handler) ? $handler : null;
     }
 
@@ -290,7 +290,7 @@ abstract class RestController extends controller
     protected function parseRequestData(): void
     {
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-
+        
         if (str_starts_with($contentType, 'application/json')) {
             $raw = file_get_contents('php://input');
             $decoded = json_decode($raw, true);
@@ -560,7 +560,7 @@ abstract class RestController extends controller
         ];
     }
 
-
+    
 
     /**
      * Check if current user has a specific permission.
@@ -625,7 +625,7 @@ abstract class RestController extends controller
     {
         $page = max(1, (int)($this->input('page', 1)));
         $pageSize = min(100, max(1, (int)($this->input('pageSize', 20))));
-
+        
         return [
             'page' => $page,
             'pageSize' => $pageSize,
@@ -635,7 +635,7 @@ abstract class RestController extends controller
 
     /**
      * Validate request data against rules
-     *
+     * 
      * Rules format: [
      *   'field' => 'required|type:constraint|...',
      *   'email' => 'required|email',
@@ -768,7 +768,7 @@ abstract class RestController extends controller
             $headers = getallheaders();
             return $headers;
         }
-
+        
         // Fallback to $_SERVER
         $headers = [];
         foreach ($_SERVER as $key => $value) {
@@ -838,13 +838,13 @@ abstract class RestController extends controller
 class ValidationException extends Exception
 {
     private array $errors;
-
+    
     public function __construct(array $errors)
     {
         $this->errors = $errors;
         parent::__construct('Validation failed');
     }
-
+    
     public function getErrors(): array
     {
         return $this->errors;
@@ -857,13 +857,13 @@ class NotFoundException extends Exception {}
 class ConflictException extends Exception
 {
     private array $details = [];
-
+    
     public function __construct(string $message, array $details = [])
     {
         $this->details = $details;
         parent::__construct($message);
     }
-
+    
     public function getDetails(): array
     {
         return $this->details;

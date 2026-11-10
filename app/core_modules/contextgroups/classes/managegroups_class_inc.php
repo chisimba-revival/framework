@@ -304,11 +304,7 @@ class manageGroups extends ChisimbaObject
     */
     function deleteGroups( $contextcode )
     {
-        // Delete groups
-        $groupId=$this->_objGroupAdmin->getLeafId( array($contextcode) );
-        $groupId=$this->_objGroupAdmin->deleteGroup($groupId);
-        // Delete the acls for the context
-        //$this->deleteAcls( $contextcode );
+        return $this->getObject('groupservice', 'groupadmin')->deleteContextGroups($contextcode);
     }
 
     /**

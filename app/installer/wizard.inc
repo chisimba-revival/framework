@@ -358,7 +358,15 @@ class Wizard
         if (isset($_SESSION['completed_steps'])){
             $steps=$_SESSION['completed_steps'];
             if (is_array($steps) && (in_array(7,$steps)) ){
-                $path = $_SESSION['sys_root'].'/config/';
+                // The system root is recorded by the install directory step. Without
+                // it there is no directory to publish the master key into, and the
+                // session state is incomplete, so restart the wizard rather than
+                // building a path from a missing value.
+                if (!isset($_SESSION['sys_root']) || trim((string)$_SESSION['sys_root']) === '') {
+                    $this->_rollback();
+                    return;
+                }
+                $path = rtrim($_SESSION['sys_root'], '/') . '/config/';
                 require_once dirname(__DIR__)
                     . '/classes/core/installationmasterkeyprovider.php';
                 $installationKey = new InstallationMasterKeyProvider(
@@ -973,6 +981,14 @@ class Wizard
         $this->template->set('title', $title);
 
         $this->template->set('step_details', $step_details);
+
+        // wizard.tpl carries this forward in a hidden field so later steps keep
+        // the system root. If it is never set the field renders empty and the
+        // value is silently dropped on submit.
+        $this->template->set(
+            'sys_root',
+            isset($_SESSION['sys_root']) ? (string)$_SESSION['sys_root'] : ''
+        );
 
 		$this->template->set('enable_skip', FALSE); // $skip);
 

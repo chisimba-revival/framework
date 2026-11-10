@@ -1,13 +1,13 @@
 <?php
 /**
  * REST API Contract Test
- *
+ * 
  * Tests the REST API endpoints against the field-guiding service contract.
  * This test verifies that the endpoints match the specification in:
  * framework/docs/architecture/field-guiding-service-contract.md
- *
+ * 
  * Run from Chisimba context: php /path/to/rest_api_contract_test.php
- *
+ * 
  * This test uses HTTP requests to test the actual running API endpoints.
  */
 
@@ -46,7 +46,7 @@ class RestApiContractTest
     public function runAllTests(): void
     {
         echo "=== REST API Contract Tests ===\n\n";
-
+        
         $this->testTokenEndpoints();
         $this->testRefreshEndpoint();
         $this->testProfileEndpoint();
@@ -65,7 +65,7 @@ class RestApiContractTest
     private function testTokenEndpoints(): void
     {
         echo "--- Token Exchange Endpoints ---\n";
-
+        
         // Test 1: GET /api/v1/auth/token returns abuse evidence
         $this->test('GET /api/v1/auth/token returns abuse evidence', function() {
             $response = $this->httpRequest('GET', '/auth/token');
@@ -92,10 +92,10 @@ class RestApiContractTest
             if ($evidence['status'] !== 200) {
                 throw new Exception('Could not get abuse evidence');
             }
-
+            
             // Extract data from wrapped response
             $evidenceData = $evidence['body']['data'] ?? $evidence['body'];
-
+            
             $response = $this->httpRequest('POST', '/auth/token', [
                 'username' => 'nonexistent_user',
                 'password' => 'wrong_password',
@@ -115,7 +115,7 @@ class RestApiContractTest
     private function testRefreshEndpoint(): void
     {
         echo "\n--- Token Refresh Endpoint ---\n";
-
+        
         // Test 1: POST /api/v1/auth/refresh without refresh token fails
         $this->test('POST /api/v1/auth/refresh without refresh token fails', function() {
             $response = $this->httpRequest('POST', '/auth/refresh', [
@@ -145,7 +145,7 @@ class RestApiContractTest
         $this->test('TokenAuthService has family revocation methods', function() {
             // We verify this by checking the source file directly
             $source = file_get_contents('/var/www/html/core_modules/security/classes/tokenauthservice_class_inc.php');
-            $this->assertTrue(strpos($source, 'revokeAllUserDeviceTokens') !== false,
+            $this->assertTrue(strpos($source, 'revokeAllUserDeviceTokens') !== false, 
                 'revokeAllUserDeviceTokens method must exist for family revocation');
             $this->assertTrue(strpos($source, 'function refreshAccessToken') !== false,
                 'refreshAccessToken method must exist');
@@ -158,7 +158,7 @@ class RestApiContractTest
     private function testProfileEndpoint(): void
     {
         echo "\n--- Profile Endpoint ---\n";
-
+        
         // Test 1: GET /api/v1/user/profile without auth fails
         $this->test('GET /api/v1/user/profile without auth fails', function() {
             $response = $this->httpRequest('GET', '/user/profile');
@@ -179,7 +179,7 @@ class RestApiContractTest
     private function testBackwardCompatibility(): void
     {
         echo "\n--- Backward Compatibility ---\n";
-
+        
         // Test 1: GET /api/v1/auth/login (deprecated but working)
         $this->test('GET /api/v1/auth/login returns abuse evidence', function() {
             $response = $this->httpRequest('GET', '/auth/login');
@@ -202,13 +202,13 @@ class RestApiContractTest
     private function testJwksEndpoint(): void
     {
         echo "\n--- JWKS Endpoint ---\n";
-
+        
         $this->test('GET /api/v1/auth/jwks returns valid JWKS', function() {
             $response = $this->httpRequest('GET', '/auth/jwks');
             $this->assertStatus($response, 200);
             $this->assertHasKeys($response['body'], ['keys']);
             $this->assertIsArray($response['body']['keys']);
-
+            
             if (count($response['body']['keys']) > 0) {
                 $key = $response['body']['keys'][0];
                 $this->assertHasKeys($key, ['kty', 'e', 'n', 'kid', 'alg', 'use']);
@@ -643,7 +643,7 @@ class RestApiContractTest
     private function httpRequest(string $method, string $path, array $data = []): array
     {
         $url = $this->baseUrl . $path;
-
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -664,16 +664,16 @@ class RestApiContractTest
         if (!empty($data)) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
-
+        
         $result = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         curl_close($ch);
-
+        
         if ($error) {
             throw new Exception("cURL error: $error");
         }
-
+        
         return [
             'status' => $status,
             'body' => json_decode($result, true) ?? [],

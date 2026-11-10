@@ -161,7 +161,11 @@ class dbcontextmodules extends dbTable {
      * @access public
      */
     public function getContextModules($contextCode) {
-        $contextModules = $this->getAll ( "WHERE contextcode='" . $contextCode . "'" );
+        // Legacy installations can contain repeated plugin rows. Return each module once.
+        $contextModules = $this->selectPrepared(
+            'SELECT DISTINCT moduleid FROM tbl_contextmodules WHERE contextcode=?',
+            array($contextCode)
+        );
         $newArray = array ();
         foreach ( $contextModules as $module ) {
             $newArray [] = $module ['moduleid'];
