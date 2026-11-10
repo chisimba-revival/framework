@@ -641,6 +641,18 @@ class filemanager extends controller {
         exit;
     }
 
+    /** Small server-generated preview; the original read policy is checked on every request. */
+    private function __pickerthumbnail() {
+        header('Cache-Control: private, no-store');
+        $file = $this->objFiles->getFile($this->getParam('id'));
+        if (!$file || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) {
+            http_response_code(403); exit;
+        }
+        $relative = $this->getObject('thumbnails', 'filemanager')->pickerPreview($file);
+        if (!$relative) { http_response_code(404); exit; }
+        $this->getObject('filedelivery', 'filemanager')->sendDerivative($relative);
+    }
+
     /** Serve a registered generated preview through its original file policy. */
     private function __filederivative() {
         $this->getObject('filedelivery', 'filemanager')->sendDerivative($this->getParam('path'));

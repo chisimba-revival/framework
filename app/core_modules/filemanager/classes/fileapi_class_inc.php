@@ -329,7 +329,7 @@ class fileapi extends ChisimbaObject
             return $this->error('invalid_extension', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
         }
         if ($tmp==='' || !is_uploaded_file($tmp)) { return $this->error('invalid_upload', $this->objLanguage->languageText('mod_filemanager_native_invalid_upload', 'filemanager')); }
-        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); finfo_close($fi); } }
+        $mime=''; if (function_exists('finfo_open')) { $fi=finfo_open(FILEINFO_MIME_TYPE); if ($fi) { $mime=(string)finfo_file($fi,$tmp); unset($fi); } }
         if (!in_array(strtolower($mime), $policy['mimetypes'], true)) {
             return $this->error('invalid_mimetype', $this->objLanguage->languageText('mod_filemanager_picker_invalid_type', 'filemanager'));
         }
@@ -553,6 +553,7 @@ class fileapi extends ChisimbaObject
         $ext=strtolower(ltrim(isset($file['datatype'])?$file['datatype']:pathinfo($file['filename'],PATHINFO_EXTENSION),'.'));
         return array('id'=>(string)$file['id'],'name'=>(string)$file['filename'],
             'url'=>html_entity_decode($this->objFileManagerObject->uri(array('action'=>'file','id'=>$file['id'],'filename'=>$file['filename'],'type'=>'.'.$ext),'filemanager','','',false,true),ENT_QUOTES,'UTF-8'),
+            'thumbnailUrl'=>in_array($ext, array('jpg','jpeg','png','gif','webp','avif'), true) ? html_entity_decode($this->objFileManagerObject->uri(array('action'=>'pickerthumbnail','id'=>$file['id']),'filemanager','','',false,true),ENT_QUOTES,'UTF-8') : '',
             'mimetype'=>isset($file['mimetype'])?(string)$file['mimetype']:'','extension'=>$ext,
             'size'=>isset($file['filesize'])?(int)$file['filesize']:0);
     }

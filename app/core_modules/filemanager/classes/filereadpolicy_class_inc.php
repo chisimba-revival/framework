@@ -5,7 +5,7 @@ class filereadpolicy extends ChisimbaObject
     public function mayRead($file)
     {
         if (!is_array($file) || empty($file['id']) || empty($file['filefolder'])) return false;
-        if (str_starts_with((string)$file['filefolder'], 'assignment/')) return false;
+        if (str_starts_with((string)$file['filefolder'], 'assignment/') || str_starts_with((string)$file['filefolder'], 'moduleassets/')) return false;
         $user = $this->getObject('user', 'security');
         $uid = $user->isLoggedIn() ? (string)$user->userId() : '';
         $admin = $uid !== '' && $user->inAdminGroup($uid, 'Site Admin');

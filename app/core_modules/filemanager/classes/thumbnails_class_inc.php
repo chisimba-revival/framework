@@ -78,6 +78,54 @@ class thumbnails extends ChisimbaObject
         );
     }
 
+    /** Generate a bounded preview in protected storage, only after authorising its original. */
+    public function pickerPreview($file)
+    {
+        if (!is_array($file) || !preg_match('/^[A-Za-z0-9_-]+$/D', (string)($file['id'] ?? ''))
+            || !$this->getObject('filereadpolicy', 'filemanager')->mayRead($file)) return false;
+        $delivery = $this->getObject('filedelivery', 'filemanager');
+        $secure = $this->getObject('dbsysconfig', 'sysconfig')->getValue('SECUREFODLER', 'filemanager');
+        if (!is_string($secure) || !is_dir($secure)) return false;
+        $source = $delivery::resolve($secure, $file['path'] ?? '');
+        if (!$source) $source = $delivery::resolve($this->objConfig->getcontentBasePath(), $file['path'] ?? '');
+        if (!$source) return false;
+        $relative = 'filemanager_thumbnails/picker/'.$file['id'].'.jpg';
+        $directory = rtrim($secure, '/').'/filemanager_thumbnails/picker';
+        if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) return false;
+        $target = $directory.'/'.$file['id'].'.jpg';
+        $signature = hash('sha256', $source.'|'.filemtime($source).'|'.filesize($source).'|320x200-v1');
+        $stamp = $target.'.stamp';
+        $lock = fopen($target.'.lock', 'c');
+        if (!$lock) return false;
+        $temporary = null;
+        try {
+            if (!flock($lock, LOCK_EX)) return false;
+            clearstatcache(true, $target);
+            if (is_file($target) && is_file($stamp) && trim(file_get_contents($stamp)) === $signature) return $relative;
+            $info = @getimagesize($source);
+            if (!$info || !in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP, IMAGETYPE_AVIF], true)
+                || $info[0] < 1 || $info[1] < 1 || $info[0] * $info[1] > 24000000) return false;
+            // Bound decoder memory as well as output size; oversized images retain their filename card.
+            $limit = trim(ini_get('memory_limit'));
+            $bytes = (int)$limit * (match(strtolower(substr($limit, -1))) {'g'=>1073741824,'m'=>1048576,'k'=>1024,default=>1});
+            if ($bytes > 0 && memory_get_usage(true) + $info[0] * $info[1] * 8 + 16777216 > $bytes) return false;
+            $this->objImageResize->setImg($source);
+            if (!$this->objImageResize->canCreateFromSouce) return false;
+            $scale = min(1, 320 / $info[0], 200 / $info[1]);
+            $this->objImageResize->resize(max(1, (int)round($info[0]*$scale)), max(1, (int)round($info[1]*$scale)), false);
+            $temporary = tempnam($directory, '.preview-');
+            if (!$temporary || !$this->objImageResize->store($temporary)) return false;
+            chmod($temporary, 0600);
+            if (!rename($temporary, $target)) return false;
+            file_put_contents($stamp, $signature, LOCK_EX);
+            chmod($stamp, 0600);
+            return $relative;
+        } finally {
+            if ($temporary && is_file($temporary)) unlink($temporary);
+            flock($lock, LOCK_UN); fclose($lock);
+        }
+    }
+
     /**
     * Method to check that the user folder for uploads, and subfolders exist
     * @param  string  $userId UserId of the User

@@ -22,7 +22,7 @@ class filedelivery extends ChisimbaObject
     public static function derivativeId($path)
     {
         if (!is_string($path)) return false;
-        if (!preg_match('~^(?:filemanager_thumbnails/(?:large/|medium/)?(?:standard_)?|filemanager_forcemax/)([A-Za-z0-9_-]+)\.(?:jpg|png|gif|webp|htm|pdf|swf)$~D', $path, $m)) return false;
+        if (!preg_match('~^(?:filemanager_thumbnails/(?:large/|medium/|picker/)?(?:standard_)?|filemanager_forcemax/)([A-Za-z0-9_-]+)\.(?:jpg|png|gif|webp|htm|pdf|swf)$~D', $path, $m)) return false;
         return $m[1];
     }
 
