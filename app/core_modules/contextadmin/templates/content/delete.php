@@ -22,11 +22,16 @@ $header = new htmlheading();
 $header->type = 2;
 $header->str = $deleteTitle . ': ' . $courseTitle;
 
-echo '<section class="chisimba-delete-confirmation">';
+echo '<section class="chisimba-form-card">';
+if ($this->getObject('modules','modulecatalogue')->checkIfRegistered('help')) echo $this->getObject('contextualhelp','help')->show('contextadmin','deletion',true);
+if ($this->getParam('deletefailed')) echo '<p role="alert" class="warning">'.htmlspecialchars($this->objLanguage->code2Txt('mod_contextadmin_delete_failed','contextadmin'),ENT_QUOTES,'UTF-8').'</p>';
+if (!empty($repairDeletion)) echo '<p>'.htmlspecialchars($this->objLanguage->code2Txt('mod_contextadmin_delete_repair','contextadmin'),ENT_QUOTES,'UTF-8').'</p>';
 echo $header->show();
 echo '<p class="chisimba-delete-question">' . $question . '</p>';
 
-$form = new form('deletecontext', $this->uri(array('action' => 'deleteconfirm')));
+$form = new form('deletecontext', $this->uri(array('action' => 'deleteconfirm')), 'post');
+$form->addToForm((new hiddeninput('csrf_token',$deleteCsrf))->show());
+$form->addToForm((new hiddeninput('repair',!empty($repairDeletion)?'1':'0'))->show());
 
 $confirmButton = new button(
     'confirm',
@@ -49,7 +54,7 @@ $cancelButton = new button(
 $cancelButton->setOnClick('history.go(-1);');
 
 $form->addToForm(
-    '<div class="chisimba-delete-actions">'
+    '<div class="chisimba-form-actions">'
     . $confirmButton->show()
     . ' '
     . $cancelButton->show()

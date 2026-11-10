@@ -304,11 +304,7 @@ class manageGroups extends ChisimbaObject
     */
     function deleteGroups( $contextcode )
     {
-        // Delete groups
-        $groupId=$this->_objGroupAdmin->getLeafId( array($contextcode) );
-        $groupId=$this->_objGroupAdmin->deleteGroup($groupId);
-        // Delete the acls for the context
-        //$this->deleteAcls( $contextcode );
+        return $this->getObject('groupservice', 'groupadmin')->deleteContextGroups($contextcode);
     }
 
     /**
@@ -330,32 +326,32 @@ class manageGroups extends ChisimbaObject
     function usercontextcodes($userId=NULL)
     {
         //sql to find the user's groups
-        $sql = "SELECT gu.group_id, gr.group_define_name 
+        $sql = "SELECT gu.group_id, gr.group_define_name
 				from tbl_perms_groupusers as gu
 				LEFT JOIN tbl_perms_perm_users as pu
 				ON gu.perm_user_id = pu.perm_user_id
 				LEFT JOIN tbl_perms_groups as gr
 				ON gu.group_id = gr.group_id
 				WHERE pu.auth_user_id = '".$userId."'";
-        
+
         //get a list of groups this user belongs to
-        $userGroups =  $this->_objDBContext->getArray($sql);        
-      
+        $userGroups =  $this->_objDBContext->getArray($sql);
+
         $arrcontextcodes = array();
-        
+
         //check if this user is part of this context
         foreach($userGroups as $ug)
         {
-        	$gn = $ug['group_define_name'];        		
+            $gn = $ug['group_define_name'];
         	//get everything before the ^ character
         	$groupname = substr($gn,0,strpos($gn, '^'));
-        		
+
         	if($this->isContext($groupname)){
-        		$arrcontextcodes[] = $groupname;        		 
+                $arrcontextcodes[] = $groupname;
         	}
         	}
         return $arrcontextcodes;
-       
+
     }
     /**
     * Method to return all the contexts the user is a member of. Contains start and limit for json
@@ -365,34 +361,34 @@ class manageGroups extends ChisimbaObject
     function usercontextcodeslimited($userId, $start, $limit=50)
     {
         //sql to find the user's groups
-        $sql = "SELECT gu.group_id, gr.group_define_name 
+        $sql = "SELECT gu.group_id, gr.group_define_name
 				from tbl_perms_groupusers as gu
 				LEFT JOIN tbl_perms_perm_users as pu
 				ON gu.perm_user_id = pu.perm_user_id
 				LEFT JOIN tbl_perms_groups as gr
 				ON gu.group_id = gr.group_id
 				WHERE pu.auth_user_id = '".$userId."' LIMIT ".$start.",".$limit;
-        
+
         //get a list of groups this user belongs to
         //echo $sql;die;
-        $userGroups =  $this->_objDBContext->getArray($sql);        
-                     
+        $userGroups =  $this->_objDBContext->getArray($sql);
+
         $arrcontextcodes = array();
-        
+
         //check if this user is part of this context
            	foreach($userGroups as $ug)
             {
-                $gn = $ug['group_define_name'];        		
-        		
+                $gn = $ug['group_define_name'];
+
                 //get everything before the ^ character
                 $groupname = substr($gn,0,strpos($gn, '^'));
-        		
+
                 if($this->isContext($groupname)){
                     $arrcontextcodes[] = $groupname;
                 }
              }        //var_dump($arrcontextcodes);
         return $arrcontextcodes;
-       
+
     }
 
     /**
@@ -400,18 +396,18 @@ class manageGroups extends ChisimbaObject
     * @param  string Groupname
     * @return array  Boolean true if the .
     */
-    function isContext($groupname){    	
+    function isContext($groupname){
         $groupname == null ? $gname = 'Site Admin' : $gname = $groupname;
-        $sql = 'SELECT contextcode FROM tbl_context 
-                WHERE  
-                contextcode = \''.$gname.'\'';   
+        $sql = 'SELECT contextcode FROM tbl_context
+                WHERE
+                contextcode = \''.$gname.'\'';
         $arr = $this->_objDBContext->getArray($sql);
         if(!empty($arr)){
            return true;
-        }		
+        }
         return false;
     }
-	
+
 
     /**
     * Method to return all the contexts the user is a member of.
@@ -441,7 +437,7 @@ class manageGroups extends ChisimbaObject
         if($this->_objUser->isAdmin()){
             return $arrcontextcodeRows;
         }
-        
+
         $arrcontextcodes = array();
         $arrContext = $this->usercontextcodes($userId);
         foreach( $arrContext as $row ) {
@@ -461,11 +457,11 @@ class manageGroups extends ChisimbaObject
     */
     function rolecontextcodes($userId,$role)
     {
-    	
+
         // Get the users PKId.
         //$userId = $this->_objUser->userId()
         //var_dump($this->_objUser->userId());die;
-        $sql = "SELECT gr.group_define_name 
+        $sql = "SELECT gr.group_define_name
 				FROM tbl_perms_groups as gr
 				INNER JOIN tbl_perms_groupusers as gu
 				ON gr.group_id = gu.group_id
@@ -473,26 +469,26 @@ class manageGroups extends ChisimbaObject
 				ON gu.perm_user_id = us.perm_user_id
 				WHERE us.auth_user_id = '".$userId."'
 				AND gr.group_define_name LIKE '%^".$role."'";
-        
+
         $recs = $this->_objDBContext->getArray($sql);
-        
+
         if((is_countable($recs) ? count($recs) : 0) > 0)
         {
         	 $arrcontextcodes = array();
         	foreach ($recs as $group) {
-        		
+
         		$gname =substr_replace($group['group_define_name'], "",strpos($group['group_define_name'], "^"));// substr_replace("^","",$pos, $group['group_define_name']);
-        		$arrcontextcodes[] = $gname;
+                $arrcontextcodes[] = $gname;
         	}
         }else {
         	return array();
         }
         return  $arrcontextcodes;
         //var_dump($recs);die;
-        // Get all contextcodes      
+        // Get all contextcodes
         $arrcontextcodeRows = $this->_objDBContext->getArray("SELECT contextcode from tbl_context");
 
-       
+
 
         // Now check for membership
         foreach( $arrcontextcodeRows as $row ) {

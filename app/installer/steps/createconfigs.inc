@@ -446,7 +446,7 @@ class CreateConfigsAction extends FiveStepAction
             $this->success = false;
         }
 
-	$GLOBALS['SQ_INSTALL'] = false;
+        $GLOBALS['SQ_INSTALL'] = false;
 
         $result = ob_get_contents ();
 

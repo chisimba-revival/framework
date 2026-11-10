@@ -7,3 +7,7 @@
 /app/packages/langadmin/resources/ChisimbaLangTranslator/dist/
 /app/packages/langadmin/resources/ChisimbaLangTranslator/nbproject/private/
 /app/packages/phpids/resources/phpids-0.6.3.1/nbproject/private/
+# Generated at runtime by the installer from app/_htaccess. Tracking it caused
+# the installer to recurse (see commit 3d42d5d08).
+/app/.htaccess
+/app/error_log/

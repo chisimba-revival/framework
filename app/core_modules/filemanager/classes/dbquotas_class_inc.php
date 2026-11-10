@@ -59,6 +59,7 @@ class dbquotas extends dbTable {
 
     // State used by authenticated editing and file selection.
     public $objLanguage;
+    public $objFiles;
     public $objUser;
 
 

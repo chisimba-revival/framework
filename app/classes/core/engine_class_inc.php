@@ -516,7 +516,10 @@ class engine {
         }
 
         // Ensure the site is being accessed at the correct location.
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        // API clients and internal probes must not be redirected to a web origin.
+        $uri = explode('?', (string) ($_SERVER['REQUEST_URI'] ?? ''), 2)[0];
+        $isRestApi = str_starts_with($uri, '/api/v') || str_starts_with($uri, '/.well-known/');
+        if (!$isRestApi && ($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
             $base = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
             //$base .= '://'.$_SERVER['HTTP_HOST'].strtok($_SERVER['REQUEST_URI'], '?');
             //$query = strtok('?');

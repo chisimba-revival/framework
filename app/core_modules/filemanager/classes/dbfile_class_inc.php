@@ -55,6 +55,7 @@ class dbfile extends dbTable {
     public $objFileFolder;
     public $objMimetypes;
     public $objLanguage;
+    public $objQuota;
 
 
     /**
@@ -257,8 +258,8 @@ class dbfile extends dbTable {
             'moduleuploaded' => $this->getParam('module'),
             'creatorid' => $userId,
             'modifierid' => $userId,
-            'datecreated' => strftime('%Y-%m-%d', time()),
-            'timecreated' => strftime('%H:%M:%S', time())
+            'datecreated' => date('Y-m-d'),
+            'timecreated' => date('H:i:s')
         );
         $id = $this->insert($file);
 
@@ -795,7 +796,7 @@ class dbfile extends dbTable {
     /**
      * Get all the files that satisfy the filter
      * @param type $filter
-     * @return type 
+     * @return type
      */
     public function getMatchingFiles($filter) {
         return $this->getAll(" $filter");
@@ -937,7 +938,7 @@ class dbfile extends dbTable {
 
             return 'cannotoverwrite';
         }
-       
+
     }
 
     /**
@@ -1035,7 +1036,7 @@ class dbfile extends dbTable {
      * Updates a folder visibility by setting the mode to hidden or visibile.
      * A hidden folder is only accessible to the creator
      * @param type $folderId
-     * @param type $access 
+     * @param type $access
      */
     function setFileVisibility($fileId, $access) {
         $this->update("id", $fileId, array("visibility" => $access));
