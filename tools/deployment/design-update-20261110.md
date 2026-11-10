@@ -48,3 +48,11 @@ timestamps to future archives. The two changed Chisimba stylesheet timestamps
 were corrected to the deployed source commit time, with hashes verified before
 and after; no source bytes changed. A normal browser reload then displayed the
 full-width background on desktop and phone.
+
+## Editor settings panels
+
+Framework `7d2df5bf9` updates the shared editor section primitive with canvas
+surfaces, rounded borders, inner spacing and separated choice controls. Real
+editor checks passed at desktop and 390px; panel contents fit their widths.
+Deployed to Chisimba.com only. All 13,537 source files verified and
+130 protected tables preserved. Backup: `/srv/chisimba-com/backups/shared-20261110-140531`.

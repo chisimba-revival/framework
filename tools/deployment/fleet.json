@@ -73,9 +73,9 @@
       "source": "/srv/chisimba-com/app/current",
       "runtime_root": "/var/www/html",
       "container": "chisimba-com-web-1",
-      "manifest": "/srv/banner-width-chisimba-20261110/source-manifest.json",
-      "manifest_sha256": "00c4cae3850e0585084e815c085486b7d3518ce8e3776466d3d4363f83aafb32",
-      "overlays": "/srv/banner-width-chisimba-20261110/private-overlays.json",
+      "manifest": "/srv/editor-panels-chisimba-20261110/source-manifest.json",
+      "manifest_sha256": "36604123a9afb8477371ea2d0d8c4d961a33af1a61e2a6062739a47f5387b362",
+      "overlays": "/srv/editor-panels-chisimba-20261110/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -178,11 +178,11 @@
     ],
     "followup": {
       "site": "chisimba",
-      "reason": "Restore viewport-wide banner background without changing layout widths",
+      "reason": "Canvas-aware editor settings panels and spacing",
       "pins": {
         "framework": {
           "branch": "release/consolidation-20260930",
-          "commit": "9c80e5f99e11d5f169928380d83bb131bfb8cb61",
+          "commit": "7d2df5bf9c27a49c753555b21d4de5f25291b4fc",
           "remote": "git@github.com:chisimba-revival/framework.git"
         },
         "modules": {
