@@ -38,6 +38,8 @@ class countries extends ChisimbaObject
     * @var array $countries List of Countries as an associative array with code as key, and name as value
     */
     private $countries;
+
+    public $objConfig;
     
     /**
     * @var array $countriesFlip A reverse of the above with name as key, and code as value
@@ -325,6 +327,28 @@ class countries extends ChisimbaObject
         return $this->countries;
     }
 
+    /**
+     * Dropdown options: current site country first, then country names.
+     * Optional translated names retain their original codes and labels.
+     * Resolve configuration per call; do not cache a tenant's preference.
+     */
+    public function getCountryOptions(?array $names = null)
+    {
+        $names = $names ?? $this->countries;
+        asort($names, SORT_NATURAL | SORT_FLAG_CASE);
+        $preferred = $this->getDefaultCountry($names);
+        return $preferred === '' ? $names
+            : array($preferred => $names[$preferred]) + $names;
+    }
+
+    /** Return a valid configured country, or no preference. */
+    public function getDefaultCountry(?array $names = null)
+    {
+        $names = $names ?? $this->countries;
+        $candidate = strtoupper(trim((string) $this->objConfig->getCountry()));
+        return array_key_exists($candidate, $names) ? $candidate : '';
+    }
+
     public function getCountryName($code)
     {
         $code = strtoupper((string)$code);
@@ -365,7 +389,7 @@ class countries extends ChisimbaObject
     {
         $dropdown = new dropdown($name);
         
-        foreach ($this->countries as $code=>$country)
+        foreach ($this->getCountryOptions() as $code=>$country)
         {
             $dropdown->addOption($code, htmlentities($country));
         }

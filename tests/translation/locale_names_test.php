@@ -1,7 +1,9 @@
 <?php
 class ChisimbaObject {}
+$GLOBALS['kewl_entry_point_run']=true;
+require dirname(__DIR__,2).'/app/core_modules/utilities/classes/countries_class_inc.php';
 require dirname(__DIR__,2).'/app/core_modules/language/classes/languagecode_class_inc.php';
-class NamesFixture extends languagecode {public function getObject($name,$module=null){return new class {public function getdefaultLanguageAbbrev(){return 'fr';}public function getCountry(){return 'ZA';}};}}
+class NamesFixture extends languagecode {public function getObject($name,$module=null){if($name==='countries') { $service=new countries(); $service->objConfig=$this->objConfig; return $service; } return new class {public function getdefaultLanguageAbbrev(){return 'fr';}public function getCountry(){return 'ZA';}};}}
 $n=new NamesFixture();$n->init();
 function namesCheck($value,$label){if(!$value)throw new RuntimeException($label);}
 namesCheck($n->getLanguage('EN')==='English','English language-code names');namesCheck($n->getISO('English')==='en'&&$n->getISO('EN')==='en','Reverse lookup');
@@ -13,3 +15,5 @@ namesCheck(!str_contains($n->country('\"><script>'),'script'),'Selection cannot 
 namesCheck(!class_exists('I18Nv2_Country',false),'No PEAR locale classes');
 namesCheck(str_contains($n->countryAlpha(),'id="input_country"'),'Country label target preserved');
 echo "PASS: native language/country lists, reverse lookup, HTML selection/escaping and legacy list shape\n";
+
+namesCheck(strpos($n->countryAlpha('FR'),'value="ZA"') < strpos($n->countryAlpha('FR'),'value="FR"'), 'Site preference first without replacing explicit selection');

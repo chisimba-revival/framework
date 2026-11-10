@@ -76,8 +76,8 @@ class languagecode extends ChisimbaObject
     }
     private function select($selected,$alphabetical=false,$submit=false)
     {
-        $selected=strtoupper($selected?:$this->objConfig->getCountry());$countries=$this->countries;
-        if($alphabetical)asort($countries);
+        $selected=strtoupper($selected?:$this->objConfig->getCountry());
+        $countries=$this->getObject('countries', 'utilities')->getCountryOptions($this->countries);
         $html='<select name="country"'.($alphabetical?' id="input_country" class="WCHhider"':'').($submit?' onchange="this.form.submit()"':'').'>';
         foreach($countries as $code=>$name)$html.='<option value="'.$this->escape($code).'"'.($code===$selected?' selected="selected"':'').'>'.$this->escape($name).'</option>';
         return $html.'</select>';

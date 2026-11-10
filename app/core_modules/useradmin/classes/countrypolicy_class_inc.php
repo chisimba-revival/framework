@@ -3,7 +3,7 @@
  * Canonical user country policy.
  *
  * Country codes and names come from utilities/countries. The site country is
- * used only as the default for a new user and never overwrites stored data.
+ * listed first and used as the default for a new user; stored data is preserved.
  *
  * @category  Chisimba
  * @package   useradmin
@@ -18,17 +18,8 @@ class countrypolicy extends ChisimbaObject
     public function init()
     {
         $catalogue = $this->getObject('countries', 'utilities');
-        $countries = $catalogue->getCountries();
-        if (is_array($countries)) {
-            $this->countries = $countries;
-            ksort($this->countries, SORT_STRING);
-        }
-
-        $config = $this->getObject('altconfig', 'config');
-        $candidate = strtoupper(trim((string) $config->getCountry()));
-        if (array_key_exists($candidate, $this->countries)) {
-            $this->defaultCountry = $candidate;
-        }
+        $this->countries = $catalogue->getCountryOptions();
+        $this->defaultCountry = $catalogue->getDefaultCountry();
     }
 
     public function getCountries()
