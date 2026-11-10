@@ -371,6 +371,9 @@ $faviconVersion = is_file($siteRootPath . $favicon)
        $baseCanvasCss = 'skins/' . $skinName
            . '/canvases/_default/stylesheet.css';
        $canvasCss = $canvas . '/stylesheet.css';
+       $editorialCss = 'skins/' . $skinName . '/components/editorial.css';
+       $editorialCssTag = is_file($editorialCss)
+           ? '<link rel="stylesheet" href="' . $editorialCss . '?v=' . filemtime($editorialCss) . '">' : '';
        $skinCssVersion = is_file($skinCss) ? '?v=' . filemtime($skinCss) : '';
        $baseCanvasCssVersion = is_file($baseCanvasCss)
            ? '?v=' . filemtime($baseCanvasCss) : '';
@@ -379,6 +382,7 @@ $faviconVersion = is_file($siteRootPath . $favicon)
 
        <link rel="stylesheet" type="text/css" href="' . $skinCss . $skinCssVersion . '">
        <link rel="stylesheet" type="text/css" href="' . $baseCanvasCss . $baseCanvasCssVersion . '">
+       ' . $editorialCssTag . '
        <link rel="stylesheet" type="text/css" href="' . $canvasCss . $canvasCssVersion . '">
 
         ';

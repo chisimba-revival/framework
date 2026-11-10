@@ -110,3 +110,26 @@ real routes, not duplicated application markup. Forms are live: do not submit
 password recovery unless an email is intended. Changing preview size or screen
 does not change site settings. Check keyboard focus, long headings, navigation
 expansion, image sizing and horizontal overflow before releasing skin changes.
+
+## Design workshop and sectioned forms
+
+Open `docs/design-showcase.html` through the local web server to compare the
+maintained CSS across canvases at 320, 390, 768 and 1280 pixels. It is a static
+specimen: sample forms do not save, publish, send mail or change accounts. Images
+are public Learn-the-Birds URLs and need network access. The shell and sample
+content are illustrative; this is not a replacement for testing actual modules.
+
+`chisimba-form--sectioned` uses semantic fieldsets and legends. Group related
+fields with `chisimba-field-grid`; its identity modifier gives titles a narrower
+column. `chisimba-field--full` spans the grid, `chisimba-field--short` constrains
+short identifiers, and `chisimba-choice-row` keeps checkbox labels horizontal.
+Use `chisimba-section-description` for brief section guidance.
+
+`chisimba-editor-surface`, `chisimba-editor-meta`, `chisimba-title-field` and
+`chisimba-editor-section` support a less boxed publishing workspace.
+`chisimba-action-bar` groups wrapping actions with a dividing rule.
+`chisimba-feature`, `chisimba-story-grid` and `chisimba-story` are reusable
+editorial composition primitives; they do not alter existing page content.
+
+The first consumers are the native user editor and SimpleBlog post editor.
+Existing submission, permissions, CSRF and composition contracts are unchanged.

@@ -1,9 +1,9 @@
 {
   "name": "learn-the-birds",
   "displayName": "Learn-the-Birds",
-  "description": "Learn-the-Birds identity on the shared Chisimba skin.",
+  "description": "A warm field-journal canvas with serif headlines, quiet paper surfaces and natural greens.",
   "brand": {
-    "primary": "#007fa3",
+    "primary": "#245b50",
     "accent": "#315c35"
   },
   "author": {

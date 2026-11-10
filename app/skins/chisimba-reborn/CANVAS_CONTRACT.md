@@ -52,3 +52,16 @@ inverse text and icon colours when these are absent. These tokens allow light
 banners without changing the text colour of primary buttons. Logo dimensions
 and the logo image remain canvas identity tokens; do not copy banner selectors
 or layout rules into a branding canvas.
+
+## Editorial identity and form tokens
+
+The shared `components/editorial.css` loads after the base canvas and before the
+selected canvas. Canvases can set `--chisimba-font-family-heading`,
+`--chisimba-heading-weight`, `--chisimba-heading-tracking`,
+`--chisimba-editor-radius` and `--chisimba-image-radius`, alongside the existing
+semantic colour/surface tokens. Form mechanics, focus states, spacing and
+responsive breakpoints remain in the shared skin.
+
+Learn-the-Birds explores a warm field-journal direction with serif headings;
+KengaSolutions uses stronger sans-serif headings and cooler surfaces. These are
+review directions, not separate application implementations.

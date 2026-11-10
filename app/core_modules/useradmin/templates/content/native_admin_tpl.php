@@ -160,7 +160,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
         <?php endif; ?>
     </section>
 
-    <section id="ua-editor" class="ua-panel ua-editor" aria-labelledby="ua-editor-title">
+    <section id="ua-editor" class="ua-editor chisimba-form-card chisimba-form-card--wide" aria-labelledby="ua-editor-title">
         <div class="ua-panel-header">
             <div>
                 <h2 id="ua-editor-title"><?php echo $selected ? 'Edit user' : 'Add user'; ?></h2>
@@ -179,7 +179,7 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
             'UTF-8'
         );
         ?>
-        <form method="post" action="<?php echo $escape($editAction); ?>" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore>
+        <form class="chisimba-form--sectioned chisimba-form--wide" method="post" action="<?php echo $escape($editAction); ?>" autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore>
             <input type="hidden" name="csrf_token" value="<?php echo $escape($csrf); ?>">
             <input type="hidden" name="userid" value="<?php echo $escape($value('userid')); ?>">
             <input type="hidden" name="q" value="<?php echo $escape($query); ?>">
@@ -189,7 +189,8 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
 
             <fieldset>
                 <legend>Profile</legend>
-                <div class="ua-form-grid">
+                <p class="chisimba-section-description"><?php echo $escape($this->objLanguage->languageText('mod_useradmin_profileguidance', 'useradmin')); ?></p>
+                <div class="chisimba-field-grid chisimba-field-grid--identity">
                     <label>Title
                         <select name="title">
                             <?php foreach ($titles as $title): ?>
@@ -199,6 +200,8 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
                     </label>
                     <label><span class="ua-field-label">First name <span class="ua-required" aria-hidden="true">*</span></span><input name="firstname" required value="<?php echo $escape($value('firstname')); ?>"></label>
                     <label><span class="ua-field-label">Surname <span class="ua-required" aria-hidden="true">*</span></span><input name="surname" required value="<?php echo $escape($value('surname')); ?>"></label>
+                </div>
+                <div class="chisimba-field-grid">
                     <label><span class="ua-field-label">Email address <span class="ua-required" aria-hidden="true">*</span></span><input name="emailaddress" type="email" required autocomplete="off" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore value="<?php echo $escape($value('emailaddress')); ?>"></label>
                     <label>Staff or student number<input name="staffnumber" value="<?php echo $escape($value('staffnumber')); ?>"></label>
                     <label>Cell number<input name="cellnumber" value="<?php echo $escape($value('cellnumber')); ?>"></label>
@@ -222,15 +225,16 @@ $cssUrl = $this->getResourceUri('css/native-admin.css', 'useradmin');
 
             <fieldset>
                 <legend>Account</legend>
-                <div class="ua-form-grid">
-                    <label><span class="ua-field-label">Username <span class="ua-required" aria-hidden="true">*</span></span><input name="username" required autocomplete="new-username" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore value="<?php echo $escape($value('username')); ?>"></label>
+                <p class="chisimba-section-description"><?php echo $escape($this->objLanguage->languageText('mod_useradmin_accountguidance', 'useradmin')); ?></p>
+                <div class="chisimba-field-grid">
+                    <label class="chisimba-field--full chisimba-field--short"><span class="ua-field-label">Username <span class="ua-required" aria-hidden="true">*</span></span><input name="username" required autocomplete="new-username" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore value="<?php echo $escape($value('username')); ?>"></label>
                     <label><span class="ua-field-label">Password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore></label>
                     <label><span class="ua-field-label">Repeat password <?php if (!$selected): ?><span class="ua-required" aria-hidden="true">*</span><?php endif; ?></span><input name="repeat_password" type="password"<?php echo !$selected ? ' required' : ''; ?> autocomplete="new-password" data-form-type="other" data-lpignore="true" data-1p-ignore data-bwignore></label>
-                    <label class="ua-checkbox"><input name="isactive" type="checkbox" value="1"<?php echo !$selected || !empty($selected['isactive']) ? ' checked' : ''; ?>> Active account</label>
+                    <label class="chisimba-choice-row chisimba-field--full"><input name="isactive" type="checkbox" value="1"<?php echo !$selected || !empty($selected['isactive']) ? ' checked' : ''; ?>> Active account</label>
                 </div>
             </fieldset>
 
-            <div class="ua-form-actions"><button class="ua-button ua-button-primary" type="submit"><?php echo $selected ? 'Save changes' : 'Create user'; ?></button></div>
+            <div class="chisimba-action-bar"><button class="button chisimba-button-primary" type="submit"><?php echo $selected ? 'Save changes' : 'Create user'; ?></button></div>
         </form>
 
         <?php if ($selected): ?>

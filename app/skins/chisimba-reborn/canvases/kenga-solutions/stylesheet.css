@@ -15,3 +15,16 @@
  --chisimba-brand-logo-width-mobile: 6.125rem;
  --chisimba-brand-logo-filter: brightness(0) invert(1);
 }
+
+/* A precise studio identity, with stronger sans-serif headings and cool surfaces. */
+:root {
+ --chisimba-page:#eff3f3; --chisimba-surface:#ffffff; --chisimba-surface-subtle:#f4f7f7;
+ --chisimba-surface-muted:#e8eeee; --chisimba-ink:#172d32; --chisimba-text:#344b50;
+ --chisimba-text-muted:#556b70; --chisimba-border:#d4dfe0; --chisimba-border-strong:#8a9ea2;
+ --chisimba-font-family-heading:var(--chisimba-font-family-body);
+ --chisimba-heading-weight:750; --chisimba-heading-tracking:-.035em;
+ --chisimba-editor-radius:.65rem; --chisimba-image-radius:1rem;
+ --chisimba-banner-background:#193d3c; --chisimba-banner-foreground:#ffffff;
+ --chisimba-banner-name-shadow:none; --chisimba-banner-icon-color:#ffffff;
+ --chisimba-shadow:none; --chisimba-region-radius:.65rem;
+}
