@@ -1,10 +1,10 @@
 <?php
 /**
  * RestController Routing Test
- *
+ * 
  * Tests the routing logic in RestController to ensure proper handler resolution
  * for the new endpoints specified in the field-guiding service contract.
- *
+ * 
  * Run from Chisimba context: php /path/to/restcontroller_routing_test.php
  */
 
@@ -20,14 +20,14 @@ class RestControllerRoutingTest
     public function runAllTests(): void
     {
         echo "=== RestController Routing Tests ===\n\n";
-
+        
         $this->testAuthRoutes();
         $this->testUserRoutes();
         $this->testSpeciesRoutes();
         $this->testCatalogueProxyRoutes();
         $this->testSyncProxyRoutes();
         $this->testSpecialRoutes();
-
+        
         $this->printSummary();
     }
 
@@ -37,7 +37,7 @@ class RestControllerRoutingTest
     private function testAuthRoutes(): void
     {
         echo "--- Auth Resource Routes ---\n";
-
+        
         // Test that new endpoint methods exist
         $this->test('Controller has GET_auth_token method', function() {
             $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
@@ -97,7 +97,7 @@ class RestControllerRoutingTest
     private function testUserRoutes(): void
     {
         echo "\n--- User Resource Routes ---\n";
-
+        
         $this->test('Controller has GET_user_profile method', function() {
             $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/controller.php');
             $this->assertTrue(strpos($source, 'function GET_user_profile') !== false,
@@ -383,7 +383,7 @@ class RestControllerRoutingTest
     private function testSpecialRoutes(): void
     {
         echo "\n--- RestController Routing Logic ---\n";
-
+        
         $this->test('RestController handles user/profile route', function() {
             $source = file_get_contents(dirname(__DIR__, 2) . '/restapi/classes/restcontroller_class_inc.php');
             $this->assertTrue(strpos($source, '$resource === \'user\'') !== false,
@@ -438,12 +438,12 @@ class RestControllerRoutingTest
         $total = count($this->testResults);
         $passed = array_reduce($this->testResults, fn($c, $r) => $c + ($r['passed'] ? 1 : 0), 0);
         $failed = $total - $passed;
-
+        
         echo "\n=== Test Summary ===\n";
         echo "Total: $total\n";
         echo "Passed: $passed\n";
         echo "Failed: $failed\n";
-
+        
         if ($failed > 0) {
             echo "\nFailed tests:\n";
             foreach ($this->testResults as $result) {
@@ -453,7 +453,7 @@ class RestControllerRoutingTest
             }
             exit(1);
         }
-
+        
         echo "\nAll tests passed!\n";
         exit(0);
     }

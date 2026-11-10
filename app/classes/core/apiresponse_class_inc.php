@@ -1,7 +1,7 @@
 <?php
 /**
  * ApiResponse - Centralized JSON response handler for REST API
- *
+ * 
  * Provides consistent response format, proper HTTP headers, and status codes
  * across all API endpoints.
  */
@@ -9,7 +9,7 @@ class ApiResponse
 {
     /**
      * Send a successful response
-     *
+     * 
      * @param mixed $data Response data (array, object, or null)
      * @param int $status HTTP status code (200, 201, 204)
      * @param array $meta Additional metadata
@@ -28,19 +28,19 @@ class ApiResponse
         header('Content-Type: application/json; charset=UTF-8');
         header('Cache-Control: no-store, private');
         header('X-Content-Type-Options: nosniff');
-
+        
         $response = [
             'data' => $data,
             'meta' => array_merge(['timestamp' => gmdate('c')], $meta)
         ];
-
+        
         echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
 
     /**
      * Send a paginated list response
-     *
+     * 
      * @param array $data List of items
      * @param int $page Current page (1-based)
      * @param int $pageSize Items per page
@@ -61,7 +61,7 @@ class ApiResponse
 
     /**
      * Send an error response
-     *
+     * 
      * @param string $code Machine-readable error code
      * @param string $message Human-readable error message
      * @param int $status HTTP status code
@@ -73,7 +73,7 @@ class ApiResponse
         header('Content-Type: application/json; charset=UTF-8');
         header('Cache-Control: no-store, private');
         header('X-Content-Type-Options: nosniff');
-
+        
         $response = [
             'error' => [
                 'code' => $code,
@@ -82,7 +82,7 @@ class ApiResponse
             ],
             'meta' => ['timestamp' => gmdate('c')]
         ];
-
+        
         echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
@@ -125,7 +125,7 @@ class ApiResponse
         header('Cache-Control: no-store, private');
         header('X-Content-Type-Options: nosniff');
         header("Retry-After: $retryAfter");
-
+        
         echo json_encode([
             'error' => [
                 'code' => 'RATE_LIMITED',
@@ -155,7 +155,7 @@ class ApiResponse
         header('Cache-Control: no-store, private');
         header('X-Content-Type-Options: nosniff');
         header('Allow: ' . implode(', ', $allowedMethods));
-
+        
         echo json_encode([
             'error' => [
                 'code' => 'METHOD_NOT_ALLOWED',
