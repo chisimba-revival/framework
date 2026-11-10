@@ -18,7 +18,7 @@ def audit_host(host, sites):
     verifier = Path(__file__).with_name('source_manifest.py').read_text()
     # Run our local verifier over SSH, rather than trusting a mutable remote tool.
     code = "__name__='fleet_verifier'\n" + verifier + '''
-import subprocess
+import subprocess, sys
 sites=json.loads(sys.argv[1]);results=[]
 for site in sites:
  try:
