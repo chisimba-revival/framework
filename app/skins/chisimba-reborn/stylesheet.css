@@ -2751,16 +2751,16 @@ h5.featureboxheader,
 
 .Canvas_Content_Head.chisimba-site-banner {
     align-items: center;
-    background: var(--chisimba-banner-background, linear-gradient(
+    background: linear-gradient(
         115deg,
         var(--chisimba-primary-dark) 0%,
         var(--chisimba-grey-blue) 58%,
         var(--chisimba-primary) 100%
-    ));
+    );
     border: 0;
     border-bottom: 0.25rem solid var(--chisimba-primary-soft);
     box-shadow: var(--chisimba-shell-shadow-raised);
-    color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
+    color: var(--chisimba-text-inverse);
     display: flex;
     flex-wrap: wrap;
     min-height: 7rem;
@@ -2788,7 +2788,7 @@ h5.featureboxheader,
 
 .chisimba-site-banner__brand {
     align-items: center;
-    color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
+    color: var(--chisimba-text-inverse);
     display: inline-flex;
     gap: var(--chisimba-space-4);
     max-width: 100%;
@@ -2797,7 +2797,7 @@ h5.featureboxheader,
 
 .chisimba-site-banner__brand:hover,
 .chisimba-site-banner__brand:focus-visible {
-    color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
+    color: var(--chisimba-text-inverse);
 }
 
 .chisimba-site-banner__utilities {
@@ -2817,7 +2817,7 @@ h5.featureboxheader,
     background: rgb(255 255 255 / .14);
     border: 1px solid rgb(255 255 255 / .55);
     border-radius: 999px;
-    color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
+    color: var(--chisimba-text-inverse);
     display: inline-flex;
     font-size: .75rem;
     font-weight: var(--chisimba-font-weight-semibold);
@@ -2841,24 +2841,24 @@ h5.featureboxheader,
 }
 
 .chisimba-site-banner__journey .chisimba-icon {
-    color: var(--chisimba-banner-icon-color, #dff3b0);
+    color: #dff3b0;
     flex: 0 0 auto;
 }
 
 .chisimba-site-banner__journey--current .chisimba-icon {
-    color: var(--chisimba-banner-icon-color, #fff);
+    color: #fff;
 }
 
 .chisimba-site-banner__journey--create .chisimba-icon {
-    color: var(--chisimba-banner-icon-color, #ffe08a);
+    color: #ffe08a;
 }
 
 .chisimba-site-banner__journey--administration .chisimba-icon {
-    color: var(--chisimba-banner-icon-color, #bce8ff);
+    color: #bce8ff;
 }
 
 .chisimba-site-banner__journey--site-administration .chisimba-icon {
-    color: var(--chisimba-banner-icon-color, #ffe08a);
+    color: #ffe08a;
 }
 
 .chisimba-site-banner__journey[href]:hover,
@@ -2866,7 +2866,7 @@ h5.featureboxheader,
     background: rgb(255 255 255 / .38);
     border-color: rgb(255 255 255 / .9);
     box-shadow: 0 .2rem .6rem rgb(0 0 0 / .22);
-    color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
+    color: var(--chisimba-text-inverse);
     text-decoration: none;
     transform: translateY(-1px);
 }
@@ -2902,7 +2902,7 @@ h5.featureboxheader,
     line-height: var(--chisimba-line-height-tight);
     margin: 0;
     overflow-wrap: anywhere;
-    text-shadow: var(--chisimba-banner-name-shadow, 0 0.1rem 0.25rem rgb(0 0 0 / 0.24));
+    text-shadow: 0 0.1rem 0.25rem rgb(0 0 0 / 0.24);
 }
 
 .chisimba-site-banner__status-link,
@@ -7666,97 +7666,6 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 #filemanagerTable tr { margin: 0; min-inline-size: 0; max-inline-size: 100%; box-sizing: border-box; }
 #filemanagerTable tr td { min-inline-size: 0; min-block-size: 0; }
 
-/* Reusable long-form sections: calm summary bands, native keyboard disclosure and clear progress. */
-.chisimba-form-step {
-    border: 1px solid var(--chisimba-border);
-    border-radius: var(--chisimba-radius-lg, .75rem);
-    background: var(--chisimba-surface);
-    overflow: clip;
-    scroll-margin-block-start: var(--chisimba-space-4);
-}
-.chisimba-form-step > summary {
-    display: flex;
-    align-items: center;
-    gap: var(--chisimba-space-3);
-    padding: var(--chisimba-space-4);
-    cursor: pointer;
-    color: var(--chisimba-text);
-    background: color-mix(in srgb, var(--chisimba-primary) 8%, var(--chisimba-surface));
-    list-style: none;
-}
-.chisimba-form-step > summary::-webkit-details-marker { display: none; }
-.chisimba-form-step > summary::before { content: '+'; font-size: 1.4em; color: var(--chisimba-primary); }
-.chisimba-form-step[open] > summary::before { content: '−'; }
-.chisimba-form-step > summary:focus-visible { outline-offset: -3px; }
-.chisimba-form-step__heading { display: grid; gap: var(--chisimba-space-1); flex: 1; min-width: 0; }
-.chisimba-form-step__heading > strong { font-size: 1.1rem; }
-.chisimba-form-step__heading > span { font-size: .9rem; color: var(--chisimba-text-muted); }
-.chisimba-form-step__status { font-size: .85rem; white-space: nowrap; color: var(--chisimba-text-muted); }
-.chisimba-form-step__body { padding: clamp(1rem, 3vw, 1.75rem); border-block-start: 1px solid var(--chisimba-border); }
-.chisimba-form-progress { padding: var(--chisimba-space-4); border-inline-start: .25rem solid var(--chisimba-primary); background: color-mix(in srgb, var(--chisimba-primary) 8%, var(--chisimba-surface)); border-radius: var(--chisimba-radius-md, .5rem); }
-.chisimba-form-progress progress { display: block; inline-size: 100%; block-size: .65rem; margin-block: var(--chisimba-space-2); accent-color: var(--chisimba-primary); }
-@media (max-width: 600px) {
-    .chisimba-form-step > summary { flex-wrap: wrap; }
-    .chisimba-form-step__status { flex-basis: 100%; }
-}
-
-/* Completion states retain answer counts so meaning does not depend on colour. */
-.chisimba-form-step[data-completion="partial"] > summary {
-    background: #fff3cd;
-    color: #503d00;
-}
-.chisimba-form-step[data-completion="complete"] > summary {
-    background: #276343;
-    color: #fff;
-}
-.chisimba-form-step[data-completion="partial"] > summary .chisimba-form-step__heading > span,
-.chisimba-form-step[data-completion="partial"] > summary .chisimba-form-step__status,
-.chisimba-form-step[data-completion="partial"] > summary::before,
-.chisimba-form-step[data-completion="complete"] > summary .chisimba-form-step__heading > span,
-.chisimba-form-step[data-completion="complete"] > summary .chisimba-form-step__status,
-.chisimba-form-step[data-completion="complete"] > summary::before { color: inherit; }
-.chisimba-form-actions button:disabled {
-    background: #e0e2e3;
-    border-color: #c4c7c9;
-    color: #555;
-    opacity: 1;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-.chisimba-form-actions button.chisimba-button-submitted:disabled {
-    background: #9d3038;
-    border-color: #9d3038;
-    color: #fff;
-}
-
-/* Responsive evidence and image previews use the shared native dialog. */
-.chisimba-image-dialog { width: min(70rem, calc(100% - 2rem)); }
-.chisimba-image-dialog img { display: block; max-width: 100%; max-height: 75vh; object-fit: contain; margin-inline: auto; }
-.chisimba-image-dialog img[hidden] { display: none; }
-
-/* Aligned administration tables and compact action groups across cards. */
-.chisimba-management-table { table-layout:fixed; }
-.chisimba-management-table th:first-child { width:auto; }
-.chisimba-management-table th:nth-child(2) { width:22%; }
-.chisimba-management-table th:last-child { width:9rem; }
-.chisimba-management-table td { overflow-wrap:anywhere; }
-.chisimba-row-actions { flex-wrap:nowrap; align-items:center; }
-.chisimba-row-actions form { margin:0; display:flex; }
-.chisimba-row-actions .chisimba-icon-button { box-sizing:border-box; width:2.5rem; min-width:2.5rem; height:2.5rem; padding:0; margin:0; }
-@media (max-width:600px) {
-    .chisimba-management-table { min-width:30rem; }
-}
-
-/* Explicit single-column workspaces reclaim an otherwise vacant canvas track. */
-#Canvas_Content_Body:has(> #Canvas_Content_Body_Region2 .chisimba-full-width-page) {
-    grid-template-columns: minmax(0, 1fr) !important;
-}
-#Canvas_Content_Body:has(> #Canvas_Content_Body_Region2 .chisimba-full-width-page) > #Canvas_Content_Body_Region2 {
-    grid-column: 1 / -1;
-    max-width: none;
-    width: 100% !important;
-}
-
 /* Conversation history: shared, canvas-token-based chat presentation. */
 .chisimba-chat { display:flex; flex-direction:column; gap:.75rem; max-height:32rem; overflow:auto; padding:1rem; margin-block:1rem; background:var(--chisimba-surface-subtle); border:1px solid var(--chisimba-border); border-radius:var(--chisimba-region-radius); }
 .chisimba-chat__message { align-self:flex-start; max-width:85%; min-width:0; padding:.75rem 1rem; border:1px solid var(--chisimba-border); border-radius:1rem 1rem 1rem .25rem; background:var(--chisimba-surface); color:var(--chisimba-text); overflow-wrap:anywhere; }
@@ -7792,6 +7701,30 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 /* Photographs in private conversation channels retain their aspect ratio. */
 .chisimba-chat__photo { display:block; max-width:100%; max-height:36rem; width:auto; height:auto; object-fit:contain; border-radius:var(--chisimba-radius,.5rem); }
 
+/* Aligned administration tables and compact action groups across cards. */
+.chisimba-management-table { table-layout:fixed; }
+.chisimba-management-table th:first-child { width:auto; }
+.chisimba-management-table th:nth-child(2) { width:22%; }
+.chisimba-management-table th:last-child { width:9rem; }
+.chisimba-management-table td { overflow-wrap:anywhere; }
+.chisimba-row-actions { flex-wrap:nowrap; align-items:center; }
+.chisimba-row-actions form { margin:0; display:flex; }
+.chisimba-row-actions .chisimba-icon-button { box-sizing:border-box; width:2.5rem; min-width:2.5rem; height:2.5rem; padding:0; margin:0; }
+@media (max-width:600px) {
+    .chisimba-management-table { min-width:30rem; }
+}
+
+/* Explicit single-column workspaces reclaim an otherwise vacant canvas track. */
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region2 .chisimba-full-width-page) {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+#Canvas_Content_Body:has(> #Canvas_Content_Body_Region2 .chisimba-full-width-page) > #Canvas_Content_Body_Region2 {
+    grid-column: 1 / -1;
+    max-width: none;
+    width: 100% !important;
+}
+
+
 /* Optional composition portrait sizing: equal desktop height, no cropping. */
 .chisimba-content-block figure.chisimba-content-portrait img { height:500px; width:100%; object-fit:contain; }
 @media(max-width:600px) {
@@ -7800,15 +7733,6 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 
 /* Reusable bounded image previews in editing forms. */
 .chisimba-media-preview__image { max-height:20rem; object-fit:contain; }
-
-/* Shared page/post video sizing: the player keeps the selected orientation. */
-.chisimba-content-block .chisimba-video-frame { width:100%; margin-inline:auto; }
-.chisimba-content-block .chisimba-video-frame--normal { max-width:48rem; }
-.chisimba-content-block .chisimba-video-frame--portrait.chisimba-video-frame--normal { max-width:26.875rem; }
-.chisimba-content-block .chisimba-video-frame > iframe,
-.chisimba-content-block .chisimba-video-frame > video { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; border:0; }
-.chisimba-content-block .chisimba-video-frame--portrait > iframe,
-.chisimba-content-block .chisimba-video-frame--portrait > video { aspect-ratio:9/16; }
 
 /* Public entry screens: one mobile gutter, readable forms and direct sign-in.
  * Keep branding in canvas tokens and public content in its configured order.
