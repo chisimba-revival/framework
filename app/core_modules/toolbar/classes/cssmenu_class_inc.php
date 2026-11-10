@@ -60,6 +60,14 @@ class cssmenu extends ChisimbaObject {
                         $counter = 1;
                         $numitems = (is_countable($item) ? count($item) : 0);
                         foreach ($item as $link => $val) {
+                                if (is_array($val) && isset($val['externalUrl'], $val['label'])) {
+                                        $escape = static fn($value) => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                                        $str .= '<li><a href="'.$escape($val['externalUrl']).'">'
+                                            . $this->iconService->render('external-link', ['decorative'=>true, 'class'=>'mainmenu-icon'])
+                                            . '<div class="menulinktext">'.$escape($val['label']).'</div></a></li>';
+                                        $counter++;
+                                        continue;
+                                }
                                 $params = NULL;
                                 if (is_array($val) && isset($val['module'], $val['label'])) {
                                         $link = $val['module'];
@@ -93,6 +101,14 @@ class cssmenu extends ChisimbaObject {
                 $str .="</ul>";
 
                 return $str;
+        }
+
+        /** Explicit external destination; never interpret it as a module route. */
+        public function addExternalItem($heading, $label, $url) {
+                $this->getObject('externalnavigation', 'toolbar');
+                if (isset($this->menu[$heading]) && externalnavigation::validUrl($url)) {
+                        $this->menu[$heading][] = ['externalUrl'=>$url, 'label'=>$label];
+                }
         }
 
         /**

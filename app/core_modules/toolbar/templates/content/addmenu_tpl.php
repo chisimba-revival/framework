@@ -28,7 +28,7 @@ if ($page && strpos($head, 'page_') === 0) {
 $action = $editing ? (isset($parts[$page ? 1 : 2]) ? $parts[$page ? 1 : 2] : '') : '';
 $icon = $editing ? (isset($parts[$page ? 2 : 3]) ? $parts[$page ? 2 : 3] : '') : '';
 $code = $editing ? (isset($parts[$page ? 3 : 4]) ? $parts[$page ? 3 : 4] : '') : '';
-if ($site) $position = $editing ? (int) substr($head, 5) : 10;
+if ($site) $position = $editing ? (int) substr($head, 5) : '';
 $menuOptions = $page
     ? array('lecturer', 'admin', 'manage')
     : array('user', 'alumni', 'context', 'postlogin', 'postgrad');
@@ -49,7 +49,8 @@ if ($site && isset($siteSubmitted)) {
 $actionName = $site ? 'savesite' : ($page ? 'savepage' : 'savemenu');
 ?>
 <h1><?php echo $escape($heading); ?></h1>
-<?php if (!empty($siteInputError)): ?><p role="alert"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_invalid','toolbar')); ?></p><?php endif; ?>
+<?php if ($site) echo $this->getObject('contextualhelp','help')->show('toolbar','navigation'); ?>
+<?php if (!empty($siteInputError)): ?><p role="alert"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_'.$siteInputError,'toolbar')); ?></p><?php endif; ?>
 <p><strong><?php echo $escape($lang->languageText('mod_toolbar_module', 'toolbar', 'Module')); ?>:</strong>
 <?php echo $escape($moduleName); ?></p>
 <form class="chisimba-form-card" method="post" action="<?php echo $escape($this->uri(array('action' => $actionName))); ?>">
@@ -66,9 +67,9 @@ $actionName = $site ? 'savesite' : ($page ? 'savepage' : 'savemenu');
 <?php endforeach; ?>
   </select></p>
 <?php endif; ?>
-  <p><label for="toolbar-position"><?php echo $escape($lang->languageText($page ? 'mod_toolbar_selectcategory' : 'mod_toolbar_positioninmenu', 'toolbar', $page ? 'Select Category' : 'Position in Menu')); ?></label>
-<?php if ($site): ?><input id="toolbar-position" name="position" type="number" min="0" max="999" required value="<?php echo $escape($position); ?>">
-</p><?php else: ?>
+  <p><label for="toolbar-position"><?php echo $escape($site ? $lang->code2Txt('mod_toolbar_nav_link_order', 'toolbar') : $lang->languageText($page ? 'mod_toolbar_selectcategory' : 'mod_toolbar_positioninmenu', 'toolbar', $page ? 'Select Category' : 'Position in Menu')); ?></label>
+<?php if ($site): ?><input id="toolbar-position" name="position" type="number" min="0" max="999" value="<?php echo $escape($position); ?>">
+<small><?php echo $escape($lang->code2Txt('mod_toolbar_nav_link_order_help','toolbar')); ?></small></p><?php else: ?>
   <select id="toolbar-position" name="position">
 <?php foreach ($positionOptions as $value): ?>
     <option value="<?php echo $escape($value); ?>"<?php echo (string) $position === (string) $value ? ' selected="selected"' : ''; ?>><?php echo $escape($value); ?></option>
@@ -82,7 +83,7 @@ $actionName = $site ? 'savesite' : ($page ? 'savepage' : 'savemenu');
   <p><label for="toolbar-code"><?php echo $escape($lang->languageText('mod_toolbar_langcode', 'toolbar', 'Language Code')); ?></label>
   <input id="toolbar-code" name="code" value="<?php echo $escape($code); ?>" required="required" /></p>
 <?php if ($site): ?><p><label for="toolbar-group"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_group','toolbar')); ?></label>
-<input id="toolbar-group" name="groupCode" value="<?php echo $escape($parts[5] ?? ''); ?>"></p>
+<select id="toolbar-group" name="groupCode"><option value=""><?php echo $escape($lang->code2Txt('mod_toolbar_nav_direct_links','toolbar')); ?></option><?php foreach($siteGroups as $key=>$label): ?><option value="<?php echo $escape($key); ?>"<?php echo ($parts[5]??'')===$key?' selected':''; ?>><?php echo $escape($label); ?></option><?php endforeach; ?></select></p>
 <p><label for="toolbar-arguments"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_arguments','toolbar')); ?></label>
 <input id="toolbar-arguments" name="destinationArguments" value="<?php echo $escape($parts[6] ?? ''); ?>" aria-describedby="toolbar-arguments-help"></p>
 <p id="toolbar-arguments-help"><?php echo $escape($lang->code2Txt('mod_toolbar_nav_arguments_help','toolbar')); ?></p>

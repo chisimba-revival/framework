@@ -7,6 +7,7 @@ $options = array('comment' => 'Table containing the items for the top toolbar / 
 
 // Fields
 $fields = array(
+    'menu_label' => array('type'=>'text', 'length'=>150),
     'id' => array(
         'type' => 'text',
         'length' => 32,

@@ -51,29 +51,49 @@ class toolbar extends controller
                 return $this->editLinks(
                     $this->moduleId($this->getParam('modulename', 'toolbar'))
                 );
+            case 'addcategory':
+                return $this->categoryForm();
+            case 'editcategory':
+                return $this->categoryForm($this->recordId($this->getParam('id', '')));
+            case 'savecategory':
+                return $this->saveCategory();
+            case 'deletecategory':
+                $this->requireMutation();
+                try {
+                    $this->getObject('navigationcategories', 'toolbar')->removeCategory($this->recordId($this->getParam('id', '')));
+                } catch (InvalidArgumentException $error) {
+                    $this->setVar('categoryError', $error->getMessage());
+                    return $this->editLinks('toolbar');
+                }
+                return $this->nextAction('editlinks');
+            case 'addexternal':
+                return $this->externalForm();
+            case 'editexternal':
+                return $this->externalForm($this->recordId($this->getParam('id','')));
+            case 'saveexternal':
+                return $this->saveExternal();
+            case 'deleteexternal':
+                $this->requireMutation();
+                $this->getObject('externalnavigation','toolbar')->removeLink($this->recordId($this->getParam('id','')));
+                return $this->nextAction('editlinks');
             case 'saveprofile':
                 $this->requireMutation();
                 $profile = $this->enumValue($this->getParam('profile', ''), array('dropdown', 'site', 'flat', 'elearning'));
                 $this->getObject('dbsysconfig', 'sysconfig')->changeParam('TOOLBAR_TYPE', 'toolbar', $profile);
                 return $this->nextAction('editlinks', array('modulename' => 'toolbar'));
             case 'addsite':
+                if ($this->getParam('modulename', '') === '') return $this->chooseSiteModule();
                 return $this->prepareMenuForm(false, false, true);
             case 'editsite':
                 return $this->prepareMenuForm(true, false, true);
             case 'savesite':
-                $this->requireMutation();
-                try {
-                    return $this->saveSiteLink();
-                } catch (InvalidArgumentException $error) {
-                    $values = array();
-                    foreach (array('position','actionName','icon','code','groupCode','destinationArguments','adminOnly','dependsContext','permissions') as $key) {
-                        $value = $this->getParam($key, '');
-                        $values[$key] = is_string($value) ? $value : '';
-                    }
-                    $this->setVar('siteSubmitted', $values);
-                    $this->setVar('siteInputError', true);
-                    return $this->prepareMenuForm($this->getParam('id', '') !== '', false, true);
+                try { $this->requireMutation(); }
+                catch (RuntimeException $error) {
+                    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') throw $error;
+                    return $this->siteFormError('external_expired');
                 }
+                try { return $this->saveSiteLink(); }
+                catch (InvalidArgumentException $error) { return $this->siteFormError('invalid'); }
             case 'addtool':
                 return $this->prepareToolForm(false);
             case 'edittool':
@@ -164,6 +184,18 @@ class toolbar extends controller
         return 'addtool_tpl.php';
     }
 
+    private function chooseSiteModule()
+    {
+        $choices = [];
+        $defaults = $this->getObject('modulelinkdefaults', 'toolbar');
+        foreach ($this->objModules->getAll('WHERE isVisible = 1 ORDER BY module_id') as $module) {
+            $choices[$module['module_id']] = $defaults->moduleName($module['module_id']);
+        }
+        asort($choices, SORT_NATURAL | SORT_FLAG_CASE);
+        $this->setVar('siteModuleChoices', $choices);
+        return 'module_link_choose_tpl.php';
+    }
+
     private function prepareMenuForm($editing, $page, $site = false)
     {
         $module = $this->moduleId($this->getParam('modulename', $this->getParam('moduleName', '')));
@@ -180,9 +212,15 @@ class toolbar extends controller
         $this->setVarByRef('moduleName', $module);
         $this->setVar('page', $page);
         $this->setVar('site', $site);
+        if ($site) {
+            $this->setVar('siteGroups', $this->getObject('navigationservice', 'toolbar')->editorGroups());
+            $defaults = $this->getObject('modulelinkdefaults', 'toolbar');
+            $this->setVar('siteModuleTitle', $defaults->moduleName($module));
+            $this->setVar('siteDestinations', $defaults->destinations($module, $data));
+        }
         $this->setVar('mode', $editing ? 'edit' : 'add');
         $this->prepareFormSecurity($module, $data);
-        return 'addmenu_tpl.php';
+        return $site ? 'module_link_tpl.php' : 'addmenu_tpl.php';
     }
 
     private function prepareFormSecurity($module, $data)
@@ -207,7 +245,8 @@ class toolbar extends controller
             'WHERE isVisible = 1 ORDER BY module_id'
         );
         $token = $this->csrf->issue(self::CSRF_CONTEXT);
-        $this->setVar('siteNavigationRows', $this->objDbMenu->siteLinks());
+        $this->setVar('navigationCategories', $this->getObject('navigationcategories', 'toolbar')->categories());
+        $this->setVar('navigationInventory', $this->getObject('navigationservice','toolbar')->editorLinks());
         $this->setVar('toolbarProfile', strtolower((string) $this->getObject('dbsysconfig', 'sysconfig')->getValue('TOOLBAR_TYPE', 'toolbar', 'dropdown')));
         $this->setVarByRef('moduleList', $moduleList);
         $this->setVarByRef('moduleName', $module);
@@ -216,21 +255,114 @@ class toolbar extends controller
         return 'editlinks_tpl.php';
     }
 
+    private function categoryForm($id = null, $submitted = null, $error = false)
+    {
+        $row = $id === null ? [] : $this->getObject('navigationcategories', 'toolbar')->category($id);
+        if ($id !== null && !$row) throw new RuntimeException('Navigation category not found');
+        $this->setVar('category', $submitted ?? $row);
+        $this->setVar('categoryId', $id ?? '');
+        $this->setVar('categoryError', $error);
+        $this->setVar('toolbarCsrf', $this->csrf->issue(self::CSRF_CONTEXT));
+        return 'navigation_category_tpl.php';
+    }
+
+    private function saveCategory()
+    {
+        $input = [];
+        foreach (['label', 'position'] as $key) {
+            $value = $this->getParam($key, '');
+            $input[$key] = is_string($value) ? $value : '';
+        }
+        $id = $this->optionalRecordId($this->getParam('id', ''));
+        try { $this->requireMutation(); }
+        catch (RuntimeException $error) {
+            if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') throw $error;
+            return $this->categoryForm($id, $input, 'external_expired');
+        }
+        try { $this->getObject('navigationcategories', 'toolbar')->saveCategory($input, $id); }
+        catch (InvalidArgumentException $error) { return $this->categoryForm($id, $input, $error->getMessage()); }
+        return $this->nextAction('editlinks');
+    }
+
+    private function externalForm($id = null, $submitted = null, $error = false)
+    {
+        $row = $id === null ? [] : $this->getObject('externalnavigation', 'toolbar')->link($id);
+        if ($id !== null && !$row) throw new RuntimeException('External link not found');
+        if ($id === null && $submitted === null) {
+            $row['placement'] = $this->getParam('placement', 'site') === 'learning' ? 'learning' : 'site';
+        }
+        $this->setVar('externalLink', $submitted ?? $row);
+        $this->setVar('externalId', $id ?? '');
+        $this->setVar('externalError', $error);
+        $this->setVar('externalGroups', $this->getObject('navigationservice', 'toolbar')->editorGroups());
+        $this->setVar('toolbarCsrf', $this->csrf->issue(self::CSRF_CONTEXT));
+        return 'external_link_tpl.php';
+    }
+
+    private function saveExternal()
+    {
+        $input = [];
+        foreach (['placement', 'label', 'url', 'group_key', 'new_group', 'position', 'audience'] as $key) {
+            $value = $this->getParam($key, $key === 'placement' ? 'site' : '');
+            $input[$key] = is_string($value) ? $value : '';
+            if ($key === 'audience' && $input[$key] === '' && ($input['placement'] ?? '') === 'learning') $input[$key] = 'members';
+        }
+        $id = $this->optionalRecordId($this->getParam('id', ''));
+        // Keep entered values and issue a new token when a form expires.
+        try {
+            $this->requireMutation();
+        } catch (RuntimeException $error) {
+            if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') throw $error;
+            return $this->externalForm($id, $input, 'expired');
+        }
+        try {
+            $this->getObject('externalnavigation', 'toolbar')->saveLink(
+                $input, $id
+            );
+        } catch (InvalidArgumentException $error) {
+            return $this->externalForm($id, $input, 'invalid');
+        }
+        return $this->nextAction('editlinks');
+    }
+
+    private function siteFormError($error)
+    {
+        $values = [];
+        foreach (['position','destination','groupCode','menuLabel','adminOnly','dependsContext','permissions'] as $key) {
+            $value = $this->getParam($key, '');
+            $values[$key] = is_string($value) ? $value : '';
+        }
+        $this->setVar('siteSubmitted', $values);
+        $this->setVar('siteInputError', $error);
+        return $this->prepareMenuForm($this->getParam('id', '') !== '', false, true);
+    }
+
     /** Extend the existing editor, ownership checks and permission selection. */
     private function saveSiteLink()
     {
         $module = $this->moduleId($this->getParam('moduleName', ''));
         if ($this->isBackRequest()) return $this->nextAction('editlinks', array('modulename' => $module));
-        $order = filter_var($this->getParam('position', ''), FILTER_VALIDATE_INT,
-            array('options' => array('min_range' => 0, 'max_range' => 999)));
-        if ($order === false) throw new InvalidArgumentException('Invalid site navigation position');
-        $category = 'site_' . sprintf('%03d', $order) . '||'
-            . $this->identifier('actionName', true) . '|' . $this->identifier('icon', true)
-            . '|' . $this->languageCode() . '|' . $this->identifier('groupCode', true);
-        $arguments = $this->getObject('navigationservice', 'toolbar')->destinationArguments($this->getParam('destinationArguments', ''));
-        if ($arguments) $category .= '|' . http_build_query($arguments, '', '&', PHP_QUERY_RFC3986);
-        if (strlen($category) > 120) throw new InvalidArgumentException('Site navigation declaration exceeds 120 characters');
-        return $this->save($module, $category);
+        return $this->getObject('navigationcategories', 'toolbar')->mutate(function () use ($module) {
+            $group = $this->getParam('groupCode', '');
+            if (!is_string($group)) throw new InvalidArgumentException('Invalid category');
+            $order = $this->getObject('navigationservice', 'toolbar')->linkPosition(
+                $this->getParam('position', ''), 'site', $group, $this->optionalRecordId($this->getParam('id', ''))
+            );
+            $id = $this->optionalRecordId($this->getParam('id', ''));
+            $existing = $id === null ? null : $this->requiredOwnedLink($module);
+            $destinations = $this->getObject('modulelinkdefaults', 'toolbar')->destinations($module, $existing);
+            $selected = $this->getParam('destination', $existing === null ? 'default' : 'current');
+            if (!is_string($selected) || !isset($destinations[$selected])) throw new InvalidArgumentException('Invalid destination');
+            $destination = $destinations[$selected];
+            $category = 'site_' . sprintf('%03d', $order) . '||'
+                . $destination['action'] . '|' . $destination['icon'] . '|' . $destination['code'] . '|' . $group;
+            $arguments = $this->getObject('navigationservice', 'toolbar')->destinationArguments($destination['arguments']);
+            if ($arguments) $category .= '|' . http_build_query($arguments, '', '&', PHP_QUERY_RFC3986);
+            if (strlen($category) > 120) throw new InvalidArgumentException('Site navigation declaration exceeds 120 characters');
+            $label = $this->getParam('menuLabel', '');
+            if (!is_string($label) || !preg_match('//u', $label) || mb_strlen($label) > 150 || preg_match('/[\x00-\x1f\x7f]/', $label)) throw new InvalidArgumentException('Invalid menu label');
+            return $this->save($module, $category, trim($label));
+        });
     }
 
     private function saveToolLink()
@@ -292,7 +424,7 @@ class toolbar extends controller
         return $this->save($module, $category);
     }
 
-    private function save($module, $category)
+    private function save($module, $category, $menuLabel = null)
     {
         $id = $this->optionalRecordId($this->getParam('id', ''));
         if ($id !== null) {
@@ -315,7 +447,8 @@ class toolbar extends controller
             'permissions' => $right,
             'dependsContext' => $this->booleanParam('dependsContext'),
         );
-        $this->objDbMenu->saveLinks($fields, $id);
+        if ($menuLabel !== null) $fields['menu_label'] = $menuLabel === '' ? null : $menuLabel;
+        if (!$this->objDbMenu->saveLinks($fields, $id)) throw new RuntimeException('Toolbar link save failed');
         return $this->nextAction(
             'editlinks',
             array('modulename' => $module)

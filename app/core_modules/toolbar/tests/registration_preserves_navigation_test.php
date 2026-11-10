@@ -12,6 +12,7 @@ class NavigationStore {
 }
 class NavigationRegistrar extends register {
     public array $data=[];
+    protected function registerNavigationCategories() {}
     public function canonicalRightForRegistration($data,$module,$scope='default'){return '';}
     public function getModuleData($module){return $this->data;}
 }

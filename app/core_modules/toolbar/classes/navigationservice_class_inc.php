@@ -57,7 +57,7 @@ class navigationservice extends ChisimbaObject
                 || !preg_match('/^[a-zA-Z0-9_.-]{0,80}$/D', $parts[2])
                 || !preg_match('/^[a-zA-Z0-9_.-]{0,80}$/D', $parts[3])
                 || !preg_match('/^[a-zA-Z0-9_.-]{1,120}$/D', $parts[4])
-                || !preg_match('/^[a-zA-Z0-9_.-]{0,80}$/D', $parts[5] ?? '')) continue;
+                || !preg_match('/^[a-zA-Z0-9_:.-]{0,100}$/D', $parts[5] ?? '')) continue;
             try { $arguments = self::destinationArguments($parts[6] ?? ''); }
             catch (InvalidArgumentException $error) { continue; }
             if (count($parts) > 7) continue;
@@ -66,6 +66,13 @@ class navigationservice extends ChisimbaObject
                 || (!empty($row['dependscontext']) && !$context->isInContext())
                 || !$security->mayUseRight($row['permissions'])) continue;
             if (!empty($row['dependscontext']) && !$this->getObject('dbcontextmodules', 'context')->isContextPlugin($context->getContextCode(), $row['module'])) continue;
+            if ($row['module'] === 'sitepages' && str_starts_with($parts[4], 'page_')) {
+                $page = $this->getObject('modulelinkdefaults', 'toolbar')->page($parts[4]);
+                if (!$page || $page['status'] !== 'published') continue;
+                $parts[2] = 'view';
+                $arguments = ['slug' => $page['slug']];
+                $routeArguments['sitepages|view'] = ['slug'];
+            }
             $activeArguments = true;
             foreach ($routeArguments[$row['module'].'|'.$parts[2]] ?? [] as $key) {
                 if ($this->getParam($key, '') !== ($arguments[$key] ?? '')) $activeArguments = false;
@@ -73,7 +80,7 @@ class navigationservice extends ChisimbaObject
             $links[] = array(
                 'id' => $row['id'], 'module' => $row['module'], 'action' => $parts[2],
                 'order' => (int) $order[1], 'icon' => $parts[3],
-                'label' => ucfirst($language->code2Txt($parts[4], $row['module'])),
+                'label' => (trim($row['menu_label'] ?? '') !== '' ? $row['menu_label'] : $this->getObject('modulelinkdefaults','toolbar')->label($parts[4], $row['module'])),
                 'group' => $parts[5] ?? '',
                 'groupLabel' => empty($parts[5]) ? '' : ucfirst($language->code2Txt($parts[5], $row['module'])),
                 'url' => html_entity_decode($this->uri(array('action' => $parts[2]) + $arguments, $row['module']), ENT_QUOTES, 'UTF-8'),
@@ -82,8 +89,67 @@ class navigationservice extends ChisimbaObject
                     && $activeArguments,
             );
         }
-        usort($links, static fn($a, $b) => [$a['order'], $a['module'], $a['id']] <=> [$b['order'], $b['module'], $b['id']]);
+        foreach ($this->getObject('externalnavigation', 'toolbar')->links() as $row) {
+            if (($row['placement'] ?? 'site') !== 'site' || !externalnavigation::validUrl($row['url'])) continue;
+            $authenticated=$security->isAuthenticated();
+            if (!in_array($row['audience'],['everyone','visitors','members'],true)
+                || ($row['audience']==='visitors' && $authenticated)
+                || ($row['audience']==='members' && !$authenticated)) continue;
+            $links[]=['id'=>$row['id'],'module'=>'','action'=>'','order'=>(int)$row['position'],
+                'icon'=>'external-link','label'=>$row['label'],'group'=>$row['group_key'],
+                'groupLabel'=>$row['group_label'],'url'=>$row['url'],'active'=>false];
+        }
+        return $this->getObject('navigationcategories', 'toolbar')->arrange($links);
+    }
+
+    /** Editor inventory includes hidden links so administrators can manage them. */
+    public function rawEditorLinks()
+    {
+        $language=$this->getObject('language','language');
+        $links=[];
+        foreach($this->getObject('dbmenu','toolbar')->siteLinks() as $row){
+            $p=explode('|',$row['category']);
+            $links[]=['id'=>$row['id'],'module'=>$row['module'],'external'=>false,'placement'=>'site',
+                'label'=>(trim($row['menu_label']??'') !== '' ? $row['menu_label'] : $this->getObject('modulelinkdefaults','toolbar')->label($p[4]??'', $row['module'])),
+                'group'=>$p[5]??'', 'groupLabel'=>empty($p[5])?'':ucfirst($language->code2Txt($p[5],$row['module'])),
+                'order'=>(int)substr($p[0],5)];
+        }
+        foreach($this->getObject('externalnavigation','toolbar')->links() as $row){
+            $links[]=['id'=>$row['id'],'module'=>'toolbar','external'=>true,'placement'=>$row['placement']??'site','label'=>$row['label'],
+                'url'=>$row['url'],'audience'=>$row['audience'],'group'=>$row['group_key'],
+                'groupLabel'=>$row['group_label'],'order'=>(int)$row['position']];
+        }
+        usort($links,static fn($a,$b)=>[$a['order'],$a['label'],$a['id']]<=>[$b['order'],$b['label'],$b['id']]);
         return $links;
+    }
+
+    public function editorLinks()
+    {
+        return $this->getObject('navigationcategories', 'toolbar')->arrange($this->rawEditorLinks());
+    }
+
+    public function editorGroups()
+    {
+        return array_column($this->getObject('navigationcategories', 'toolbar')->categories(), 'label', 'group_key');
+    }
+
+    /** Blank order appends to the selected bucket; it never writes category order. */
+    public function linkPosition($value, $placement, $group, $excludeId = null)
+    {
+        if ($placement === 'site' && $group !== '' && !isset($this->editorGroups()[$group])) throw new InvalidArgumentException('invalid');
+        if ($value === '') {
+            $positions = [];
+            foreach ($this->rawEditorLinks() as $link) {
+                if ($link['id'] !== $excludeId && ($link['placement'] ?? 'site') === $placement && $link['group'] === $group) $positions[] = $link['order'];
+            }
+            if ($placement === 'site' && $group === '') {
+                $positions = array_merge($positions, array_column($this->getObject('navigationcategories', 'toolbar')->categories(), 'position'));
+            }
+            $value = $positions ? max($positions) + 1 : 10;
+        }
+        $position = filter_var($value, FILTER_VALIDATE_INT, ['options'=>['min_range'=>0,'max_range'=>999]]);
+        if ($position === false) throw new InvalidArgumentException('invalid');
+        return $position;
     }
 
     /** Modules can omit a duplicate local menu only when all its routes are present. */

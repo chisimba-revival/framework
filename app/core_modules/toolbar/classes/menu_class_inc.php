@@ -265,6 +265,12 @@ class menu extends ChisimbaObject
             }
         }
 
+        foreach ($this->getObject('externalnavigation', 'toolbar')->learningLinks(
+            $this->securityContext->isAuthenticated()
+        ) as $link) {
+            $journeys['learning'][] = ['externalUrl' => $link['url'], 'label' => $link['label']];
+        }
+
         $result = array();
         foreach ($journeys as $journey => $modules) {
             if ($modules !== array()) {
@@ -340,6 +346,13 @@ class menu extends ChisimbaObject
                 $category = strtolower($key);
                 $this->cssMenu->addHeader($this->objLanguage->languageText('category_'.$category,'toolbar', ucwords($category)));
                 foreach($item as $k=>$v){
+                    if (is_array($v) && isset($v['externalUrl'], $v['label'])) {
+                        $this->cssMenu->addExternalItem(
+                            $this->objLanguage->languageText('category_'.$category, 'toolbar', ucwords($category)),
+                            $v['label'], $v['externalUrl']
+                        );
+                        continue;
+                    }
                     if (is_array($v) && isset($v['module'], $v['label'])) {
                         $this->cssMenu->addMenuItem(
                             $this->objLanguage->languageText(

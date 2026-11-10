@@ -215,6 +215,8 @@ class register extends ChisimbaObject
             }
         }
 
+        if (!empty($regData['SITE_NAV'])) $this->registerNavigationCategories();
+
         if (!empty($regData['PAGE'])) {
             foreach ($regData['PAGE'] as $declaration) {
                 list($page, $linkContext) = $this->splitScopedDeclaration(
@@ -445,6 +447,17 @@ class register extends ChisimbaObject
             }
         }
         return array(rtrim(implode('|', $parts), '|'), $context);
+    }
+
+    /** Catalogue registration may introduce headings; it must not reset existing order. */
+    protected function registerNavigationCategories()
+    {
+        // During a fresh installation toolbar's tables may not have been created yet.
+        $tables = $this->getObject('modulesadmin', 'modulecatalogue')->listDbTables();
+        if (!in_array('tbl_toolbar_categories', $tables, true)) return;
+        $this->getObject('navigationcategories', 'toolbar')->seed(
+            $this->getObject('navigationservice', 'toolbar')->rawEditorLinks()
+        );
     }
 
     private function sql($category, $module, $admin, $rightId, $context)
