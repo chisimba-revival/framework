@@ -73,10 +73,10 @@
       "source": "/srv/chisimba-com/app/current",
       "runtime_root": "/var/www/html",
       "container": "chisimba-com-web-1",
-      "manifest": "/srv/chisimba-common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
-      "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
+      "manifest": "/srv/design-heading-chisimba-20261110/source-manifest.json",
+      "manifest_sha256": "fef703a796aa84401ffbba6d4e47682a22095b257ad8eaf4b5460d0af6ff617a",
+      "overlays": "/srv/design-heading-chisimba-20261110/private-overlays.json",
+      "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
       "key": "kengalearn",
@@ -97,9 +97,9 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/ltb-design-deploy-20261110/source-manifest.json",
-      "manifest_sha256": "d515a3b718298f752e1c1c427308551c03427e27cf24672edbc7b46e0d7cfb79",
-      "overlays": "/srv/ltb-design-deploy-20261110/private-overlays.json",
+      "manifest": "/srv/design-heading-learnthebirds-20261110/source-manifest.json",
+      "manifest_sha256": "fef703a796aa84401ffbba6d4e47682a22095b257ad8eaf4b5460d0af6ff617a",
+      "overlays": "/srv/design-heading-learnthebirds-20261110/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,24 +152,24 @@
     }
   ],
   "rollout": {
-    "status": "LTB design review; other sites await user approval",
+    "status": "Learn-the-Birds and Chisimba.com design and image-block updates deployed; other sites deferred by owner",
     "target_pins": {
       "framework": {
         "branch": "release/consolidation-20260930",
-        "commit": "7774886c54784804a33a52a18f897f1da4c96666",
+        "commit": "e87f9c341b5fd7703b19eff09d413d1968972149",
         "remote": "git@github.com:chisimba-revival/framework.git"
       },
       "modules": {
         "branch": "release/consolidation-20260930",
-        "commit": "9e9be7b3c0e1d1ca61a81a23037cc483b39ee0c4",
+        "commit": "cccb6a3b5238fc7cd01355869f1f9f22fc6b7317",
         "remote": "git@github.com:chisimba-revival/modules.git"
       }
     },
     "updated_sites": [
+      "chisimba",
       "learnthebirds"
     ],
     "pending_sites": [
-      "chisimba",
       "kengalearn",
       "kengapub",
       "kengasolutions",
