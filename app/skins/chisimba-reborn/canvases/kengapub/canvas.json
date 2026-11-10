@@ -1,0 +1,16 @@
+{
+  "name": "kengapub",
+  "displayName": "Kenga Publishing",
+  "description": "Kenga Publishing identity on the shared Chisimba skin.",
+  "brand": {
+    "primary": "#23514a",
+    "accent": "#e3ac21"
+  },
+  "author": {
+    "authorname": "Derek Keats"
+  },
+  "preview": {
+    "thumb": "logo.png",
+    "fullview": "logo.png"
+  }
+}

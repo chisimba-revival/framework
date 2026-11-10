@@ -1,0 +1,17 @@
+@import url("../_default/stylesheet.css");
+/* Brand tokens only; shared skin owns layout and components. */
+:root {
+ --chisimba-primary: #295351;
+ --chisimba-primary-hover: #193d3c;
+ --chisimba-primary-dark: #193d3c;
+ --chisimba-primary-soft: #eef4ef;
+ --chisimba-focus: #715c32;
+ --chisimba-grey-blue: #54706a;
+ --chisimba-info: #295351;
+ --chisimba-brand-logo: url("canvases/kenga-solutions/logo.png");
+ --chisimba-brand-logo-surface: transparent;
+ --chisimba-brand-name-display: none;
+ --chisimba-brand-logo-width: 8rem;
+ --chisimba-brand-logo-width-mobile: 6.125rem;
+ --chisimba-brand-logo-filter: brightness(0) invert(1);
+}

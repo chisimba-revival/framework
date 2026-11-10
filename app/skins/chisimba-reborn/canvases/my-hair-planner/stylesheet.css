@@ -1,0 +1,21 @@
+@import url("../_default/stylesheet.css");
+/* Brand tokens only; the shared skin owns all layout and components. */
+:root {
+    --chisimba-primary: #07533d;
+    --chisimba-primary-hover: #043d2c;
+    --chisimba-primary-dark: #043d2c;
+    --chisimba-primary-soft: #eaf2ec;
+    --chisimba-focus: #916b22;
+    --chisimba-grey-blue: #496b5c;
+    --chisimba-info: #07533d;
+    --chisimba-banner-background: #fcfaf4;
+    --chisimba-banner-foreground: #073d2d;
+    --chisimba-banner-icon-color: #07533d;
+    --chisimba-banner-name-shadow: none;
+    --chisimba-brand-logo: url("canvases/my-hair-planner/logo.png");
+    --chisimba-brand-logo-width: 6.5rem;
+    --chisimba-brand-logo-height: 6.5rem;
+    --chisimba-brand-logo-width-mobile: 4.75rem;
+    --chisimba-brand-logo-height-mobile: 4.75rem;
+    --chisimba-brand-logo-filter: none;
+}

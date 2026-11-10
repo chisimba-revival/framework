@@ -1,0 +1,16 @@
+{
+  "name": "heritagetreazures",
+  "displayName": "Heritage Treazures",
+  "description": "Heritage Treazures identity on the shared Chisimba skin.",
+  "brand": {
+    "primary": "#436744",
+    "accent": "#c58d45"
+  },
+  "author": {
+    "authorname": "Derek Keats"
+  },
+  "preview": {
+    "thumb": "logo.svg",
+    "fullview": "logo.svg"
+  }
+}
