@@ -98,3 +98,13 @@ plus the user-form and expanding-title editor specimens at phone/desktop widths.
 No horizontal overflow or clipped title was observed. Skin ownership and header
 journey contracts pass. This revision remains on a design branch pending review;
 production and the Learn-the-Birds canvas are unchanged.
+
+## Full-width banner background
+
+The shared banner accepts `--chisimba-banner-shadow` and
+`--chisimba-banner-shadow-clip`. Chisimba Classic uses a wide spread shadow
+clipped to the banner’s block edges to extend its charcoal background to the
+viewport edges. This is paint only: content, logo and pills retain their normal
+layout width, without `100vw` scrollbar overflow. Other canvases keep the
+default raised shadow. Verify this on the actual constrained page shell, not
+only the standalone preview.

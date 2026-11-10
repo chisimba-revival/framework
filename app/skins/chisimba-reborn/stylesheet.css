@@ -2758,8 +2758,10 @@ h5.featureboxheader,
         var(--chisimba-primary) 100%
     ));
     border: 0;
-    border-bottom: 0.25rem solid var(--chisimba-primary-soft);
-    box-shadow: var(--chisimba-shell-shadow-raised);
+    border-bottom: 0.25rem solid var(--chisimba-banner-border-color, var(--chisimba-primary-soft));
+    /* Opt-in full-bleed paint does not enlarge the layout or create scrolling. */
+    box-shadow: var(--chisimba-banner-shadow, var(--chisimba-shell-shadow-raised));
+    clip-path: var(--chisimba-banner-shadow-clip, none);
     color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
     display: flex;
     flex-wrap: wrap;

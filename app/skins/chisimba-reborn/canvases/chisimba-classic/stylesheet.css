@@ -34,6 +34,9 @@
 
     /* A compact charcoal frame for the original, unmodified logo and pills. */
     --chisimba-banner-background: #292b2b;
+    --chisimba-banner-border-color: var(--chisimba-banner-background);
+    --chisimba-banner-shadow: 0 0 0 100vmax var(--chisimba-banner-background);
+    --chisimba-banner-shadow-clip: inset(0 -100vmax);
     --chisimba-banner-foreground: #fff8e9;
     --chisimba-banner-name-shadow: none;
     --chisimba-banner-icon-color: #e4b775;
