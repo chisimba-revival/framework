@@ -50,3 +50,17 @@ This is the first shared design pass, not a claim that every legacy module has
 been redesigned. Next: review the two identities, resolve the local publishing
 setup, then apply the accepted components to remaining forms and real public
 page compositions. Keep that work on shared source; canvases remain branding.
+
+## Banner follow-up
+
+Restored Learn-the-Birds' established blue action/focus colours. Replaced the
+workshop text header with the actual shared banner markup, logo assets and
+journey/status classes. Added public/member/administrator preview states.
+Compact height is canvas-configured; pills reserve space, wrap with readable
+labels and use light-banner-aware text/borders. Shared role-icon colours and
+server-side decisions about which pills appear are unchanged.
+
+Browser checks: both branded banners with all sample pills at 320/390/768/1280px
+without horizontal overflow; public state hides the sample pills. Existing
+header journey and membership contracts pass. Updated the journey contract for
+normal-flow layout and its already-existing site-navigation suppression check.

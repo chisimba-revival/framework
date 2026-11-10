@@ -2763,7 +2763,7 @@ h5.featureboxheader,
     color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
     display: flex;
     flex-wrap: wrap;
-    min-height: 7rem;
+    min-height: var(--chisimba-banner-min-height, 7rem);
     overflow: hidden;
     position: relative;
 }
@@ -2781,8 +2781,11 @@ h5.featureboxheader,
     color: inherit;
     display: flex;
     flex: 1 1 24rem;
-    min-height: 7rem;
-    padding: var(--chisimba-space-4) var(--chisimba-shell-gutter);
+    flex-wrap: wrap;
+    gap: .75rem 1.5rem;
+    min-width: 0;
+    min-height: var(--chisimba-banner-min-height, 7rem);
+    padding: var(--chisimba-banner-padding-block, var(--chisimba-space-4)) var(--chisimba-shell-gutter);
     position: relative;
 }
 
@@ -2805,17 +2808,18 @@ h5.featureboxheader,
     display: flex;
     flex-wrap: wrap;
     gap: .35rem;
-    inset-block-end: .55rem;
-    inset-inline-end: var(--chisimba-shell-gutter);
+    flex: 1 1 20rem;
+    min-width: 0;
+    margin-inline-start: auto;
     justify-content: flex-end;
-    max-width: calc(100% - (2 * var(--chisimba-shell-gutter)));
-    position: absolute;
+    max-width: 100%;
+    position: static;
 }
 
 .chisimba-site-banner__journey {
     align-items: center;
-    background: rgb(255 255 255 / .14);
-    border: 1px solid rgb(255 255 255 / .55);
+    background: var(--chisimba-banner-pill-background, rgb(255 255 255 / .14));
+    border: 1px solid var(--chisimba-banner-pill-border, rgb(255 255 255 / .55));
     border-radius: 999px;
     color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
     display: inline-flex;
@@ -2823,7 +2827,7 @@ h5.featureboxheader,
     font-weight: var(--chisimba-font-weight-semibold);
     gap: .3rem;
     line-height: 1.2;
-    max-width: min(19rem, 42vw);
+    max-width: 100%;
     min-height: 1.65rem;
     padding: .2rem .55rem;
     text-decoration: none;
@@ -2835,9 +2839,8 @@ h5.featureboxheader,
 }
 
 .chisimba-site-banner__journey span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .chisimba-site-banner__journey .chisimba-icon {
@@ -2920,13 +2923,15 @@ h5.featureboxheader,
     align-items: center;
     min-height: 1.65rem;
     padding: .2rem .55rem;
-    border: 1px solid rgb(255 255 255 / .65);
+    border: 1px solid var(--chisimba-banner-pill-border, rgb(255 255 255 / .65));
     border-radius: 999px;
-    background: rgb(255 255 255 / .14);
-    color: var(--chisimba-text-inverse);
+    background: var(--chisimba-banner-pill-background, rgb(255 255 255 / .14));
+    color: var(--chisimba-banner-foreground, var(--chisimba-text-inverse));
+    max-width: 100%;
+    overflow-wrap: anywhere;
     font-size: .75rem;
     font-weight: 700;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .chisimba-site-banner__status-link:hover .chisimba-site-banner__status,
@@ -3014,7 +3019,7 @@ h5.featureboxheader,
     .Canvas_Content_Head.chisimba-site-banner,
     .chisimba-site-banner__inner,
     #header.chisimba-site-banner__inner {
-        min-height: 5.75rem;
+        min-height: var(--chisimba-banner-min-height-mobile, 5.75rem);
     }
 
     .chisimba-site-banner__inner,

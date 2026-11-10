@@ -26,5 +26,8 @@
  --chisimba-editor-radius:.65rem; --chisimba-image-radius:1rem;
  --chisimba-banner-background:#193d3c; --chisimba-banner-foreground:#ffffff;
  --chisimba-banner-name-shadow:none; --chisimba-banner-icon-color:#ffffff;
+ --chisimba-banner-min-height:5rem; --chisimba-banner-min-height-mobile:4.5rem;
+ --chisimba-banner-padding-block:.65rem;
+ --chisimba-brand-logo-height:3.75rem; --chisimba-brand-logo-height-mobile:3rem;
  --chisimba-shadow:none; --chisimba-region-radius:.65rem;
 }

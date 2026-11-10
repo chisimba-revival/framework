@@ -3,8 +3,8 @@
 :root {
     --chisimba-grey-blue:#477785;
     --chisimba-brand-logo:url("canvases/learn-the-birds/images/logo.png");
-    --chisimba-primary:#245b50; --chisimba-primary-hover:#19463d; --chisimba-primary-dark:#19463d;
-    --chisimba-primary-soft:#e8eee5; --chisimba-focus:#245b50;
+    --chisimba-primary:#007fa3; --chisimba-primary-hover:#006681; --chisimba-primary-dark:#00586f;
+    --chisimba-primary-soft:#e5f3f7; --chisimba-focus:#007fa3;
     --chisimba-page:#f6f4ec; --chisimba-surface:#fffef9; --chisimba-surface-subtle:#f4f2e9;
     --chisimba-surface-muted:#ecebe2; --chisimba-ink:#253a32; --chisimba-text:#374b42;
     --chisimba-text-muted:#59675d; --chisimba-border:#d9ddd1; --chisimba-border-strong:#8f9f92;
@@ -14,11 +14,14 @@
     --chisimba-banner-background:#fffef9; --chisimba-banner-foreground:#19463d;
     --chisimba-banner-name-shadow:none; --chisimba-banner-icon-color:#245b50;
     --chisimba-brand-logo-width:18.7rem; --chisimba-brand-logo-width-mobile:13rem;
-    --chisimba-brand-logo-filter:none; --chisimba-brand-name-display:none;
+    --chisimba-banner-min-height:5rem; --chisimba-banner-min-height-mobile:4.5rem;
+    --chisimba-banner-padding-block:.65rem;
+    --chisimba-brand-logo-height:3.75rem; --chisimba-brand-logo-height-mobile:3rem;
+    --chisimba-banner-pill-background:#e5f3f7; --chisimba-banner-pill-border:#8faaa9;
+    --chisimba-brand-logo-filter:brightness(.25); --chisimba-brand-name-display:none;
     --chisimba-shadow:none; --chisimba-region-radius:.35rem;
 }
 /* The full wordmark supplies the visible name; its link keeps its accessible name. */
-.chisimba-site-banner__identity { width:min(18.7rem,65vw); height:7rem; }
 .chisimba-site-banner__name, #sitename.chisimba-site-banner__name {
     position:absolute; width:1px; height:1px; padding:0; margin:-1px;
     overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0;

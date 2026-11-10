@@ -79,7 +79,7 @@ $checks = array(
         )
         && str_contains(
             $template,
-            'if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled) {'
+            'if ($this->objUser->isLoggedIn() && !$bannerPillsDisabled && !$siteNavigation) {'
         ),
     'journey pills have a shared compact treatment' => str_contains(
         $css,
@@ -95,9 +95,9 @@ $checks = array(
                 . 'transform: translateY\(-1px\);/s',
             $css
         ) === 1,
-    'utility rail sits at the foot of the banner' => preg_match(
-        '/\.chisimba-site-banner__utilities \{[^}]*inset-block-end: \.55rem;'
-            . '[^}]*position: absolute;/s',
+    'utility rail reserves space instead of overlapping the brand' => preg_match(
+        '/\.chisimba-site-banner__utilities \{[^}]*flex: 1 1 20rem;'
+            . '[^}]*position: static;/s',
         $css
     ) === 1,
     'utility rail returns to flow on narrower screens' => preg_match(

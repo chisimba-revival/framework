@@ -65,3 +65,16 @@ responsive breakpoints remain in the shared skin.
 Learn-the-Birds explores a warm field-journal direction with serif headings;
 KengaSolutions uses stronger sans-serif headings and cooler surfaces. These are
 review directions, not separate application implementations.
+
+Compact banners opt in through `--chisimba-banner-min-height`,
+`--chisimba-banner-min-height-mobile` and `--chisimba-banner-padding-block`.
+Logo height tokens preserve the asset's aspect ratio. The shared utility rail
+reserves space in normal flow and wraps instead of covering the logo.
+Light banners can set `--chisimba-banner-pill-background` and
+`--chisimba-banner-pill-border`; pill text uses the banner foreground.
+Existing role/journey icon colours and semantic status tokens retain their meaning.
+
+Learn-the-Birds retains its established blue primary/action palette; the warm
+neutral surfaces and serif headings are independent presentation choices. Its
+existing white wordmark is rendered dark by a CSS brightness filter on the light
+banner, without changing the source asset.
