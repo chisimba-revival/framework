@@ -339,6 +339,13 @@ class coursecatalogue extends ChisimbaObject
             // Public catalogue actions are intrinsic and must not bootstrap
             // optional membership or entitlement services.
             $allowed = $mappedPolicy === 'public' || $this->objUser->isAdmin();
+            // Match dbcontext admission: canonical private-course membership
+            // grants entry even without a separate paid/reviewed entitlement.
+            if (!$allowed && $mappedPolicy === 'private') {
+                $allowed = $this->objUserContext->isContextMember(
+                    $this->objUser->userId(), $code
+                );
+            }
             if (!$allowed) {
                 try {
                     $decision = $this->getObject('accesspolicyservice', 'access-policy-service')->resolve(array(
