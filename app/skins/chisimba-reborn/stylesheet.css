@@ -7674,3 +7674,82 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 .chisimba-content-block .chisimba-video-frame > video { display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:contain; border:0; }
 .chisimba-content-block .chisimba-video-frame--portrait > iframe,
 .chisimba-content-block .chisimba-video-frame--portrait > video { aspect-ratio:9/16; }
+
+/* Public entry screens: one mobile gutter, readable forms and direct sign-in.
+ * Keep branding in canvas tokens and public content in its configured order.
+ */
+.chisimba-public-login { display: none; }
+.chisimba-public-login .chisimba-icon { color: currentColor; }
+#Canvas_Content_Body:has(> .security-native-auth) {
+    display: block;
+}
+#Canvas_Content_Body > .security-native-auth {
+    width: 100%;
+    max-width: 28rem;
+    margin: clamp(1rem, 4vw, 3rem) auto;
+}
+#form_loginform .auth-field-label {
+    margin-block-end: .35rem;
+    font-weight: var(--chisimba-font-weight-semibold, 600);
+}
+#form_loginform .auth-recovery { margin-block-start: 1rem; }
+#form_loginform .auth-recovery a,
+.security-native-auth .chisimba-cluster > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+}
+#form_loginform .loginbuttonwrap > button { width: 100%; }
+#form_loginform .auth-field input,
+.security-native-auth .auth-field input {
+    min-height: 2.875rem;
+    font-size: 1rem;
+}
+#form_loginform .auth-field:focus-within,
+.security-native-auth .auth-field:focus-within {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--chisimba-focus) 20%, transparent);
+}
+@media (max-width: 60rem) {
+    .ChisimbaCanvas:has(.chisimba-public-shell) {
+        padding-inline: clamp(.75rem, 2.5vw, 1.5rem);
+    }
+    .ChisimbaCanvas #container.chisimba-public-shell {
+        width: 100%;
+        min-width: 0;
+        margin-inline: 0;
+        padding-inline: 0;
+    }
+    .chisimba-public-shell #header.chisimba-site-banner__inner {
+        min-width: 0;
+        gap: .75rem;
+    }
+    .chisimba-public-shell .chisimba-site-banner__brand {
+        flex: 1 1 12rem;
+        min-width: 0;
+    }
+    .chisimba-public-shell .chisimba-site-banner__identity {
+        flex-shrink: 1;
+        max-width: 100%;
+        min-width: 0;
+    }
+    .chisimba-public-shell .chisimba-public-login {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 2.75rem;
+        padding: .55rem .85rem;
+        border: 1px solid currentColor;
+        border-radius: .5rem;
+        color: inherit;
+        font-weight: var(--chisimba-font-weight-semibold, 600);
+        text-decoration: none;
+    }
+    .chisimba-public-login:hover,
+    .chisimba-public-login:focus-visible {
+        background: rgb(255 255 255 / .18);
+    }
+    .chisimba-public-shell #Canvas_Content_Body {
+        overflow-wrap: anywhere;
+    }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chisimba public entry preview</title>
+<style>
+/* Documentation workspace only. The embedded application uses the real skin. */
+* { box-sizing: border-box; }
+body { margin: 0; padding: 1rem; font: 1rem/1.5 system-ui, sans-serif; background: #eef1f4; color: #172033; }
+header { max-width: 80rem; margin: 0 auto 1rem; }
+h1 { font-size: 1.5rem; margin: 0; }
+p { margin: .4rem 0 1rem; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; }
+label { display: grid; gap: .3rem; font-weight: 600; }
+select, a { font: inherit; }
+select { padding: .65rem; border: 1px solid #708090; border-radius: .4rem; background: white; }
+.stage { overflow: auto; padding: 1rem; background: #dce2e7; border-radius: .75rem; }
+iframe { display: block; width: 390px; height: 844px; margin-inline: auto; border: 1px solid #708090; border-radius: .5rem; background: white; }
+:focus-visible { outline: 3px solid #006fc0; outline-offset: 3px; }
+</style>
+</head>
+<body>
+<header>
+<h1>Public entry screens</h1>
+<p>Review the actual site at phone, tablet and desktop widths. This preview uses the current canvas and real content; forms behave normally. It does not change site settings.</p>
+<div class="controls">
+<label>Screen<select id="screen">
+<option value="">Public home</option>
+<option value="index.php?module=security&amp;action=showlogin">Sign in</option>
+<option value="index.php?module=registration-service&amp;action=forgotpassword">Password recovery</option>
+</select></label>
+<label>Viewport<select id="size">
+<option value="320,740">Small phone · 320px</option>
+<option value="390,844" selected>Phone · 390px</option>
+<option value="768,1024">Tablet · 768px</option>
+<option value="1440,900">Desktop · 1440px</option>
+</select></label>
+<a id="open" href="../../../" target="_blank" rel="noopener">Open selected screen</a>
+</div>
+</header>
+<div class="stage"><iframe id="preview" title="Live public screen preview" src="../../../"></iframe></div>
+<script>
+'use strict';
+const preview = document.getElementById('preview');
+const screen = document.getElementById('screen');
+const size = document.getElementById('size');
+const root = new URL('../../../', location.href);
+screen.addEventListener('change', () => {
+    const url = new URL(screen.value, root);
+    preview.src = url.href;
+    document.getElementById('open').href = url.href;
+});
+size.addEventListener('change', () => {
+    const [width, height] = size.value.split(',');
+    preview.style.width = width + 'px';
+    preview.style.height = height + 'px';
+});
+</script>
+</body>
+</html>
