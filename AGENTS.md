@@ -199,3 +199,14 @@ Sites share one versioned codebase; site differences belong in configuration,
 branding and content. Audit deployed source drift before release, reconcile
 newer shared fixes into source, and verify a common manifest. Do not preserve
 site-only framework/module variants or overwrite newer deployed fixes blindly.
+
+## Common development deployments
+
+All completed shared work must be merged into and pushed on
+`release/consolidation-20260930` before deployment. This is the common active
+**development** branch; no stable-release freeze is implied. Do not deploy a
+feature branch or patch a site's existing source piecemeal. Follow
+[the common-source deployment contract](tools/deployment/README.md): assemble
+from Git objects, verify the whole shared source manifest, preserve configuration
+and content, and record exact revisions. MyHairPlanner's explicitly inventoried
+private business modules/API adapter are the sole private-source exception.
