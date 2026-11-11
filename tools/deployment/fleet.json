@@ -73,9 +73,9 @@
       "source": "/srv/chisimba-com/app/current",
       "runtime_root": "/var/www/html",
       "container": "chisimba-com-web-1",
-      "manifest": "/srv/editor-panels-chisimba-20261110/source-manifest.json",
-      "manifest_sha256": "36604123a9afb8477371ea2d0d8c4d961a33af1a61e2a6062739a47f5387b362",
-      "overlays": "/srv/editor-panels-chisimba-20261110/private-overlays.json",
+      "manifest": "/srv/content-slugs-chisimba-20261111/source-manifest.json",
+      "manifest_sha256": "cbb790448f3c9722a05fe0f9a6f056d083e55231924867ce00c70a6ab5941452",
+      "overlays": "/srv/content-slugs-chisimba-20261111/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,45 +152,29 @@
     }
   ],
   "rollout": {
-    "status": "Learn-the-Birds and Chisimba.com design and image-block updates deployed; other sites deferred by owner",
+    "status": "Readable content addresses deployed to Chisimba.com for owner testing; Learn-the-Birds webinars next after acceptance, remaining sites deferred",
     "target_pins": {
       "framework": {
         "branch": "release/consolidation-20260930",
-        "commit": "e87f9c341b5fd7703b19eff09d413d1968972149",
+        "commit": "a684081a82fd4abd2299a6a62c0deb1fed03ec3b",
         "remote": "git@github.com:chisimba-revival/framework.git"
       },
       "modules": {
         "branch": "release/consolidation-20260930",
-        "commit": "cccb6a3b5238fc7cd01355869f1f9f22fc6b7317",
+        "commit": "8a18710327a6388655ee65769a16ec334ab07130",
         "remote": "git@github.com:chisimba-revival/modules.git"
       }
     },
     "updated_sites": [
-      "chisimba",
-      "learnthebirds"
+      "chisimba"
     ],
     "pending_sites": [
       "kengalearn",
+      "learnthebirds",
       "kengapub",
       "kengasolutions",
       "heritagetreazures",
       "myhairplanner"
-    ],
-    "followup": {
-      "site": "chisimba",
-      "reason": "Canvas-aware editor settings panels and spacing",
-      "pins": {
-        "framework": {
-          "branch": "release/consolidation-20260930",
-          "commit": "7d2df5bf9c27a49c753555b21d4de5f25291b4fc",
-          "remote": "git@github.com:chisimba-revival/framework.git"
-        },
-        "modules": {
-          "branch": "release/consolidation-20260930",
-          "commit": "cccb6a3b5238fc7cd01355869f1f9f22fc6b7317",
-          "remote": "git@github.com:chisimba-revival/modules.git"
-        }
-      }
-    }
+    ]
   }
 }
