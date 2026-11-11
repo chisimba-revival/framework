@@ -52,3 +52,23 @@ persistent application logs during the checks.
 Recovery retains the previous source plus verified database/configuration backups.
 Do not restore an old database over later writes. Chisimba.com already has readable
 addresses, but its copy-control update remains pending with the wider rollout.
+
+## Follow-up: webinar action spacing
+
+The owner reported touching Edit webinar / Watch video buttons on archived
+webinars. The shared webinar detail renderer now groups these actions in the
+skin's `chisimba-cluster`: horizontal alignment, an 8px token-based gap and wrapping.
+Recording availability and edit permissions remain unchanged; booking content
+remains outside the action group.
+
+- Framework: `9e8ed952ead8910bf086264cec38760062a9c1de`
+- Modules: `090d96252e94c048ca4efb8d6bda5d51cefe5365`
+- Source manifest: `9fc5b963465a1163a2741541f9f5eabcf7e310581cfa0f2d6c5dc274303b44c2`
+- Evidence: `/srv/webinar-actions-learnthebirds-20261111`
+- Backup: `/srv/learnthebirds.com/backups/shared-20261111-051608`
+- Release: `/srv/learnthebirds.com/releases/common-dev-20261111-051608/ch`
+
+One source file changed. PHP syntax/archive contracts and the isolated clone
+passed; 116 protected tables were unchanged. Browser verification on the owner's
+archived seabirds webinar showed both buttons at the same vertical position,
+with flex wrapping and an 8px gap. Public readiness checks passed.

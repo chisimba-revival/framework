@@ -97,9 +97,9 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/content-slugs-learnthebirds-20261111/source-manifest.json",
-      "manifest_sha256": "50361a716161ee1c92817e25cb70e6878a4d3248720d18fec66edfc9d0a7ddd3",
-      "overlays": "/srv/content-slugs-learnthebirds-20261111/private-overlays.json",
+      "manifest": "/srv/webinar-actions-learnthebirds-20261111/source-manifest.json",
+      "manifest_sha256": "9fc5b963465a1163a2741541f9f5eabcf7e310581cfa0f2d6c5dc274303b44c2",
+      "overlays": "/srv/webinar-actions-learnthebirds-20261111/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -156,12 +156,12 @@
     "target_pins": {
       "framework": {
         "branch": "release/consolidation-20260930",
-        "commit": "03a8a901ab0730a059db96407379432559eaf0cd",
+        "commit": "9e8ed952ead8910bf086264cec38760062a9c1de",
         "remote": "git@github.com:chisimba-revival/framework.git"
       },
       "modules": {
         "branch": "release/consolidation-20260930",
-        "commit": "c535c7ae6b8ad1775e9244362347293a7ffab164",
+        "commit": "090d96252e94c048ca4efb8d6bda5d51cefe5365",
         "remote": "git@github.com:chisimba-revival/modules.git"
       }
     },
