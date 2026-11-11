@@ -37,3 +37,15 @@ check(!str_contains($html,'<script>') && !str_contains($html,'<img src=x') && !s
 $person['links']=array(array('label'=>'External','url'=>'https://example.org'));
 check(!str_contains($renderer->person($person,false),'https://example.org'),'Course cards omit external links');
 echo "Author biography tests passed\n";
+
+$GLOBALS['objects']['userservice']=new class {
+ public $active=true;
+ public function findByUserId($id){return $id==='owner'?['isactive'=>$this->active?1:0,'firstname'=>'Public','surname'=>'Author','emailaddress'=>'private@example.test','pass'=>'secret']:null;}
+};
+$public=$service->publicPerson('owner');
+check(array_keys($public)===['biography','links','userid','name'],'Public biography excludes account fields');
+check($public['name']==='Public Author','Public name');
+$GLOBALS['objects']['userservice']->active=false;check($service->publicPerson('owner')===null,'Inactive account omitted');
+$GLOBALS['objects']['userservice']->active=true;$GLOBALS['objects']['dbauthorbiographies']->empty=true;check($service->publicPerson('owner')===null,'Empty biography omitted');
+check($service->publicPerson('missing')===null,'Unknown account omitted');
+echo "PASS public biography excludes private account data and unavailable profiles\n";

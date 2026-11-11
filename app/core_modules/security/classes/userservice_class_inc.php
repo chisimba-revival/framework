@@ -128,6 +128,14 @@ class userservice extends dbTable
         return $this->selectRows($sql, $bindings);
     }
 
+    /** Bounded name-only picker for authorised editorial callers; never returns private account fields. */
+    public function authorNameSuggestions(string $query): array
+    {
+        $query = trim($query);
+        if (mb_strlen($query) < 2 || mb_strlen($query) > 120) return [];
+        return $this->selectPrepared("SELECT userid, firstname, surname FROM tbl_users WHERE isactive=1 AND LOCATE(LOWER(?), LOWER(CONCAT(firstname, ' ', surname))) > 0 ORDER BY surname, firstname, userid LIMIT 15", [$query]);
+    }
+
     /** Read bound values through the checked shared database boundary. */
     private function selectRows($sql, array $bindings = array())
     {

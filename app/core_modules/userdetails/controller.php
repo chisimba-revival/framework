@@ -95,6 +95,7 @@ class userdetails extends controller
     */
     public function init()
     {
+        if ($this->publicBiographyRequest()) return;
         $this->objOps = $this->getObject('userdetailsops', 'userdetails');
         $this->objUser = $this->getObject('user', 'security');
         $this->objModules = $this->getObject('modules', 'modulecatalogue');
@@ -122,6 +123,15 @@ class userdetails extends controller
      */
     public function dispatch()
     {
+        if ($this->publicBiographyRequest()) {
+            if (!in_array($_SERVER['REQUEST_METHOD'] ?? '', ['GET','HEAD'], true)) {
+                http_response_code(405); header('Allow: GET, HEAD'); return null;
+            }
+            $person=$this->getObject('authorbiographyservice','userdetails')->publicPerson($this->getParam('userid'));
+            if (!$person) http_response_code(404);
+            $this->setVar('publicBiographyPerson',$person);
+            return 'publicbiography_tpl.php';
+        }
         //Get action from query string and set default to view
         if (!$this->objUser->isLoggedIn()) { http_response_code(403); return null; }
         $action=$this->getParam('action', 'main');
@@ -355,8 +365,15 @@ class userdetails extends controller
     * @return boolean TRUE|FALSE
     *
     */
+    private function publicBiographyRequest(): bool
+    {
+        $id=$this->getParam('userid','');
+        return $this->getParam('action')==='biography' && is_string($id) && $id!=='';
+    }
+
     public function requiresLogin($action = null)
     {
+        if ($this->publicBiographyRequest()) return false;
         $action=$this->getParam('action', 'NULL');
         switch ($action)
         {

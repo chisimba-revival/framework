@@ -33,6 +33,16 @@ class authorbiographyservice extends ChisimbaObject
             'links' => $row ? (json_decode($row['links_json'], true) ?: array()) : array());
     }
 
+    /** Public biography only: private profile details never cross this boundary. */
+    public function publicPerson(string $userId): ?array
+    {
+        $account = $this->getObject('userservice', 'security')->findByUserId($userId);
+        if (!$account || (string)$account['isactive'] !== '1') return null;
+        $bio = $this->forUser($userId);
+        if (trim($bio['biography']) === '') return null;
+        return $bio + ['userid'=>$userId, 'name'=>trim($account['firstname'].' '.$account['surname'])];
+    }
+
     /** Shared completeness rule for account reminders and course preparation. */
     public function needsBiography($userId)
     {
