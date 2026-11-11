@@ -12,4 +12,13 @@ KengaLearn remains on its approved canvas bundle documented in
 `20261111-kengalearn-canvas.md`; other sites remain on the preceding fleet bundle.
 This explicitly staged rollout awaits wider authorisation before updating them.
 
-Status: isolated rehearsal in progress; live source has not yet switched.
+Status: deployed and verified.
+
+Backup: `/srv/learnthebirds.com/backups/shared-20261111-080408`.
+Rehearsal and live updates preserved all 116 protected tables, including registrations.
+Repeated upgrade, PHP lint, language registration and home/login/recovery checks passed.
+Final host/container audit passed all 13,551 shared files and read-only mount checks;
+no newer shared runtime changes remained for this target. No new error indicators
+were found in application logs; the mail timer resumed. An anonymous attendee
+request requires login. User will test the authorised listing with real data.
+Source and this deployment record are pushed to the common GitHub branch.

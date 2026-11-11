@@ -97,8 +97,8 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
-      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "manifest": "/srv/ltb-attendees-release-20261111/source-manifest.json",
+      "manifest_sha256": "def6d929789e63cd95e8f2a831e2765c1b19b2aee37b37f7a8d6a30093923ae6",
       "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
@@ -152,10 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "Authorised LTB attendee inspection rollout in progress. KengaLearn retains its approved canvas bundle; other sites retain the preceding shared bundle pending wider authorisation.",
+    "description": "LTB attendee inspection deployed and verified on Learn-the-Birds only. KengaLearn retains its approved canvas bundle; other sites retain the preceding shared bundle pending wider authorisation.",
     "framework_commit": "d1d49b84997d0b0c4a701e850f7fda3e66030f8e",
     "modules_commit": "9d84c4d358a551d5eb79f1220637a53b7cc3df1b",
-    "completed_sites": [],
+    "completed_sites": [
+      "learnthebirds.com"
+    ],
     "record": "rollouts/20261111-ltb-attendees.md"
   }
 }
