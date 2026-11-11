@@ -7176,7 +7176,9 @@ a.button.chisimba-course-cta { font-size:1.125rem; font-weight:700; padding:1rem
 .chisimba-content-cards > .chisimba-content-block > div > :first-child { margin-top:0; }
 .chisimba-content-cards > .chisimba-content-block > div > :last-child { margin-bottom:0; }
 .chisimba-content-block figure { margin:0;min-width:0; }
-.chisimba-content-block img { display:block;width:100%;height:auto;object-fit:contain; }
+.chisimba-content-block:not(.chisimba-content-block--text) img { display:block;width:100%;height:auto;object-fit:contain; }
+/* Rich-text images retain their authored dimensions and alignment. */
+.chisimba-content-block--text img { max-width:100%;height:auto; }
 .chisimba-content-block video,.chisimba-content-block iframe { display:block;width:100%;max-width:100%;aspect-ratio:16/9;border:0; }
 .chisimba-content-block--image-left,.chisimba-content-block--image-right { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;align-items:center; }
 .chisimba-content-slider { display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:1rem; }
@@ -7895,3 +7897,12 @@ a[data-native-embed] { overflow-wrap: anywhere; }
         overflow-wrap: anywhere;
     }
 }
+
+/* Public biographies: prose first, intrinsic-sized profile media beside it. */
+.chisimba-biography-layout { display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start;margin-bottom:1.5rem; }
+.chisimba-biography-layout > :first-child { flex:999 1 24rem;min-width:0; }
+.chisimba-biography-media { flex:1 1 16rem;min-width:0;max-width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:1.25rem; }
+.chisimba-biography-media > img { display:block;width:auto;height:auto;max-width:100%;max-height:24rem;object-fit:contain;border-radius:var(--chisimba-image-radius,.5rem); }
+.chisimba-biography-media > nav { margin:0;flex-direction:column;align-items:flex-start;gap:.75rem; }
+.chisimba-biography-media > nav a { display:inline-flex;align-items:center;gap:.5rem;overflow-wrap:anywhere;max-width:100%; }
+.chisimba-biography-media > nav a svg { flex-shrink:0; }

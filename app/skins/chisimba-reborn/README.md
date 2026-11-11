@@ -138,3 +138,10 @@ Title fields can use a `textarea` with `rows="1"` and `data-auto-expand`.
 The shared autoexpand helper fits its height on input, width changes, font load
 and form reset. Keep the normal label, name, required and maxlength attributes.
 Without JavaScript the textarea remains manually resizable.
+
+## Public biography layout
+
+Use `chisimba-biography-layout` with prose first and a `chisimba-biography-media`
+aside for profile images and links. It wraps according to available content width,
+including in dialogs. Profile images shrink but never enlarge or crop. Rich-text
+images retain authored dimensions/alignment and shrink to fit narrow containers.
