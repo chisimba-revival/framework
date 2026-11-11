@@ -192,15 +192,23 @@ class contextadmin extends controller {
             );
         }
 
-        $content = $this->objUserContext->getUserContextsFormatted($this->objUser->userId());
-
-        $this->setVarByRef('content', $content);
+        $courses = array();
+        foreach ($this->objUserContext->getUserContext($this->objUser->userId()) as $code) {
+            $course = $this->objContext->getContextDetails($code);
+            if (!$course) continue;
+            $course['canManage'] = $this->canManageContext($code);
+            $course['lecturers'] = $this->objUserContext->getContextLecturers($code);
+            $course['image'] = $this->getObject('contextimage', 'context')->getContextImage($code);
+            $courses[] = $course;
+        }
+        usort($courses, static fn($a, $b) => strnatcasecmp($a['title'], $b['title']));
+        $this->setVar('courses', $courses);
 
         $title = $this->objLanguage->code2Txt('phrase_mycourses', 'system', NULL, 'My [-contexts-]');
 
         $this->setVarByRef('title', $title);
 
-        return 'main.php';
+        return 'mycourses.php';
     }
 
     /**

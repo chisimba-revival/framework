@@ -32,7 +32,7 @@ $checks = array(
         && str_contains($home, '$this->canManageContext($contextCode)'),
     'root scope retains the lecturer course list' => str_contains(
         $home,
-        "getUserContextsFormatted"
+        'getUserContext($this->objUser->userId())'
     ) && str_contains($home, '$contextCode !== \'root\''),
 );
 
