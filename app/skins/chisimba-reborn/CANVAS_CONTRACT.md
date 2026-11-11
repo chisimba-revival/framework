@@ -108,3 +108,22 @@ viewport edges. This is paint only: content, logo and pills retain their normal
 layout width, without `100vw` scrollbar overflow. Other canvases keep the
 default raised shadow. Verify this on the actual constrained page shell, not
 only the standalone preview.
+
+## KengaLearn canvas review
+
+The KengaLearn preview retains its green/deep-teal brand and learning-journey
+status colours. Cool botanical page and surface tokens distinguish it from the
+warmer publishing canvases. A compact solid teal banner retains the original
+logo, course pill and role label; heading weight, card corners and restrained
+shadows use the shared editorial primitives. No course or permission behaviour
+is changed by this canvas.
+
+Reviewed against a filtered local copy of KengaLearn sample courses on
+11 November 2026: public entry, teacher and learner course homes, with phone
+checks at 320 and 390 pixels. Production account credentials, integration
+settings, submissions and operational records were excluded. Local test users
+replace course ownership/membership. Public banner/embedded media can still
+reference the live source; course thumbnails are local. The preview web/database
+network is internal, mail is disabled, and no workers are installed.
+
+This is a local design review pending approval, not a production deployment.

@@ -12,6 +12,40 @@
     --chisimba-focus: #67c871;
     --chisimba-grey-blue: #295351;
     --chisimba-info: #295351;
+    /* Cool botanical surfaces keep this learning canvas distinct from the
+       warmer publishing identities. Brand and status colours retain meaning. */
+    --chisimba-page: #edf3ef;
+    --chisimba-surface: #fcfefb;
+    --chisimba-surface-subtle: #f3f7f2;
+    --chisimba-surface-muted: #e2ebe3;
+    --chisimba-ink: #193b36;
+    --chisimba-text: #304e46;
+    --chisimba-text-muted: #566c61;
+    --chisimba-border: #ceddd2;
+    --chisimba-border-strong: #839c8e;
+    --chisimba-font-family-heading: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --chisimba-heading-weight: 680;
+    --chisimba-heading-tracking: -.025em;
+    --chisimba-editor-radius: .65rem;
+    --chisimba-image-radius: .65rem;
+    --chisimba-region-radius: .8rem;
+    --chisimba-shadow: 0 .2rem .7rem rgb(25 59 54 / .05);
+
+    /* A quiet, compact frame leaves room for the logo and role pills. */
+    --chisimba-banner-background: #295351;
+    --chisimba-banner-foreground: #fcfefb;
+    --chisimba-banner-border-color: #67c871;
+    --chisimba-banner-name-shadow: none;
+    --chisimba-banner-icon-color: #9ee4a5;
+    --chisimba-banner-min-height: 5.5rem;
+    --chisimba-banner-min-height-mobile: 4.75rem;
+    --chisimba-banner-padding-block: .65rem;
+    --chisimba-brand-logo-height: 4rem;
+    --chisimba-brand-logo-height-mobile: 3.25rem;
+    --chisimba-brand-logo-width: 4.7rem;
+    --chisimba-brand-logo-width-mobile: 3.8rem;
+    --chisimba-banner-pill-background: #214744;
+    --chisimba-banner-pill-border: #65968a;
     /* URL variables are resolved where the shared skin consumes them. */
     --chisimba-brand-logo: url("canvases/kenga-learn/images/chisimba-logo.svg");
 }
