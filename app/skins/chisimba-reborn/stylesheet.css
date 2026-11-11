@@ -7906,3 +7906,10 @@ a[data-native-embed] { overflow-wrap: anywhere; }
 .chisimba-biography-media > nav { margin:0;flex-direction:column;align-items:flex-start;gap:.75rem; }
 .chisimba-biography-media > nav a { display:inline-flex;align-items:center;gap:.5rem;overflow-wrap:anywhere;max-width:100%; }
 .chisimba-biography-media > nav a svg { flex-shrink:0; }
+
+/* Unformatted biography images wrap naturally; explicit rich-text alignment wins. */
+.chisimba-biography-prose .chisimba-content-block--text { display:flow-root; }
+.chisimba-biography-prose img:not([style]):not([align]):not([class]) { float:left;margin:0 1.25rem 1rem 0; }
+@media(max-width:480px) {
+    .chisimba-biography-prose img:not([style]):not([align]):not([class]) { float:none;margin:0 0 1rem; }
+}

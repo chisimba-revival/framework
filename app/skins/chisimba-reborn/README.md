@@ -145,3 +145,6 @@ Use `chisimba-biography-layout` with prose first and a `chisimba-biography-media
 aside for profile images and links. It wraps according to available content width,
 including in dialogs. Profile images shrink but never enlarge or crop. Rich-text
 images retain authored dimensions/alignment and shrink to fit narrow containers.
+
+Inside `chisimba-biography-prose`, unformatted images float beside the text with
+a 1.25rem gap and stack on phones. Explicit rich-text styles/alignment are retained.
