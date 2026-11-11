@@ -97,9 +97,9 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/design-heading-learnthebirds-20261110/source-manifest.json",
-      "manifest_sha256": "fef703a796aa84401ffbba6d4e47682a22095b257ad8eaf4b5460d0af6ff617a",
-      "overlays": "/srv/design-heading-learnthebirds-20261110/private-overlays.json",
+      "manifest": "/srv/content-slugs-learnthebirds-20261111/source-manifest.json",
+      "manifest_sha256": "50361a716161ee1c92817e25cb70e6878a4d3248720d18fec66edfc9d0a7ddd3",
+      "overlays": "/srv/content-slugs-learnthebirds-20261111/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,25 +152,25 @@
     }
   ],
   "rollout": {
-    "status": "Readable content addresses deployed to Chisimba.com for owner testing; Learn-the-Birds webinars next after acceptance, remaining sites deferred",
+    "status": "Readable content addresses deployed to Chisimba.com and Learn-the-Birds; latest copy-link controls on Learn-the-Birds. Owner testing before remaining sites, with Chisimba.com copy-control update pending.",
     "target_pins": {
       "framework": {
         "branch": "release/consolidation-20260930",
-        "commit": "a684081a82fd4abd2299a6a62c0deb1fed03ec3b",
+        "commit": "03a8a901ab0730a059db96407379432559eaf0cd",
         "remote": "git@github.com:chisimba-revival/framework.git"
       },
       "modules": {
         "branch": "release/consolidation-20260930",
-        "commit": "8a18710327a6388655ee65769a16ec334ab07130",
+        "commit": "c535c7ae6b8ad1775e9244362347293a7ffab164",
         "remote": "git@github.com:chisimba-revival/modules.git"
       }
     },
     "updated_sites": [
-      "chisimba"
+      "learnthebirds"
     ],
     "pending_sites": [
+      "chisimba",
       "kengalearn",
-      "learnthebirds",
       "kengapub",
       "kengasolutions",
       "heritagetreazures",

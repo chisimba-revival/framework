@@ -87,3 +87,11 @@ The unrestricted PDO suite currently stops in the existing
 `NavigationRegistrationFixture` (missing `getObject` after toolbar changes).
 The focused content-path fixture runs independently and passes. This is not a
 claim that the entire repository test suite passes.
+
+## Copying a saved address
+
+The Pages, site-post and webinar editors show a shared Copy link icon beside
+the saved readable URL. It copies the absolute saved address and reports success
+or a manual-copy fallback when browser clipboard access is unavailable. Save
+address changes before copying. Webinar Ajax saves refresh the copied destination;
+unsaved address text is never presented as a working public URL.
