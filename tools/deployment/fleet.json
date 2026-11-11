@@ -2,12 +2,12 @@
   "pins": {
     "framework": {
       "branch": "release/consolidation-20260930",
-      "commit": "d158c7f58e505e499e5086e1676bc8fe4fd2792a",
+      "commit": "e954a6b8f074fa4ef2010d89849a5308cbba5324",
       "remote": "git@github.com:chisimba-revival/framework.git"
     },
     "modules": {
       "branch": "release/consolidation-20260930",
-      "commit": "3f563c4f81c39f6e18256950d899c029b2501d91",
+      "commit": "08a17062cbfe180d9162ec94057f931a8f5f2953",
       "remote": "git@github.com:chisimba-revival/modules.git"
     }
   },
@@ -73,10 +73,10 @@
       "source": "/srv/chisimba-com/app/current",
       "runtime_root": "/var/www/html",
       "container": "chisimba-com-web-1",
-      "manifest": "/srv/content-slugs-chisimba-20261111/source-manifest.json",
-      "manifest_sha256": "cbb790448f3c9722a05fe0f9a6f056d083e55231924867ce00c70a6ab5941452",
-      "overlays": "/srv/content-slugs-chisimba-20261111/private-overlays.json",
-      "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
+      "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
     {
       "key": "kengalearn",
@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/kengalearn/common-development-20261110/private-overlays.json",
+      "manifest": "/srv/kengalearn/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/kengalearn/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
     {
@@ -97,10 +97,10 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/speaker-layout-wrap-learnthebirds-20261111/source-manifest.json",
-      "manifest_sha256": "75fb91116a67d2f605a09cff3d47e5662c2c8286d48fd2612ecababf9b33f686",
-      "overlays": "/srv/speaker-layout-wrap-learnthebirds-20261111/private-overlays.json",
-      "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
+      "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
     {
       "key": "kengapub",
@@ -109,9 +109,9 @@
       "source": "/srv/kengapub.com/app",
       "runtime_root": "/var/www/html/ch",
       "container": "kengapub-chisimba-web-1",
-      "manifest": "/srv/chisimba-common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
+      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
     {
@@ -121,9 +121,9 @@
       "source": "/srv/kengasolutions.com/app",
       "runtime_root": "/var/www/html/ch",
       "container": "kengasolutions-chisimba-web-1",
-      "manifest": "/srv/chisimba-common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
+      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
     {
@@ -133,9 +133,9 @@
       "source": "/srv/heritagetreazures.com/app",
       "runtime_root": "/var/www/html/ch",
       "container": "heritagetreazures-chisimba-web-1",
-      "manifest": "/srv/chisimba-common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
+      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
     {
@@ -145,36 +145,10 @@
       "source": "/srv/myhairplanner.com/app",
       "runtime_root": "/var/www/html/ch",
       "container": "myhairplanner-chisimba-web-1",
-      "manifest": "/srv/chisimba-common-development-20261110/source-manifest.json",
-      "manifest_sha256": "259a455e9097d3327136ac28c8e7da077a2d495caf4c7d9ff6028d06c7190187",
-      "overlays": "/srv/chisimba-common-development-20261110/private-overlays.json",
+      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
+      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     }
-  ],
-  "rollout": {
-    "status": "Learn-the-Birds has the latest speaker-biography layout and wrapping, author-credit, public-biography, readable-address and webinar-spacing changes. Remaining sites deferred; existing per-site manifests retain exact deployed source.",
-    "target_pins": {
-      "framework": {
-        "branch": "release/consolidation-20260930",
-        "commit": "66c34e6b73c9b561b3129a320840cf16eb5e9182",
-        "remote": "git@github.com:chisimba-revival/framework.git"
-      },
-      "modules": {
-        "branch": "release/consolidation-20260930",
-        "commit": "08a17062cbfe180d9162ec94057f931a8f5f2953",
-        "remote": "git@github.com:chisimba-revival/modules.git"
-      }
-    },
-    "updated_sites": [
-      "learnthebirds"
-    ],
-    "pending_sites": [
-      "chisimba",
-      "kengalearn",
-      "kengapub",
-      "kengasolutions",
-      "heritagetreazures",
-      "myhairplanner"
-    ]
-  }
+  ]
 }

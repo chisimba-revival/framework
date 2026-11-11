@@ -61,3 +61,11 @@ After an authorised full rollout, update `fleet.json` to the reviewed common
 manifest and private overlay inventory, run this audit, then commit and push the
 record. Never update it just to make unexplained drift disappear. Routine audits
 report problems and leave live systems unchanged.
+
+For scheduled audits, fetch the common GitHub branch and export this deployment
+directory from that exact commit into a temporary directory. Run its auditor
+with `--fleet` pointing to the exported `fleet.json`; use the existing framework
+and modules repositories only for fetching/comparing Git objects. Do not reset
+or change working trees, which may legitimately be on an older branch or contain
+active private work. A stale local fleet file is not the approved production
+baseline. Preserve the read-only production contract above.
