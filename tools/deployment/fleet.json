@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/assessments-20261111/source-manifest.json",
-      "manifest_sha256": "8cd70e9a65fe4fa0b821548df4daf33d41122a30133dc634201f3661284ab51a",
-      "overlays": "/srv/kengalearn/assessments-20261111/private-overlays.json",
+      "manifest": "/srv/kengalearn/practice-feedback-20261111/source-manifest.json",
+      "manifest_sha256": "52cd4c0ff77fa91252bb253c49ecf453cf02d897879d74d7b6eeee1fd902350a",
+      "overlays": "/srv/kengalearn/practice-feedback-20261111/private-overlays.json",
       "overlays_sha256": "b839e2af49a45463fdc21342ba4480a10202c30b8392732eee64bc4a435b80fe"
     },
     {
