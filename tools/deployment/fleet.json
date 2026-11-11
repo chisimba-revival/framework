@@ -97,9 +97,9 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/author-credit-style-learnthebirds-20261111/source-manifest.json",
-      "manifest_sha256": "80bbd3a00244da2879239cc4236a8476c071f6c03db6ce8f5a5b914d2b15d126",
-      "overlays": "/srv/author-credit-style-learnthebirds-20261111/private-overlays.json",
+      "manifest": "/srv/speaker-layout-wrap-learnthebirds-20261111/source-manifest.json",
+      "manifest_sha256": "75fb91116a67d2f605a09cff3d47e5662c2c8286d48fd2612ecababf9b33f686",
+      "overlays": "/srv/speaker-layout-wrap-learnthebirds-20261111/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,16 +152,16 @@
     }
   ],
   "rollout": {
-    "status": "Learn-the-Birds has the latest author-credit, public-biography, readable-address and webinar-spacing changes. Remaining sites deferred; existing per-site manifests retain exact deployed source.",
+    "status": "Learn-the-Birds has the latest speaker-biography layout and wrapping, author-credit, public-biography, readable-address and webinar-spacing changes. Remaining sites deferred; existing per-site manifests retain exact deployed source.",
     "target_pins": {
       "framework": {
         "branch": "release/consolidation-20260930",
-        "commit": "cf65936d0ffd3a58f8c105fdeeb02dc3cc9144e7",
+        "commit": "66c34e6b73c9b561b3129a320840cf16eb5e9182",
         "remote": "git@github.com:chisimba-revival/framework.git"
       },
       "modules": {
         "branch": "release/consolidation-20260930",
-        "commit": "6886b069d75e036f34436033c9990cbcfd892074",
+        "commit": "08a17062cbfe180d9162ec94057f931a8f5f2953",
         "remote": "git@github.com:chisimba-revival/modules.git"
       }
     },
