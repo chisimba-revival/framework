@@ -67,10 +67,21 @@ class modulefilestore extends dbTable
     }
     public function read($module,$class,$resource,$id)
     {
+        return $this->readBounded($module,$class,$resource,$id,1000000);
+    }
+    /** Read validated passive assessment media without raising the legacy image limit. */
+    public function readMedia($module,$class,$resource,$id)
+    {
+        $bytes=$this->readBounded($module,$class,$resource,$id,10485760);
+        self::mediaType($bytes);
+        return $bytes;
+    }
+    private function readBounded($module,$class,$resource,$id,$limit)
+    {
         $file=$this->getRow('id',$id);
         if(!$file||($file['filefolder']??'')!=='moduleassets/'.$module||!$this->policy($module,$class)->mayDownloadFile($file,$resource))throw new DomainException('not_found');
         $path=$this->getObject('filedelivery','filemanager')->resolve($this->root(),$file['path']);
-        if(!$path||filesize($path)>1000000)throw new DomainException('not_found');
+        if(!$path||filesize($path)>$limit)throw new DomainException('not_found');
         $bytes=file_get_contents($path);if($bytes===false)throw new RuntimeException('File read failed');return $bytes;
     }
 }

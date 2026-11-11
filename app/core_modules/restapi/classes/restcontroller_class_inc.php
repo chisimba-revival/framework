@@ -207,6 +207,11 @@ abstract class RestController extends controller
                 ? $handler : null;
         }
 
+        if ($resource === 'sightsandsounds') {
+            $handler = strtolower($method) . '_sightsandsounds_' . $id;
+            return in_array($id, ['catalogue','package','media','submit'], true) && $sub === null && method_exists($this, $handler) ? $handler : null;
+        }
+
         if ($resource === 'messaging') {
             $handler = strtolower($method) . '_messaging_' . $id;
             return in_array($id, ['contexts','history','messages','read','announcements','sightings','sightingimage'], true) && $sub === null && method_exists($this, $handler) ? $handler : null;

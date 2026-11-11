@@ -6,10 +6,12 @@
  */
 require_once __DIR__ . '/classes/restcontroller_class_inc.php';
 require_once __DIR__ . '/classes/messagingendpoints_trait.php';
+require_once __DIR__ . '/classes/sightssoundsendpoints_trait.php';
 
 class restapi extends RestController
 {
     use MessagingEndpoints;
+    use SightsSoundsEndpoints;
     public function dispatch($action)
     {
         // The action from engine will be the full route path
