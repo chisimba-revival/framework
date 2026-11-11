@@ -618,6 +618,22 @@ class engine {
         if (!$this->_objUser->isLoggedIn() && !empty($_COOKIE['chisimba_remember'])) {
             $this->getObject('nativeauthwebcomposition', 'security')->resumeRememberedLogin();
         }
+        $moduleRegistry = $this->getObject('modules', 'modulecatalogue');
+        // A rewritten content path selects a fixed read-only owner route. Query
+        // strings and POST fields must never override its module, ID or action.
+        if (($_GET['module'] ?? null) === 'shorturl' && ($_GET['action'] ?? null) === 'content') {
+            if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD'], true)) {
+                http_response_code(405); header('Allow: GET, HEAD'); exit;
+            }
+            $route = $moduleRegistry->checkIfRegistered('shorturl')
+                ? $this->getObject('contentpaths', 'shorturl')->resolveRequest($_SERVER['REQUEST_URI'] ?? '') : null;
+            if (!$route || !$moduleRegistry->checkIfRegistered($route['module'])) {
+                http_response_code(404); exit;
+            }
+            $_GET = $_REQUEST = $route;
+            $presetModuleName = $route['module'];
+            $presetAction = 'view';
+        }
         if (empty ( $presetModuleName )) {
             $requestedModule = strtolower ( $this->getParam ( 'module', '_default' ) );
         } else {
@@ -633,7 +649,6 @@ class engine {
          * URLs cannot bypass maintenance mode. Authentication and the
          * maintenance surface remain reachable, and administrators bypass it.
          */
-        $moduleRegistry = $this->getObject('modules', 'modulecatalogue');
         if ($moduleRegistry->checkIfRegistered('systemmanagement')) {
             $operations = $this->getObject(
                 'systemmanagementservice',

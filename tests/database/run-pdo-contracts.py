@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Run native PDO/dbTable integration checks in disposable containers, never the installed database.
 
-Usage: python3 tests/database/run-pdo-contracts.py [local-image-name]
+Usage: python3 tests/database/run-pdo-contracts.py [local-image-name] [fixture.php ...]
 The fixture uses an internal Docker network, no published ports and tmpfs data.
 """
+import os
 import pathlib
 import secrets
 import subprocess
@@ -37,10 +38,10 @@ try:
         time.sleep(1)
     else:
         raise RuntimeError('Disposable MariaDB failed to become ready')
-    for fixture in ('pdo_contract_test.php', 'pdo_engine_composition_test.php', 'installer_schema_checks.php'):
+    for fixture in (sys.argv[2:] or ('pdo_contract_test.php', 'pdo_engine_composition_test.php', 'installer_schema_checks.php')):
         run(['docker', 'run', '--rm', '--network', name, '--entrypoint', 'php',
              '-e', 'CHISIMBA_DB_BASELINE=1', '-e', 'CHISIMBA_DB_PASSWORD=' + password,
-             '-v', str(root) + ':/framework:ro', '-v', str(root.parent / 'modules') + ':/modules:ro', image,
+             '-v', str(root) + ':/framework:ro', '-v', str(pathlib.Path(os.environ.get('CHISIMBA_MODULES_ROOT',root.parent / 'modules')).resolve()) + ':/modules:ro', image,
              '-d', 'display_errors=1', '-d', 'auto_prepend_file=', '/framework/tests/database/' + fixture])
 finally:
     subprocess.run(['docker', 'rm', '-f', name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
