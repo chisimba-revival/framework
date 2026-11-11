@@ -11,7 +11,7 @@ trait SightsSoundsEndpoints
             if($e->getMessage()==='denied')throw new AuthorizationException('Activity access unavailable');
             if($e->getMessage()==='missing')throw new NotFoundException('Activity unavailable');
             if($e->getMessage()==='stale')throw new ConflictException('This practice run changed. Keep your saved work and review it on the website.');
-            throw new ValidationException(['message'=>'Invalid practice request']);
+            throw new ValidationException(['sightsandsounds'=>in_array($e->getMessage(),['attemptlimit','notopen','closed','upgrade'],true)?$e->getMessage():'invalid']);
         }
     }
     private function ssString($value,int $length): string {
@@ -25,8 +25,9 @@ trait SightsSoundsEndpoints
     }
     public function GET_sightsandsounds_catalogue(): void { $this->ssCall(fn($service)=>$service->catalogue()); }
     public function POST_sightsandsounds_package(): void {
-        $this->ssCall(function($service){$data=$this->ssPost(['context','activity']);
-            return $service->package($this->ssString($data['context']??null,255),$this->ssString($data['activity']??null,32));});
+        $this->ssCall(function($service){$data=$this->ssPost(['context','activity','protocol']);
+            if(isset($data['protocol'])&&(!is_int($data['protocol'])||!in_array($data['protocol'],[1,2],true)))throw new ValidationException(['message'=>'Invalid protocol']);
+            return $service->package($this->ssString($data['context']??null,255),$this->ssString($data['activity']??null,32),$data['protocol']??1);});
     }
     public function GET_sightsandsounds_media(): void {
         $this->ssCall(fn($service)=>$service->media($this->ssString($this->getParam('context'),255),$this->ssString($this->getParam('run'),32),$this->ssString($this->getParam('id'),32)));
