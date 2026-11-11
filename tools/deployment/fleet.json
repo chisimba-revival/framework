@@ -85,10 +85,10 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/canvas-release-20261111/source-manifest.json",
-      "manifest_sha256": "67d5dbcce1cfc88793aa56b0bb933fbb67fa64dd92490df462a24e6008157807",
-      "overlays": "/srv/kengalearn/fleet-common-update-20261111/private-overlays.json",
-      "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
+      "manifest": "/srv/kengalearn/assessments-20261111/source-manifest.json",
+      "manifest_sha256": "8cd70e9a65fe4fa0b821548df4daf33d41122a30133dc634201f3661284ab51a",
+      "overlays": "/srv/kengalearn/assessments-20261111/private-overlays.json",
+      "overlays_sha256": "b839e2af49a45463fdc21342ba4480a10202c30b8392732eee64bc4a435b80fe"
     },
     {
       "key": "learnthebirds",
