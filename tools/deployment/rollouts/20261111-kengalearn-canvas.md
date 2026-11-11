@@ -20,3 +20,21 @@ Initial rehearsal upgraded successfully but rejected a stale installed-module
 baseline (the prior fleet rollout had installed ShortURL). The read-only live
 catalogue confirmed ShortURL was the sole difference; rehearsal was repeated
 with the current baseline before any production switch.
+
+## Completed
+
+Deployed and visually verified on KengaLearn. Backup:
+`/srv/kengalearn/backups/shared-20261111-074045`.
+
+The isolated rehearsal passed twice-install verification and anonymous home,
+login and recovery HTTP checks. All 177 protected data-table fingerprints
+matched before/after rehearsal and deployment. The final read-only audit passed
+all 13,548 source files on the host and inside the running container, including
+read-only mount checks; no newer shared runtime source remained for this target.
+Live My Courses displayed the approved canvas/cards with the real lecturer names
+and management actions. No new fatal/warning/deprecation/SQL/class-loader log
+entries were found; the communications timer remained active.
+
+`fleet.json` records the new KengaLearn manifest. Global pins remain the baseline
+for the other six sites, and its explicit staged-rollout record explains this
+intentional difference. MyHairPlanner's private exception is unchanged.

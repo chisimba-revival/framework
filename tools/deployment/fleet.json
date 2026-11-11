@@ -85,8 +85,8 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/fleet-common-update-20261111/source-manifest.json",
-      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "manifest": "/srv/kengalearn/canvas-release-20261111/source-manifest.json",
+      "manifest_sha256": "67d5dbcce1cfc88793aa56b0bb933fbb67fa64dd92490df462a24e6008157807",
       "overlays": "/srv/kengalearn/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
@@ -150,5 +150,14 @@
       "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     }
-  ]
+  ],
+  "staged_rollout": {
+    "description": "Approved KengaLearn canvas and course cards deployed to KengaLearn only; other sites remain on the preceding shared bundle pending wider rollout authorisation.",
+    "framework_commit": "b13495351f68ff77d4f961e8a0ae5aede5340465",
+    "modules_commit": "08a17062cbfe180d9162ec94057f931a8f5f2953",
+    "completed_sites": [
+      "kengalearn.com"
+    ],
+    "record": "rollouts/20261111-kengalearn-canvas.md"
+  }
 }
