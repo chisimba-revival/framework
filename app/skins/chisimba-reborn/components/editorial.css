@@ -126,3 +126,8 @@ fieldset.chisimba-editor-section {
 .chisimba-metadata-row dt { display:flex; align-items:center; gap:.35rem; color:var(--chisimba-text-muted); font-weight:500; }
 .chisimba-metadata-row dd { margin:.2rem 0 0; overflow-wrap:anywhere; }
 @media(max-width:650px) { .chisimba-media-card { grid-template-columns:minmax(0,1fr); gap:1rem; } .chisimba-media-card__image { width:100%; max-height:14rem; } }
+
+/* Read-only review lists retain readable cells and explain flags on touch/keyboard. */
+.chisimba-table-scroll { max-width:100%; overflow-x:auto; margin-block:1rem; }
+.chisimba-review-flag > summary { color:var(--chisimba-danger); cursor:pointer; white-space:nowrap; }
+.chisimba-review-flag > p { min-width:12rem; max-width:25rem; white-space:normal; }
