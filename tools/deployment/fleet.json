@@ -97,9 +97,9 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/webinar-actions-learnthebirds-20261111/source-manifest.json",
-      "manifest_sha256": "9fc5b963465a1163a2741541f9f5eabcf7e310581cfa0f2d6c5dc274303b44c2",
-      "overlays": "/srv/webinar-actions-learnthebirds-20261111/private-overlays.json",
+      "manifest": "/srv/author-credit-style-learnthebirds-20261111/source-manifest.json",
+      "manifest_sha256": "80bbd3a00244da2879239cc4236a8476c071f6c03db6ce8f5a5b914d2b15d126",
+      "overlays": "/srv/author-credit-style-learnthebirds-20261111/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,16 +152,16 @@
     }
   ],
   "rollout": {
-    "status": "Readable content addresses deployed to Chisimba.com and Learn-the-Birds; latest copy-link controls on Learn-the-Birds. Owner testing before remaining sites, with Chisimba.com copy-control update pending.",
+    "status": "Learn-the-Birds has the latest author-credit, public-biography, readable-address and webinar-spacing changes. Remaining sites deferred; existing per-site manifests retain exact deployed source.",
     "target_pins": {
       "framework": {
         "branch": "release/consolidation-20260930",
-        "commit": "9e8ed952ead8910bf086264cec38760062a9c1de",
+        "commit": "cf65936d0ffd3a58f8c105fdeeb02dc3cc9144e7",
         "remote": "git@github.com:chisimba-revival/framework.git"
       },
       "modules": {
         "branch": "release/consolidation-20260930",
-        "commit": "090d96252e94c048ca4efb8d6bda5d51cefe5365",
+        "commit": "6886b069d75e036f34436033c9990cbcfd892074",
         "remote": "git@github.com:chisimba-revival/modules.git"
       }
     },
