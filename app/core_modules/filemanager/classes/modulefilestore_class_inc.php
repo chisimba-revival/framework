@@ -19,14 +19,40 @@ class modulefilestore extends dbTable
         if(!$this->policy($module,$class)->mayStoreFiles())throw new DomainException('forbidden');
         if(!is_string($bytes)||strlen($bytes)>1000000||strlen($bytes)<10)throw new InvalidArgumentException('Invalid image');
         $info=getimagesizefromstring($bytes);if(!$info||$info['mime']!=='image/jpeg'||$info[0]>2048||$info[1]>2048)throw new InvalidArgumentException('Prepared JPEG required');
-        $id=bin2hex(random_bytes(16));$folder='moduleassets/'.$module;$relative=$folder.'/'.$id.'.jpg';$root=$this->root();
+        return $this->storeValidated($module, $bytes, 'jpg', 'image/jpeg', 'images');
+    }
+
+    /** Bounded passive media for module-owned activities. Never accepts active documents. */
+    public function storeMedia($module, $class, $bytes)
+    {
+        if (!$this->policy($module, $class)->mayStoreFiles()) throw new DomainException('forbidden');
+        $type = self::mediaType($bytes);
+        return $this->storeValidated($module, $bytes, $type['extension'], $type['mime'], $type['category']);
+    }
+
+    public static function mediaType($bytes)
+    {
+        if (!is_string($bytes) || strlen($bytes) < 10 || strlen($bytes) > 10485760) throw new InvalidArgumentException('Invalid media size');
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->buffer($bytes);
+        $types = ['image/jpeg'=>'jpg', 'image/png'=>'png', 'image/webp'=>'webp', 'audio/mpeg'=>'mp3'];
+        if (!isset($types[$mime])) throw new InvalidArgumentException('Unsupported media');
+        if (str_starts_with($mime, 'image/')) {
+            $info = getimagesizefromstring($bytes);
+            if (!$info || $info['mime'] !== $mime || $info[0] > 8192 || $info[1] > 8192 || $info[0] * $info[1] > 24000000) throw new InvalidArgumentException('Invalid image dimensions');
+        }
+        return ['mime'=>$mime, 'extension'=>$types[$mime], 'category'=>str_starts_with($mime, 'image/') ? 'images' : 'audio'];
+    }
+
+    private function storeValidated($module, $bytes, $extension, $mime, $category)
+    {
+        $id=bin2hex(random_bytes(16));$folder='moduleassets/'.$module;$relative=$folder.'/'.$id.'.'.$extension;$root=$this->root();
         if(!is_dir($root.'/'.$folder)&&!mkdir($root.'/'.$folder,0700,true)&&!is_dir($root.'/'.$folder))throw new RuntimeException('Storage unavailable');
         $dir=realpath($root.'/'.$folder);if(!$dir||!str_starts_with($dir,$root.'/'))throw new RuntimeException('Invalid storage path');
-        $path=$dir.'/'.$id.'.jpg';$out=fopen($path,'xb');if(!$out)throw new RuntimeException('Storage unavailable');
+        $path=$dir.'/'.$id.'.'.$extension;$out=fopen($path,'xb');if(!$out)throw new RuntimeException('Storage unavailable');
         try{if(fwrite($out,$bytes)!==strlen($bytes))throw new RuntimeException('Incomplete write');}catch(Throwable $e){fclose($out);unlink($path);throw $e;}fclose($out);chmod($path,0600);
         try{
             $uid=(string)$this->getObject('user','security')->userId();
-            $result=$this->insert(['id'=>$id,'userid'=>$uid,'filename'=>$id.'.jpg','datatype'=>'jpg','path'=>$relative,'filefolder'=>$folder,'version'=>1,'filesize'=>strlen($bytes),'mimetype'=>'image/jpeg','category'=>'images','moduleuploaded'=>$module,'creatorid'=>$uid,'modifierid'=>$uid,'datecreated'=>gmdate('Y-m-d'),'timecreated'=>gmdate('H:i:s'),'visibility'=>'hidden','access'=>'private_selected']);
+            $result=$this->insert(['id'=>$id,'userid'=>$uid,'filename'=>$id.'.'.$extension,'datatype'=>$extension,'path'=>$relative,'filefolder'=>$folder,'version'=>1,'filesize'=>strlen($bytes),'mimetype'=>$mime,'category'=>$category,'moduleuploaded'=>$module,'creatorid'=>$uid,'modifierid'=>$uid,'datecreated'=>gmdate('Y-m-d'),'timecreated'=>gmdate('H:i:s'),'visibility'=>'hidden','access'=>'private_selected']);
             if(!$result)throw new RuntimeException('File registration failed');
         }catch(Throwable $e){unlink($path);throw $e;}
         return $id;
