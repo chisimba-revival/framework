@@ -147,8 +147,8 @@
       "container": "myhairplanner-chisimba-web-1",
       "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
       "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
-      "overlays": "/srv/myhairplanner.com/gallery-release-20261111/private-overlays.json",
-      "overlays_sha256": "13a003f453c902b863b9ad70126654c468aeae1ba13b3717764c73ed7a56f9a2"
+      "overlays": "/srv/myhairplanner.com/journey-release-20261112/private-overlays.json",
+      "overlays_sha256": "765ec1ab58d41bd03942bd4d35a73f4f36e67075fcf576e1663897b2560c0776"
     }
   ],
   "staged_rollout": {
