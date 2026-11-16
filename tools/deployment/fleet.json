@@ -97,8 +97,8 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/ltb-attendees-release-20261111/source-manifest.json",
-      "manifest_sha256": "def6d929789e63cd95e8f2a831e2765c1b19b2aee37b37f7a8d6a30093923ae6",
+      "manifest": "/srv/ltb-admin-release-20261116/source-manifest.json",
+      "manifest_sha256": "fb719e501d847a1761bdd9d9178cefb00fd2ed6de60a2f42fe84fe7a20ae127f",
       "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
@@ -152,10 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "Authorised Learn-the-Birds administration discovery rollout in progress. Other sites retain their individually approved manifests pending wider rollout.",
+    "description": "Administration discovery deployed and verified on Learn-the-Birds. Other sites retain their individually approved manifests pending wider rollout.",
     "framework_commit": "56b4aba587939267b73faa3f2785fe41d008468d",
     "modules_commit": "9631770b859fe2d7655e9b132b29e76b187a005a",
-    "completed_sites": [],
+    "completed_sites": [
+      "learnthebirds.com"
+    ],
     "record": "rollouts/20261116-ltb-administration.md"
   }
 }
