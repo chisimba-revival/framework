@@ -131,3 +131,8 @@ fieldset.chisimba-editor-section {
 .chisimba-table-scroll { max-width:100%; overflow-x:auto; margin-block:1rem; }
 .chisimba-review-flag > summary { color:var(--chisimba-danger); cursor:pointer; white-space:nowrap; }
 .chisimba-review-flag > p { min-width:12rem; max-width:25rem; white-space:normal; }
+
+/* Compact, accessible daily metrics retain numeric values beside native bars. */
+.chisimba-metric-bars { width: 100%; }
+.chisimba-metric-bars th { white-space: nowrap; width: 1%; }
+.chisimba-metric-bars meter { width: 100%; min-width: 6rem; }
