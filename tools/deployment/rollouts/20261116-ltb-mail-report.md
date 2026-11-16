@@ -16,4 +16,13 @@ No schema change, message retry or send is part of this feature.
 Synthetic MariaDB boundary, filter, pagination and denied-access tests passed,
 as did escaping/rendering and existing administration tests.
 
-Status: isolated rehearsal in progress, production not yet switched.
+Status: deployed and verified.
+
+Backup: `/srv/learnthebirds.com/backups/shared-20261116-175728`.
+Rehearsal and deployment preserved all 116 protected tables and existing site
+navigation. Repeat upgrade, PHP lint, language/registration and public HTTP
+checks passed. Full host/container audit passed 13,593 source files and read-only
+mount checks. No new error indicators; mail timer active. Anonymous log requests
+require login. No browser automation was available for a fresh visual check;
+rendering tests cover escaping, filter preservation and empty-day presentation.
+No mail was manually queued, retried or sent by the implementation or checks.
