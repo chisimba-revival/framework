@@ -152,12 +152,10 @@
     }
   ],
   "staged_rollout": {
-    "description": "Administration discovery deployed and verified on Learn-the-Birds. Other sites retain their individually approved manifests pending wider rollout.",
-    "framework_commit": "56b4aba587939267b73faa3f2785fe41d008468d",
-    "modules_commit": "9631770b859fe2d7655e9b132b29e76b187a005a",
-    "completed_sites": [
-      "learnthebirds.com"
-    ],
-    "record": "rollouts/20261116-ltb-administration.md"
+    "description": "Authorised Learn-the-Birds mail reporting rollout in progress. Other sites retain their individually approved manifests pending wider rollout.",
+    "framework_commit": "4b59337afe7f61b1049db319af29200a233cd86f",
+    "modules_commit": "bf3c1885931de1ebcd2ed8a1f11cfe57f89b5c40",
+    "completed_sites": [],
+    "record": "rollouts/20261116-ltb-mail-report.md"
   }
 }
