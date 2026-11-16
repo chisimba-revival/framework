@@ -152,12 +152,10 @@
     }
   ],
   "staged_rollout": {
-    "description": "LTB attendee inspection deployed and verified on Learn-the-Birds only. KengaLearn retains its approved canvas bundle; other sites retain the preceding shared bundle pending wider authorisation.",
-    "framework_commit": "d1d49b84997d0b0c4a701e850f7fda3e66030f8e",
-    "modules_commit": "9d84c4d358a551d5eb79f1220637a53b7cc3df1b",
-    "completed_sites": [
-      "learnthebirds.com"
-    ],
-    "record": "rollouts/20261111-ltb-attendees.md"
+    "description": "Authorised Learn-the-Birds administration discovery rollout in progress. Other sites retain their individually approved manifests pending wider rollout.",
+    "framework_commit": "56b4aba587939267b73faa3f2785fe41d008468d",
+    "modules_commit": "9631770b859fe2d7655e9b132b29e76b187a005a",
+    "completed_sites": [],
+    "record": "rollouts/20261116-ltb-administration.md"
   }
 }
