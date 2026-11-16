@@ -97,8 +97,8 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/ltb-mail-report-20261116/source-manifest.json",
-      "manifest_sha256": "31bca7270530699e9f79752524dd1bf908e8524e4bab4896ae555fbb2cb8ed17",
+      "manifest": "/srv/ltb-mail-text-20261116/source-manifest.json",
+      "manifest_sha256": "e6393ecc2ab7d3dee318c87a14a5e697457de8d996c1b1f15c2b1fa02551b9ca",
       "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
@@ -152,10 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "Learn-the-Birds mail report text-entity correction in progress; other sites retain their approved manifests.",
+    "description": "Learn-the-Birds mail reporting and translated text correction deployed and verified; other sites retain their approved manifests.",
     "framework_commit": "9bc572a9f9dd1bd71cc1d0e31cc537772228ab9c",
     "modules_commit": "d489371c2bdf99228468970b1a24fc320b5178c9",
-    "completed_sites": [],
+    "completed_sites": [
+      "learnthebirds.com"
+    ],
     "record": "rollouts/20261116-ltb-mail-report.md"
   }
 }
