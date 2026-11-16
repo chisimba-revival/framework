@@ -104,6 +104,7 @@ $noResults = $language->languageText('mod_toolbar_adminnoresults', 'toolbar',
         <div>
             <h1><?php echo $escape($title); ?></h1>
             <p><?php echo $escape($intro); ?></p>
+            <?php echo $this->getObject('contextualhelp', 'help')->show('toolbar', 'administration', true); ?>
         </div>
         <div class="admin-workbench-search">
             <label for="admin-workbench-query"><?php echo $escape($searchLabel); ?></label>

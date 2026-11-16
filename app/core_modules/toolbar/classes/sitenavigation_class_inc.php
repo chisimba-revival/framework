@@ -39,6 +39,9 @@ class sitenavigation extends ChisimbaObject
         $html .= '</ul><ul class="chisimba-site-navigation__account">';
         $security = $this->getObject('toolbarsecuritycontext', 'toolbar');
         if ($security->isAuthenticated()) {
+            if ($security->isSiteAdministrator()) {
+                $html .= '<li>' . $this->link($this->text('admin'), 'settings', $this->uri(null, 'toolbar')) . '</li>';
+            }
             $html .= $this->getObject('notificationmenu', 'toolbar')->show();
             $html .= '<li><details class="chisimba-site-navigation__group"><summary>'
                 . $this->getObject('iconservice', 'ui')->render('user', array('decorative' => true))
@@ -60,7 +63,6 @@ class sitenavigation extends ChisimbaObject
                 ) . '</li>';
             }
             if ($security->isSiteAdministrator()) {
-                $html .= '<li>' . $this->link($this->text('admin'), 'settings', $this->uri(null, 'toolbar')) . '</li>';
                 $html .= '<li>' . $this->link($this->text('configure'), 'panel-top', $this->uri(array('action' => 'editlinks'), 'toolbar')) . '</li>';
             }
             $html .= '<li>' . $security->logoutForm($this->getObject('language','language')->code2Txt('word_logout','system')) . '</li></ul></details></li>';

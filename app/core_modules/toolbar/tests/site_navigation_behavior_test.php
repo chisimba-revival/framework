@@ -6,7 +6,7 @@ class ChisimbaObject {
     public function getObject($name, $module) { return self::$objects[$name]; }
     public function getParam($key, $default) { return self::$params[$key] ?? $default; }
     public function getResourceUri($path, $module) { return '/resources/'.$path; }
-    public function uri($params, $module) { return '/index.php?' . http_build_query(array('module'=>$module)+$params); }
+    public function uri($params, $module) { return '/index.php?' . http_build_query(array('module'=>$module)+(array)$params); }
 }
 require dirname(__DIR__).'/classes/navigationservice_class_inc.php';
 $GLOBALS['kewl_entry_point_run']=true;
@@ -88,3 +88,21 @@ check($service->links()[0]['label']==='News <stories> & updates','Custom label u
 check($service->rawEditorLinks()[0]['label']==='News <stories> & updates','Custom label used in editor');
 $store->rows[0]['menu_label']=null;check($service->links()[0]['label']==='Renamed page','Clearing label restores current title');
 echo "PASS: custom labels in public/editor navigation and default restoration.\n";
+
+// The administration entry must be visible outside Account, only to administrators.
+ChisimbaObject::$objects['notificationmenu']=new class {public function show(){return '';}};
+ChisimbaObject::$objects['modules']=new class {public function checkIfRegistered($module){return false;}};
+$identity=new class {
+ public $loggedIn=false; public $admin=false;
+ public function isAuthenticated(){return $this->loggedIn;}
+ public function isSiteAdministrator(){return $this->admin;}
+ public function logoutForm($label){return '<form></form>';}
+};
+ChisimbaObject::$objects['toolbarsecuritycontext']=$identity;
+foreach([[false,false],[true,false],[true,true],[true,false]] as [$loggedIn,$admin]) {
+ $identity->loggedIn=$loggedIn;$identity->admin=$admin;$html=(new sitenavigation())->show();
+ $entry='href="/index.php?module=toolbar"';
+ check(substr_count($html,$entry)===($loggedIn&&$admin?1:0),'Administrator entry follows current authentication and role');
+ if($loggedIn&&$admin)check(strpos($html,$entry)<strpos($html,'Mod_toolbar_nav_account'),'Administration is outside the Account dropdown');
+}
+echo "PASS: direct administrator entry, anonymous/member exclusion and revoked-role removal.\n";
