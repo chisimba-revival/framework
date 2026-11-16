@@ -26,3 +26,11 @@ mount checks. No new error indicators; mail timer active. Anonymous log requests
 require login. No browser automation was available for a fresh visual check;
 rendering tests cover escaping, filter preservation and empty-day presentation.
 No mail was manually queued, retried or sent by the implementation or checks.
+
+## Text correction
+
+Follow-up rollout in progress: decode translated HTML entities before escaping
+report labels. Framework `9bc572a9f9dd1bd71cc1d0e31cc537772228ab9c`,
+modules `d489371c2bdf99228468970b1a24fc320b5178c9`.
+Manifest `e6393ecc2ab7d3dee318c87a14a5e697457de8d996c1b1f15c2b1fa02551b9ca`.
+Evidence: `/srv/ltb-mail-text-20261116`. Regression rendering test passed.

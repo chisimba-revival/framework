@@ -152,12 +152,10 @@
     }
   ],
   "staged_rollout": {
-    "description": "Read-only mail reporting deployed and verified on Learn-the-Birds. Other sites retain their individually approved manifests pending wider rollout.",
-    "framework_commit": "4b59337afe7f61b1049db319af29200a233cd86f",
-    "modules_commit": "bf3c1885931de1ebcd2ed8a1f11cfe57f89b5c40",
-    "completed_sites": [
-      "learnthebirds.com"
-    ],
+    "description": "Learn-the-Birds mail report text-entity correction in progress; other sites retain their approved manifests.",
+    "framework_commit": "9bc572a9f9dd1bd71cc1d0e31cc537772228ab9c",
+    "modules_commit": "d489371c2bdf99228468970b1a24fc320b5178c9",
+    "completed_sites": [],
     "record": "rollouts/20261116-ltb-mail-report.md"
   }
 }
