@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Kenga Publishing — bird on a book</title>
+  <!-- A broad cover and one page edge remain legible at browser-tab size. -->
+  <path d="M10 12Q10 8 15 8H49L57 45V55H16Q7 55 7 47Z" fill="#23514a"/>
+  <path d="M15 42H53V51H16Q11 51 11 47Q11 43 15 42Z" fill="#fff4d7"/>
+  <path d="M14 11H46L54 42H15Q12 42 11 44Z" fill="#e9a900"/>
+  <!-- Single bird: two strong wing shapes, a short tail and a clear beak. -->
+  <path d="M17 30L24 28C23 24 23 18 27 15C30 15 30 23 35 27C38 28 39 25 42 26C44 26 44 28 48 29L43 31C40 34 32 35 27 33L18 35L21 31Z" fill="#23514a"/>
+</svg>
