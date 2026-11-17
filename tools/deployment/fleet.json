@@ -109,8 +109,8 @@
       "source": "/srv/kengapub.com/app",
       "runtime_root": "/var/www/html/ch",
       "container": "kengapub-chisimba-web-1",
-      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
-      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
+      "manifest": "/srv/kengapub-paid-notifications-20261117/source-manifest.json",
+      "manifest_sha256": "6ffaac309d0e4749e0cf88051d23183cccd38ffef875a46f712eb302137aca20",
       "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "Learn-the-Birds mail reporting and translated text correction deployed and verified; other sites retain their approved manifests.",
-    "framework_commit": "9bc572a9f9dd1bd71cc1d0e31cc537772228ab9c",
-    "modules_commit": "d489371c2bdf99228468970b1a24fc320b5178c9",
+    "description": "KengaPub paid-order notifications deployed and verified from the current common development source; Learn-the-Birds retains its approved mail-report release and other sites retain their individually approved manifests pending wider rollout.",
+    "framework_commit": "7eaf5db18228abc34efea84c24ed8e64ed5318dd",
+    "modules_commit": "d3f11a6008ecd2e58bcce4860b8dea50a33477a0",
     "completed_sites": [
-      "learnthebirds.com"
+      "kengapub.com"
     ],
-    "record": "rollouts/20261116-ltb-mail-report.md"
+    "record": "rollouts/20261117-kengapub-paid-notifications.md"
   }
 }
