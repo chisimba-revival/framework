@@ -2067,6 +2067,10 @@ ul#menuList li li ul {
         0 4px 12px rgb(15 23 42 / 0.10),
         0 2px 5px rgb(15 23 42 / 0.06);
 
+    --chisimba-shadow-lg:
+        0 10px 28px rgb(15 23 42 / 0.16),
+        0 3px 8px rgb(15 23 42 / 0.08);
+
     /* Motion */
     --chisimba-duration-fast: 120ms;
     --chisimba-duration-normal: 180ms;
