@@ -139,10 +139,11 @@ class dbcontext extends dbTable {
      * @param int $showcomment Enable (1) or Disable (0) Comments on course pages
      * @param string $alerts Enable or Disable alerts
      *
+     * @param bool $switchContext Switch the active session after provisioning; false for orchestration.
      * @return boolean Result of adding a context
      */
     public function createContext(
-    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment=1, $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL, $useSections=FALSE) {
+    $contextCode, $title, $status = 'Published', $access = 'Private', $about = NULL, $goals=FALSE, $showcomment=1, $alerts = '', $canvas='', $deliveryFormat='standard', $navigationMode=NULL, $manageTransaction=TRUE, $accessPolicy=NULL, $privateAdmissionMode=NULL, $useSections=FALSE, $switchContext=TRUE) {
 
         $contextCode = preg_replace('/\W*/', '', $contextCode);
         $contextCode = strtolower($contextCode);
@@ -203,7 +204,8 @@ class dbcontext extends dbTable {
                 );
             }
 
-            $this->joinContext($contextCode);
+            // Background/outline provisioning must not switch the editor session before commit.
+            if ($switchContext) $this->joinContext($contextCode);
             if ($manageTransaction) {
                 $this->commitTransaction();
             }
