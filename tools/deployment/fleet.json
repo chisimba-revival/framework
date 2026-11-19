@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/practice-feedback-20261111/source-manifest.json",
-      "manifest_sha256": "52cd4c0ff77fa91252bb253c49ecf453cf02d897879d74d7b6eeee1fd902350a",
-      "overlays": "/srv/kengalearn/practice-feedback-20261111/private-overlays.json",
+      "manifest": "/srv/kengalearn/akm-release-20261119/source-manifest.json",
+      "manifest_sha256": "6213c7e5c45de500fd3808c97ca32fdd0345eef9c14104f0e777a01542f2ddc7",
+      "overlays": "/srv/kengalearn/akm-release-20261119/private-overlays.json",
       "overlays_sha256": "b839e2af49a45463fdc21342ba4480a10202c30b8392732eee64bc4a435b80fe"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "Learn-the-Birds multiline video captions deployed and verified from the common development source; other sites retain their individually approved manifests pending wider rollout.",
-    "framework_commit": "2f46ffd899817716499ea01b38d01c0799a4c0ad",
+    "description": "KengaLearn updated to current common source for Active Knowledge Map course generation, quiz banks and compact floating toolbar menus; other sites retain their individually approved manifests.",
+    "framework_commit": "fdcec58a50983161713b5dfc7abd26ac7ae34c6a",
     "modules_commit": "f6ecc6a42904975f1885174fb1fc676ece359e59",
     "completed_sites": [
-      "learnthebirds.com"
+      "kengalearn.com"
     ],
-    "record": "rollouts/20261119-ltb-video-captions.md"
+    "record": "rollouts/20261119-kengalearn-akm.md"
   }
 }
