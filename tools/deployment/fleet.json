@@ -97,8 +97,8 @@
       "source": "/srv/learnthebirds.com/app/current",
       "runtime_root": "/var/www/html",
       "container": "learnthebirds-migrate-web-1",
-      "manifest": "/srv/ltb-mail-text-20261116/source-manifest.json",
-      "manifest_sha256": "e6393ecc2ab7d3dee318c87a14a5e697457de8d996c1b1f15c2b1fa02551b9ca",
+      "manifest": "/srv/ltb-caption-20261119/source-manifest.json",
+      "manifest_sha256": "5686e5d97434046b4428494614e3a14248df5ba95ac2340231bc316834b7b306",
       "overlays": "/srv/fleet-common-update-20261111/private-overlays.json",
       "overlays_sha256": "117ef0f4fe37bbc23d36ac77b92410d15590d60eabbb3ffc8d69c738ff658dda"
     },
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaPub paid-order notifications and approved book/bird favicon deployed and verified; other sites retain their individually approved manifests pending wider rollout.",
-    "framework_commit": "dccba6d5a54f00824c24dd27377051a94defd3c4",
-    "modules_commit": "d3f11a6008ecd2e58bcce4860b8dea50a33477a0",
+    "description": "Learn-the-Birds multiline video captions deployed and verified from the common development source; other sites retain their individually approved manifests pending wider rollout.",
+    "framework_commit": "2f46ffd899817716499ea01b38d01c0799a4c0ad",
+    "modules_commit": "f6ecc6a42904975f1885174fb1fc676ece359e59",
     "completed_sites": [
-      "kengapub.com"
+      "learnthebirds.com"
     ],
-    "record": "rollouts/20261117-kengapub-favicon.md"
+    "record": "rollouts/20261119-ltb-video-captions.md"
   }
 }
