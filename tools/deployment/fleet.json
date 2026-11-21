@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-sync-20261121/source-manifest.json",
-      "manifest_sha256": "cb691ea27e79ccdd6b5039c2c58b4727db9b54e2d8f16c8049eb4760df904603",
-      "overlays": "/srv/kengalearn/grassguide-sync-20261121/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-admin-20261121/source-manifest.json",
+      "manifest_sha256": "30a5f9e96c325f300326d52511c456fe7ffd68cce69c791caf43bd097677cbaa",
+      "overlays": "/srv/kengalearn/grassguide-admin-20261121/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn updated for opt-in policy-filtered public grass app updates; management remains administrator-only.",
-    "framework_commit": "6f92731f9e4c11c5dc51a776835d70f607a057cf",
-    "modules_commit": "25a852828f4eaa61bf65b5b49b4bcf9c997b863e",
+    "description": "KengaLearn private grass administration layout and image replacement audit; mobile audit withdrawn.",
+    "framework_commit": "8efa77a91076d7ff58818410c72de176e46d327e",
+    "modules_commit": "d2ef68eba05e703044de75161e4a59c3bef780f9",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261121-kengalearn-grassguide-sync.md"
+    "record": "rollouts/20261121-kengalearn-private-grass-audit.md"
   }
 }
