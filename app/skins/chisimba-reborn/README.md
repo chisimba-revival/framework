@@ -148,3 +148,10 @@ images retain authored dimensions/alignment and shrink to fit narrow containers.
 
 Inside `chisimba-biography-prose`, unformatted images float beside the text with
 a 1.25rem gap and stack on phones. Explicit rich-text styles/alignment are retained.
+
+## Bottom-aligned card actions
+
+Use `chisimba-form-card--anchored` on cards in an equal-height grid row, with
+the final actions inside `chisimba-form-card__footer`. The footer absorbs spare
+vertical space while retaining a normal content gap on single-column screens.
+Content and images keep their natural height; no fixed card height is needed.

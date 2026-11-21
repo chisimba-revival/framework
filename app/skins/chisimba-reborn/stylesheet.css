@@ -6393,6 +6393,13 @@ input[type="button"]:hover, input[type="button"]:focus-visible,
     line-height: 1.55;
 }
 .chisimba-form-card__footer { margin: 1.35rem 0 0; }
+/* Opt-in cards keep their final actions aligned across a stretched grid row. */
+.chisimba-form-card--anchored { display: flex; flex-direction: column; }
+.chisimba-form-card--anchored > .chisimba-form-card__footer {
+    margin-block-start: auto;
+    padding-block-start: var(--chisimba-space-4);
+}
+
 .chisimba-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
