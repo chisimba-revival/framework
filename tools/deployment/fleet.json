@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-release-20261121/source-manifest.json",
-      "manifest_sha256": "c98c001d24b02fbb69509cb0bfa65f546f87c62016b4433b44027ef583b43b11",
-      "overlays": "/srv/kengalearn/grassguide-release-20261121/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-sync-20261121/source-manifest.json",
+      "manifest_sha256": "cb691ea27e79ccdd6b5039c2c58b4727db9b54e2d8f16c8049eb4760df904603",
+      "overlays": "/srv/kengalearn/grassguide-sync-20261121/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn updated for administrator-only grass catalogue, rights audit and server enrichment worker; other sites retain their individually approved manifests.",
-    "framework_commit": "60ddfe08e16c8875950bc43819c7c55309d6bc2b",
-    "modules_commit": "424779aeea2219fc6bca222006f0157e1de2335d",
+    "description": "KengaLearn updated for opt-in policy-filtered public grass app updates; management remains administrator-only.",
+    "framework_commit": "6f92731f9e4c11c5dc51a776835d70f607a057cf",
+    "modules_commit": "25a852828f4eaa61bf65b5b49b4bcf9c997b863e",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261121-kengalearn-grassguide.md"
+    "record": "rollouts/20261121-kengalearn-grassguide-sync.md"
   }
 }
