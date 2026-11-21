@@ -85,10 +85,10 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/akm-release-20261119/source-manifest.json",
-      "manifest_sha256": "6213c7e5c45de500fd3808c97ca32fdd0345eef9c14104f0e777a01542f2ddc7",
-      "overlays": "/srv/kengalearn/akm-release-20261119/private-overlays.json",
-      "overlays_sha256": "b839e2af49a45463fdc21342ba4480a10202c30b8392732eee64bc4a435b80fe"
+      "manifest": "/srv/kengalearn/grassguide-release-20261121/source-manifest.json",
+      "manifest_sha256": "c98c001d24b02fbb69509cb0bfa65f546f87c62016b4433b44027ef583b43b11",
+      "overlays": "/srv/kengalearn/grassguide-release-20261121/private-overlays.json",
+      "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
       "key": "learnthebirds",
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn updated to current common source for Active Knowledge Map course generation, quiz banks and compact floating toolbar menus; other sites retain their individually approved manifests.",
-    "framework_commit": "fdcec58a50983161713b5dfc7abd26ac7ae34c6a",
-    "modules_commit": "f6ecc6a42904975f1885174fb1fc676ece359e59",
+    "description": "KengaLearn updated for administrator-only grass catalogue, rights audit and server enrichment worker; other sites retain their individually approved manifests.",
+    "framework_commit": "60ddfe08e16c8875950bc43819c7c55309d6bc2b",
+    "modules_commit": "424779aeea2219fc6bca222006f0157e1de2335d",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261119-kengalearn-akm.md"
+    "record": "rollouts/20261121-kengalearn-grassguide.md"
   }
 }
