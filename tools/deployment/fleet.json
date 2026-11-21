@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-admin-20261121/source-manifest.json",
-      "manifest_sha256": "30a5f9e96c325f300326d52511c456fe7ffd68cce69c791caf43bd097677cbaa",
-      "overlays": "/srv/kengalearn/grassguide-admin-20261121/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-card-alignment-20261121/source-manifest.json",
+      "manifest_sha256": "dedb9f631b140ed8495a7a0d931c5f0fda3ac3893840fb701b77408799e65a56",
+      "overlays": "/srv/kengalearn/grassguide-card-alignment-20261121/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn private grass administration layout and image replacement audit; mobile audit withdrawn.",
-    "framework_commit": "8efa77a91076d7ff58818410c72de176e46d327e",
-    "modules_commit": "d2ef68eba05e703044de75161e4a59c3bef780f9",
+    "description": "KengaLearn audit card bottom-aligned review actions.",
+    "framework_commit": "addc8d9e3e485b44ca1cf84cf3c3045e9bb6393f",
+    "modules_commit": "766dce477309b2c784a286abf5990d78a732e1ef",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261121-kengalearn-private-grass-audit.md"
+    "record": "rollouts/20261121-kengalearn-card-alignment.md"
   }
 }
