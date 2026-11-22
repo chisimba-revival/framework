@@ -89,3 +89,16 @@ a stale/missing capture fails closed until the next successful capture. Retentio
 does not replace encrypted backup integrity checks or repair capture coverage.
 
 Tests: `python3 tools/deployment/test_prune_releases.py`.
+
+KengaLearn enabled this policy on 22 November 2026. The installed operator is
+`/srv/kengalearn/maintenance/prune_releases.py`; Derek's existing user crontab
+runs it daily at 02:45 UTC (04:45 SAST). Existing renewal and worker jobs were
+preserved. Initial cleanup retained `common-dev-20261121-160431` and its verified
+predecessor `common-dev-20261121-131553`, removing 113 obsolete release directories.
+Legacy ownership was corrected only inside the approved obsolete directories
+before continuing cleanup. Free space increased to about 38.65 GiB; the site
+returned HTTP 200, application containers remained healthy, and encrypted backup
+health passed. Repeating the dry run selected no further removals. Private
+cleanup plans and the previous crontab are retained under `/srv/kengalearn/logs`.
+This is an operational retention change, not a shared runtime deployment or a
+change to the approved fleet source manifest.
