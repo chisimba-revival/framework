@@ -69,3 +69,23 @@ and modules repositories only for fetching/comparing Git objects. Do not reset
 or change working trees, which may legitimately be on an older branch or contain
 active private work. A stale local fleet file is not the approved production
 baseline. Preserve the read-only production contract above.
+
+## Two-release retention
+
+`prune_releases.py --site /srv/kengalearn --key kengalearn` prints a dry-run plan.
+Add `--apply` only for an authorised cleanup. It retains the current release and
+the `previous` release recorded by its verified deployment, rather than guessing
+from directory names. Both must have verified deployment records. The current
+release must have a complete source capture less than 36 hours old and its
+pre-deployment backup directory must still exist.
+
+The tool takes both deployment and capture locks, inventories all containers
+(including stopped ones), and refuses cleanup for any referenced older release,
+unexpected symlink or newer candidate. It deletes only immediate directories
+under `releases`; backups, uploads, shared configuration and source manifests
+remain untouched. Dry-run is the default. Applied plans and free-space figures
+are recorded in the site's private logs directory. Run after the nightly backup;
+a stale/missing capture fails closed until the next successful capture. Retention
+does not replace encrypted backup integrity checks or repair capture coverage.
+
+Tests: `python3 tools/deployment/test_prune_releases.py`.
