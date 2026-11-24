@@ -145,19 +145,19 @@
       "source": "/srv/myhairplanner.com/app",
       "runtime_root": "/var/www/html/ch",
       "container": "myhairplanner-chisimba-web-1",
-      "manifest": "/srv/fleet-common-update-20261111/source-manifest.json",
-      "manifest_sha256": "ed7ecdc55bb83e67e97ce48dc3b2b0459b417123ea1962daca8a4394fc9dab5e",
-      "overlays": "/srv/myhairplanner.com/journey-release-20261112/private-overlays.json",
-      "overlays_sha256": "765ec1ab58d41bd03942bd4d35a73f4f36e67075fcf576e1663897b2560c0776"
+      "manifest": "/srv/myhairplanner.com/password-release-20261124-v2/source-manifest.json",
+      "manifest_sha256": "f7b20559ddfe5bcda513081bce49eec957f9f6ba9911e4864c38e03fc5804066",
+      "overlays": "/srv/myhairplanner.com/password-release-20261124-v2/private-overlays.json",
+      "overlays_sha256": "37459e6c31a24f0ad8a98d56ee7fa4ba6cde8c4d5a6446c79588d677311bb3e1"
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn species photo batches and persistent NC image import blocking.",
-    "framework_commit": "ce3c7661daf7d23d6120d52acdb041227c9ba387",
+    "description": "Shared password visibility deployed to MyHairPlanner; other sites retain approved earlier releases pending rollout.",
+    "framework_commit": "857e735633829b6dfdbfce4a2360bd7ad07d6621",
     "modules_commit": "3be18b6e240a0787b665d6f3d4e8dad3c94e771e",
     "completed_sites": [
-      "kengalearn.com"
+      "myhairplanner.com"
     ],
-    "record": "rollouts/20261124-kengalearn-photo-batches.md"
+    "record": "rollouts/20261124-password-visibility.md"
   }
 }
