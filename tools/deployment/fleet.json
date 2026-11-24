@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-contributor-priority-20261124/source-manifest.json",
-      "manifest_sha256": "507e64c8c54c26db5aed7fcd4650ef01d0b25a50cdf46efac23cbc418b62e024",
-      "overlays": "/srv/kengalearn/grassguide-contributor-priority-20261124/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-photo-batches-20261124/source-manifest.json",
+      "manifest_sha256": "b56d07bbd88248339a00270ebd035190ba58c08d283379624111a04f4ebb5bd1",
+      "overlays": "/srv/kengalearn/grassguide-photo-batches-20261124/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn contributor priority ordering and simplified permission request wording.",
-    "framework_commit": "7edbae648ebf86fb6bea915f8e407291b270705d",
-    "modules_commit": "fefbbf2ad5441a84a261bf364c453aad7b693d8a",
+    "description": "KengaLearn species photo batches and persistent NC image import blocking.",
+    "framework_commit": "ce3c7661daf7d23d6120d52acdb041227c9ba387",
+    "modules_commit": "3be18b6e240a0787b665d6f3d4e8dad3c94e771e",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261124-kengalearn-contributor-priority.md"
+    "record": "rollouts/20261124-kengalearn-photo-batches.md"
   }
 }
