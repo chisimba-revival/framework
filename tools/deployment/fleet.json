@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-contributors-20261124/source-manifest.json",
-      "manifest_sha256": "cba8e26dbb1615d4db1eeea9de370b0de92e268668e9bf20dfd897351d5823e5",
-      "overlays": "/srv/kengalearn/grassguide-contributors-20261124/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-permission-mail-20261124/source-manifest.json",
+      "manifest_sha256": "b98a674957c928534db05e9f2ccb4835c2bd1b3aad17eb911e920dcc427e318a",
+      "overlays": "/srv/kengalearn/grassguide-permission-mail-20261124/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn private NC contributor list and CSV export.",
-    "framework_commit": "66ecc92c85e2607922caed360f9f0a108c9fb5f5",
-    "modules_commit": "f6a7c25f9d83e89ae1547639e154c9c6beb1f81d",
+    "description": "KengaLearn private contributor contacts, image popup and explicit permission-email queue.",
+    "framework_commit": "bd68b30084171eb5b42afd279b3eaf3a47e24bc6",
+    "modules_commit": "e446bfd43176d9d271fc091608a6823bb3cbd0e7",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261124-kengalearn-nc-contributors.md"
+    "record": "rollouts/20261124-kengalearn-permission-mail.md"
   }
 }
