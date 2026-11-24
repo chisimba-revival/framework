@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-membership-20261124/source-manifest.json",
-      "manifest_sha256": "268fb6c37b5e6d535a2006f066bc64cb230baf498ba8e7dbe5610d6ebb90ad21",
-      "overlays": "/srv/kengalearn/grassguide-membership-20261124/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-contributors-20261124/source-manifest.json",
+      "manifest_sha256": "cba8e26dbb1615d4db1eeea9de370b0de92e268668e9bf20dfd897351d5823e5",
+      "overlays": "/srv/kengalearn/grassguide-contributors-20261124/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn minimal species creation and reversible catalogue removal/restoration.",
-    "framework_commit": "f6c252c024e74b8f83ac08c4f1fdc2002623847c",
-    "modules_commit": "af9d4256660a747fdf37b0274f6bd7aec85b9489",
+    "description": "KengaLearn private NC contributor list and CSV export.",
+    "framework_commit": "66ecc92c85e2607922caed360f9f0a108c9fb5f5",
+    "modules_commit": "f6a7c25f9d83e89ae1547639e154c9c6beb1f81d",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261124-kengalearn-species-membership.md"
+    "record": "rollouts/20261124-kengalearn-nc-contributors.md"
   }
 }
