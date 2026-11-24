@@ -188,7 +188,20 @@ class userservice extends dbTable
      */
     public function createUser(array $input)
     {
-        $data = $this->normaliseWriteData($input, true);
+        return $this->createUserRecord($input, false);
+    }
+
+    /** Explicit personal-account boundary; never fabricate an absent surname. */
+    public function createPersonalUser(array $input)
+    {
+        $input['howCreated'] = 'personal-registration';
+        $input['surname'] = $input['surname'] ?? '';
+        return $this->createUserRecord($input, true);
+    }
+
+    private function createUserRecord(array $input, $personal)
+    {
+        $data = $this->normaliseWriteData($input, true, $personal);
         if (!$data['ok']) {
             return $data;
         }
@@ -250,6 +263,7 @@ class userservice extends dbTable
                     'useradmin',
                     'batch_user_registration',
                     'registration-service',
+                    'personal-registration',
                 ),
                 true
             )
@@ -349,7 +363,7 @@ class userservice extends dbTable
             : $this->result(true, $active ? 'user_activated' : 'user_deactivated', $userId);
     }
 
-    private function normaliseWriteData(array $input, $creating)
+    private function normaliseWriteData(array $input, $creating, $personal = false)
     {
         $map = array(
             'userid' => array('userId', 'userid'),
@@ -387,7 +401,8 @@ class userservice extends dbTable
         }
 
         if ($creating) {
-            foreach (array('userid', 'username', 'firstname', 'surname') as $required) {
+            $requiredFields = $personal ? array('userid', 'username', 'firstname') : array('userid', 'username', 'firstname', 'surname');
+            foreach ($requiredFields as $required) {
                 if (!isset($values[$required]) || $values[$required] === '') {
                     return $this->result(false, 'missing_' . $required);
                 }

@@ -55,6 +55,17 @@ class userprovisioningservice extends ChisimbaObject
      */
     public function createLocalUserWithPasswordHash(array $input, $passwordHash)
     {
+        return $this->provisionHashedUser($input, $passwordHash, false);
+    }
+
+    /** Caller must verify email, eligibility and policy acceptance first. */
+    public function createPersonalUserWithPasswordHash(array $input, $passwordHash)
+    {
+        return $this->provisionHashedUser($input, $passwordHash, true);
+    }
+
+    private function provisionHashedUser(array $input, $passwordHash, $personal)
+    {
         if (!is_scalar($passwordHash)
             || $this->objAuthenticationService->passwordHashScheme(
                 (string) $passwordHash
@@ -63,7 +74,9 @@ class userprovisioningservice extends ChisimbaObject
         }
 
         $input['passwordHash'] = (string) $passwordHash;
-        $created = $this->objUserService->createUser($input);
+        $created = $personal
+            ? $this->objUserService->createPersonalUser($input)
+            : $this->objUserService->createUser($input);
         if (empty($created['ok'])) {
             return $this->result(
                 false,

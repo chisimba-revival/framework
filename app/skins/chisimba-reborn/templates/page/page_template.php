@@ -363,6 +363,20 @@ $faviconVersion = is_file($siteRootPath . $favicon)
         // Load the helper JS from the current skin
         $helperJs = 'skins/' . $skinName . '/javascript/skinhelper.js';
         $autoExpandJs = 'skins/' . $skinName . '/javascript/autoexpand.js';
+        $passwordJs = 'skins/' . $skinName . '/javascript/passwordvisibility.js';
+        $passwordIcons = $this->getObject('iconservice', 'ui');
+        $passwordLanguage = $this->getObject('language', 'language');
+        $passwordOptions = array(
+            'show' => $passwordLanguage->languageText('mod_ui_show_password', 'ui'),
+            'hide' => $passwordLanguage->languageText('mod_ui_hide_password', 'ui'),
+            'showIcon' => $passwordIcons->render('eye'),
+            'hideIcon' => $passwordIcons->render('eye-off'),
+        );
+        echo '<script type="application/json" id="chisimba-password-options">'
+            . json_encode($passwordOptions, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)
+            . '</script>';
+        echo '<script defer src="' . $passwordJs . '?v=' . filemtime($passwordJs) . '"></script>';
+
         echo '<script defer src="' . $autoExpandJs . '?v=' . filemtime($autoExpandJs) . '"></script>';
         echo "\n<script type='text/javascript' src='" . $helperJs . "'></script>\n\n";
     }

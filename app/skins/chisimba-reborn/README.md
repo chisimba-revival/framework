@@ -155,3 +155,12 @@ Use `chisimba-form-card--anchored` on cards in an equal-height grid row, with
 the final actions inside `chisimba-form-card__footer`. The footer absorbs spare
 vertical space while retaining a normal content gap on single-column screens.
 Content and images keep their natural height; no fixed card height is needed.
+
+## Password visibility
+
+Password fields have a translated eye button to reveal or hide their contents.
+Use it to check a mistyped password before signing in; Escape hides the text again.
+Passwords also hide on submission, reset or switching tabs. The button never
+submits the form. Without JavaScript, ordinary masked inputs remain usable.
+The same enhancement applies to dynamically inserted fields. A specialised
+component can opt out with `data-password-visibility="off"` on its container.
