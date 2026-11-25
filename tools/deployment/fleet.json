@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-checklist-20261125/source-manifest.json",
-      "manifest_sha256": "1799d9708ab35eed407220edb178a715d28c336d52e77fb1a7ed7621d0673a26",
-      "overlays": "/srv/kengalearn/grassguide-checklist-20261125/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-image-review-20261125/source-manifest.json",
+      "manifest_sha256": "daaaf91005d7db34001fd3fb4309175dc52f37c5e783f2cd30bf89b7fdb949b0",
+      "overlays": "/srv/kengalearn/grassguide-image-review-20261125/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn grass checklist and shared password controls deployed; other sites retain approved earlier manifests.",
-    "framework_commit": "548f94f6899ecc41b3e05e21ea863172aec2452e",
-    "modules_commit": "90600a2a0bfcc522b1108341750508618bb4a0e5",
+    "description": "KengaLearn image review and observation grades deployed; other sites retain approved earlier manifests.",
+    "framework_commit": "fa5cf6865e004954b82c6d6dd8a3d7e3052b1a69",
+    "modules_commit": "508e85813be04fff188027f02d6390f7a3fc0182",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261125-kengalearn-grass-checklist.md"
+    "record": "rollouts/20261125-kengalearn-image-review.md"
   }
 }
