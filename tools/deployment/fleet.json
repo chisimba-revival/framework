@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-batch-removal-20261125/source-manifest.json",
-      "manifest_sha256": "7d9ffdb0feac64cb207ca8effeccf2bb81f7b346a0a9e5d231acfc2987ce4264",
-      "overlays": "/srv/kengalearn/grassguide-batch-removal-20261125/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-editor-fix-20261125/source-manifest.json",
+      "manifest_sha256": "24c415e8ee63667052f7f781b519d1717af85a8703b0e786bd0b41f43b3d2b7d",
+      "overlays": "/srv/kengalearn/grassguide-editor-fix-20261125/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn batch image removal deployed; other sites retain approved earlier manifests.",
-    "framework_commit": "eb66db75660e19e7514eb6a7b1a006902ab7417c",
-    "modules_commit": "b38f5340cea7ff710aa2f49383b5f8294c0c0d66",
+    "description": "KengaLearn fresh editor dependency fix deployed; other sites retain approved earlier manifests.",
+    "framework_commit": "42b16941fa5e1939b3eb5003430e9e9a124006cb",
+    "modules_commit": "bed62901a7ec5ccc3be5080ab91dce441ee67edd",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261125-kengalearn-batch-removal.md"
+    "record": "rollouts/20261125-kengalearn-editor-fix.md"
   }
 }
