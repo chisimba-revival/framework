@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-photo-batches-20261124/source-manifest.json",
-      "manifest_sha256": "b56d07bbd88248339a00270ebd035190ba58c08d283379624111a04f4ebb5bd1",
-      "overlays": "/srv/kengalearn/grassguide-photo-batches-20261124/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-checklist-20261125/source-manifest.json",
+      "manifest_sha256": "1799d9708ab35eed407220edb178a715d28c336d52e77fb1a7ed7621d0673a26",
+      "overlays": "/srv/kengalearn/grassguide-checklist-20261125/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "Shared password visibility deployed to MyHairPlanner; other sites retain approved earlier releases pending rollout.",
-    "framework_commit": "857e735633829b6dfdbfce4a2360bd7ad07d6621",
-    "modules_commit": "3be18b6e240a0787b665d6f3d4e8dad3c94e771e",
+    "description": "KengaLearn grass checklist and shared password controls deployed; other sites retain approved earlier manifests.",
+    "framework_commit": "548f94f6899ecc41b3e05e21ea863172aec2452e",
+    "modules_commit": "90600a2a0bfcc522b1108341750508618bb4a0e5",
     "completed_sites": [
-      "myhairplanner.com"
+      "kengalearn.com"
     ],
-    "record": "rollouts/20261124-password-visibility.md"
+    "record": "rollouts/20261125-kengalearn-grass-checklist.md"
   }
 }
