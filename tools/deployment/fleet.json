@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-editor-fix-20261125/source-manifest.json",
-      "manifest_sha256": "24c415e8ee63667052f7f781b519d1717af85a8703b0e786bd0b41f43b3d2b7d",
-      "overlays": "/srv/kengalearn/grassguide-editor-fix-20261125/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-card-spacing-20261125/source-manifest.json",
+      "manifest_sha256": "a77a241a1f0b697b64122f1b5324f7c296e5b7f3cf7d34cd122c85f14462cf33",
+      "overlays": "/srv/kengalearn/grassguide-card-spacing-20261125/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn fresh editor dependency fix deployed; other sites retain approved earlier manifests.",
-    "framework_commit": "42b16941fa5e1939b3eb5003430e9e9a124006cb",
-    "modules_commit": "bed62901a7ec5ccc3be5080ab91dce441ee67edd",
+    "description": "KengaLearn image card action spacing deployed; other sites retain approved earlier manifests.",
+    "framework_commit": "d2be4a3aebcb166fd6ffaf90623a1246ca967490",
+    "modules_commit": "1188361db1b17d7c27393fbbb06b7aef1d91c079",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261125-kengalearn-editor-fix.md"
+    "record": "rollouts/20261125-kengalearn-card-spacing.md"
   }
 }
