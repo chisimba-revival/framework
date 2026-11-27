@@ -2,12 +2,12 @@
   "pins": {
     "framework": {
       "branch": "release/consolidation-20260930",
-      "commit": "ed1aff1a7f472824fbd3346dad0d54ec58439ad9",
+      "commit": "340e37c6f85f324b3dcb8a097ebf02c721f37767",
       "remote": "git@github.com:chisimba-revival/framework.git"
     },
     "modules": {
       "branch": "release/consolidation-20260930",
-      "commit": "cfdc0a54d48a5307afd2836cfd9133d8b059ec5e",
+      "commit": "17b9d0c0e26046d6393036d0bdccb1d233b95f1e",
       "remote": "git@github.com:chisimba-revival/modules.git"
     }
   },
@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-captions-20261127/source-manifest.json",
-      "manifest_sha256": "92e57254a15e124c564336495e8b4029a3ba3d3a1f3be80e97942a3bae641525",
-      "overlays": "/srv/kengalearn/grassguide-captions-20261127/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-upload-feedback-20261127/source-manifest.json",
+      "manifest_sha256": "953da71b1fc913e9f0e294d4077426a1bf259ae1480e1294de32a345e6e4ae78",
+      "overlays": "/srv/kengalearn/grassguide-upload-feedback-20261127/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn line-separated captions and italic controls; other sites retain approved earlier manifests.",
-    "framework_commit": "ed1aff1a7f472824fbd3346dad0d54ec58439ad9",
-    "modules_commit": "cfdc0a54d48a5307afd2836cfd9133d8b059ec5e",
+    "description": "KengaLearn photo upload feedback and confirmed-save navigation; other sites retain approved earlier manifests.",
+    "framework_commit": "340e37c6f85f324b3dcb8a097ebf02c721f37767",
+    "modules_commit": "17b9d0c0e26046d6393036d0bdccb1d233b95f1e",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261127-kengalearn-caption-lines.md"
+    "record": "rollouts/20261127-kengalearn-upload-feedback.md"
   }
 }
