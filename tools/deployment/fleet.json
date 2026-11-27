@@ -2,12 +2,12 @@
   "pins": {
     "framework": {
       "branch": "release/consolidation-20260930",
-      "commit": "cba1942bc1ceac39dd08e290a64248c6ec405e3d",
+      "commit": "7445885499044043d143ab89c84475ad01aa3ca6",
       "remote": "git@github.com:chisimba-revival/framework.git"
     },
     "modules": {
       "branch": "release/consolidation-20260930",
-      "commit": "f9e91ec69ab82d04f2c752e6ae663d9675f6e4cb",
+      "commit": "819e430410ba0e8524f9ae2b17c7c0a22ca58c27",
       "remote": "git@github.com:chisimba-revival/modules.git"
     }
   },
@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-photo-display-20261127/source-manifest.json",
-      "manifest_sha256": "4bb2f9829852928ef07f5172e2c6e82c4dd354196c0954c7af64cd7a31617ac4",
-      "overlays": "/srv/kengalearn/grassguide-photo-display-20261127/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-copyright-edit-20261127/source-manifest.json",
+      "manifest_sha256": "d6fbb531091e60e74a35b54500245d4068505683b6a5346f2fb09d0277545e66",
+      "overlays": "/srv/kengalearn/grassguide-copyright-edit-20261127/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn uploaded photo delivery and clear-selection controls; other sites retain approved earlier manifests.",
-    "framework_commit": "cba1942bc1ceac39dd08e290a64248c6ec405e3d",
-    "modules_commit": "f9e91ec69ab82d04f2c752e6ae663d9675f6e4cb",
+    "description": "KengaLearn copyright media editor permission fix; other sites retain approved earlier manifests.",
+    "framework_commit": "7445885499044043d143ab89c84475ad01aa3ca6",
+    "modules_commit": "819e430410ba0e8524f9ae2b17c7c0a22ca58c27",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261127-kengalearn-photo-display.md"
+    "record": "rollouts/20261127-kengalearn-copyright-edit.md"
   }
 }
