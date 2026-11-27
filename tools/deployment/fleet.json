@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-premium-20261127/source-manifest.json",
-      "manifest_sha256": "e6d29656482be03e474cc34d2b8ffeac402fbc0700907af3700d78a990ac3ec8",
-      "overlays": "/srv/kengalearn/grassguide-premium-20261127/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-trips-20261127/source-manifest.json",
+      "manifest_sha256": "98f4893c05b7daa6f96e678c2d48e3eb8908c2b9c3b022b957da61a788a71d1e",
+      "overlays": "/srv/kengalearn/grassguide-trips-20261127/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn Grass App premium media release deployed; other sites retain approved earlier manifests.",
-    "framework_commit": "975a234aa297a0c7a57370681862ae1440ec231e",
-    "modules_commit": "e1657b39e59b5ec7ba2f83bcef47eeb4e377e394",
+    "description": "KengaLearn private project/trip sightings release; other sites retain approved earlier manifests.",
+    "framework_commit": "8987daa573fbd45b16852e259484c1a9dc79efd8",
+    "modules_commit": "4b70cf13ea9cc58add9e2b8016c03a167948903d",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261127-kengalearn-grass-premium.md"
+    "record": "rollouts/20261127-kengalearn-grass-trips.md"
   }
 }
