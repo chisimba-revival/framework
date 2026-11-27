@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-trips-20261127/source-manifest.json",
-      "manifest_sha256": "98f4893c05b7daa6f96e678c2d48e3eb8908c2b9c3b022b957da61a788a71d1e",
-      "overlays": "/srv/kengalearn/grassguide-trips-20261127/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-botanical-20261127/source-manifest.json",
+      "manifest_sha256": "74e7c98e526b559416cd2dff20a6c297b20dfc6b772f82da5d16bbb4b9a17a99",
+      "overlays": "/srv/kengalearn/grassguide-botanical-20261127/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn private project/trip sightings release; other sites retain approved earlier manifests.",
-    "framework_commit": "8987daa573fbd45b16852e259484c1a9dc79efd8",
-    "modules_commit": "4b70cf13ea9cc58add9e2b8016c03a167948903d",
+    "description": "KengaLearn botanical typography and copyright upload release; other sites retain approved earlier manifests.",
+    "framework_commit": "54806b800cb292b1e2f6b8dc8349cf4882b50db9",
+    "modules_commit": "183994af997bb95f0071226a58116eeb1cd23abb",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261127-kengalearn-grass-trips.md"
+    "record": "rollouts/20261127-kengalearn-botanical-copyright.md"
   }
 }
