@@ -18,7 +18,8 @@ Deployed module 0.030 from common modules `236663c17` and framework
 - Real-PDO tests cover fresh import, rollback, repetition and historical IDs;
   browser checks cover warning/Help, app alias navigation and former-name search.
 - Android 1.9.5 (15), 40 tests passing, debug APK built with the live catalogue.
-  Phone installation pending USB connection. App commit `4a61b10`, no remote configured.
+  Installed on Derek’s Samsung with `adb install -r`; package metadata confirms
+  version 1.9.5 / 15. Existing app data retained. App commit `4a61b10`, no remote configured.
 
 Unresolved names: Eragrostis heterostachya, Microchloa caffra, Urochloa meyeriana,
 Urochloa oligostachya, Urochloa stapfiana. No identity was guessed from a similar
