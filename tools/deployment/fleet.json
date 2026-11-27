@@ -2,12 +2,12 @@
   "pins": {
     "framework": {
       "branch": "release/consolidation-20260930",
-      "commit": "7445885499044043d143ab89c84475ad01aa3ca6",
+      "commit": "a8498e3caf042bff456d2a46bb8a226c1a4b8699",
       "remote": "git@github.com:chisimba-revival/framework.git"
     },
     "modules": {
       "branch": "release/consolidation-20260930",
-      "commit": "819e430410ba0e8524f9ae2b17c7c0a22ca58c27",
+      "commit": "9a333140ad0b6f222abf43c2ea0fe7f1efe6d114",
       "remote": "git@github.com:chisimba-revival/modules.git"
     }
   },
@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-copyright-edit-20261127/source-manifest.json",
-      "manifest_sha256": "d6fbb531091e60e74a35b54500245d4068505683b6a5346f2fb09d0277545e66",
-      "overlays": "/srv/kengalearn/grassguide-copyright-edit-20261127/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-representative-20261127/source-manifest.json",
+      "manifest_sha256": "0fa5fa2e5d6856104cf6535d9f377de3e8a3645b88dcea7d4f28fea0caa2e35a",
+      "overlays": "/srv/kengalearn/grassguide-representative-20261127/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn copyright media editor permission fix; other sites retain approved earlier manifests.",
-    "framework_commit": "7445885499044043d143ab89c84475ad01aa3ca6",
-    "modules_commit": "819e430410ba0e8524f9ae2b17c7c0a22ca58c27",
+    "description": "KengaLearn representative species photo selection; other sites retain approved earlier manifests.",
+    "framework_commit": "a8498e3caf042bff456d2a46bb8a226c1a4b8699",
+    "modules_commit": "9a333140ad0b6f222abf43c2ea0fe7f1efe6d114",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261127-kengalearn-copyright-edit.md"
+    "record": "rollouts/20261127-kengalearn-representative.md"
   }
 }
