@@ -2,12 +2,12 @@
   "pins": {
     "framework": {
       "branch": "release/consolidation-20260930",
-      "commit": "25fdd1ab4021d142059fad48c4c5b0133ee2dafe",
+      "commit": "80c8fac75c61d663a24ddf4ed6b58b9d605b4f0d",
       "remote": "git@github.com:chisimba-revival/framework.git"
     },
     "modules": {
       "branch": "release/consolidation-20260930",
-      "commit": "236663c17aa4ff204ebc9e8360e460a63e382397",
+      "commit": "5a028c909864db482fcecdbfc8e05dbcf8129bcf",
       "remote": "git@github.com:chisimba-revival/modules.git"
     }
   },
@@ -85,9 +85,9 @@
       "source": "/srv/kengalearn/app/current",
       "runtime_root": "/var/www/html",
       "container": "kengalearn-production-web-1",
-      "manifest": "/srv/kengalearn/grassguide-taxonomy-20261127/source-manifest.json",
-      "manifest_sha256": "909af6c1e046cb735a65d49ea50a6bbf161387eee8696b99c37dc3d33b4aa19a",
-      "overlays": "/srv/kengalearn/grassguide-taxonomy-20261127/private-overlays.json",
+      "manifest": "/srv/kengalearn/grassguide-pending-20261128/source-manifest.json",
+      "manifest_sha256": "0053bc5f936e3721945f33150225cd85080eaf3cfd7c67ac5dfec5d6895acfe1",
+      "overlays": "/srv/kengalearn/grassguide-pending-20261128/private-overlays.json",
       "overlays_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
     },
     {
@@ -152,12 +152,12 @@
     }
   ],
   "staged_rollout": {
-    "description": "KengaLearn POWO reconciliation and historical species redirects; other sites retain approved earlier manifests.",
-    "framework_commit": "25fdd1ab4021d142059fad48c4c5b0133ee2dafe",
-    "modules_commit": "236663c17aa4ff204ebc9e8360e460a63e382397",
+    "description": "KengaLearn new-species pending status and saved scientific-name heading; other sites unchanged.",
+    "framework_commit": "80c8fac75c61d663a24ddf4ed6b58b9d605b4f0d",
+    "modules_commit": "5a028c909864db482fcecdbfc8e05dbcf8129bcf",
     "completed_sites": [
       "kengalearn.com"
     ],
-    "record": "rollouts/20261127-kengalearn-taxonomy.md"
+    "record": "rollouts/20261128-kengalearn-pending-name.md"
   }
 }
